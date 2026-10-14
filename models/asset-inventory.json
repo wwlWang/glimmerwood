@@ -1,0 +1,135 @@
+{
+  "inspected_at": "2026-10-14",
+  "method": "GLB metadata and Blender 5.1.2 import via MCP; source files unchanged",
+  "assets": [
+    {
+      "path": "Ku.blend",
+      "bytes": 29937664,
+      "sha256": "74b7f4da4368d58603672215266b848639e6ed8a38a8bb422b5606dbda91b895",
+      "status": "preserved; not opened or modified"
+    },
+    {
+      "path": "ori/1/ori-from-the-game-ori-and-the-blind-forest.zip",
+      "bytes": 153727,
+      "sha256": "234d92c4325ec4b2a972e32a1c858b1e8eb48311f92ed10a304e12ec279072f1",
+      "files": [
+        "source/Ori.zip.zip",
+        "textures/Texture_oeil.png"
+      ],
+      "nested_obj_stats": [
+        {
+          "path": "source/Ori.zip.zip/test.obj",
+          "vertices": 4754,
+          "faces": 4748,
+          "triangles_if_fan_triangulated": 9496,
+          "mtllib": [
+            "mtllib test.mtl"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "ori/1/ori_from_the_game_ori_and_the_blind_forest.glb",
+      "bytes": 242552,
+      "sha256": "80aa59e8fead64c8d87394b93c8aa2200ed4c79e8ec24530dba6dd0208a270b0",
+      "metadata": {
+        "extras": {
+          "author": "vincentskc (https://sketchfab.com/vincentskc)",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+          "source": "https://sketchfab.com/3d-models/ori-from-the-game-ori-and-the-blind-forest-9154a505ba8143cba354d04ac9f7ac29",
+          "title": "Ori from the game \"Ori and the Blind Forest\""
+        },
+        "generator": "Sketchfab-12.68.0",
+        "version": "2.0"
+      },
+      "vertices": 4848,
+      "triangles": 9496,
+      "meshes": 3,
+      "skin_joints": [],
+      "animation_clips": 0,
+      "materials": 3,
+      "images": 1
+    },
+    {
+      "path": "ori/2/ori.glb",
+      "bytes": 1886040,
+      "sha256": "e491e923c4f8cf2e00858a2e6d071291948249d514bbfef2a71fc25402649b90",
+      "metadata": {
+        "extras": {
+          "author": "Kristian LaGrange (https://sketchfab.com/kristian123)",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+          "source": "https://sketchfab.com/3d-models/ori-be03540404ec4e69b8a2d969865a4c48",
+          "title": "Ori"
+        },
+        "generator": "Sketchfab-12.68.0",
+        "version": "2.0"
+      },
+      "vertices": 30840,
+      "triangles": 57560,
+      "meshes": 2,
+      "skin_joints": [],
+      "animation_clips": 0,
+      "materials": 1,
+      "images": 1
+    },
+    {
+      "path": "ori/2/ori.zip",
+      "bytes": 1572247,
+      "sha256": "a8935d2d5eba0367d2bcc0e610cceb63799ea02542a9e0fb9e094bc22804bbc3",
+      "files": [
+        "source/Ori_LP.zip",
+        "textures/Ori_Base_Color.jpeg"
+      ],
+      "nested_obj_stats": [
+        {
+          "path": "source/Ori_LP.zip/Ori.obj",
+          "vertices": 8594,
+          "faces": 8654,
+          "triangles_if_fan_triangulated": 17136,
+          "mtllib": [
+            "mtllib Ori.mtl"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "ori/3/ori-rigged.zip",
+      "bytes": 3384024,
+      "sha256": "3e201f7786f4535761f1ff19296f7a7453d7ca857b7339d9e38207608bd859a1",
+      "files": [
+        "source/Ori_Rigger _Online.fbx"
+      ],
+      "nested_obj_stats": []
+    },
+    {
+      "path": "ori/3/ori_rigged.glb",
+      "bytes": 3590980,
+      "sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
+      "metadata": {
+        "extras": {
+          "author": "Random modeler (https://sketchfab.com/Seea_Rooster)",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+          "source": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
+          "title": "Ori Rigged"
+        },
+        "generator": "Sketchfab-12.66.0",
+        "version": "2.0"
+      },
+      "vertices": 48262,
+      "triangles": 68888,
+      "meshes": 1,
+      "skin_joints": [
+        186
+      ],
+      "animation_clips": 0,
+      "materials": 1,
+      "images": 0,
+      "blender_weight_audit": {
+        "bones_with_weights": 166,
+        "unweighted_vertices": 0,
+        "maximum_influences_per_vertex": 4,
+        "deformation_quality": "not tested"
+      }
+    }
+  ]
+}

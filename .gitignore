@@ -1,0 +1,45 @@
+# Build and local development instances
+.gradle/
+build/
+run/
+run-*/
+repo/
+src/generated/**/.cache/
+
+# IDE and OS files
+.idea/
+.vscode/
+.run/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+bin/
+out/
+.DS_Store
+Thumbs.db
+*.log
+
+# Raw assets remain local; provenance is tracked in models/.
+# Revisit storage/LFS when production assets are selected.
+models/**/*.blend
+models/**/*.blend[0-9]
+models/**/*.glb
+models/**/*.gltf
+models/**/*.bin
+models/**/*.obj
+models/**/*.mtl
+models/**/*.fbx
+models/**/*.zip
+models/**/*.crdownload
+models/**/*.part
+models/**/*.png
+models/**/*.jpg
+models/**/*.jpeg
+models/review/
+
+# Large runtime evidence and release bundles
+evidence/
+dist/
