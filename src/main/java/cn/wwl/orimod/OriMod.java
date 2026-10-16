@@ -11,7 +11,32 @@ public final class OriMod {
     public static final String MOD_ID = "orimod";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public OriMod(IEventBus modEventBus) {
+    public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
+        container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
+        cn.wwl.orimod.block.OriBlocks.register(modEventBus);
+        cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
+        cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
+        modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
+        modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.CombatInputPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::attackEntity);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tickArrow);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::drops);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::pickup);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.spirit.SpiritForm::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.SpiritMovement::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.AirMovement::fall);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::tickTarget);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::changedDimension);
         modEventBus.addListener(this::onCommonSetup);
     }
 

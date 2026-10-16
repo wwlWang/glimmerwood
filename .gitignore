@@ -1,5 +1,7 @@
 # Build and local development instances
 .gradle/
+.external/
+libs/
 build/
 run/
 run-*/
@@ -21,6 +23,8 @@ out/
 .DS_Store
 Thumbs.db
 *.log
+__pycache__/
+*.pyc
 
 # Raw assets remain local; provenance is tracked in models/.
 # Revisit storage/LFS when production assets are selected.
@@ -43,3 +47,5 @@ models/review/
 # Large runtime evidence and release bundles
 evidence/
 dist/
+art/source/**/*.blend
+art/source/**/*.blend[0-9]

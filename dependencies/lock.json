@@ -1,0 +1,185 @@
+{
+  "formatVersion": 1,
+  "recorded": "2026-10-14",
+  "status": "P1 candidates; combined runtime compatibility not yet verified",
+  "artifacts": [
+    {
+      "project": "iris",
+      "version": "1.8.12+1.21.1-neoforge",
+      "versionId": "t3ruzodq",
+      "kind": "runtime",
+      "filename": "iris-neoforge-1.8.12+mc1.21.1.jar",
+      "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/t3ruzodq/iris-neoforge-1.8.12%2Bmc1.21.1.jar",
+      "sha512": "57b8026a3c3c433cf6123d63dc6ce7e11f6d480a72926370db1fc7f2b06059bc16a753ecd7e7af659c19e90b592103196b0e89585ce4f0744a4ca433f59bcf1a",
+      "license": "LGPL-3.0-only",
+      "source": "https://github.com/IrisShaders/Iris",
+      "requiredVersionIds": [
+        "Pb3OXVqC"
+      ]
+    },
+    {
+      "project": "sodium",
+      "version": "mc1.21.1-0.6.13-neoforge",
+      "versionId": "Pb3OXVqC",
+      "kind": "runtime",
+      "filename": "sodium-neoforge-0.6.13+mc1.21.1.jar",
+      "url": "https://cdn.modrinth.com/data/AANobbMI/versions/Pb3OXVqC/sodium-neoforge-0.6.13%2Bmc1.21.1.jar",
+      "sha512": "ce58f34d05d96c0a109a5cea23c741f6bdb2e6be31fc087c5989274cefca5f10ba0c08c62083cf554a51f2c7667bf46e4164383f675c844e77633aef2659996b",
+      "license": "LicenseRef-Polyform-Shield-1.0.0",
+      "source": "https://github.com/CaffeineMC/sodium",
+      "requiredVersionIds": []
+    },
+    {
+      "project": "photon-editor",
+      "version": "mc1.21.1-2.2.8-neoforge",
+      "versionId": "T9SRwGMM",
+      "kind": "runtime",
+      "filename": "photon-neoforge-1.21.1-2.2.8-all.jar",
+      "url": "https://cdn.modrinth.com/data/gzevkJbM/versions/T9SRwGMM/photon-neoforge-1.21.1-2.2.8-all.jar",
+      "sha512": "aa56a31460c134f090524a969e2a5022253f83adbe7b67b388077d64e525fbbce94869b684c669bcb993ffd660afc70c2f61c2667ee8779c6c6f48e877c78507",
+      "license": "Source LICENSE: CC-BY-NC-SA-4.0 plus 1.21.x port conditions; artifact metadata says GPL-3.0; unresolved upstream mismatch",
+      "source": "https://github.com/Low-Drag-MC/Photon",
+      "requiredVersionIds": [
+        "KwiKbOzM",
+        "A8dTTrXo"
+      ]
+    },
+    {
+      "project": "kilagraph",
+      "version": "mc1.21.1-21.1.0.16-neoforge",
+      "versionId": "KwiKbOzM",
+      "kind": "runtime",
+      "filename": "kilagraph-neoforge-1.21.1-21.1.0.16.jar",
+      "url": "https://cdn.modrinth.com/data/zZO0N3W6/versions/KwiKbOzM/kilagraph-neoforge-1.21.1-21.1.0.16.jar",
+      "sha512": "2e3c473cbaeb708b311374cf180af683dd81106232ee716037043273434976ba22179ea6b405c24c714f045105cd7e1a4480b2552720061e43bf346d90294598",
+      "license": "MIT",
+      "source": "https://github.com/Low-Drag-MC/KilaGraph",
+      "requiredVersionIds": []
+    },
+    {
+      "project": "mellow",
+      "version": "3.4.1a",
+      "versionId": "jIbGxrnZ",
+      "kind": "shaders",
+      "filename": "Mellow v3.4.1a.zip",
+      "url": "https://cdn.modrinth.com/data/BUxf36AP/versions/jIbGxrnZ/Mellow%20v3.4.1a.zip",
+      "sha512": "d9ded566950e9f67de1084c5df748e2bd37bcc15234f4f9b6f026faf9ee2eef7f84c09fc9de1ac25107d900051d555490a4c3d6888b82afbc4888d53610e8387",
+      "license": "MIT",
+      "source": "https://codeberg.org/TheCMK/mellow-shader",
+      "requiredVersionIds": []
+    },
+    {
+      "project": "ldlib",
+      "version": "mc1.21.1-2.2.40-neoforge",
+      "versionId": "A8dTTrXo",
+      "kind": "runtime",
+      "filename": "ldlib2-neoforge-1.21.1-2.2.40-all.jar",
+      "url": "https://cdn.modrinth.com/data/B1CBVXHX/versions/A8dTTrXo/ldlib2-neoforge-1.21.1-2.2.40-all.jar",
+      "sha512": "c97bdcb7edf2e7096821f007901b9d408b617625617c0da61812500d541812ca93597443d7f8d595ca1c1499833f1471e0225b254da5e18b3e4d816b4f901795",
+      "license": "LGPL-3.0-only",
+      "source": "https://github.com/Low-Drag-MC/LDLib2",
+      "requiredVersionIds": []
+    },
+    {
+      "project": "colorwheel",
+      "version": "1.3.0-beta3+mc1.21.1",
+      "versionId": "mHMx6eXd",
+      "kind": "runtime",
+      "filename": "colorwheel-neoforge-1.3.0-beta3+mc1.21.1.jar",
+      "url": "https://cdn.modrinth.com/data/BzHgFoGz/versions/mHMx6eXd/colorwheel-neoforge-1.3.0-beta3%2Bmc1.21.1.jar",
+      "sha512": "7dffba009bc7cbfbda7e8464f4d4c7fb0546c4b888b6e3c450b11e0a4ca367afb2ca5e9e46e0d639357a2aece996e24f1efc49f87179af8e627ab776533ac93c",
+      "license": "LGPL-3.0 (artifact metadata)",
+      "source": "https://github.com/djefrey/Colorwheel",
+      "requiredVersionIds": [
+        "t3ruzodq"
+      ]
+    }
+  ],
+  "sourceBuilds": [
+    {
+      "project": "GemRender",
+      "version": "0.1.17",
+      "source": "https://github.com/Warfactory-Official/GemRender",
+      "commit": "839c927f7086ee21bb67bd9a68edcb595d043d49",
+      "license": "GPL-3 (upstream README)",
+      "target": "1.21.1",
+      "status": "built; combined runtime validation pending",
+      "filename": "gemrender-0.1.17.jar",
+      "sha512": "9166ae6682abf35a6feb675467e29f23b26758a168031dca7b611aca42093f56b910b9bab1e85959aab0c4c2f3e9c5212077c71343dca3ea576d76df178a1550",
+      "bundled": [
+        {
+          "identifier": {
+            "group": "dev.engine-room.flywheel",
+            "artifact": "flywheel-neoforge-1.21.1"
+          },
+          "version": {
+            "range": "[1.0.6,)",
+            "artifactVersion": "1.0.6"
+          },
+          "path": "META-INF/jarjar/flywheel-neoforge-1.21.1-1.0.6.jar",
+          "isObfuscated": false
+        },
+        {
+          "identifier": {
+            "group": "org.lwjgl",
+            "artifact": "lwjgl-ktx"
+          },
+          "version": {
+            "range": "[3.3.3,)",
+            "artifactVersion": "3.3.3"
+          },
+          "path": "META-INF/jarjar/lwjgl-ktx-3.3.3.jar",
+          "isObfuscated": false
+        },
+        {
+          "identifier": {
+            "group": "org.lwjgl",
+            "artifact": "lwjgl-ktx"
+          },
+          "version": {
+            "range": "[3.3.3,)",
+            "artifactVersion": "3.3.3"
+          },
+          "path": "META-INF/jarjar/lwjgl-ktx-3.3.3-natives-linux.jar",
+          "isObfuscated": false
+        },
+        {
+          "identifier": {
+            "group": "org.lwjgl",
+            "artifact": "lwjgl-ktx"
+          },
+          "version": {
+            "range": "[3.3.3,)",
+            "artifactVersion": "3.3.3"
+          },
+          "path": "META-INF/jarjar/lwjgl-ktx-3.3.3-natives-windows.jar",
+          "isObfuscated": false
+        },
+        {
+          "identifier": {
+            "group": "org.lwjgl",
+            "artifact": "lwjgl-ktx"
+          },
+          "version": {
+            "range": "[3.3.3,)",
+            "artifactVersion": "3.3.3"
+          },
+          "path": "META-INF/jarjar/lwjgl-ktx-3.3.3-natives-macos.jar",
+          "isObfuscated": false
+        },
+        {
+          "identifier": {
+            "group": "org.lwjgl",
+            "artifact": "lwjgl-ktx"
+          },
+          "version": {
+            "range": "[3.3.3,)",
+            "artifactVersion": "3.3.3"
+          },
+          "path": "META-INF/jarjar/lwjgl-ktx-3.3.3-natives-macos-arm64.jar",
+          "isObfuscated": false
+        }
+      ]
+    }
+  ]
+}

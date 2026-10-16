@@ -9,6 +9,25 @@ group = mod_group_id
 base.archivesName = mod_id
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+sourceSets {
+    devtools {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    devtoolsImplementation.extendsFrom implementation
+    devtoolsRuntimeOnly.extendsFrom runtimeOnly
+}
+
+// Candidate rendering dependencies stay in the development tools until combined runtime acceptance passes.
+dependencies {
+    implementation files('libs/runtime/gemrender-0.1.17.jar')
+    compileOnly fileTree(dir: 'libs/compile', include: '*.jar')
+    devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
+    devtoolsCompileOnly fileTree(dir: 'libs/compile', include: '*.jar')
+}
+
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
     exclude '**/*.bbmodel', '**/.cache/**'
@@ -16,6 +35,16 @@ sourceSets.main.resources {
 
 neoForge {
     version = project.neo_version
+    addModdingDependenciesTo sourceSets.devtools
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+        orimod_devtools {
+            sourceSet sourceSets.devtools
+        }
+    }
 
     parchment {
         minecraftVersion = project.parchment_minecraft_version
@@ -23,8 +52,21 @@ neoForge {
     }
 
     runs {
+        configureEach {
+            loadedMods = [mods.orimod]
+            logLevel = org.slf4j.event.Level.INFO
+        }
         client {
             client()
+        }
+        devtoolsClient {
+            client()
+            sourceSet = sourceSets.devtools
+            loadedMods = [mods.orimod, mods.orimod_devtools]
+            gameDirectory = project.file('run-devtools')
+            systemProperty 'orimod.devtools.enabled', 'true'
+            jvmArgument '-Xmx4G'
+            programArguments.addAll '--width', '1920', '--height', '1080'
         }
         server {
             server()
@@ -39,15 +81,6 @@ neoForge {
             programArguments.addAll '--mod', project.mod_id, '--all',
                     '--output', file('src/generated/resources').absolutePath,
                     '--existing', file('src/main/resources').absolutePath
-        }
-        configureEach {
-            logLevel = org.slf4j.event.Level.INFO
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet sourceSets.main
         }
     }
 }
@@ -73,6 +106,33 @@ neoForge.ideSyncTask generateModMetadata
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+tasks.register('prepareDevtoolsEnvironment') {
+    group = 'development'
+    description = 'Verify locked rendering dependencies and initialize a new development shader profile.'
+    def workspace = layout.projectDirectory.asFile
+    doLast {
+        def lock = new groovy.json.JsonSlurper().parse(new File(workspace, 'dependencies/lock.json'))
+        (lock.artifacts + lock.sourceBuilds).each { artifact ->
+            def jar = new File(workspace, "libs/${artifact.kind ?: 'runtime'}/${artifact.filename}")
+            if (!jar.isFile()) throw new GradleException("Missing ${jar.name}; run scripts/sync-dependencies.ps1 and scripts/build-renderer.ps1")
+            def digest = java.security.MessageDigest.getInstance('SHA-512').digest(jar.bytes).encodeHex().toString()
+            if (digest != artifact.sha512) throw new GradleException("Dependency differs from lock: ${jar.name}")
+        }
+        def shader = lock.artifacts.find { it.project == 'mellow' }
+        def installed = new File(workspace, "run-devtools/shaderpacks/${shader.filename}")
+        installed.parentFile.mkdirs()
+        if (!installed.exists()) java.nio.file.Files.copy(new File(workspace, "libs/shaders/${shader.filename}").toPath(), installed.toPath())
+        def preset = new File("${installed}.txt")
+        if (!preset.exists()) java.nio.file.Files.copy(new File(workspace, 'dependencies/shader-settings/mellow.properties').toPath(), preset.toPath())
+        def iris = new File(workspace, 'run-devtools/config/iris.properties')
+        if (!iris.exists()) {
+            iris.parentFile.mkdirs()
+            iris.text = "enableShaders=true\nshaderPack=${shader.filename}\n"
+        }
+    }
+}
+tasks.named('runDevtoolsClient') { dependsOn 'prepareDevtoolsEnvironment' }
 
 idea.module {
     downloadSources = true

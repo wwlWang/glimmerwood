@@ -1,0 +1,37 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="orimod_devtools"
+version="0.1.0"
+displayName="OriMod Development Tools"
+description="Local development and acceptance instrumentation. Excluded from release builds."
+
+[[dependencies.orimod_devtools]]
+modId="orimod"
+type="required"
+versionRange="[0.1.0-SNAPSHOT,)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.orimod_devtools]]
+modId="gemrender"
+type="required"
+versionRange="[0.1.17]"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.orimod_devtools]]
+modId="iris"
+type="required"
+versionRange="[1.8,1.9)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.orimod_devtools]]
+modId="photon"
+type="required"
+versionRange="[2.2.8]"
+ordering="AFTER"
+side="CLIENT"

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["CGC", "GIG", "CGC"],
+  "key": {"C":{"item":"minecraft:copper_ingot"}, "G":{"item":"minecraft:glass"}, "I":{"item":"minecraft:iron_ingot"}},
+  "result": {"id":"orimod:spirit_core","count":1}
+}

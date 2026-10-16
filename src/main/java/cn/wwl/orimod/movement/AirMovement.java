@@ -1,0 +1,125 @@
+package cn.wwl.orimod.movement;
+
+import cn.wwl.orimod.spirit.SpiritData;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+
+/** Server-owned airborne actions. All travel continues through vanilla solid collision. */
+public final class AirMovement {
+    public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = -2.4;
+    private AirMovement() {}
+
+    public static void beginGrapple(ServerPlayer player, MovementState s, SpiritTargets.Target target, long now) {
+        if (!SpiritData.hasGrapple(player)) {
+            player.displayClientMessage(Component.translatable("message.orimod.grapple_locked"), true);
+            return;
+        }
+        if (!cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return;
+        s.grapple = target;
+        s.grappleUntil = now + 24;
+        s.grappleDistance = Double.MAX_VALUE;
+        s.grappleStalls = 0;
+        s.targetCooldowns.put(target.key(), now + 40);
+        s.jumpUntil = -100;
+        s.acceptedGrapples++;
+        SpiritMovement.signal(player, s, "grapple", 3, grappleVelocity(player, target.point()));
+    }
+
+    public static Vec3 grappleVelocity(Player player, Vec3 point) {
+        Vec3 offset = point.subtract(player.position().add(0, player.getBbHeight() * .5, 0));
+        return offset.lengthSqr() < .01 ? Vec3.ZERO : offset.normalize().scale(Math.min(GRAPPLE_SPEED, offset.length()));
+    }
+
+    public static void beginStomp(ServerPlayer player, MovementState s, long now) {
+        if (!SpiritData.hasStomp(player)) {
+            player.displayClientMessage(Component.translatable("message.orimod.stomp_locked"), true);
+            return;
+        }
+        if (s.mode.equals("stomp") || SpiritMovement.grounded(player)
+                || !player.level().noCollision(player, player.getBoundingBox().deflate(.02).expandTowards(0, -2, 0))) return;
+        if (!cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return;
+        s.stompUntil = now + 80;
+        s.jumpUntil = -100;
+        s.acceptedStomps++;
+        SpiritMovement.signal(player, s, "stomp", 3, new Vec3(0, -1.2, 0));
+    }
+
+    public static boolean tickOwned(ServerPlayer player, MovementState s, long now, boolean grounded) {
+        if (s.grapple != null) {
+            var target = s.grapple;
+            double distance = player.position().add(0, player.getBbHeight() * .5, 0).distanceTo(target.point());
+            Vec3 velocity = grappleVelocity(player, target.point());
+            if (now >= s.grappleUntil || s.crouching || !target.valid(player)
+                    || !player.level().noCollision(player, player.getBoundingBox().deflate(.01).expandTowards(velocity))) {
+                SpiritMovement.cancel(player, s);
+            } else if (distance < .7) {
+                s.grapple = null;
+                s.completedGrapples++;
+                s.airJumpSpent = s.airDashSpent = false;
+                s.groundJumpAvailable = false;
+                s.groundLockUntil = now + 4;
+                player.fallDistance = 0;
+                SpiritMovement.signal(player, s, "grapple_end", 0, new Vec3(0, .28, 0));
+            } else {
+                s.grappleStalls = distance >= s.grappleDistance - .02 ? s.grappleStalls + 1 : 0;
+                s.grappleDistance = distance;
+                if (s.grappleStalls >= 5) SpiritMovement.cancel(player, s);
+                else {
+                    player.fallDistance = 0;
+                    SpiritMovement.signal(player, s, "grapple", 3, velocity);
+                }
+            }
+            return true;
+        }
+        if (s.mode.equals("stomp")) {
+            if (grounded) impact(player, s);
+            else if (now >= s.stompUntil) SpiritMovement.cancel(player, s);
+            else SpiritMovement.signal(player, s, "stomp", 3, new Vec3(0, STOMP_SPEED, 0));
+            return true;
+        }
+        return false;
+    }
+
+    public static void glide(ServerPlayer player, MovementState s, long now, boolean grounded, boolean touchingWall) {
+        if (SpiritData.hasGlide(player) && s.jumpHeld && !s.crouching && !grounded && !touchingWall
+                && now >= s.groundLockUntil && s.observedDy < -.03) {
+            if (!s.mode.equals("glide")) s.startedGlides++;
+            player.fallDistance = 0;
+            SpiritMovement.signal(player, s, "glide", 3, Vec3.ZERO);
+        } else if (s.mode.equals("glide")) SpiritMovement.cancel(player, s);
+    }
+
+    public static void fall(LivingFallEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        var s = player.getData(SpiritData.MOVEMENT);
+        if (s.mode.equals("stomp") && s.active && player.level().getGameTime() - s.lastInput <= 4 && SpiritMovement.canMove(player)) {
+            event.setCanceled(true);
+            impact(player, s);
+        }
+    }
+
+    private static void impact(ServerPlayer player, MovementState s) {
+        if (!s.mode.equals("stomp")) return;
+        s.stompImpacts++;
+        // Partial block landings can be observed before the final movement packet's fall check.
+        player.fallDistance = 0;
+        for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(3, 1, 3),
+                entity -> entity instanceof Enemy && entity.isAlive())) {
+            if (player.distanceToSqr(target) > 9 || !SpiritTargets.visible(player, target.getBoundingBox().getCenter())) continue;
+            target.hurt(player.damageSources().playerAttack(player), 6);
+            Vec3 away = target.position().subtract(player.position()).normalize();
+            target.push(away.x * .35, .3, away.z * .35);
+        }
+        player.serverLevel().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + .1, player.getZ(), 20, 1.5, .06, 1.5, .02);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.MACE_SMASH_GROUND, SoundSource.PLAYERS, .7f, 1.3f);
+        SpiritMovement.signal(player, s, "stomp_land", 0, Vec3.ZERO);
+    }
+}
