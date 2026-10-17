@@ -45,10 +45,12 @@ public final class SpiritControls {
                 | (DASH.isDown() && !blockDashUntilReleased ? MovementInputPayload.DASH : 0)
                 | (BASH.isDown() && !blockBashUntilReleased ? MovementInputPayload.BASH : 0)
                 | (input.shiftKeyDown ? MovementInputPayload.CROUCH : 0);
-        PacketDistributor.sendToServer(new MovementInputPayload(++inputSequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
+        int sequence = ++inputSequence;
+        var state = player.getData(SpiritData.MOVEMENT);
+        if (SpiritJumpPrediction.apply(player, state, sequence, flags, input.forwardImpulse, input.leftImpulse)) flags |= MovementInputPayload.PREDICTED_JUMP;
+        PacketDistributor.sendToServer(new MovementInputPayload(sequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
         sentActive = active;
         if (SpiritMovement.canMove(player)) input.jumping = false;
-        var state = player.getData(SpiritData.MOVEMENT);
         state.active = active;
         if (!active || player.hurtTime > state.lastHurtTime) {
             if (state.mode.equals("bash_aim") && player.hurtTime <= state.lastHurtTime) player.setDeltaMovement(state.suspendedVelocity);
@@ -111,10 +113,19 @@ public final class SpiritControls {
     public static void tick(ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();
         boolean spirit = mc.player != null && SpiritData.isSpirit(mc.player);
-        if (mc.player == null) cn.wwl.orimod.network.ProgressReplyPayload.guidePending = false;
+        if (mc.player == null) {
+            cn.wwl.orimod.network.ProgressReplyPayload.guidePending = false;
+            cn.wwl.orimod.network.RuinOfferPayload.pending = null;
+            cn.wwl.orimod.network.RuinGuidePayload.current = null;
+        }
         else if (mc.screen == null && cn.wwl.orimod.network.ProgressReplyPayload.guidePending) {
             cn.wwl.orimod.network.ProgressReplyPayload.guidePending = false;
             mc.setScreen(new SpiritScreen(true));
+        }
+        if (mc.player != null && cn.wwl.orimod.network.RuinOfferPayload.pending != null) {
+            var offer = cn.wwl.orimod.network.RuinOfferPayload.pending;
+            cn.wwl.orimod.network.RuinOfferPayload.pending = null;
+            mc.setScreen(new RuinScreen(offer));
         }
         SpiritKeyDefaults.tick(mc);
         if (spirit && !wasSpirit) {
@@ -138,6 +149,7 @@ public final class SpiritControls {
                 var state = mc.player.getData(SpiritData.MOVEMENT);
                 if (state.mode.equals("bash_aim")) mc.player.setDeltaMovement(state.suspendedVelocity);
                 state.mode = "idle"; state.activeTicks = 0; state.active = false;
+                state.predictedJumps.clear();
             }
             sentActive = false;
         }

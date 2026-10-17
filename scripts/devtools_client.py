@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import time
 import urllib.request
+import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,13 +22,32 @@ class DevClient:
                 digest.update(source.relative_to(ROOT).as_posix().encode())
                 digest.update(source.read_bytes())
         self.records = {'status': 'running', 'source_sha256': digest.hexdigest(), 'steps': {}}
+        harness = hashlib.sha256()
+        for source in sorted((ROOT / 'scripts').glob('*.py')):
+            harness.update(source.name.encode()); harness.update(source.read_bytes())
+        self.records['harness_sha256'] = harness.hexdigest()
 
     def request(self, action=None):
         req = urllib.request.Request(self.connection['url'] + ('/action' if action else '/state'),
             data=json.dumps(action).encode() if action else None,
             headers={'X-Ori-Devtools': self.connection['token'], 'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=55) as response:
-            return json.load(response)
+        observation = action is None or action['op'] in {
+            'ruin_state', 'spirit_state', 'progress_state', 'gui_state',
+            'container_state', 'nearby_entities', 'inspect_block'}
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=55) as response:
+                    return json.load(response)
+            except urllib.error.HTTPError as error:
+                detail = error.read().decode('utf-8')
+                # A timed-out observation can be repeated. Mutations may already
+                # have run and must never be resubmitted automatically.
+                if observation and attempt < 2 and 'TimeoutException' in detail:
+                    self.records.setdefault('observation_retries', []).append({
+                        'op': action['op'] if action else 'state', 'attempt': attempt + 1, 'error': detail})
+                    self.save(); time.sleep(.2)
+                    continue
+                raise RuntimeError(detail) from error
 
     def action(self, op, **kwargs):
         return self.request({'op': op, **kwargs})

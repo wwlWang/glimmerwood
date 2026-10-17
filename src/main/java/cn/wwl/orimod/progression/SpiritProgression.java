@@ -37,6 +37,8 @@ public final class SpiritProgression {
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
+            case "locate" -> cn.wwl.orimod.world.RuinLocator.request(player);
+            case "exit_challenge" -> cn.wwl.orimod.world.SpiritChallenge.finish(player, "exit", true);
             case "ability" -> {
                 var ability = Ability.byId(target);
                 if (ability == null) return;
@@ -171,9 +173,22 @@ public final class SpiritProgression {
             }
         }
         if (now % 20 == 0) {
+            grantGuide(player);
             for (var stack : player.getInventory().items) {
                 if (stack.is(OriItems.SPIRIT_LIGHT)) stack.shrink(grantLight(player, stack.getCount()));
             }
         }
+    }
+
+    public static void grantGuide(ServerPlayer player) {
+        var progress = player.getData(SpiritData.PROGRESS);
+        if (progress.rewards().getOrDefault("gift/ruin_guide", 0) > 0) return;
+        var stack = new ItemStack(OriItems.RUIN_GUIDE.get());
+        if (!player.getInventory().add(stack)) return;
+        var records = new java.util.HashMap<>(progress.rewards());
+        records.put("gift/ruin_guide", 1);
+        player.setData(SpiritData.PROGRESS, progress.withRewards(records));
+        player.containerMenu.broadcastChanges();
+        player.displayClientMessage(Component.translatable("guide.orimod.gift"), false);
     }
 }

@@ -148,10 +148,11 @@ public final class DevelopmentBridge {
                 require(mc.level == null, "Leave the current world first");
                 String name = worldName(action);
                 require(!Files.exists(mc.gameDirectory.toPath().resolve("saves").resolve(name)), "World already exists");
-                var settings = new LevelSettings(name, GameType.CREATIVE, false, Difficulty.PEACEFUL,
+                boolean hardcore = action.has("hardcore") && action.get("hardcore").getAsBoolean();
+                var settings = new LevelSettings(name, hardcore ? GameType.SURVIVAL : GameType.CREATIVE, hardcore, hardcore ? Difficulty.HARD : Difficulty.PEACEFUL,
                         true, new GameRules(), WorldDataConfiguration.DEFAULT);
                 mc.createWorldOpenFlows().createFreshLevel(name, settings,
-                        new WorldOptions(action.get("seed").getAsLong(), true, false),
+                        new WorldOptions(action.get("seed").getAsLong(), !action.has("structures") || action.get("structures").getAsBoolean(), false),
                         WorldPresets::createNormalWorldDimensions, new TitleScreen());
             }
             case "open_world" -> {
@@ -175,9 +176,17 @@ public final class DevelopmentBridge {
                 server.submit(() -> {
                     var player = server.getPlayerList().getPlayer(playerId);
                     require(player != null, "Server player missing");
+                    require(server.getCommands().getDispatcher().getRoot().getChild(command.split(" ", 2)[0]) != null,
+                            "Command is unavailable in the integrated server");
                     server.getCommands().performPrefixedCommand(
                             player.createCommandSourceStack().withPermission(4).withSuppressedOutput(), command);
                 }).get(10, TimeUnit.SECONDS);
+            }
+            case "save_world" -> {
+                require(mc.getSingleplayerServer() != null && mc.isPaused(), "Pause the single-player world before taking a snapshot");
+                var server = mc.getSingleplayerServer();
+                return server.submit(() -> Map.<String, Object>of("saved", server.saveEverything(true, true, true),
+                        "serverTick", server.getTickCount())).get(35, TimeUnit.SECONDS);
             }
             case "inspect_block" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
@@ -187,7 +196,10 @@ public final class DevelopmentBridge {
                     var player = mc.getSingleplayerServer().getPlayerList().getPlayer(playerId);
                     var block = player.level().getBlockState(pos);
                     return Map.<String, Object>of("block", net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block.getBlock()).toString(),
-                            "state", block.toString(), "fluid", block.getFluidState().getType().toString());
+                            "state", block.toString(), "fluid", block.getFluidState().getType().toString(),
+                            "fullBlock", block.isCollisionShapeFullBlock(player.level(), pos),
+                            "collisionEmpty", block.getCollisionShape(player.level(), pos).isEmpty(),
+                            "foliage", block.is(net.minecraft.tags.BlockTags.LEAVES) || block.is(net.minecraft.tags.BlockTags.LOGS));
                 }).get(5, TimeUnit.SECONDS);
             }
             case "key" -> {
@@ -202,6 +214,7 @@ public final class DevelopmentBridge {
                 heldKeys.put(key, duration);
             }
             case "release_keys" -> releaseKeys();
+            case "focus_game" -> GLFW.glfwFocusWindow(mc.getWindow().getWindow());
             case "input_script" -> {
                 require(mc.player != null && mc.screen == null, "Gameplay required");
                 releaseKeys();
@@ -214,7 +227,7 @@ public final class DevelopmentBridge {
                     if (entry.has("key")) {
                         require(java.util.Arrays.stream(mc.options.keyMappings).anyMatch(key -> key.getName().equals(entry.get("key").getAsString())), "Unknown input key");
                     } else {
-                        require(entry.has("action") && java.util.Set.of("command", "select_slot", "open_inventory", "open_pause", "close_screen", "toggle_form", "look")
+                        require(entry.has("action") && java.util.Set.of("command", "select_slot", "open_inventory", "open_pause", "close_screen", "toggle_form", "look", "server_hitch")
                                 .contains(entry.getAsJsonObject("action").get("op").getAsString()), "Unsupported scheduled action");
                     }
                     inputScript.add(entry);
@@ -223,6 +236,15 @@ public final class DevelopmentBridge {
                 inputScriptStart = ticks + 1;
             }
             case "record_motion" -> { motion.clear(); recordingMotion = true; }
+            case "server_hitch" -> {
+                require(mc.getSingleplayerServer() != null, "Single-player world required");
+                int milliseconds = action.get("milliseconds").getAsInt();
+                require(milliseconds >= 1 && milliseconds <= 600, "Hitch must be between 1 and 600 ms");
+                mc.getSingleplayerServer().execute(() -> {
+                    try { Thread.sleep(milliseconds); }
+                    catch (InterruptedException error) { Thread.currentThread().interrupt(); }
+                });
+            }
             case "save_motion" -> {
                 recordingMotion = false;
                 Path file = directory.resolve(fileName(action, ".json"));
@@ -267,6 +289,53 @@ public final class DevelopmentBridge {
                 var client = progressState(mc.player);
                 var server = mc.getSingleplayerServer().submit(() -> progressState(mc.getSingleplayerServer().getPlayerList().getPlayer(id))).get(5, TimeUnit.SECONDS);
                 return Map.of("client", client, "server", server);
+            }
+            case "use_block" -> {
+                require(mc.player != null && mc.gameMode != null, "Player required");
+                var pos = new net.minecraft.core.BlockPos(action.get("x").getAsInt(), action.get("y").getAsInt(), action.get("z").getAsInt());
+                var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+                mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+            }
+            case "ruin_state" -> {
+                require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
+                var id = mc.player.getUUID();
+                var serverState = mc.getSingleplayerServer().submit(() -> {
+                    var player = mc.getSingleplayerServer().getPlayerList().getPlayer(id);
+                    var result = new LinkedHashMap<String, Object>();
+                    result.put("hardcore", player.server.getWorldData().isHardcore());
+                    result.put("gameMode", player.gameMode.getGameModeForPlayer().getName());
+                    result.put("search", cn.wwl.orimod.world.RuinLocator.debug(player));
+                    var session = cn.wwl.orimod.world.SpiritChallenge.session(player);
+                    result.put("active", session != null);
+                    if (session != null) {
+                        result.put("kind", session.kind.id); result.put("key", session.key());
+                        result.put("checkpoint", session.checkpoint); result.put("baseline", session.baseline);
+                        result.put("elapsed", player.level().getGameTime() - session.started);
+                        result.put("target", session.target == null ? "" : session.target.toString());
+                        result.put("origin", new int[]{session.origin.getX(), session.origin.getY(), session.origin.getZ()});
+                    }
+                    result.put("recovery", player.getData(cn.wwl.orimod.spirit.SpiritData.CHALLENGE_RECOVERY));
+                    var starts = new ArrayList<Map<String, Object>>();
+                    var chunkPos = player.chunkPosition();
+                    for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
+                        var chunk = player.serverLevel().getChunkSource().getChunkNow(chunkPos.x + dx, chunkPos.z + dz);
+                        if (chunk == null) continue;
+                        for (var start : chunk.getAllStarts().values()) {
+                            if (!start.isValid() || !(start.getStructure() instanceof cn.wwl.orimod.world.RuinStructure ruin)) continue;
+                            for (var piece : start.getPieces()) if (piece instanceof cn.wwl.orimod.world.RuinPiece part) {
+                                var origin = part.origin();
+                                starts.add(Map.of("kind", ruin.kind.id, "origin", new int[]{origin.getX(), origin.getY(), origin.getZ()}, "bounds", part.getBoundingBox().toString()));
+                            }
+                        }
+                    }
+                    result.put("naturalStarts", starts);
+                    return result;
+                }).get(5, TimeUnit.SECONDS);
+                var guide = cn.wwl.orimod.network.RuinGuidePayload.current;
+                serverState.put("guide", guide == null ? "none" : Map.of("dimension", guide.dimension(), "kind", guide.kind(), "entry", new int[]{guide.entry().getX(), guide.entry().getY(), guide.entry().getZ()}));
+                serverState.put("reply", cn.wwl.orimod.network.ProgressReplyPayload.latest.getString());
+                serverState.put("replyRevision", cn.wwl.orimod.network.ProgressReplyPayload.revision);
+                return serverState;
             }
             case "grant_light", "set_energy" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
@@ -317,16 +386,26 @@ public final class DevelopmentBridge {
                     }
                 }
                 return Map.of("screen", mc.screen.getClass().getSimpleName(), "width", mc.screen.width, "height", mc.screen.height,
-                        "widgets", widgets, "reply", cn.wwl.orimod.network.ProgressReplyPayload.latest.getString());
+                        "widgets", widgets, "narration", mc.screen.getNarrationMessage().getString(), "reply", cn.wwl.orimod.network.ProgressReplyPayload.latest.getString());
             }
             case "gui_click" -> {
                 require(mc.screen != null, "Screen required");
                 double x = action.get("x").getAsDouble(), y = action.get("y").getAsDouble();
-                mc.screen.mouseClicked(x, y, 0); mc.screen.mouseReleased(x, y, 0);
+                mc.screen.mouseClicked(x, y, 0);
+                if (mc.screen != null) mc.screen.mouseReleased(x, y, 0);
             }
             case "gui_scroll" -> {
                 require(mc.screen != null, "Screen required");
                 mc.screen.mouseScrolled(action.get("x").getAsDouble(), action.get("y").getAsDouble(), 0, action.get("amount").getAsDouble());
+            }
+            case "container_state" -> {
+                require(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>, "Container screen required");
+                var screen = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+                return Map.of("screen", screen.getClass().getSimpleName(), "slots", screen.getMenu().slots.stream().map(slot -> Map.of(
+                        "index", slot.index, "x", screen.getGuiLeft() + slot.x, "y", screen.getGuiTop() + slot.y,
+                        "item", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(slot.getItem().getItem()).toString(),
+                        "count", slot.getItem().getCount())).toList(),
+                        "carried", screen.getMenu().getCarried().toString());
             }
             case "gui_key" -> {
                 require(mc.screen != null, "Screen required");
@@ -554,6 +633,9 @@ public final class DevelopmentBridge {
                 Map.entry("dashUnlocked", cn.wwl.orimod.spirit.SpiritData.hasDash(player)),
                 Map.entry("gameTime", player.level().getGameTime()), Map.entry("jumpUntil", movement.jumpUntil),
                 Map.entry("jumpPressedAt", movement.jumpPressedAt),
+                Map.entry("pendingJumps", movement.jumps.size()), Map.entry("pendingPredictions", movement.predictedJumps.size()),
+                Map.entry("predictedJumps", movement.predictedJumpCount), Map.entry("predictionMismatches", movement.jumpPredictionMismatches),
+                Map.entry("predictionRejections", movement.jumpPredictionRejections),
                 Map.entry("groundedAt", movement.groundedAt), Map.entry("groundJumpAvailable", movement.groundJumpAvailable),
                 Map.entry("lastWallRefill", movement.lastWallRefill),
                 Map.entry("bashUnlocked", cn.wwl.orimod.spirit.SpiritData.hasBash(player)),

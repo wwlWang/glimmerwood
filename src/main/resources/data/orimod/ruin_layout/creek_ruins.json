@@ -1,0 +1,111 @@
+{
+  "size": [
+    21,
+    21,
+    35
+  ],
+  "shrine": [
+    13,
+    6,
+    4
+  ],
+  "safe": [
+    10.5,
+    6,
+    5.5
+  ],
+  "entry": [
+    10.5,
+    6,
+    4.5
+  ],
+  "surface_y": 6,
+  "critical": [
+    {
+      "position": [
+        10,
+        9,
+        10
+      ],
+      "block": "orimod:bash_anchor"
+    },
+    {
+      "position": [
+        13,
+        6,
+        4
+      ],
+      "block": "orimod:creek_ruins_shrine"
+    }
+  ],
+  "clearances": [
+    {
+      "from": [
+        9,
+        6,
+        6
+      ],
+      "to": [
+        11,
+        14,
+        13
+      ]
+    },
+    {
+      "from": [
+        9,
+        11,
+        14
+      ],
+      "to": [
+        11,
+        13,
+        18
+      ]
+    },
+    {
+      "from": [
+        9,
+        8,
+        19
+      ],
+      "to": [
+        11,
+        13,
+        25
+      ]
+    },
+    {
+      "from": [
+        9,
+        8,
+        26
+      ],
+      "to": [
+        12,
+        11,
+        32
+      ]
+    }
+  ],
+  "checkpoints": [
+    {
+      "position": [
+        10.5,
+        11,
+        16.5
+      ],
+      "action": "bash",
+      "count": 1
+    },
+    {
+      "position": [
+        10.5,
+        8,
+        30.5
+      ],
+      "action": "glide",
+      "count": 1
+    }
+  ]
+}

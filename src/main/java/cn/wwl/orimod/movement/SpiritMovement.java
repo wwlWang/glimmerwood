@@ -51,7 +51,21 @@ public final class SpiritMovement {
             if (jump && !s.jumpHeld) {
                 // Bound compensation to two ticks; packet delivery cannot consume the intended 100 ms window.
                 s.jumpPressedAt = Math.clamp(input.gameTick(), now - 2, now);
-                s.jumpUntil = s.jumpPressedAt + INPUT_BUFFER_TICKS;
+                // A queued packet must survive until the next player tick. Coyote time
+                // uses the bounded press timestamp; buffering starts at server receipt.
+                s.jumpUntil = now + INPUT_BUFFER_TICKS;
+                if (grounded(player) && now >= s.groundLockUntil) {
+                    s.groundJumpAvailable = true; s.groundedAt = now;
+                    s.airJumpSpent = s.airDashSpent = false;
+                }
+                var request = new MovementState.JumpRequest(input.sequence(), s.jumpPressedAt, s.jumpUntil,
+                        player.position(), player.getDeltaMovement(), player.fallDistance,
+                        touchingWall(player, inputDirection(s, false), s.wallDirection), input.has(MovementInputPayload.PREDICTED_JUMP));
+                // Handle independent edges in packet order, including several arriving after a
+                // server hitch. The short queue is only for inputs waiting for a valid landing.
+                if (tryJump(player, s, request, now)) s.jumpUntil = -100;
+                else if (s.jumps.size() < 4) s.jumps.addLast(request);
+                else rejectJump(player, s, request);
             }
             if (dash && !s.dashHeld) {
                 if (s.bash != null || s.grapple != null) cancel(player, s);
@@ -65,6 +79,7 @@ public final class SpiritMovement {
             else if (!bash && s.bashHeld && s.bash != null) releaseBash(player, s, now);
         } else {
             s.jumpUntil = -100;
+            s.jumps.clear();
             if (wasActive || !s.mode.equals("idle")) cancel(player, s);
         }
         s.jumpHeld = jump;
@@ -102,6 +117,7 @@ public final class SpiritMovement {
         if (!s.active || now - s.lastInput > 4 || !canMove(player) || hurt) {
             s.active = false;
             s.jumpUntil = -100;
+            s.jumps.clear();
             if (!s.mode.equals("idle")) cancel(player, s);
             return;
         }
@@ -113,44 +129,13 @@ public final class SpiritMovement {
         if (AirMovement.tickOwned(player, s, now, grounded)) return;
         Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
         s.wallDirection = wall == null ? -1 : wall.ordinal();
-        if (s.jumpUntil >= now && !s.crouching) {
-            if (s.groundJumpAvailable && s.jumpPressedAt - s.groundedAt <= COYOTE_TICKS && cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) {
-                player.jumpFromGround();
-                s.groundJumpAvailable = false;
-                s.groundLockUntil = now + 4;
-                s.jumpUntil = -100;
-                s.acceptedJumps++;
-                signal(player, s, "jump", 0, player.getDeltaMovement());
-            } else if (!grounded && wall != null && now >= s.wallReadyAt && cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) {
-                Vec3 away = Vec3.atLowerCornerOf(wall.getNormal()).scale(-WALL_JUMP_SPEED);
-                player.jumpFromGround();
-                Vec3 velocity = new Vec3(away.x, Math.max(0.5, player.getDeltaMovement().y), away.z);
-                player.setDeltaMovement(velocity);
-                player.fallDistance = 0;
-                s.wallReadyAt = now + 8;
-                s.groundLockUntil = now + 4;
-                s.jumpUntil = -100;
-                s.groundJumpAvailable = false;
-                String surface = wall.getAxis() + ":" + (wall.getAxis() == Direction.Axis.X
-                        ? Mth.floor(player.getX() + wall.getStepX() * (player.getBbWidth() / 2 + 0.15))
-                        : Mth.floor(player.getZ() + wall.getStepZ() * (player.getBbWidth() / 2 + 0.15)));
-                if (!surface.equals(s.lastWallRefill)) {
-                    s.airJumpSpent = s.airDashSpent = false;
-                    s.lastWallRefill = surface;
-                }
-                s.acceptedWallJumps++;
-                signal(player, s, "wall_jump", 0, velocity);
-            } else if (!grounded && !s.airJumpSpent && now >= s.groundLockUntil && cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) {
-                player.jumpFromGround();
-                player.fallDistance = 0;
-                s.groundLockUntil = now + 4;
-                s.airJumpSpent = true;
-                s.groundJumpAvailable = false;
-                s.jumpUntil = -100;
-                s.acceptedJumps++;
-                signal(player, s, "double_jump", 0, player.getDeltaMovement());
-            }
+        while (!s.jumps.isEmpty()) {
+            var request = s.jumps.getFirst();
+            if (request.expiresAt() < now) { s.jumps.removeFirst(); rejectJump(player, s, request); }
+            else if (tryJump(player, s, request, now)) s.jumps.removeFirst();
+            else break;
         }
+        s.jumpUntil = s.jumps.isEmpty() ? -100 : s.jumps.getFirst().expiresAt();
         if (s.mode.equals("dash")) {
             if (s.activeTicks-- <= 0 || player.horizontalCollision || s.crouching) cancel(player, s);
             return;
@@ -163,6 +148,50 @@ public final class SpiritMovement {
             if (s.mode.equals("wall_slide")) cancel(player, s);
             AirMovement.glide(player, s, now, grounded, wall != null || player.horizontalCollision);
         }
+    }
+
+    private static boolean tryJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request, long now) {
+        if (s.crouching || s.bash != null || s.grapple != null || s.mode.equals("stomp") || s.mode.equals("dash")) return false;
+        boolean onGround = grounded(player) && now >= s.groundLockUntil;
+        Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
+        if (wall == null) wall = request.wall();
+        String mode = s.groundJumpAvailable && request.pressedAt() - s.groundedAt <= COYOTE_TICKS ? "jump"
+                : !onGround && wall != null && now >= s.wallReadyAt ? "wall_jump"
+                : !onGround && !s.airJumpSpent ? "double_jump" : "";
+        if (mode.isEmpty() || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
+        player.jumpFromGround();
+        s.groundJumpAvailable = false; s.groundLockUntil = now + 4; s.jumpPressedAt = request.pressedAt();
+        if (mode.equals("wall_jump")) {
+            Vec3 away = Vec3.atLowerCornerOf(wall.getNormal()).scale(-WALL_JUMP_SPEED);
+            player.setDeltaMovement(away.x, Math.max(.5, player.getDeltaMovement().y), away.z);
+            player.fallDistance = 0; s.wallReadyAt = now + 8;
+            String surface = wallSurface(player, wall);
+            if (!surface.equals(s.lastWallRefill)) { s.airJumpSpent = s.airDashSpent = false; s.lastWallRefill = surface; }
+            s.acceptedWallJumps++;
+        } else {
+            if (mode.equals("double_jump")) { player.fallDistance = 0; s.airJumpSpent = true; }
+            s.acceptedJumps++;
+        }
+        player.setOnGround(false);
+        signal(player, s, mode, 0, player.getDeltaMovement(), request.sequence());
+        return true;
+    }
+
+    public static String wallSurface(Player player, Direction wall) {
+        return wall.getAxis() + ":" + (wall.getAxis() == Direction.Axis.X
+                ? Mth.floor(player.getX() + wall.getStepX() * (player.getBbWidth() / 2 + .15))
+                : Mth.floor(player.getZ() + wall.getStepZ() * (player.getBbWidth() / 2 + .15)));
+    }
+
+    private static void rejectJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request) {
+        if (!request.predicted() || !player.isAlive()) return;
+        Vec3 correction = request.position();
+        if (player.level().noCollision(player, player.getBoundingBox().move(correction.subtract(player.position()))))
+            player.connection.teleport(correction.x, correction.y, correction.z, player.getYRot(), player.getXRot());
+        player.setDeltaMovement(request.velocity());
+        player.fallDistance = Math.max(player.fallDistance, request.fallDistance());
+        PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
+                ++s.actionId, request.sequence(), "jump_reject", 0, request.velocity(), s.airJumpSpent, s.airDashSpent, -1, Vec3.ZERO));
     }
 
     private static void tryDash(ServerPlayer player, MovementState s, long now) {
@@ -213,6 +242,7 @@ public final class SpiritMovement {
 
     public static void cancel(ServerPlayer player, MovementState s) {
         s.jumpUntil = -100;
+        s.jumps.clear();
         if (s.grapple != null) { s.grapple = null; s.cancelledGrapples++; }
         if (s.bash != null) {
             Vec3 velocity = player.hurtTime > 0 ? player.getDeltaMovement() : s.bash.playerVelocity;
@@ -265,12 +295,16 @@ public final class SpiritMovement {
     }
 
     static void signal(ServerPlayer player, MovementState s, String mode, int ticks, Vec3 velocity) {
+        signal(player, s, mode, ticks, velocity, -1);
+    }
+
+    private static void signal(ServerPlayer player, MovementState s, String mode, int ticks, Vec3 velocity, int jumpSequence) {
         s.mode = mode;
         if (!mode.equals("idle") && !mode.equals("wall_slide")) s.lastAction = mode;
         s.activeTicks = ticks;
         s.velocity = velocity;
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
-                ++s.actionId, mode, ticks, velocity, s.airJumpSpent, s.airDashSpent,
+                ++s.actionId, jumpSequence, mode, ticks, velocity, s.airJumpSpent, s.airDashSpent,
                 s.bash == null || s.bash.target.entity() == null ? -1 : s.bash.target.entity().getId(),
                 s.bash != null ? s.bash.targetPosition : s.grapple != null ? s.grapple.point() : Vec3.ZERO));
     }

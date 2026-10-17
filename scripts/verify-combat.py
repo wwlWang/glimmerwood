@@ -36,7 +36,7 @@ def record(name,before,health_before=None):
     return after
 
 try:
-    c.ready();c.action('close_screen');c.action('release_keys')
+    c.action('focus_game');c.action('close_screen');c.ready();c.action('release_keys')
     for cmd in ['gamemode survival','difficulty normal','gamerule naturalRegeneration false','gamerule doMobSpawning false',
                 'fill -12 99 -12 12 99 15 moss_block','fill -3 100 -3 3 104 12 air',
                 'item replace entity @s hotbar.0 with orimod:spirit_blade','item replace entity @s hotbar.1 with orimod:spirit_bow']:

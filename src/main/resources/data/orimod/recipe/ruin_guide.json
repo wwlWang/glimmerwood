@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [ { "item": "minecraft:copper_ingot" }, { "item": "minecraft:paper" } ],
+  "result": { "id": "orimod:ruin_guide", "count": 1 }
+}

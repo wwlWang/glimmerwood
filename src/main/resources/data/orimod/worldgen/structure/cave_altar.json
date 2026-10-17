@@ -1,0 +1,8 @@
+{
+  "type": "orimod:ruin",
+  "kind": "cave_altar",
+  "biomes": "#orimod:has_ruins",
+  "spawn_overrides": {},
+  "step": "top_layer_modification",
+  "terrain_adaptation": "none"
+}

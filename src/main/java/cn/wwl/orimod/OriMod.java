@@ -14,12 +14,21 @@ public final class OriMod {
     public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
         cn.wwl.orimod.block.OriBlocks.register(modEventBus);
+        cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
+        cn.wwl.orimod.world.OriEntities.register(modEventBus);
         cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
         modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
         modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
         modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.CombatInputPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.ChallengeActionPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::death);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.RuinLocator::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.RuinLocator::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::attackEntity);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::damaged);

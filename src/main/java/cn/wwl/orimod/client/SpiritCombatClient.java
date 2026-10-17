@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class SpiritCombatClient {
     private static boolean blockUse, sentCancel;
-    private static int lastAction, lastHurt;
+    private static int lastAction, lastHurt, awaitingAttackUntil;
     private SpiritCombatClient() {}
 
     public static void input(InputEvent.InteractionKeyMappingTriggered event) {
@@ -25,7 +25,10 @@ public final class SpiritCombatClient {
         if (mc.player == null) return;
         if (event.isAttack() && mc.player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) {
             event.setCanceled(true); event.setSwingHand(false);
-            if (mc.screen == null && mc.isWindowActive()) PacketDistributor.sendToServer(new CombatInputPayload(false));
+            if (mc.screen == null && mc.isWindowActive()) {
+                awaitingAttackUntil = mc.player.tickCount + 12;
+                PacketDistributor.sendToServer(new CombatInputPayload(false));
+            }
         } else if (event.isUseItem() && blockUse && mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_BOW)) {
             event.setCanceled(true); event.setSwingHand(false);
         }
@@ -40,19 +43,26 @@ public final class SpiritCombatClient {
         if (mc.player == null) return;
         if (!sentCancel) PacketDistributor.sendToServer(new CombatInputPayload(true));
         sentCancel = true;
+        awaitingAttackUntil = 0;
         blockUse = mc.options.keyUse.isDown();
         if (mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) mc.player.stopUsingItem();
     }
 
+    public static boolean awaitingAttack() {
+        var player = Minecraft.getInstance().player;
+        return player != null && player.tickCount < awaitingAttackUntil;
+    }
+
     public static void tick(ClientTickEvent.Pre event) {
         var mc = Minecraft.getInstance();
-        if (mc.player == null) { lastAction = lastHurt = 0; blockUse = sentCancel = false; return; }
+        if (mc.player == null) { lastAction = lastHurt = awaitingAttackUntil = 0; blockUse = sentCancel = false; return; }
         if (!mc.options.keyUse.isDown()) blockUse = false;
         if (mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player) || mc.player.hurtTime > lastHurt) cancel();
         else sentCancel = false;
         lastHurt = mc.player.hurtTime;
         var view = mc.player.getData(SpiritData.COMBAT_VIEW);
         if (view.actionId() != lastAction) {
+            awaitingAttackUntil = 0;
             if (view.mode().equals("idle") && mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) {
                 mc.player.stopUsingItem();
                 blockUse = mc.options.keyUse.isDown();

@@ -23,4 +23,9 @@ public final class MovementState {
     public long grappleUntil, stompUntil;
     public int grappleStalls, acceptedGrapples, completedGrapples, cancelledGrapples, acceptedStomps, stompImpacts, startedGlides;
     public final java.util.Map<String, Long> targetCooldowns = new java.util.HashMap<>();
+    public final java.util.ArrayDeque<JumpRequest> jumps = new java.util.ArrayDeque<>();
+    public final java.util.Map<Integer, String> predictedJumps = new java.util.LinkedHashMap<>();
+    public int predictedJumpCount, jumpPredictionMismatches, jumpPredictionRejections;
+    public record JumpRequest(int sequence, long pressedAt, long expiresAt, Vec3 position,
+                              Vec3 velocity, float fallDistance, net.minecraft.core.Direction wall, boolean predicted) {}
 }

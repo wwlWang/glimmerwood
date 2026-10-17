@@ -15,6 +15,13 @@ public final class OriBlocks {
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AMETHYST));
     public static final DeferredBlock<Block> GRAPPLE_FLOWER = BLOCKS.registerSimpleBlock("grapple_flower", BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AZALEA_LEAVES));
+    public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
+    public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
+    public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);
+    private static DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> shrine(cn.wwl.orimod.world.RuinKind kind) {
+        return BLOCKS.register(kind.id + "_shrine", () -> new cn.wwl.orimod.world.RuinShrineBlock(kind,
+                BlockBehaviour.Properties.of().strength(3, 12).lightLevel(state -> 10).sound(SoundType.AMETHYST)));
+    }
     private OriBlocks() {}
     public static void register(IEventBus bus) {
         OriItems.ITEMS.registerSimpleBlockItem(BASH_ANCHOR);

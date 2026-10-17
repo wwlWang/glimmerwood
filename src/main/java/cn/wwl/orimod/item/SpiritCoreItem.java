@@ -18,6 +18,7 @@ public final class SpiritCoreItem extends Item {
         if (player instanceof ServerPlayer serverPlayer) {
             if (!SpiritData.isAwakened(player)) {
                 player.setData(SpiritData.AWAKENED, true);
+                cn.wwl.orimod.progression.SpiritProgression.grantGuide(serverPlayer);
                 player.sendSystemMessage(Component.translatable("message.orimod.awakened"));
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
                         new cn.wwl.orimod.network.ProgressReplyPayload(Component.translatable("message.orimod.awakened"), true));

@@ -63,6 +63,8 @@ public final class SpiritScreen extends Screen {
             for (var shard : Shard.values()) entries.add(new Definition("shard", shard.id(), shard.title(), shard.description()));
             entries.add(new Definition("capacity", "capacity_upgrade", tr("screen.orimod.energy_capacity"), tr("guide.orimod.capacity")));
         } else {
+            entries.add(new Definition("locate", "ruins", tr("guide.orimod.ruins.title"), tr("guide.orimod.ruins")));
+            entries.add(new Definition("exit_challenge", "exit_challenge", tr("challenge.orimod.exit"), tr("guide.orimod.exit_challenge")));
             for (String id : List.of("awakening", "movement", "bash", "light", "shards", "weapons"))
                 entries.add(new Definition("guide", id, tr("guide.orimod." + id + ".title"), guideText(id)));
         }
@@ -91,6 +93,13 @@ public final class SpiritScreen extends Screen {
             return;
         }
         int price = 0;
+        if (d.kind.equals("locate") || d.kind.equals("exit_challenge")) {
+            actionButton.setMessage(tr(d.kind.equals("locate") ? "guide.orimod.locate" : "challenge.orimod.exit"));
+            if (d.kind.equals("exit_challenge") && !player.getData(SpiritData.CHALLENGE_ACTIVE)) {
+                actionButton.active = false; actionButton.setMessage(tr("challenge.orimod.inactive"));
+            }
+            return;
+        }
         Ability prerequisite = null;
         if (d.kind.equals("ability")) {
             var a = Ability.byId(d.id);

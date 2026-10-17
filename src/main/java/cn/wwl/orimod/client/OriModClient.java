@@ -12,6 +12,8 @@ public final class OriModClient {
         modEventBus.addListener(SpiritControls::registerKeys);
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
+        modEventBus.addListener(RuinGuideOverlay::register);
+        modEventBus.addListener(cn.wwl.orimod.client.render.PracticeTargetRenderer::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::input);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::opening);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::tick);
