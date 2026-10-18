@@ -94,3 +94,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R16：遗迹世界边界
 
 云端 `build runGameTestServer`：337 项 JUnit、164 项 GameTest 通过（R15 为 312 / 154）。新增 `RuinSiteRulesTest`（25）和 `RuinBoundaryGameTests`（10）。自然站点审计 `scripts/verify-ruin-sites.py`：修复前 117 个站点 115 个无问题，修复后 117 / 117；详见 [WORLD_CHECKPOINT](WORLD_CHECKPOINT.md#r16-自然站点审计world02-边界)。
+
+## R17：无命令生存流程（服务端）
+
+337 项 JUnit、167 项 GameTest 通过（新增 `SurvivalFlowGameTests` 3 项）。全新连接的生存玩家（未觉醒、空背包）只通过玩家输入会到达的服务端入口推进：工作台菜单点击制作核心、`useItem` 觉醒、面板领取刀、`LivingDropsEvent` 掉落后 `playerTouch` 拾取（和平改为工作台合成灵光后拾取）、`useItemOn` 使用石台、面板购买能力、挑战首通，最后 `saveWithoutId` → 新 `ServerPlayer.load` 比较觉醒、能力和进度。另测配方书：拿到铜锭解锁核心/指引/灵光配方，紫水晶解锁刀/弓配方。路径与灵光预算见 [SURVIVAL_FLOW](SURVIVAL_FLOW.md)。
