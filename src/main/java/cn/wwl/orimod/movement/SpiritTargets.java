@@ -2,10 +2,15 @@ package cn.wwl.orimod.movement;
 
 import cn.wwl.orimod.block.OriBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -14,13 +19,16 @@ import net.minecraft.world.phys.Vec3;
 /** One selection rule shared by the reticle and server; solids always occlude candidates. */
 public final class SpiritTargets {
     public static final double RANGE = 6;
+    public static final float MAX_BASH_WIDTH = 1.8f, MAX_BASH_HEIGHT = 3;
+    public static final TagKey<EntityType<?>> BASH_IMMUNE = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath("orimod", "bash_immune"));
     private SpiritTargets() {}
 
     public record Target(Entity entity, BlockPos block, Vec3 point, boolean grapple) {
         public String key() { return entity != null ? entity.getUUID().toString() : block.asLong() + ":" + grapple; }
         public AABB bounds() { return entity != null ? entity.getBoundingBox().inflate(0.08) : new AABB(block).deflate(0.18); }
         public boolean valid(Player player) {
-            if (entity != null && (!entity.isAlive() || entity.isRemoved() || entity.isInvisible() || entity.level() != player.level())) return false;
+            if (entity != null && !eligible(player, entity)) return false;
             if (block != null && (!player.level().hasChunkAt(block) || !player.level().getBlockState(block)
                     .is(grapple ? OriBlocks.GRAPPLE_FLOWER.get() : OriBlocks.BASH_ANCHOR.get()))) return false;
             return player.getEyePosition().distanceToSqr(point) <= RANGE * RANGE && visible(player, point);
@@ -31,7 +39,7 @@ public final class SpiritTargets {
         Vec3 eye = player.getEyePosition(), view = Vec3.directionFromRotation(pitch, yaw);
         Target best = null;
         double bestScore = -1;
-        for (Entity entity : player.level().getEntities(player, player.getBoundingBox().inflate(RANGE), SpiritTargets::eligible)) {
+        for (Entity entity : player.level().getEntities(player, player.getBoundingBox().inflate(RANGE), candidate -> eligible(player, candidate))) {
             Vec3 point = entity.getBoundingBox().getCenter();
             double score = score(eye, view, point);
             if (score > bestScore && visible(player, point)) { best = new Target(entity, null, point, false); bestScore = score; }
@@ -49,8 +57,17 @@ public final class SpiritTargets {
         return best;
     }
 
-    private static boolean eligible(Entity entity) {
-        return entity.isAlive() && !entity.isInvisible() && (entity instanceof Enemy || entity instanceof Projectile);
+    public static boolean eligible(Player player, Entity entity) {
+        if (entity == player || !entity.isAlive() || entity.isRemoved() || entity.isInvisible()
+                || entity.level() != player.level() || entity.getType().is(BASH_IMMUNE)
+                || entity.getBbWidth() > MAX_BASH_WIDTH || entity.getBbHeight() > MAX_BASH_HEIGHT) return false;
+        if (entity instanceof FishingHook) return false;
+        if (entity instanceof Projectile projectile) {
+            Entity owner = projectile.getOwner();
+            // Foreign lodged arrows intentionally remain anchors, with the same per-target cooldown.
+            return owner == null || !owner.getUUID().equals(player.getUUID());
+        }
+        return entity instanceof Enemy && !player.isAlliedTo(entity);
     }
 
     private static double score(Vec3 eye, Vec3 view, Vec3 point) {

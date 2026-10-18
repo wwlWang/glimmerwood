@@ -14,6 +14,7 @@ public final class SpiritBladeItem extends SwordItem {
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
         lines.add(Component.translatable("tooltip.orimod.blade_combo").withStyle(net.minecraft.ChatFormatting.AQUA));
         lines.add(Component.translatable("tooltip.orimod.blade_cancel").withStyle(net.minecraft.ChatFormatting.GRAY));
+        lines.add(Component.translatable("tooltip.orimod.blade_targets").withStyle(net.minecraft.ChatFormatting.GRAY));
         lines.add(Component.translatable("tooltip.orimod.spirit_required").withStyle(net.minecraft.ChatFormatting.GRAY));
     }
 }

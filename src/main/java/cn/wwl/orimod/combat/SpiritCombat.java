@@ -157,7 +157,7 @@ public final class SpiritCombat {
         Vec3 origin = player.getEyePosition(), direction = player.getLookAngle();
         double reach = s.stage == 3 ? 3.2 : 2.8;
         for (var target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach),
-                entity -> entity != player && entity.isAlive() && !entity.isSpectator() && !player.isAlliedTo(entity))) {
+                entity -> CombatTargets.canHit(player, entity))) {
             var box = target.getBoundingBox();
             Vec3 closest = new Vec3(Math.clamp(origin.x, box.minX, box.maxX), Math.clamp(origin.y, box.minY, box.maxY), Math.clamp(origin.z, box.minZ, box.maxZ));
             Vec3 offset = closest.subtract(origin);
