@@ -103,7 +103,12 @@ vec3 spirit_grade(vec3 C) {
     L = get_luminance(C);
     float Mid = smoothstep(0.06, 0.3, L) * (1 - smoothstep(0.55, 0.95, L));
     float High = smoothstep(0.7, 1.0, L) * (1 - Warm);
-    float Sat = 1 + SPIRIT_MID_SATURATION * Mid - 0.45 * SPIRIT_HIGHLIGHT_SOFTNESS * High;
+    // vibrance-style: colours that are already strong (lava, nether fog, flowers) gain little, so a frame
+    // filled with lava does not turn into a flat saturated sheet
+    float Chroma = (max(C.r, max(C.g, C.b)) - min(C.r, min(C.g, C.b))) / max(max(C.r, max(C.g, C.b)), 1e-4);
+    float Sat = 1 + SPIRIT_MID_SATURATION * Mid * (1 - Chroma) * (1 - Chroma) - 0.45 * SPIRIT_HIGHLIGHT_SOFTNESS * High;
+    // very bright, very saturated areas (lava sea) are eased back slightly towards their luminance
+    Sat -= 0.18 * smoothstep(0.6, 0.95, Chroma) * smoothstep(0.35, 0.8, L);
     C = max(vec3(0), mix(vec3(L), C, Sat));
 
     // soft shoulder: ease the top end towards white instead of clipping

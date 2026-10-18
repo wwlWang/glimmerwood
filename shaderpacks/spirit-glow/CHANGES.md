@@ -31,3 +31,6 @@
    `#ifdef`, so Iris lists them as toggles again (`IMAGE_SHARPENING`, `SPIRIT_DEPTH_HAZE`).
 7. Nether (oriMod R24): new `SPIRIT_NETHER_GRADE` (default 0.3) scales the cool dark tint and the
    teal foliage shift in the Nether, which otherwise turned netherrack navy-purple.
+8. Saturation (oriMod R25): the mid-tone saturation boost is scaled by how unsaturated a colour
+   already is (vibrance), and very bright, very saturated areas are eased back slightly, so a frame
+   full of lava or nether fog no longer becomes a flat saturated sheet.
