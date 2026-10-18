@@ -1,0 +1,40 @@
+package cn.wwl.orimod.client.render;
+
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.FishingRodItem;
+import net.minecraft.world.level.block.TorchBlock;
+import org.joml.Vector3f;
+
+/** Contact in the centered item model, before its first/third-person display transform. */
+final class SpiritItemGrip {
+    private SpiritItemGrip() { }
+
+    static void local(ItemStack item, Vector3f point, Vector3f axis) {
+        point.set(0, -.16f, 0); axis.set(0,1,0);
+        if (item.getItem() instanceof DiggerItem || item.getItem() instanceof SwordItem) {
+            point.set(-.125f, -.125f, 0); axis.set(1,1,0);
+        } else if (item.getUseAnimation() == UseAnim.BOW) {
+            point.set(-.21875f, .21875f, 0); axis.set(1,1,0);
+        } else if (item.getUseAnimation() == UseAnim.CROSSBOW) {
+            point.set(.21875f, -.21875f, 0); axis.set(-1,1,0);
+        } else if (item.getItem() instanceof FishingRodItem) {
+            point.set(-.21875f, -.21875f, 0); axis.set(1,1,0);
+        } else if (item.getUseAnimation() == UseAnim.SPEAR) {
+            // The built-in trident also uses the entity renderer's flipped Y/Z.
+            point.set(-.5f, -1.25f, -.5f);
+        } else if (item.getUseAnimation() == UseAnim.SPYGLASS) {
+            point.set(0, .1875f, 0);
+        } else if (item.getUseAnimation() == UseAnim.BLOCK) {
+            // ShieldModel is a built-in entity: ItemRenderer first translates
+            // by (-.5,-.5,-.5), then its renderer flips Y/Z. The handle centre
+            // is (0,0,2/16) in model space, unlike a generated item quad.
+            point.set(-.5f, -.5f, -.625f);
+        } else if (item.getItem() instanceof BlockItem block && !(block.getBlock() instanceof TorchBlock)) {
+            point.set(0, -.36f, 0);
+        }
+    }
+}

@@ -8,6 +8,9 @@ version="0.1.0"
 displayName="OriMod Development Tools"
 description="Local development and acceptance instrumentation. Excluded from release builds."
 
+[[mixins]]
+config="orimod-devtools.mixins.json"
+
 [[dependencies.orimod_devtools]]
 modId="orimod"
 type="required"

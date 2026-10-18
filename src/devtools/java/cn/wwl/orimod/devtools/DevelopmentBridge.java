@@ -53,6 +53,8 @@ public final class DevelopmentBridge {
     private long frames;
     private long previousFrame;
     private boolean recordingFrames;
+    private boolean recordingPose;
+    private final ArrayList<Map<String, Object>> poses = new ArrayList<>();
     private volatile int completedReloads;
     private volatile String reloadError = "";
     private volatile boolean recordingMotion;
@@ -71,6 +73,7 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(this::tick);
         NeoForge.EVENT_BUS.addListener(this::frame);
         NeoForge.EVENT_BUS.addListener(this::playerTick);
+        NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
     }
 
     private void setup(FMLClientSetupEvent event) {
@@ -236,6 +239,14 @@ public final class DevelopmentBridge {
                 inputScriptStart = ticks + 1;
             }
             case "record_motion" -> { motion.clear(); recordingMotion = true; }
+            case "record_pose" -> { poses.clear(); recordingPose = true; }
+            case "save_pose" -> {
+                recordingPose = false;
+                Path file = directory.resolve(fileName(action, ".json"));
+                require(!Files.exists(file), "Pose recording already exists");
+                Files.writeString(file, JSON.toJson(Map.of("samples", poses, "state", state())));
+                return Map.of("path", file.toAbsolutePath().toString(), "samples", poses.size());
+            }
             case "server_hitch" -> {
                 require(mc.getSingleplayerServer() != null, "Single-player world required");
                 int milliseconds = action.get("milliseconds").getAsInt();
@@ -431,6 +442,10 @@ public final class DevelopmentBridge {
                 require(mc.player != null && mc.gameMode != null && mc.screen == null, "Gameplay required");
                 mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
             }
+            case "item_placement" -> {
+                require(mc.player != null, "Player required");
+                return cn.wwl.orimod.client.render.SpiritHeldItems.diagnostics(mc.player);
+            }
             case "spirit_state" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var id = mc.player.getUUID();
@@ -447,7 +462,16 @@ public final class DevelopmentBridge {
                 mc.player.setXRot(Math.clamp(pitch, -90, 90));
                 mc.player.setYHeadRot(yaw);
             }
-            case "camera" -> mc.options.setCameraType(CameraType.valueOf(action.get("mode").getAsString()));
+            case "camera" -> { ReviewCamera.stop(); mc.options.setCameraType(CameraType.valueOf(action.get("mode").getAsString())); }
+            case "review_camera" -> {
+                if (!action.get("enabled").getAsBoolean()) ReviewCamera.stop();
+                else {
+                    double x=action.get("x").getAsDouble(), y=action.get("y").getAsDouble(), z=action.get("z").getAsDouble();
+                    double height=action.has("targetHeight") ? action.get("targetHeight").getAsDouble() : .65;
+                    require(Double.isFinite(x+y+z+height) && x*x+y*y+z*z<1024 && x*x+y*y+z*z>.01, "Invalid review camera offset");
+                    ReviewCamera.start(new net.minecraft.world.phys.Vec3(x,y,z),height,!action.has("follow") || action.get("follow").getAsBoolean());
+                }
+            }
             case "close_screen" -> { if (!action.has("keepKeys") || !action.get("keepKeys").getAsBoolean()) releaseKeys(); mc.setScreen(null); }
             case "screenshot" -> {
                 String name = fileName(action, ".png");
@@ -483,6 +507,8 @@ public final class DevelopmentBridge {
             }
             case "stop_preview_effect" -> SpiritMotePreview.stop();
             case "settings" -> {
+                if (action.has("mainArm")) mc.options.mainHand().set(net.minecraft.world.entity.HumanoidArm.valueOf(action.get("mainArm").getAsString()));
+                if (action.has("fov")) mc.options.fov().set(Math.clamp(action.get("fov").getAsInt(), 30, 110));
                 if (action.has("renderDistance")) mc.options.renderDistance().set(Math.clamp(action.get("renderDistance").getAsInt(), 2, 32));
                 if (action.has("vsync")) mc.options.enableVsync().set(action.get("vsync").getAsBoolean());
                 if (action.has("fpsLimit")) mc.options.framerateLimit().set(Math.clamp(action.get("fpsLimit").getAsInt(), 10, 260));
@@ -559,6 +585,11 @@ public final class DevelopmentBridge {
         frames++;
         long now = System.nanoTime();
         video.frame(now);
+        var mc = Minecraft.getInstance();
+        if (recordingPose && !mc.isPaused() && mc.player != null && poses.size() < 120_000) {
+            poses.add(Map.of("frame", frames, "nanos", now, "tick", mc.player.tickCount,
+                    "onGround", mc.player.onGround(), "animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(mc.player)));
+        }
         if (recordingFrames && previousFrame != 0 && frameTimes.size() < 300_000) {
             frameTimes.add((now - previousFrame) / 1_000_000.0);
         }
@@ -593,6 +624,7 @@ public final class DevelopmentBridge {
         state.put("overlay", mc.getOverlay() == null ? "none" : mc.getOverlay().getClass().getSimpleName());
         state.put("framebuffer", Map.of("width", mc.getMainRenderTarget().width, "height", mc.getMainRenderTarget().height));
         state.put("camera", mc.options.getCameraType().name());
+        state.put("reviewCamera", ReviewCamera.active());
         state.put("mods", ModList.get().getMods().stream().map(mod -> mod.getModId() + "@" + mod.getVersion()).toList());
         if (mc.player != null && mc.level != null) {
             var player = mc.player;
@@ -616,6 +648,7 @@ public final class DevelopmentBridge {
                 "health", player.getHealth(), "fallDistance", player.fallDistance,
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
+        if (player.level().isClientSide) state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
         var movement = player.getData(cn.wwl.orimod.spirit.SpiritData.MOVEMENT);
         var combat = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT);
         var view = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW);

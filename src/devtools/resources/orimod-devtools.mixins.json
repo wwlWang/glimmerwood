@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cn.wwl.orimod.devtools.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["ReviewCameraMixin"],
+  "injectors": {"defaultRequire": 1}
+}

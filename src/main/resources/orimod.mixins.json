@@ -4,5 +4,6 @@
   "package":"cn.wwl.orimod.mixin",
   "compatibilityLevel":"JAVA_21",
   "mixins":["PlayerDimensionsMixin", "PlayerAirControlMixin"],
+  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin"],
   "injectors":{"defaultRequire":1}
 }
