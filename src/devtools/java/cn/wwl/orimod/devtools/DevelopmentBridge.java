@@ -180,13 +180,16 @@ public final class DevelopmentBridge {
                 var server = mc.getSingleplayerServer();
                 var playerId = mc.player.getUUID();
                 String command = action.get("command").getAsString();
-                server.submit(() -> {
+                return server.submit(() -> {
                     var player = server.getPlayerList().getPlayer(playerId);
                     require(player != null, "Server player missing");
                     require(server.getCommands().getDispatcher().getRoot().getChild(command.split(" ", 2)[0]) != null,
                             "Command is unavailable in the integrated server");
-                    server.getCommands().performPrefixedCommand(
-                            player.createCommandSourceStack().withPermission(4).withSuppressedOutput(), command);
+                    var result = new java.util.concurrent.atomic.AtomicInteger();
+                    var successful = new java.util.concurrent.atomic.AtomicBoolean();
+                    server.getCommands().performPrefixedCommand(player.createCommandSourceStack().withPermission(4)
+                            .withSuppressedOutput().withCallback((success, value) -> { successful.set(success); result.set(value); }), command);
+                    return Map.<String, Object>of("success", successful.get(), "result", result.get());
                 }).get(10, TimeUnit.SECONDS);
             }
             case "save_world" -> {
@@ -206,6 +209,7 @@ public final class DevelopmentBridge {
                             "state", block.toString(), "fluid", block.getFluidState().getType().toString(),
                             "fullBlock", block.isCollisionShapeFullBlock(player.level(), pos),
                             "collisionEmpty", block.getCollisionShape(player.level(), pos).isEmpty(),
+                            "shape", block.getCollisionShape(player.level(), pos).toAabbs().stream().map(Object::toString).toList(),
                             "foliage", block.is(net.minecraft.tags.BlockTags.LEAVES) || block.is(net.minecraft.tags.BlockTags.LOGS));
                 }).get(5, TimeUnit.SECONDS);
             }
@@ -328,6 +332,7 @@ public final class DevelopmentBridge {
                         result.put("elapsed", player.level().getGameTime() - session.started);
                         result.put("target", session.target == null ? "" : session.target.toString());
                         result.put("origin", new int[]{session.origin.getX(), session.origin.getY(), session.origin.getZ()});
+                        result.put("rotation", session.placement.rotation().name());
                     }
                     result.put("recovery", player.getData(cn.wwl.orimod.spirit.SpiritData.CHALLENGE_RECOVERY));
                     var starts = new ArrayList<Map<String, Object>>();
@@ -339,7 +344,8 @@ public final class DevelopmentBridge {
                             if (!start.isValid() || !(start.getStructure() instanceof cn.wwl.orimod.world.RuinStructure ruin)) continue;
                             for (var piece : start.getPieces()) if (piece instanceof cn.wwl.orimod.world.RuinPiece part) {
                                 var origin = part.origin();
-                                starts.add(Map.of("kind", ruin.kind.id, "origin", new int[]{origin.getX(), origin.getY(), origin.getZ()}, "bounds", part.getBoundingBox().toString()));
+                                starts.add(Map.of("kind", ruin.kind.id, "origin", new int[]{origin.getX(), origin.getY(), origin.getZ()},
+                                        "rotation", part.getRotation().name(), "bounds", part.getBoundingBox().toString()));
                             }
                         }
                     }
@@ -680,6 +686,9 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
+        state.put("collision", Map.of("stepHeight", player.maxUpStep(), "horizontal", player.horizontalCollision,
+                "vertical", player.verticalCollision, "crouching", player.isCrouching(), "flying", player.getAbilities().flying,
+                "forward", player.zza, "strafe", player.xxa, "bounds", player.getBoundingBox().toString()));
         var movement = player.getData(cn.wwl.orimod.spirit.SpiritData.MOVEMENT);
         var combat = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT);
         var view = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW);

@@ -117,6 +117,15 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', 'orimod_gametest'
             systemProperty 'orimod.gametest.report', file('build/test-results/gametest.xml').absolutePath
         }
+        worldgenAudit {
+            server()
+            sourceSet = sourceSets.gametest
+            loadedMods = [mods.orimod, mods.orimod_gametest]
+            gameDirectory = file(providers.gradleProperty('worldgenAuditDir').getOrElse('.external/worldgen-audit'))
+            systemProperty 'orimod.worldgen.audit', 'true'
+            jvmArgument '-Xmx4G'
+            programArgument '--nogui'
+        }
         data {
             data()
             programArguments.addAll '--mod', project.mod_id, '--all',

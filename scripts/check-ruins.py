@@ -10,13 +10,16 @@ root = Path(__file__).resolve().parents[1]
 data = root / 'src/main/resources/data/orimod'
 names = ('forest_spring', 'creek_ruins', 'cave_altar')
 paths = [data / folder / (name + suffix) for name in names for folder, suffix in
-         [('structure/ruins', '.nbt'), ('ruin_layout', '.json'), ('worldgen/structure', '.json')]]
+         [('structure/ruins', '.nbt'), ('worldgen/structure', '.json')]]
+layouts = root / 'src/main/resources/orimod/ruin_layout'
+paths += [layouts / (name + '.json') for name in names]
+paths += [data / 'worldgen/structure_set/spirit_ruins.json', data / 'tags/worldgen/biome/has_ruins.json']
 before = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 subprocess.run([sys.executable, str(root / 'scripts/art/build_ruins.py')], check=True)
 assert before == {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}, 'Generated assets changed'
 for name in names:
     nbt = nbtlib.load(data / 'structure/ruins' / (name + '.nbt'))
-    layout = json.loads((data / 'ruin_layout' / (name + '.json')).read_text())
+    layout = json.loads((layouts / (name + '.json')).read_text())
     assert list(map(int, nbt['size'])) == layout['size']
     assert len(nbt['entities']) == 0
     palette = [str(s['Name']) for s in nbt['palette']]

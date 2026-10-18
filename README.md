@@ -38,7 +38,9 @@ Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopba
 
 运行开发客户端前先用 Python 3 执行 `python scripts/sync-dependencies.py`，下载并核验可选依赖。该脚本适用于 Windows、Linux 和 macOS；原 PowerShell 脚本保留供本机重建渲染库使用。
 
-`./gradlew test runGameTestServer` 运行规则与存档单元测试，以及独立的无界面服务端回归。当前 238 项 JUnit、128 项 GameTest 已在 Windows 和 Linux 通过，覆盖范围与报告路径见 [TESTING](docs/TESTING.md)。真实客户端 Python 脚本继续用于输入同步和视觉验收；无界面测试不能替代这些检查。
+`./gradlew test runGameTestServer` 运行规则与存档单元测试，以及独立的无界面服务端回归。当前 262 项 JUnit、146 项 GameTest 已在 Windows 和 Linux 通过，覆盖范围与报告路径见 [TESTING](docs/TESTING.md)。真实客户端 Python 脚本继续用于输入同步和视觉验收；无界面测试不能替代这些检查。
+
+遗迹支持四向旋转，三种子共 225 次自然世界定位的 1500 格覆盖率均达到本轮 90% 目标。路线布局保存在 `src/main/resources/orimod/ruin_layout/`，属于随 JAR 发布的内部契约，不支持数据包覆盖；世界生成配置和群系标签仍使用原版数据包机制。
 
 ## 文件与恢复
 

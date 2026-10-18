@@ -67,7 +67,7 @@ class Template:
                   "surface_y": surface + self.pad, "critical": self.critical,
                   "clearances": [{"from": shifted(a), "to": shifted(b)} for a, b in clearances],
                   "checkpoints": [{"position": shifted(p), "action": action, "count": count} for p, action, count in checkpoints]}
-        write(DATA / "ruin_layout" / (self.name + ".json"), layout)
+        write(ROOT / "src/main/resources/orimod/ruin_layout" / (self.name + ".json"), layout)
         write(DATA / "worldgen/structure" / (self.name + ".json"), {
             "type": "orimod:ruin", "kind": self.name, "biomes": "#orimod:has_ruins", "spawn_overrides": {},
             "step": "top_layer_modification", "terrain_adaptation": "none"})
@@ -76,7 +76,7 @@ class Template:
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def surface(name, size):
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         "minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow", "minecraft:taiga"]})
     write(DATA / "worldgen/structure_set/spirit_ruins.json", {
         "structures": [{"structure": "orimod:" + name, "weight": 1} for name in ("forest_spring", "creek_ruins", "cave_altar")],
-        "placement": {"type": "minecraft:random_spread", "spacing": 16, "separation": 6, "salt": 19721014}})
+        "placement": {"type": "minecraft:random_spread", "spacing": 6, "separation": 3, "salt": 19721014}})
     for name in ("forest_spring", "creek_ruins", "cave_altar"):
         block = name + "_shrine"
         write(ASSETS / "blockstates" / (block + ".json"), {"variants": {"": {"model": "orimod:block/" + block}}})

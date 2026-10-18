@@ -55,27 +55,27 @@ public final class SpiritChallenge {
         if (!SpiritData.isSpirit(player)) return "form";
         if ((player.getData(SpiritData.ABILITIES) & kind.abilities) != kind.abilities) return "abilities";
         if (kind == RuinKind.CAVE && player.getInventory().items.stream().noneMatch(stack -> stack.is(OriItems.SPIRIT_BLADE))) return "blade";
-        var origin = shrine.subtract(kind.layout().shrine());
-        if (!routeValid(player.serverLevel(), player, kind, origin)) return "damaged";
+        var placement = RuinPlacement.atShrine(kind, shrine, player.level().getBlockState(shrine));
+        if (!routeValid(player.serverLevel(), player, kind, placement)) return "damaged";
         return "";
     }
 
-    private static boolean routeValid(ServerLevel level, ServerPlayer player, RuinKind kind, BlockPos origin) {
+    private static boolean routeValid(ServerLevel level, ServerPlayer player, RuinKind kind, RuinPlacement placement) {
         for (var anchor : kind.layout().critical()) {
-            var pos = origin.offset(anchor.position());
+            var pos = placement.block(anchor.position());
             if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(BuiltInRegistries.BLOCK.get(anchor.block()))) return false;
         }
         for (var clearance : kind.layout().clearances()) {
-            var from = origin.offset(clearance.from()); var to = origin.offset(clearance.to());
+            var from = placement.block(clearance.from()); var to = placement.block(clearance.to());
             if (!level.hasChunkAt(from) || !level.hasChunkAt(to)
                     || !level.hasChunkAt(new BlockPos(from.getX(), from.getY(), to.getZ()))
                     || !level.hasChunkAt(new BlockPos(to.getX(), from.getY(), from.getZ()))) return false;
-            var bounds = new AABB(from.getX(), from.getY(), from.getZ(), to.getX() + 1, to.getY() + 1, to.getZ() + 1).deflate(.001);
+            var bounds = placement.clearance(clearance).deflate(.001);
             for (var shape : level.getBlockCollisions(player, bounds)) if (!shape.isEmpty()) return false;
         }
-        if (!safe(level, player, Vec3.atLowerCornerOf(origin).add(kind.layout().safe()))) return false;
+        if (!safe(level, player, placement.point(kind.layout().safe()))) return false;
         for (var point : kind.layout().checkpoints())
-            if (!safe(level, player, Vec3.atLowerCornerOf(origin).add(point.position()))) return false;
+            if (!safe(level, player, placement.point(point.position()))) return false;
         return true;
     }
 
@@ -100,13 +100,14 @@ public final class SpiritChallenge {
         if (!(player.level().getBlockState(shrine).getBlock() instanceof RuinShrineBlock block)) return;
         String problem = requirement(player, shrine, block.kind);
         if (!problem.isEmpty()) { offer(player, shrine, block.kind); return; }
-        var s = new ChallengeSession(block.kind, shrine, player.level().dimension(), player.level().getGameTime());
+        var placement = RuinPlacement.atShrine(block.kind, shrine, player.level().getBlockState(shrine));
+        var s = new ChallengeSession(block.kind, shrine, placement, player.level().dimension(), player.level().getGameTime());
         s.baseline = actionCount(player, s.kind.layout().checkpoints().getFirst().action());
         player.setData(SpiritData.CHALLENGE_RECOVERY, new ChallengeRecovery(s.dimension.location().toString(),
-                s.origin.offset(BlockPos.containing(s.kind.layout().safe()))));
+                BlockPos.containing(s.placement.point(s.kind.layout().safe()))));
         SESSIONS.put(player.getUUID(), s);
         player.setData(SpiritData.CHALLENGE_ACTIVE, true);
-        returnSafely(player, player.serverLevel(), Vec3.atLowerCornerOf(s.origin).add(s.kind.layout().safe()));
+        returnSafely(player, player.serverLevel(), s.placement.point(s.kind.layout().safe()));
         player.displayClientMessage(Component.translatable("challenge.orimod.started", s.kind.title(), Component.keybind("key.orimod.panel")), false);
     }
 
@@ -132,7 +133,7 @@ public final class SpiritChallenge {
         if (ownsTarget(player, target)) complete(player, session(player));
     }
     private static void spawnTarget(ServerPlayer player, ChallengeSession s) {
-        var point = Vec3.atLowerCornerOf(s.origin).add(s.kind.layout().checkpoints().get(s.checkpoint).position());
+        var point = s.placement.point(s.kind.layout().checkpoints().get(s.checkpoint).position());
         var target = OriEntities.PRACTICE_TARGET.get().create(player.serverLevel());
         if (target == null) { finish(player, "target", true); return; }
         target.owner = player.getUUID(); target.session = s.id;
@@ -150,13 +151,13 @@ public final class SpiritChallenge {
         if (!SpiritData.isSpirit(player) || player.isSpectator() || player.isPassenger()) { finish(player, "form", true); return; }
         long elapsed = player.level().getGameTime() - s.started;
         if (elapsed >= LIMIT) { finish(player, "timeout", true); return; }
-        Vec3 relative = player.position().subtract(Vec3.atLowerCornerOf(s.origin));
+        Vec3 relative = s.placement.local(player.position());
         var size = s.kind.layout().size();
         if (relative.x < -2 || relative.z < -2 || relative.x > size.getX() + 2 || relative.z > size.getZ() + 2
                 || relative.y < 1 || player.isInWaterOrBubble()) { finish(player, "fall", true); return; }
-        if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.kind, s.origin)) { finish(player, "damaged", true); return; }
+        if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.kind, s.placement)) { finish(player, "damaged", true); return; }
         var checkpoint = s.kind.layout().checkpoints().get(s.checkpoint);
-        Vec3 destination = Vec3.atLowerCornerOf(s.origin).add(checkpoint.position());
+        Vec3 destination = s.placement.point(checkpoint.position());
         if (!checkpoint.action().equals("blade") && player.onGround() && player.position().distanceToSqr(destination) <= 3.24
                 && Math.abs(player.getY() - destination.y) < .35 && actionCount(player, checkpoint.action()) - s.baseline >= checkpoint.count()) {
             player.serverLevel().sendParticles(ParticleTypes.END_ROD, destination.x, destination.y + .5, destination.z, 12, .4, .5, .4, .015);
@@ -168,14 +169,14 @@ public final class SpiritChallenge {
         }
         if (elapsed % 10 == 0) {
             var next = s.kind.layout().checkpoints().get(s.checkpoint);
-            var point = Vec3.atLowerCornerOf(s.origin).add(next.position());
+            var point = s.placement.point(next.position());
             player.serverLevel().sendParticles(ParticleTypes.END_ROD, point.x, point.y + .2, point.z, 1, .2, .1, .2, 0);
             player.displayClientMessage(Component.translatable("challenge.orimod.status", s.checkpoint + 1, s.kind.layout().checkpoints().size(),
                     Component.translatable("challenge.orimod.action." + next.action()), (LIMIT - elapsed + 19) / 20), true);
         }
         if (s.target != null) {
             var target = player.serverLevel().getEntity(s.target);
-            var targetPoint = Vec3.atLowerCornerOf(s.origin).add(s.kind.layout().checkpoints().get(s.checkpoint).position());
+            var targetPoint = s.placement.point(s.kind.layout().checkpoints().get(s.checkpoint).position());
             if (!(target instanceof PracticeTarget crystal) || !s.id.equals(crystal.session) || target.position().distanceToSqr(targetPoint) > 4)
                 finish(player, "target", true);
         }
@@ -211,7 +212,7 @@ public final class SpiritChallenge {
         cleanup(player, s);
         var level = player.server.getLevel(s.dimension);
         if (teleport && player.isAlive() && level != null && player.level() == level)
-            returnSafely(player, level, Vec3.atLowerCornerOf(s.origin).add(s.kind.layout().safe()));
+            returnSafely(player, level, s.placement.point(s.kind.layout().safe()));
         if (player.isAlive() && !reason.equals("death")) player.displayClientMessage(Component.translatable("challenge.orimod.ended." + reason), false);
     }
 

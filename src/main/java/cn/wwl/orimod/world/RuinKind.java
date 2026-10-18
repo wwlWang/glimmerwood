@@ -27,7 +27,7 @@ public enum RuinKind {
     }
     public synchronized Layout layout() {
         if (layout != null) return layout;
-        String path = "/data/orimod/ruin_layout/" + id + ".json";
+        String path = "/orimod/ruin_layout/" + id + ".json";
         try (var stream = RuinKind.class.getResourceAsStream(path)) {
             if (stream == null) throw new IllegalStateException("Missing layout " + path);
             var root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();

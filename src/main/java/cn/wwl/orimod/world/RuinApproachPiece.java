@@ -9,6 +9,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -17,59 +18,73 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 
-/** A short generated path joins the doorway to actual terrain after carving and surface placement. */
+/** The approach shape comes from saved terrain samples, independent of neighboring chunk decoration. */
 public final class RuinApproachPiece extends StructurePiece {
-    private final int centerX, frontZ, doorwayGround;
+    public static final int WIDTH = 5, DEPTH = 9;
+    private final RuinPlacement placement;
+    private final int[] terrain;
 
-    public RuinApproachPiece(RuinKind kind, BlockPos origin) {
-        super(OriWorldgen.APPROACH.get(), 0, bounds(kind, origin));
-        centerX = origin.getX() + (int)kind.layout().entry().x;
-        frontZ = origin.getZ() - 8;
-        doorwayGround = origin.getY() + (kind == RuinKind.CAVE ? kind.layout().surfaceY() : 1);
+    public RuinApproachPiece(RuinPlacement doorway, int[] terrain) {
+        super(OriWorldgen.APPROACH.get(), 0, bounds(doorway));
+        if (terrain.length != WIDTH * DEPTH) throw new IllegalArgumentException("Approach needs 45 terrain samples");
+        this.placement = doorway;
+        this.terrain = terrain.clone();
     }
 
     public RuinApproachPiece(CompoundTag tag) {
         super(OriWorldgen.APPROACH.get(), tag);
-        centerX = tag.getInt("CenterX"); frontZ = tag.getInt("FrontZ"); doorwayGround = tag.getInt("DoorwayGround");
+        if (tag.contains("DoorX")) {
+            placement = new RuinPlacement(new BlockPos(tag.getInt("DoorX"), tag.getInt("DoorY"), tag.getInt("DoorZ")),
+                    RuinPlacement.readRotation(tag.getString("Rot")));
+        } else {
+            placement = new RuinPlacement(new BlockPos(tag.getInt("CenterX"), tag.getInt("DoorwayGround"), tag.getInt("FrontZ") + 8), Rotation.NONE);
+        }
+        int[] saved = tag.getIntArray("Terrain");
+        // Old starts are completed using the same seed's base terrain, never mutable neighbor blocks.
+        terrain = saved.length == WIDTH * DEPTH ? saved : new int[0];
     }
 
-    private static BoundingBox bounds(RuinKind kind, BlockPos origin) {
-        int x = origin.getX() + (int)kind.layout().entry().x;
-        return new BoundingBox(x - 2, origin.getY() - 16, origin.getZ() - 9,
-                x + 2, origin.getY() + kind.layout().surfaceY() + 64, origin.getZ() - 1);
+    public static RuinPlacement doorway(RuinKind kind, RuinPlacement ruin) {
+        return new RuinPlacement(ruin.block(new BlockPos((int)kind.layout().entry().x,
+                kind == RuinKind.CAVE ? kind.layout().surfaceY() : 1, 0)), ruin.rotation());
+    }
+
+    private static BoundingBox bounds(RuinPlacement doorway) {
+        return doorway.blocks(new BlockPos(-2, -24, -9), new BlockPos(2, 64, -1));
     }
 
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
-        tag.putInt("CenterX", centerX); tag.putInt("FrontZ", frontZ); tag.putInt("DoorwayGround", doorwayGround);
+        tag.putInt("DoorX", placement.origin().getX()); tag.putInt("DoorY", placement.origin().getY()); tag.putInt("DoorZ", placement.origin().getZ());
+        tag.putString("Rot", placement.rotation().name()); tag.putIntArray("Terrain", terrain);
     }
 
     @Override public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator,
                                       RandomSource random, BoundingBox chunkBounds, ChunkPos chunk, BlockPos pivot) {
-        // The eight-block approach lies in the preceding chunk; read its untouched
-        // front edge before placing any path blocks. Logs/leaves are not ground.
-        for (int x = centerX - 2; x <= centerX + 2; x++) {
-            int ground = naturalGround(level, x, frontZ - 1);
-            // Keep the natural landing just outside the paving, but remove low
-            // branches so players can walk onto the path from ground level.
-            clearAbove(level, chunkBounds, x, frontZ - 1, ground - 1, ground + 2);
-            clearCanopy(level, chunkBounds, x, frontZ - 1, ground + 3, boundingBox.maxY());
+        for (int dx = -2; dx <= 2; dx++) {
+            int ground = height(level, generator, dx, -9);
+            var landing = placement.block(new BlockPos(dx, 0, -9));
+            clearAbove(level, chunkBounds, landing.getX(), landing.getZ(), ground - 1, ground + 2);
+            clearCanopy(level, chunkBounds, landing.getX(), landing.getZ(), ground + 3, boundingBox.maxY());
             for (int i = 0; i < 8; i++) {
-                int floor = ground - 1 + Math.round((doorwayGround - ground) * i / 7.0f);
-                var pos = new BlockPos(x, floor, frontZ + i);
+                int floor = floor(ground, i);
+                var column = placement.block(new BlockPos(dx, 0, -8 + i));
+                var pos = new BlockPos(column.getX(), floor, column.getZ());
                 if (!chunkBounds.isInside(pos)) continue;
-                int oldGround = naturalGround(level, x, frontZ + i);
-                int previous = i == 0 ? ground - 1 : ground - 1 + Math.round((doorwayGround - ground) * (i - 1) / 7.0f);
-                int next = i == 7 ? doorwayGround - 1 : ground - 1 + Math.round((doorwayGround - ground) * (i + 1) / 7.0f);
+                int oldGround = height(level, generator, dx, -8 + i);
+                int previous = i == 0 ? ground - 1 : floor(ground, i - 1);
+                int next = i == 7 ? placement.origin().getY() - 1 : floor(ground, i + 1);
                 BlockState surface = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
-                if (floor > previous) surface = Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
-                else if (floor > next) surface = Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+                if (floor > previous) surface = Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState()
+                        .setValue(StairBlock.FACING, placement.rotation().rotate(Direction.SOUTH));
+                else if (floor > next) surface = Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState()
+                        .setValue(StairBlock.FACING, placement.rotation().rotate(Direction.NORTH));
                 level.setBlock(pos, surface, 2);
-                // Cut through the old surface too; a descending path must not
-                // leave a floating dirt roof above its three-block clearance.
-                clearAbove(level, chunkBounds, x, frontZ + i, floor, Math.max(floor + 3, oldGround + 2));
-                clearCanopy(level, chunkBounds, x, frontZ + i, Math.max(floor + 3, oldGround + 2) + 1, boundingBox.maxY());
+                int top = Math.max(floor + 3, oldGround + 2);
+                clearAbove(level, chunkBounds, pos.getX(), pos.getZ(), floor, top);
+                clearCanopy(level, chunkBounds, pos.getX(), pos.getZ(), top + 1, boundingBox.maxY());
                 for (int dy = 1; dy <= 16; dy++) {
                     var below = pos.below(dy);
+                    if (!chunkBounds.isInside(below) || below.getY() < level.getMinBuildHeight()) break;
                     if (level.getBlockState(below).isCollisionShapeFullBlock(level, below)) break;
                     level.setBlock(below, Blocks.MOSSY_STONE_BRICKS.defaultBlockState(), 2);
                 }
@@ -77,30 +92,28 @@ public final class RuinApproachPiece extends StructurePiece {
         }
     }
 
+    private int floor(int ground, int step) { return ground - 1 + Math.round((placement.origin().getY() - ground) * step / 7.0f); }
+
+    private int height(WorldGenLevel level, ChunkGenerator generator, int x, int z) {
+        if (terrain.length > 0) return terrain[(x + 2) * DEPTH + z + 9];
+        var column = placement.block(new BlockPos(x, 0, z));
+        return generator.getBaseHeight(column.getX(), column.getZ(), Heightmap.Types.OCEAN_FLOOR_WG,
+                level, level.getLevel().getChunkSource().randomState());
+    }
+
     private static void clearAbove(WorldGenLevel level, BoundingBox chunkBounds, int x, int z, int floor, int top) {
-        for (int y = floor + 1; y <= top; y++) {
+        for (int y = floor + 1; y <= Math.min(top, level.getMaxBuildHeight() - 1); y++) {
             var pos = new BlockPos(x, y, z);
             if (chunkBounds.isInside(pos)) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
         }
     }
 
     static void clearCanopy(WorldGenLevel level, BoundingBox chunkBounds, int x, int z, int from, int top) {
-        // WORLD_SURFACE_WG can still describe the pre-vegetation surface here.
-        // Scan the bounded tree-height allowance instead of trusting that map.
         for (int y = from; y <= Math.min(top, level.getMaxBuildHeight() - 1); y++) {
-            var pos = new BlockPos(x, y, z); var state = level.getBlockState(pos);
-            if (chunkBounds.isInside(pos) && (state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)))
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+            var pos = new BlockPos(x, y, z);
+            if (!chunkBounds.isInside(pos)) continue;
+            var state = level.getBlockState(pos);
+            if (state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
         }
-    }
-
-    private static int naturalGround(WorldGenLevel level, int x, int z) {
-        int y = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
-        while (y > level.getMinBuildHeight()) {
-            var pos = new BlockPos(x, y, z); var state = level.getBlockState(pos);
-            if (!state.is(BlockTags.LOGS) && !state.is(BlockTags.LEAVES) && state.isCollisionShapeFullBlock(level, pos)) return y + 1;
-            y--;
-        }
-        return y + 1;
     }
 }

@@ -11,6 +11,10 @@ import java.nio.file.Path;
 @Mod("orimod_gametest")
 public final class OriGameTests {
     public OriGameTests(IEventBus bus) {
+        if (Boolean.getBoolean("orimod.worldgen.audit")) {
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldgenAudit::started);
+            return;
+        }
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             try {
                 var path = Path.of(System.getProperty("orimod.gametest.report", "gametest.xml"));

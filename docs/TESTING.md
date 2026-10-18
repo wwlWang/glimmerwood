@@ -12,11 +12,11 @@ Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gr
 
 | 层次 | 当前内容 | 报告 |
 | --- | --- | --- |
-| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项，共 238 项 | `build/test-results/test/`、`build/reports/tests/test/` |
-| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项、真实传送入口 9 项，共 128 项 | `build/test-results/gametest.xml` 和控制台 |
+| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项、遗迹旋转与指引 24 项，共 262 项 | `build/test-results/test/`、`build/reports/tests/test/` |
+| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项、真实传送入口 9 项、遗迹旋转与生成顺序 18 项，共 146 项 | `build/test-results/gametest.xml` 和控制台 |
 | 真实客户端 | 形态、模型、跳跃；自投射物与 Boss 拒绝、有效 Bash、村民保护与敌怪伤害 | 仓库外 `evidence/audit-r1-smoke-v002-2026-10-18/`、`evidence/audit-r2-target-safety-v001-2026-10-18/` |
 
-2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 238 项 JUnit 和 128 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
+2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 262 项 JUnit 和 146 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
 
 GameTest 位于独立 `src/gametest` 源码集，仅 `runGameTestServer` 加载。夹具使用每例新建的 FakePlayer、真实 ServerLevel、注册项和事件；FakePlayer 默认不会自动 tick，也不会受到伤害，测试涉及相应行为时须显式处理，不能把直接调用当作网络客户端证据。房间模板为 12×8×12，包含完整空气体积和石地板；结构方块坐标比模板原点低一格，玩家脚部使用相对 y=2。
 
@@ -40,4 +40,18 @@ R8 又发现滑翔三 tick 续期在 1500 ms 停顿中到期，使同段下降�
 
 本轮 65 组实机检查均通过：`audit-r8-auto-after-v002`（6）、`audit-r8-motion-after-v003`（8）、`audit-r8-teleport-v001`（3）、`audit-r8-jump-hitches-v001`（6）、`audit-r8-combat-jumps-v001`（3）、`audit-r8-air-v001`（11）、`audit-r8-surfaces-v001`（6）、`audit-r8-glide-exits-v001`（5）、`audit-r8-damage-v001`（17），目录统一追加 `-2026-10-18`，合计约 9.4 MB。初次新 Mixin 目标签名错误导致启动失败，修正后的客户端完整运行；原失败日志与准备阶段的旧坠落状态记录保留。最终跨平台日志为 `.external/audit-r8-final-build.log`、`.external/audit-r8-final-linux.log`。
 
-世界自然生成和完整生存流程仍须专项验证。
+R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围盒、旧起点候选、完整搜索范围、入口距离剪枝和自然树避让范围。18 项 GameTest 包含 12 种类型/朝向组合、四种引道区块处理顺序、旧 NBT 与非生成环境的树木规则。每次引道读取或写入均由代理检查当前区块范围，正序与倒序输出逐方块相同。初次用 FakePlayer 测试返回位置时，其空实现的 `teleportTo` 导致 12 项夹具失败；改用实际 ServerPlayer 后通过，没有放宽正式返回判定。最终日志为 `.external/audit-r9-trees-win.log`、`.external/audit-r9-trees-linux.log`。
+
+`python scripts/verify-worldgen-coverage.py <新运行名>` 会建立三个独立普通世界，以原版定位实现运行 225 次查询，并保存实际起点、旋转、入口、距离、耗时和源文件哈希。报告目录为 `evidence/<运行名>/`，世界及服务端日志在 `.external/worldgen-audit/<运行名>/`。测试期间不允许修改生成源码或资源。基线为 `audit-r9-density-before-v001-2026-10-18`，最终为 `audit-r9-density-after-v004-2026-10-18`。
+
+| 每类 75 次定位 | 原间距 16 / 分隔 6 | 最终间距 6 / 分隔 3 | 最终距离中位数 |
+| --- | --- | --- | --- |
+| 林间灵泉 | 60/75，80.0% | 73/75，97.3% | 346 格 |
+| 溪谷灵迹 | 44/75，58.7% | 71/75，94.7% | 522 格 |
+| 洞穴祭坛 | 34/75，45.3% | 69/75，92.0% | 761 格 |
+
+覆盖率指距离不超过 1500 格；按实际入口统计计数相同。这是固定种子样本的结果，不保证任意出生点。最远洞穴仍为约 2331 格。第一轮旋转实现因噪声采样过重，八次查询耗时 274.7 秒后中止；先筛群系、先查角点、去重高度采样并推迟完整水柱检查后，同八个结果坐标不变，耗时 24.3 秒。该中止报告和间距 8 未达标的完整报告均保留。
+
+模板生成器输出统一 UTF-8/LF，`check-ruins.py` 同时检查 NBT、布局、群系与生成间距的重复生成哈希。第一次检查发现手工改过的间距文件被 Windows 换行重写；修正写入方式后重复生成一致，生成内容未因此改变。完整无命令生存流程仍须单独验收。
+
+最后关闭客户端后再次执行 Windows `clean build runGameTestServer compileDevtoolsJava`，262 / 146 项仍全部通过，日志为 `.external/audit-r9-clean-final-win-v2.log`。此前客户端运行时的 `clean` 因游戏 JAR 被占用而失败，且已经删除部分松散资源；同期远距离搜索记录已明确作废。新的独立世界复测通过，见 `WORLD_CHECKPOINT.md`。发行 JAR 另检查内部布局位置与开发/测试源码隔离。

@@ -9,12 +9,13 @@ public final class ChallengeSession {
     public final UUID id = UUID.randomUUID();
     public final RuinKind kind;
     public final BlockPos shrine, origin;
+    public final RuinPlacement placement;
     public final ResourceKey<Level> dimension;
     public final long started;
     public int checkpoint, baseline;
     public UUID target;
-    public ChallengeSession(RuinKind kind, BlockPos shrine, ResourceKey<Level> dimension, long started) {
-        this.kind = kind; this.shrine = shrine.immutable(); this.origin = shrine.subtract(kind.layout().shrine());
+    public ChallengeSession(RuinKind kind, BlockPos shrine, RuinPlacement placement, ResourceKey<Level> dimension, long started) {
+        this.kind = kind; this.shrine = shrine.immutable(); this.placement = placement; this.origin = placement.origin();
         this.dimension = dimension; this.started = started;
     }
     public String key() { return key(dimension, shrine); }

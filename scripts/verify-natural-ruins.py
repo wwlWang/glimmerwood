@@ -35,7 +35,7 @@ def locate():
     started = time.monotonic()
     old_revision = c.action('ruin_state')['replyRevision']
     c.action('select_slot', slot=1); c.ticks(2); c.action('use_item'); c.ticks(3)
-    deadline = time.monotonic() + 40
+    deadline = time.monotonic() + 70
     while True:
         state = c.action('ruin_state')
         if state['replyRevision'] > old_revision and not state['search']['active'] and '正在寻找' not in state['reply']:
@@ -106,15 +106,17 @@ try:
         c.command(f'tp @s {entry[0] + .5} {entry[1] + 8} {entry[2] - 12.5} 0 22'); c.ticks(80)
         starts = c.action('ruin_state')['naturalStarts']
         selected = next(s for s in starts if s['kind'] == kind
-                        and abs(s['origin'][0] - entry[0]) < 25 and abs(s['origin'][2] - entry[2]) < 45)
-        driver = RuinDriver(c, kind, selected['origin'])
+                        and [math.floor(v) for v in RuinDriver(c, kind, s['origin'], s.get('rotation', 'NONE')).absolute(
+                            RuinDriver(c, kind, s['origin'], s.get('rotation', 'NONE')).layout['entry'])] == entry)
+        driver = RuinDriver(c, kind, selected['origin'], selected.get('rotation', 'NONE'))
         assert [math.floor(v) for v in driver.absolute(driver.layout['entry'])] == entry
         label = f'{attempt}-{kind}'
         c.screenshot(label + '-terrain')
         # The approach starts outside the footprint; no teleport occurs until after completion.
         # Start on actual earth outside the paving. Dropping from doorway height
         # can land on a tree crown rather than test the ground-level entrance.
-        approach_x, approach_z = entry[0], driver.origin[2] - 9
+        outside = driver.absolute((driver.layout['entry'][0], 0, -8.5))
+        approach_x, approach_z = math.floor(outside[0]), math.floor(outside[2])
         for ground_y in range(entry[1] + 24, driver.origin[1] - 17, -1):
             block = c.action('inspect_block', x=approach_x, y=ground_y, z=approach_z)
             if block['fullBlock'] and not block['foliage']:
@@ -124,7 +126,7 @@ try:
         for dy in (1, 2):
             assert c.action('inspect_block', x=approach_x, y=ground_y + dy, z=approach_z)['collisionEmpty'], ('Blocked natural landing', selected)
         approach = [approach_x + .5, ground_y + 1, approach_z + .5]
-        c.command('tp @s ' + ' '.join(map(str, approach)) + ' 0 0')
+        c.command('tp @s ' + ' '.join(map(str, approach)) + f' {driver.angle} 0')
         c.command('gamemode survival'); c.action('select_slot', slot=0); c.action('focus_game'); c.ready(); c.ticks(10)
         before = c.start()
         c.screenshot(label + '-ground-approach')

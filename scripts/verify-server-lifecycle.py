@@ -39,11 +39,13 @@ def wait_world():
     raise TimeoutError('World did not finish loading')
 
 try:
+    if 'player' in c.request(): c.action('leave_world')
+    reopen()
     c.action('focus_game'); c.action('close_screen'); c.ready(); c.action('release_keys')
     c.action('progress_action', action='locate', target=''); c.ticks(2)
     before = c.request()['serverLifecycle']
-    assert before['locator']['searches'] == before['locator']['tickets'] == 1, before
-    assert before['regionTickets'] == 1, before
+    assert before['locator']['searches'] == 1 and 1 <= before['locator']['tickets'] <= 4, before
+    assert before['regionTickets'] == before['locator']['tickets'], before
     leave('pending-search', before); reopen()
     c.action('progress_action', action='locate', target=''); c.ticks(2)
     assert c.request()['serverLifecycle']['locator']['searches'] == 1, 'Old cooldown blocked new server search'

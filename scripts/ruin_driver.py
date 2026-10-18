@@ -9,15 +9,29 @@ from devtools_client import ROOT
 
 
 class RuinDriver:
-    def __init__(self, client, kind, origin):
+    def __init__(self, client, kind, origin, rotation="NONE"):
         self.c, self.kind, self.origin = client, kind, origin
-        self.layout = json.loads((ROOT / 'src/main/resources/data/orimod/ruin_layout' / (kind + '.json')).read_text())
-        self.shrine = self.absolute(self.layout['shrine'])
+        self.rotation = rotation
+        self.angle = {"NONE": 0, "CLOCKWISE_90": 90, "CLOCKWISE_180": 180, "COUNTERCLOCKWISE_90": -90}[rotation]
+        self.layout = json.loads((ROOT / 'src/main/resources/orimod/ruin_layout' / (kind + '.json')).read_text())
+        self.shrine = self.absolute(self.layout['shrine'], block=True)
         self.safe = self.absolute(self.layout['safe'])
         self.key = 'minecraft:overworld/' + ','.join(str(int(n)) for n in self.shrine)
 
-    def absolute(self, point):
-        return [a + b for a, b in zip(self.origin, point)]
+    def absolute(self, point, block=False):
+        x, y, z = point
+        edge = 0 if block else 1
+        x, z = {"NONE": (x, z), "CLOCKWISE_90": (edge - z, x),
+                "CLOCKWISE_180": (edge - x, edge - z), "COUNTERCLOCKWISE_90": (z, edge - x)}[self.rotation]
+        return [a + b for a, b in zip(self.origin, (x, y, z))]
+
+    def look(self, yaw=0, pitch=0):
+        self.c.action('look', yaw=yaw + self.angle, pitch=pitch)
+
+    def walk_local(self, x, z, limit=50):
+        point = self.absolute((x, 0, z))
+        self.walk(point[0], point[2], limit)
+
 
     def prepare(self):
         c = self.c
@@ -25,11 +39,11 @@ class RuinDriver:
         c.action('progress_action', action='exit_challenge', target=''); c.ticks(3)
         c.command('gamemode creative')
         entry = self.absolute(self.layout['entry'])
-        c.command('tp @s ' + ' '.join(map(str, entry)) + ' 0 0'); c.ticks(35)
-        c.command('place template orimod:ruins/' + self.kind + ' ' + ' '.join(map(str, self.origin)))
+        c.command('tp @s ' + ' '.join(map(str, entry)) + f' {self.angle} 0'); c.ticks(35)
+        c.command('place template orimod:ruins/' + self.kind + ' ' + ' '.join(map(str, self.origin)) + ' ' + ('180' if self.rotation == 'CLOCKWISE_180' else self.rotation.lower()))
         x, y, z = map(int, self.shrine)
         assert c.action('inspect_block', x=x, y=y, z=z)['block'] == 'orimod:' + self.kind + '_shrine'
-        c.command('tp @s ' + ' '.join(map(str, self.safe)) + ' 0 0')
+        c.command('tp @s ' + ' '.join(map(str, self.safe)) + f' {self.angle} 0')
         if not c.spirit()['server']['awakened']:
             c.command('item replace entity @s hotbar.0 with orimod:spirit_core')
             c.action('select_slot', slot=0); c.action('use_item'); c.ticks(5); c.action('close_screen')
@@ -51,7 +65,7 @@ class RuinDriver:
         c.action('focus_game'); c.action('close_screen'); c.ready()
         assert not c.action('ruin_state')['active'], 'Previous challenge still active'
         c.action('release_keys')
-        c.command('tp @s ' + ' '.join(map(str, self.safe)) + ' 0 0'); c.ticks(6)
+        c.command('tp @s ' + ' '.join(map(str, self.safe)) + f' {self.angle} 0'); c.ticks(6)
         before = c.action('progress_state')['server']['progress']
         gui = self.open()
         button = gui['widgets'][0]
@@ -65,6 +79,10 @@ class RuinDriver:
 
     def script(self, steps, ticks):
         self.c.action('focus_game'); self.c.ready()
+        steps = json.loads(json.dumps(steps))
+        for step in steps:
+            if step.get('action', {}).get('op') == 'look':
+                step['action']['yaw'] += self.angle
         self.c.action('input_script', steps=steps); self.c.ticks(ticks)
         assert self.c.request()['inputScriptError'] == '', self.c.request()['inputScriptError']
         assert self.c.request()['windowActive'], 'Client lost focus during the route input script'
@@ -94,38 +112,38 @@ class RuinDriver:
         assert state.get('active') and state.get('checkpoint') == expected, state
 
     def forest(self):
-        c = self.c; x, _, z = self.origin
-        c.action('look', yaw=90, pitch=0)
+        c = self.c
+        self.look(90)
         self.script([
             key(0, 'forward', True), key(18, 'jump', True), key(19, 'jump', False),
             key(24, 'jump', True), key(25, 'jump', False), look(25, 10),
             key(31, 'jump', True), key(32, 'jump', False), look(41, 0), key(49, 'forward', False)], 65)
-        self.walk(x + 8.5, z + 9); self.checkpoint(1)
-        self.walk(x + 8.5, z + 10.8); c.action('look', yaw=0, pitch=0)
+        self.walk_local(8.5, 9); self.checkpoint(1)
+        self.walk_local(8.5, 10.8); self.look()
         self.script([key(0, 'forward', True), key(0, 'sprint', True), key(2, 'jump', True), key(3, 'jump', False),
                      key(8, 'jump', True), key(9, 'jump', False), key(22, 'forward', False), key(22, 'sprint', False)], 34)
         self.checkpoint(2)
-        self.walk(x + 8.5, z + 17.1); c.action('look', yaw=0, pitch=0)
+        self.walk_local(8.5, 17.1); self.look()
         self.script([key(0, 'forward', True), key(1, 'jump', True), key(2, 'jump', False),
                      key(4, 'orimod.dash', True), key(5, 'orimod.dash', False), key(13, 'forward', False)], 30)
 
     def creek(self):
         c = self.c
-        c.action('look', yaw=0, pitch=-30); c.key('forward', 4); c.ticks(8)
+        self.look(0, -30); c.key('forward', 4); c.ticks(8)
         self.script([key(0, 'orimod.bash', True), look(3, 0, -50), key(3, 'forward', True),
                      key(4, 'orimod.bash', False), key(25, 'forward', False)], 35)
         self.checkpoint(1)
-        c.action('look', yaw=0, pitch=0); c.key('forward', 7); c.ticks(11)
+        self.look(); c.key('forward', 7); c.ticks(11)
         self.script([key(0, 'forward', True), key(0, 'sprint', True), key(2, 'jump', True),
                      key(36, 'forward', False), key(36, 'sprint', False), key(40, 'jump', False)], 47)
 
     def cave_to_target(self):
-        c = self.c; x, _, z = self.origin
-        c.action('look', yaw=0, pitch=-80); c.key('forward', 15); c.ticks(19)
+        c = self.c
+        self.look(0, -80); c.key('forward', 15); c.ticks(19)
         self.script([key(0, 'jump', True), key(1, 'jump', False), key(6, 'orimod.bash', True),
                      key(7, 'orimod.bash', False), key(8, 'forward', True), look(8, 0), key(30, 'forward', False)], 40)
         self.checkpoint(1)
-        self.walk(x + 11.5, z + 25.5); c.action('look', yaw=0, pitch=0)
+        self.walk_local(11.5, 25.5); self.look()
         self.script([key(0, 'forward', True), key(1, 'jump', True), key(2, 'jump', False),
                      key(16, 'forward', False), key(16, 'sneak', True), key(17, 'orimod.dash', True),
                      key(18, 'orimod.dash', False), key(20, 'sneak', False)], 34)
@@ -137,7 +155,7 @@ class RuinDriver:
     def cave(self):
         c = self.c
         self.cave_to_target()
-        c.action('look', yaw=0, pitch=0); c.key('forward', 11); c.ticks(15)
+        self.look(); c.key('forward', 11); c.ticks(15)
         self.script([key(0, 'attack', True), key(1, 'attack', False), key(7, 'attack', True), key(8, 'attack', False),
                      key(20, 'attack', True), key(21, 'attack', False)], 44)
 
