@@ -93,7 +93,7 @@ public final class AirMovement {
                 && now >= s.groundLockUntil && s.observedDy < -.03) {
             if (s.mode != GLIDE) s.startedGlides++;
             player.fallDistance = 0;
-            SpiritMovement.signal(player, s, GLIDE, 3, Vec3.ZERO);
+            SpiritMovement.signal(player, s, GLIDE, MovementRules.GLIDE_LEASE_TICKS, Vec3.ZERO);
         } else if (s.mode == GLIDE) SpiritMovement.cancel(player, s);
     }
 

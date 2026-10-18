@@ -254,7 +254,7 @@ public final class DevelopmentBridge {
             case "server_hitch" -> {
                 require(mc.getSingleplayerServer() != null, "Single-player world required");
                 int milliseconds = action.get("milliseconds").getAsInt();
-                require(milliseconds >= 1 && milliseconds <= 600, "Hitch must be between 1 and 600 ms");
+                require(milliseconds >= 1 && milliseconds <= 1500, "Hitch must be between 1 and 1500 ms");
                 mc.getSingleplayerServer().execute(() -> {
                     try { Thread.sleep(milliseconds); }
                     catch (InterruptedException error) { Thread.currentThread().interrupt(); }
@@ -511,6 +511,7 @@ public final class DevelopmentBridge {
             }
             case "stop_preview_effect" -> SpiritMotePreview.stop();
             case "settings" -> {
+                if (action.has("autoJump")) mc.options.autoJump().set(action.get("autoJump").getAsBoolean());
                 if (action.has("mainArm")) mc.options.mainHand().set(net.minecraft.world.entity.HumanoidArm.valueOf(action.get("mainArm").getAsString()));
                 if (action.has("fov")) mc.options.fov().set(Math.clamp(action.get("fov").getAsInt(), 30, 110));
                 if (action.has("renderDistance")) mc.options.renderDistance().set(Math.clamp(action.get("renderDistance").getAsInt(), 2, 32));
@@ -643,6 +644,7 @@ public final class DevelopmentBridge {
         state.put("renderDistance", mc.options.renderDistance().get());
         state.put("vsync", mc.options.enableVsync().get());
         state.put("fpsLimit", mc.options.framerateLimit().get());
+        state.put("autoJump", mc.options.autoJump().get());
         state.put("characterPreview", CharacterPreview.state());
         state.put("effectPreview", SpiritMotePreview.state());
         state.put("shaders", Map.of("enabled", net.irisshaders.iris.api.v0.IrisApi.getInstance().isShaderPackInUse(),
@@ -700,6 +702,7 @@ public final class DevelopmentBridge {
                 Map.entry("predictionRejections", movement.jumpPredictionRejections),
                 Map.entry("groundedAt", movement.groundedAt), Map.entry("groundJumpAvailable", movement.groundJumpAvailable),
                 Map.entry("lastWallRefill", movement.lastWallRefill),
+                Map.entry("relocations", movement.relocations),
                 Map.entry("bashUnlocked", cn.wwl.orimod.spirit.SpiritData.hasBash(player)),
                 Map.entry("bashes", movement.acceptedBashes), Map.entry("cancelledBashes", movement.cancelledBashes),
                 Map.entry("grapples", movement.acceptedGrapples), Map.entry("completedGrapples", movement.completedGrapples),

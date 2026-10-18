@@ -8,6 +8,8 @@ public final class MovementRules {
     public static final int INPUT_BUFFER_TICKS = 2, COYOTE_TICKS = 2, DASH_TICKS = 5, DASH_COOLDOWN_TICKS = 12;
     public static final double DASH_SPEED = 1.12, WALL_SLIDE_SPEED = -.12, WALL_JUMP_SPEED = .47;
     public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = -2.4;
+    // Input release, collision and invalid player states still cancel locally without waiting.
+    public static final int GLIDE_LEASE_TICKS = 40;
     private MovementRules() {}
 
     public static MoveMode jumpMode(boolean groundCharge, long pressedAt, long groundedAt,

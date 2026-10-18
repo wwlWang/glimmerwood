@@ -16,7 +16,7 @@ class MovementProtocolTest {
             "IDLE,0,idle", "JUMP,1,jump", "DOUBLE_JUMP,2,double_jump", "WALL_JUMP,3,wall_jump",
             "DASH,4,dash", "WALL_SLIDE,5,wall_slide", "BASH_AIM,6,bash_aim", "BASH_LAUNCH,7,bash_launch",
             "GRAPPLE,8,grapple", "GRAPPLE_END,9,grapple_end", "GLIDE,10,glide", "STOMP,11,stomp",
-            "STOMP_LAND,12,stomp_land", "RESUME,13,resume", "JUMP_REJECT,14,jump_reject"
+            "STOMP_LAND,12,stomp_land", "RESUME,13,resume", "JUMP_REJECT,14,jump_reject", "RELOCATE,15,relocate"
     })
     void stableIdsAndCompletePacketRoundTrip(MoveMode mode, int id, String diagnostic) {
         assertEquals(id, mode.wireId()); assertEquals(diagnostic, mode.id());
@@ -30,7 +30,7 @@ class MovementProtocolTest {
         } finally { buffer.release(); }
     }
 
-    @ParameterizedTest @ValueSource(ints = {-1, 15, 255, Integer.MAX_VALUE})
+    @ParameterizedTest @ValueSource(ints = {-1, 16, 255, Integer.MAX_VALUE})
     void unknownModeRejectsPacket(int unknown) {
         var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {

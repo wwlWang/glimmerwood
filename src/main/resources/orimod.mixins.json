@@ -3,7 +3,7 @@
   "minVersion":"0.8",
   "package":"cn.wwl.orimod.mixin",
   "compatibilityLevel":"JAVA_21",
-  "mixins":["PlayerDimensionsMixin", "PlayerAirControlMixin"],
-  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin"],
+  "mixins":["PlayerDimensionsMixin", "PlayerAirControlMixin", "MovementTeleportMixin"],
+  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin", "SpiritAutoJumpMixin"],
   "injectors":{"defaultRequire":1}
 }

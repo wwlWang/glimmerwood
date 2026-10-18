@@ -12,11 +12,11 @@ Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gr
 
 | 层次 | 当前内容 | 报告 |
 | --- | --- | --- |
-| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 90 项，共 236 项 | `build/test-results/test/`、`build/reports/tests/test/` |
-| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项，共 119 项 | `build/test-results/gametest.xml` 和控制台 |
+| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项，共 238 项 | `build/test-results/test/`、`build/reports/tests/test/` |
+| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项、真实传送入口 9 项，共 128 项 | `build/test-results/gametest.xml` 和控制台 |
 | 真实客户端 | 形态、模型、跳跃；自投射物与 Boss 拒绝、有效 Bash、村民保护与敌怪伤害 | 仓库外 `evidence/audit-r1-smoke-v002-2026-10-18/`、`evidence/audit-r2-target-safety-v001-2026-10-18/` |
 
-2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 236 项 JUnit 和 119 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
+2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 238 项 JUnit 和 128 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
 
 GameTest 位于独立 `src/gametest` 源码集，仅 `runGameTestServer` 加载。夹具使用每例新建的 FakePlayer、真实 ServerLevel、注册项和事件；FakePlayer 默认不会自动 tick，也不会受到伤害，测试涉及相应行为时须显式处理，不能把直接调用当作网络客户端证据。房间模板为 12×8×12，包含完整空气体积和石地板；结构方块坐标比模板原点低一格，玩家脚部使用相对 y=2。
 
@@ -34,4 +34,10 @@ GemRender 只加入客户端运行依赖。它内置的 KTX 模块依赖 LWJGL�
 
 R7 实机复跑基础移动 5 组、边界 10 组、卡顿 6 组、战斗跳跃 3 组、空中动作 11 组和 Bash 8 组，共 43 组。证据为 `audit-r7-movement/edges/combat-jumps/air/bash-v001-2026-10-18` 和 `audit-r7-hitches-v002-2026-10-18`，合计约 6.6 MB；前两类旧脚本仍使用原有状态格式。0–500 ms 卡顿下最高点均为 102.504，服务端仅接受两次跳跃，无预测错配或拒绝。卡顿 v001 在准备阶段因空中切回生存后摔死而失败，现先落在测试平台再切生存；原记录保留。自动跳跃、连续高速位移与真实传送仍是下一轮独立边界。
 
-世界自然生成、自动跳跃和完整生存流程仍须专项验证。
+R8 在修复前实测自动跳跃越过整格方块却未计数，Bash 后 600 ms 停顿造成约 10.24 格连续位移并误耗空中次数。修复后自动跳跃走同一输入与预测流程；真实传送入口发送 RELOCATE，清理两端状态与待确认预测。协议为 3，新增编号 15，九项 GameTest 覆盖短/长/相对传送、Bash、滑翔、排队输入、人形，以及 9/32 格连续移动。
+
+R8 又发现滑翔三 tick 续期在 1500 ms 停顿中到期，使同段下降量由 4.8 增至 29.31 格。续期现为 40 tick，仍由本地即时检查退出条件。最终四种停顿下下降量为 4.876–4.996 格，五种退出条件与 17 组伤害检查通过。此结论仅覆盖实测的 0–1500 ms 单人停顿，不代表任意长卡顿或多人网络验收。
+
+本轮 65 组实机检查均通过：`audit-r8-auto-after-v002`（6）、`audit-r8-motion-after-v003`（8）、`audit-r8-teleport-v001`（3）、`audit-r8-jump-hitches-v001`（6）、`audit-r8-combat-jumps-v001`（3）、`audit-r8-air-v001`（11）、`audit-r8-surfaces-v001`（6）、`audit-r8-glide-exits-v001`（5）、`audit-r8-damage-v001`（17），目录统一追加 `-2026-10-18`，合计约 9.4 MB。初次新 Mixin 目标签名错误导致启动失败，修正后的客户端完整运行；原失败日志与准备阶段的旧坠落状态记录保留。最终跨平台日志为 `.external/audit-r8-final-build.log`、`.external/audit-r8-final-linux.log`。
+
+世界自然生成和完整生存流程仍须专项验证。

@@ -21,7 +21,7 @@ public final class SpiritMovement {
     private SpiritMovement() {}
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("2");
+        var registrar = event.registrar("3");
         registrar.playToServer(MovementInputPayload.TYPE, MovementInputPayload.CODEC, (input, context) -> {
             if (context.player() instanceof ServerPlayer player) accept(player, input);
         });
@@ -93,17 +93,11 @@ public final class SpiritMovement {
         var s = player.getData(SpiritData.MOVEMENT);
         long now = player.level().getGameTime();
         String dimension = player.level().dimension().location().toString();
-        boolean relocated = !s.dimension.equals(dimension) || s.previousPosition != null && s.previousPosition.distanceToSqr(player.position()) > 64;
+        boolean relocated = !s.dimension.equals(dimension);
         s.observedDy = s.previousPosition == null || relocated ? 0 : player.getY() - s.previousPosition.y;
         s.dimension = dimension;
         s.previousPosition = player.position();
-        if (relocated) {
-            s.airJumpSpent = s.airDashSpent = true;
-            s.groundJumpAvailable = false;
-            s.groundedAt = -100;
-            s.lastWallRefill = "";
-            cancel(player, s);
-        }
+        if (relocated) teleported(player);
         boolean grounded = grounded(player) && now >= s.groundLockUntil;
         if (grounded) {
             boolean refilled = s.airJumpSpent || s.airDashSpent;
@@ -237,6 +231,19 @@ public final class SpiritMovement {
         cancel(player, s, false);
     }
 
+    /** Called after an actual server position synchronization, never inferred from travel distance. */
+    public static void teleported(ServerPlayer player) {
+        var s = player.getData(SpiritData.MOVEMENT);
+        if (s.mode != IDLE || s.bash != null || s.grapple != null) cancel(player, s);
+        s.active = false; s.activeTicks = 0; s.jumpUntil = -100; s.jumps.clear();
+        s.airJumpSpent = s.airDashSpent = true; s.groundJumpAvailable = false;
+        s.groundedAt = -100; s.groundLockUntil = 0; s.lastWallRefill = "";
+        s.dimension = player.level().dimension().location().toString();
+        s.previousPosition = player.position(); s.observedDy = 0; s.relocations++;
+        if (SpiritData.isSpirit(player)) signal(player, s, RELOCATE, 0, Vec3.ZERO);
+        s.mode = IDLE;
+    }
+
     public static void interrupt(ServerPlayer player) {
         var s = player.getData(SpiritData.MOVEMENT);
         if (!s.active && s.mode == IDLE && s.bash == null && s.grapple == null) return;
@@ -306,7 +313,7 @@ public final class SpiritMovement {
 
     private static void signal(ServerPlayer player, MovementState s, MoveMode mode, int ticks, Vec3 velocity, int jumpSequence) {
         s.mode = mode;
-        if (mode != IDLE && mode != WALL_SLIDE) s.lastAction = mode;
+        if (mode != IDLE && mode != WALL_SLIDE && mode != RELOCATE) s.lastAction = mode;
         s.activeTicks = ticks;
         s.velocity = velocity;
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),

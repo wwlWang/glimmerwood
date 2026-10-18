@@ -31,6 +31,11 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
         var state = player.getData(SpiritData.MOVEMENT);
         if (actionId <= state.actionId) return;
         state.actionId = actionId;
+        if (mode == RELOCATE) {
+            state.predictedJumps.clear(); state.groundJumpAvailable = false;
+            state.groundedAt = -100; state.groundLockUntil = 0; state.lastWallRefill = "";
+            state.mode = IDLE; state.activeTicks = 0; state.relocations++;
+        }
         MoveMode predicted = state.predictedJumps.remove(jumpSequence);
         boolean alreadyApplied = mode == predicted;
         if (mode == JUMP_REJECT) { state.predictedJumps.clear(); state.jumpPredictionRejections++; }
@@ -43,12 +48,12 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
             state.suspendedVelocity = player.getDeltaMovement();
             state.suspendedFallDistance = player.fallDistance;
         }
-        state.mode = mode;
+        state.mode = mode == RELOCATE ? IDLE : mode;
         state.activeTicks = ticks;
         state.velocity = velocity;
         state.targetId = targetId;
         state.targetPosition = targetPosition;
-        if (mode != IDLE && mode != JUMP_REJECT) state.lastAction = mode;
+        if (mode != IDLE && mode != JUMP_REJECT && mode != RELOCATE) state.lastAction = mode;
         if (!alreadyApplied && (mode == DOUBLE_JUMP || mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END)) player.fallDistance = 0;
         if (!alreadyApplied && (mode == JUMP || mode == DOUBLE_JUMP)) {
             player.setDeltaMovement(player.getDeltaMovement().x, velocity.y, player.getDeltaMovement().z);
