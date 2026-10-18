@@ -155,6 +155,18 @@ vec3 get_fog_main(vec3 ScreenPos, vec3 PlayerPos, vec3 Color, float Depth, vec3 
     #endif
         Color.rgb = get_atm_fog(Color.rgb, ScreenPos, PlayerPos, Dist, VdotL, Dither, Depth, IsDH);
     
+    #if defined SPIRIT_DEPTH_HAZE && defined DIMENSION_OVERWORLD
+        // Spirit Glow: layered haze that cools from teal to blue-violet with distance and flattens distant contrast.
+        if(Depth < 1 && isEyeInWater == 0) {
+            float Far = clamp((Dist / furthest - SPIRIT_HAZE_START) / (1 - SPIRIT_HAZE_START), 0, 1);
+            float Haze = SPIRIT_HAZE_STRENGTH * (1 - exp(-3 * Far)) * (1 - 0.5 * rainStrength);
+            float SkyL = get_luminance(SkyColor);
+            vec3 Tint = mix(vec3(0.55, 0.95, 1.0), vec3(0.62, 0.62, 1.15), Far);
+            vec3 HazeColor = mix(SkyColor, SkyL * Tint, 0.65);
+            Color.rgb = mix(Color.rgb, HazeColor, Haze);
+        }
+    #endif
+
     #ifdef DIMENSION_END
         #ifdef END_FOG
             Color.rgb = get_end_fog(Dist, Color.rgb, Depth, PlayerPos);

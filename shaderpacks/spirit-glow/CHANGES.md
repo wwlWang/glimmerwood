@@ -9,6 +9,17 @@
    horizon, violet-pink dusk, teal water. Language entries `value.COLOR_SCHEME.6`.
 4. Changed defaults in `lib/settings.glsl`: colour LUT on with `spirit.png` (blue-teal darks that fade
    out near black, foliage greens pulled slightly towards teal, mild saturation and highlight contrast),
-   atmospheric fog 0.25 → 0.5 for depth layering, bloom 0.4 → 0.55 for soft glow, minimum light
+   atmospheric fog 0.25 → 0.5 for depth layering, bloom 0.4 → 0.55 for soft glow (0.7 since item 5), minimum light
    0.15 → 0.2 for readable caves, vignette 0 → 0.5, dynamic shadows on at 2048 with entity shadow
    distance 0.5 (the preset previously verified on Iris 1.8.12), hand-held lights on.
+5. Spirit Style (oriMod R22), all under the new "Spirit Style" option screen and switchable off with
+   `SPIRIT_STYLE` / `SPIRIT_DEPTH_HAZE`:
+   - `program/final.fsh` `spirit_grade`: darks tinted deep blue (teal / purple selectable), yellow-green
+     foliage shifted towards emerald/teal, saturation shaped by luminance (more in the mid tones, less
+     in highlights so glows stay near white), a soft highlight shoulder; warm saturated pixels (torches,
+     lava, sunset) are kept out of the cool grade as focal accents. Optional posterize.
+   - `program/final.fsh` `spirit_painterly`: optional 4-sector Kuwahara smoothing (off by default),
+     used instead of CAS sharpening when on.
+   - `global/atmosphere/fog.glsl`: overworld depth haze that cools from teal to blue-violet with
+     distance and lowers distant contrast (not under water, halved in rain).
+   - Defaults: god rays on, bloom 0.55 → 0.7.
