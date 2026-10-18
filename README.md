@@ -4,6 +4,8 @@ Minecraft 1.21.1 / NeoForge 的单人开发项目，包含 Ori 形态、移动�
 
 按用户决定，仅供自己玩，使用 [私有仓库](https://github.com/wwlWang/oriMod) 备份。模型署名与依赖许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。当前进展见 [WORK_STATUS](docs/WORK_STATUS.md)，79 项验收结果见 [ACCEPTANCE_STATUS](docs/ACCEPTANCE_STATUS.md)，审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)。
 
+云端 Agent 接手请先读 [CLOUD_HANDOFF](docs/CLOUD_HANDOFF.md)，其中包含构建步骤、建议任务和 R14 未完成的测试边界。
+
 ## 从干净检出构建
 
 需要 Git、Git LFS、JDK 21。不要使用 GitHub 的源码 ZIP；它可能只有大文件指针。

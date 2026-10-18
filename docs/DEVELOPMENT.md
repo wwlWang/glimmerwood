@@ -17,11 +17,13 @@
 
 ## 启动
 
-先执行 `scripts/sync-dependencies.ps1` 和 `scripts/build-renderer.ps1`，然后执行：
+先执行 `python scripts/sync-dependencies.py`，下载并核对可选画面依赖。锁定的渲染库由 `git lfs pull` 恢复，常规开发无须运行 `build-renderer.ps1` 重建。Windows 随后执行：
 
 ```powershell
 .\scripts\gradle.ps1 runDevtoolsClient --console=plain
 ```
+
+Linux 使用 `./gradlew runDevtoolsClient --console=plain`，需要可用图形环境。云端无界面构建和交接步骤见 [CLOUD_HANDOFF](CLOUD_HANDOFF.md)。
 
 开发实例位于 `run-devtools`。构建工具下载失败时保留日志和已有缓存，再定位或更换网络入口；不要因一次等待超时就启动重复客户端。
 

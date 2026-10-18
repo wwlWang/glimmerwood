@@ -673,6 +673,19 @@ public final class DevelopmentBridge {
                     "yaw", player.getYRot(), "pitch", player.getXRot(), "onGround", player.onGround(),
                     "health", player.getHealth(), "pose", player.getPose().name(),
                     "dimension", mc.level.dimension().location().toString()));
+            if (mc.hitResult != null) {
+                var hit = new LinkedHashMap<String, Object>();
+                hit.put("type", mc.hitResult.getType().name());
+                var point = mc.hitResult.getLocation();
+                hit.put("position", new double[]{point.x, point.y, point.z});
+                if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult block) {
+                    var pos = block.getBlockPos();
+                    hit.put("block", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+                    hit.put("face", block.getDirection().name());
+                }
+                if (mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult entity) hit.put("entity", entity.getEntity().getId());
+                state.put("hit", hit);
+            }
         }
         return state;
     }
@@ -693,6 +706,12 @@ public final class DevelopmentBridge {
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
                 "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),
                 "armor", player.getArmorValue(), "armorToughness", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS)));
+        state.put("survival", Map.of("food", player.getFoodData().getFoodLevel(), "saturation", player.getFoodData().getSaturationLevel(),
+                "exhaustion", player.getFoodData().getExhaustionLevel(), "air", player.getAirSupply(), "maxAir", player.getMaxAirSupply(),
+                "effects", player.getActiveEffects().stream().map(effect -> Map.of("id", effect.getEffect().getRegisteredName(),
+                        "amplifier", effect.getAmplifier(), "duration", effect.getDuration())).toList()));
+        state.put("transport", Map.of("passenger", player.isPassenger(), "vehicle", player.getVehicle() == null ? "none" : player.getVehicle().getType().toString(),
+                "sleeping", player.isSleeping(), "climbable", player.onClimbable(), "swimming", player.isVisuallySwimming()));
         state.put("collision", Map.of("stepHeight", player.maxUpStep(), "horizontal", player.horizontalCollision,
                 "vertical", player.verticalCollision, "crouching", player.isCrouching(), "flying", player.getAbilities().flying,
                 "forward", player.zza, "strafe", player.xxa, "bounds", player.getBoundingBox().toString()));
