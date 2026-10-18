@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 00:05–00:35（UTC+8）云端 R21（VIS01，计划 10.1 画风）：Spirit Glow 新增默认配色方案 6 “Spirit / 精灵”（原 1–5 保留可选）：蓝色月光、更亮的夜间环境光、青色天顶与夜空地平线、粉紫黄昏、青色水体；默认开启自制调色表（暗部偏蓝青、接近纯黑处淡出以免压黑深色材质，植被绿略偏青），大气雾 0.25→0.5、Bloom 0.4→0.55、最低亮度 0.15→0.2、轻暗角、动态阴影 2048、手持光源。新增光影包检查（默认值都在菜单可选值内、Spirit 为默认、仅致谢行出现原名）；关闭时如记住的原光影包已被删除则改为关闭光影。420 项 JUnit、183 项 GameTest 通过。云端 llvmpipe 下森林昼夜、黄昏、洞穴、樱花林、水下均有截图，并确认 JAR 内打包的版本能装入并运行；只是首轮调色，最终观感需本机 GPU 看。见 [RENDERING_CHECKPOINT](RENDERING_CHECKPOINT.md#r21spirit-配色)。
+
 2026-10-18 23:40–2026-10-19 00:20（UTC+8）云端 R20（ENV05）：自带光影 **Spirit Glow**（改编自 TheCMK 的 Mellow，上游提交 `3ad9445`，与此前本机验证过的 v3.4.1a 发行包一致，无需移植）。包源码在 `shaderpacks/spirit-glow/`，构建时打进 JAR，首次运行装入 Iris 的 `shaderpacks/`；设置界面“画面”页新增“Spirit Glow 光影”开关。首次运行只在 Iris 未选光影包时启用，已有自选包则保留并提示一次；开启记住原包、关闭恢复；在 Iris 里换包或关光影会同步到开关。MIT 与 Apache 许可原文保留，改编声明加在原文上方，包内与 `THIRD_PARTY.md` 注明出处和链接，不用 Mellow 名称、截图、标志或其调色表。417 项 JUnit、183 项 GameTest 通过。云端 Xvfb + llvmpipe **能**编译运行该光影管线（约 2–20 FPS），首次保留自选包、开/关、Iris 侧变化与恢复均实测通过；画面只证明管线可运行，观感和性能需本机复查。见 [RENDERING_CHECKPOINT](RENDERING_CHECKPOINT.md#r20自带光影-spirit-glowenv05)。
 
 2026-10-18 23:00–23:50（UTC+8）云端 R19（UI02/PLAY08）：精灵视角改为设置界面的循环按钮，旧配置原样加载；修复精灵形态下当前镜头覆盖菜单选择的问题。累计 404 项 JUnit、183 项 GameTest 通过。用户已决定自带 Mellow 改编光影并在设置中提供开关，许可证核查通过，作为下一轮 R20，计划与本轮各项自主决定见 [DECISIONS](DECISIONS.md)。截图在云端 `/workspace/oriMod/shots/`（不入 Git）。

@@ -8,7 +8,7 @@
 2. 用户明确要求所有开发都在 `main`，不要新建功能分支或留下待合并分支。当前 `main` 包含 R13 和本次 R14 WIP 交接；R13 基线为 `6ab274785ac969e6a31c5b0de3aee38126140958`，标签 `ori-r13`。接手前同步最新主分支，提交及推送前再次核对远端，保留其他 Agent 的改动；发生分叉时合并到 `main` 并验证，禁止强推覆盖。
 3. 先确认环境、LFS 和基线检查，再选下面一个范围完整实现。交回已推送到 `main` 的提交号、测试结果和待本机验证步骤，不因没有桌面环境而把实机项写成通过。
 
-> 2026-10-18/19 云端已完成 R15–R20（标签 `ori-r15` … `ori-r20`），逐轮记录见 [WORK_STATUS](WORK_STATUS.md) 与 [TESTING](TESTING.md)，决定见 [DECISIONS](DECISIONS.md)。R20 自带光影 Spirit Glow，包源码在 `shaderpacks/spirit-glow/`；改光影后由 `zipSpiritGlow` 重新打包，`scripts/verify-spirit-glow.py` 复查切换。云端 llvmpipe 可以运行光影管线，但观感与性能仍需本机。
+> 2026-10-18/19 云端已完成 R15–R21（标签 `ori-r15` … `ori-r21`），逐轮记录见 [WORK_STATUS](WORK_STATUS.md) 与 [TESTING](TESTING.md)，决定见 [DECISIONS](DECISIONS.md)。R20 自带光影 Spirit Glow，R21 为其默认 Spirit 配色；包源码在 `shaderpacks/spirit-glow/`；改光影后由 `zipSpiritGlow` 重新打包，`scripts/verify-spirit-glow.py` 复查切换。云端 llvmpipe 可以运行光影管线，但观感与性能仍需本机。
 
 首版尚未完成。79 项产品验收中，目前 16 项通过、48 项部分验证、15 项未测。R0–R13 的修复记录见 [AUDIT_FIXES](AUDIT_FIXES.md)。
 

@@ -58,3 +58,11 @@ R10 显示精灵盔甲偏离了原计划，R12 已恢复默认隐藏原版盔甲
 - 云端：llvmpipe 能编译运行 Mellow 与 Spirit Glow 管线（日志只有原包已有的兼容性补丁警告与缺失标签警告）。帧率 2–20 FPS，不代表性能。截图存于云端 `/workspace/oriMod/shots/r20-*`，只作管线可运行的证据。
 - 待本机：真实 GPU 上的观感、帧率、与 Photon 微粒/角色发光共存的复查，以及发行 JAR 在干净实例上的首次安装。
 
+## R21：Spirit 配色
+
+- 改动见包内 `CHANGES.md` 第 3、4 条；调色表由 `scripts/shader/make-spirit-lut.py` 生成，可重复。
+- 迭代方式：把包目录复制到开发实例 `shaderpacks/` 下，用开发接口 `iris_pack` 切换并重载，同一种子世界 `orimod_dev_scenery_r21`（种子 20261018）固定场景截图。第一版暗部偏色过强，深色樱花木被压成近黑蓝，已减弱并在近黑处淡出。
+- 对照（同场景、R20 上游默认 vs R21）：白天森林暗部偏青、阳光处保持暖色；夜晚明显偏蓝且地面可辨；黄昏天空偏粉紫；洞穴改善有限（火把照明范围仍小），留待本机调 `LM_FALLOFF_CURVE` 等。
+- 发行 JAR 内的 `spirit_glow.zip` 已在云端客户端自动替换旧版本并建立管线，`Iris.getStoredError` 为空。
+- 待本机：真实 GPU 观感、雨天/下界/末地、与 Photon 微粒和角色发光叠加时的 Bloom 是否过曝、帧率。
+
