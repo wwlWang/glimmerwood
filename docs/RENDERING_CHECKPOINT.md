@@ -74,3 +74,12 @@ R10 显示精灵盔甲偏离了原计划，R12 已恢复默认隐藏原版盔甲
 - 云端未能截到穿过树冠的明显光束：体积光已开启，但软件渲染下效果不可辨，视角脚本在精灵形态的第三人称相机下也难对准太阳。
 - 截图（云端 `/workspace/oriMod/shots/`，不入 Git）：`r22-compare-r21-vs-r22.png`（五场景前后合图）、`r22-spirit-style-*.png`、`r22-painterly-posterize-*.png`。
 - 待本机：真实 GPU 下暗部染色是否过重、植被偏青是否影响方块辨认、Bloom 0.7 与角色发光/Photon 叠加是否过曝、体积光观感与帧率。
+
+## R23：画质档与光影性能档（PERF04）
+
+- 映射：流畅→`FAST`、均衡→`FANCY`、精致→`FABULOUS`。包内 profile 行改为列出同一组 13 个选项（Bloom、云、水面法线、反射、体积光及其质量、动态阴影及贴图、SSAO、TAA、SMAA、低精度深度、锐化）；`FANCY` 等于包默认。快速档：关体积光、反射、水面法线、体积云，阴影贴图 1024，保留 Bloom 与动态阴影。精致档：加 SSAO、TAA、SMAA、锐化、反射 2、体积光质量 6。
+- 实现：`SpiritGlowProfile` 纯规则生成 Iris 选项文件；记录写在 `config/orimod-spirit-glow-profile.properties`。只在 Spirit Glow 为当前包或刚被开启时生效，变更后重载 Iris。
+- 云端实测（开发接口 `visual_quality`）：三档依次切换，日志各一次重载、选项文件内容符合预期；模拟玩家在 Iris 中把阴影贴图改为 4096 后切到精致档，该值保留并在诊断中列为玩家选项；JAR 升级后新包装入并按当前档写入。均衡档下 Iris 会删除空选项文件。
+- 发现并修复 R22 的问题：`IMAGE_SHARPENING`、`SPIRIT_DEPTH_HAZE` 只出现在 `#elif defined` / `#if defined` 中，Iris 不识别为开关，写入的锐化值被丢弃；已改为普通 `#ifdef`，并对 `SPIRIT_*` 及受管选项加检查。
+- 截图（云端 `/workspace/oriMod/shots/`）：`r23-quality-tiers-fluent-balanced-detailed.png`（森林白天/夜晚，左到右三档），`r23-fluent-without-dynamic-shadows-rejected.png`（被撤回的首版快速档）。llvmpipe 帧率（2–9 FPS）不能代表性能。
+- 待本机：真实 GPU 上三档在同一路线的帧率与画面对照。

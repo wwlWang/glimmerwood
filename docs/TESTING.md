@@ -132,3 +132,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R22：Spirit 风格
 
 421 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`；`SpiritGlowPackTest` 新增一项：每个 Spirit 风格选项都在其设置页且有中英文名称、风格与距离雾默认开、油画感默认关、体积光默认开）。云端实机：开发实例分别加载 R21 与 R22 包目录，同场景截图；Iris 日志无编译错误，油画感 + 色阶化变体同样建立管线。
+
+## R23：画质档与光影性能档
+
+430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`；新增 `SpiritGlowProfileTest` 7 项：映射、首次写入、档位切换只换自己的值、保留玩家修改、首次运行前已有的值不接管、默认值收回、文件读写；`SpiritGlowPackTest` 新增 2 项：profile 行等于包默认加模组覆盖值、布尔选项都有普通 `#ifdef`）。发行 JAR SHA-256 `ccb541a2b8a86333500ca94ec79e8868c50887503e2f8063a692f4364b8ab765`（云端构建）。云端实机见渲染记录。
