@@ -20,7 +20,8 @@ class SpiritGlowProfileTest {
     @Test void freshFileGetsTheTierAndBalancedWritesNothing() {
         var fluent = SpiritGlowProfile.plan(Map.of(), Map.of(), VisualQuality.FLUENT);
         assertTrue(fluent.changed());
-        assertEquals("false", fluent.options().get("DYNAMIC_SHADOWS"));
+        assertEquals("1024", fluent.options().get("SHADOW_MAP_RESOLUTION"));
+        assertEquals("false", fluent.options().get("GODRAYS"));
         assertEquals(SpiritGlowProfile.MANAGED.size(), fluent.owned().size());
         var balanced = SpiritGlowProfile.plan(Map.of(), Map.of(), VisualQuality.BALANCED);
         assertFalse(balanced.changed());
@@ -34,7 +35,8 @@ class SpiritGlowProfileTest {
         assertTrue(detailed.changed());
         assertEquals("2", detailed.options().get("SPIRIT_SHADOW_HUE"));
         assertEquals("true", detailed.options().get("SSAO"));
-        assertNull(detailed.options().get("DYNAMIC_SHADOWS"), "back to the pack default");
+        assertNull(detailed.options().get("SHADOW_MAP_RESOLUTION"), "back to the pack default");
+        assertNull(detailed.options().get("GODRAYS"), "back to the pack default");
         var balanced = SpiritGlowProfile.plan(detailed.options(), detailed.owned(), VisualQuality.BALANCED);
         assertEquals(Map.of("SPIRIT_SHADOW_HUE", "2"), balanced.options());
         assertFalse(SpiritGlowProfile.plan(balanced.options(), balanced.owned(), VisualQuality.BALANCED).changed());

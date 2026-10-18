@@ -25,7 +25,7 @@
    - Defaults: god rays on, bloom 0.55 → 0.7.
 6. Profiles (oriMod R23): `profile.FAST/FANCY/FABULOUS` in `shaders.properties` now list the same
    13 options the mod sets for its Fluent / Balanced / Detailed effect quality. FANCY equals the pack
-   defaults (god rays and dynamic shadows on); FAST keeps bloom but turns off god rays, dynamic shadows,
-   reflections, water normals and volumetric clouds; FABULOUS adds SSAO, TAA, SMAA, sharpening and
+   defaults (god rays and dynamic shadows on); FAST keeps bloom and dynamic shadows (1024 map) but turns off
+   god rays, reflections, water normals and volumetric clouds; FABULOUS adds SSAO, TAA, SMAA, sharpening and
    finer god rays. Spirit Style options read by `#if defined` / `#elif defined` were changed to plain
    `#ifdef`, so Iris lists them as toggles again (`IMAGE_SHARPENING`, `SPIRIT_DEPTH_HAZE`).

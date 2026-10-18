@@ -41,9 +41,10 @@ public final class SpiritGlowProfile {
     /** Managed options that differ from the pack defaults for this tier; BALANCED is the pack default. */
     public static Map<String, String> overrides(VisualQuality quality) {
         return switch (quality) {
-            // Bloom stays on: the soft glow is part of the look and cheap next to shadows, reflections and god rays.
+            // Bloom and dynamic shadows stay on (shadows at a smaller map): without them the tinted darks and the
+            // soft glow that carry the look are gone, the whole scene turns flat lime-green (R23 screenshots).
             case FLUENT -> Map.of("CLOUD_STYLE", "0", "WATER_NORMALS", "false", "REFLECTIONS", "0", "GODRAYS", "false",
-                    "DYNAMIC_SHADOWS", "false", "SHADOW_MAP_RESOLUTION", "1024");
+                    "SHADOW_MAP_RESOLUTION", "1024");
             case BALANCED -> Map.of();
             case DETAILED -> Map.of("REFLECTIONS", "2", "GODRAYS_QUALITY", "6", "SSAO", "true", "TAA_MODE", "1",
                     "SMAA", "true", "USE_LQ_DEPTH", "true", "IMAGE_SHARPENING", "true");
