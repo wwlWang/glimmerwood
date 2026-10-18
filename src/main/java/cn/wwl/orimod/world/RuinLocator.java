@@ -100,7 +100,9 @@ public final class RuinLocator {
         search.level.getChunkSource().addRegionTicket(SEARCH_TICKET, candidate, SEARCH_DISTANCE, player.getUUID());
         // This vanilla API blocks when called on the server thread. Its off-thread branch safely
         // schedules the request on that thread and returns a future; inspect results only here.
-        search.pending = CompletableFuture.supplyAsync(() -> search.level.getChunkSource().getChunkFuture(candidate.x, candidate.z, ChunkStatus.STRUCTURE_STARTS, true)).thenCompose(future -> future);
+        search.pending = CompletableFuture.supplyAsync(() -> search.closed
+                ? CompletableFuture.<ChunkResult<ChunkAccess>>completedFuture(ChunkResult.error("Search closed"))
+                : search.level.getChunkSource().getChunkFuture(candidate.x, candidate.z, ChunkStatus.STRUCTURE_STARTS, true)).thenCompose(future -> future);
     }
     private static void reply(ServerPlayer player, String key, Object... args) {
         var message = Component.translatable(key, args);
@@ -114,7 +116,23 @@ public final class RuinLocator {
     }
     private static void stop(UUID owner) {
         var search = SEARCHES.remove(owner);
-        if (search != null) releaseTicket(search, owner);
+        if (search != null) { cancelPending(search); releaseTicket(search, owner); }
+    }
+    private static void cancelPending(Search search) {
+        search.closed = true;
+        if (search.pending != null) { search.pending.cancel(false); search.pending = null; }
+    }
+    public static void stopAll() {
+        for (var owner : List.copyOf(SEARCHES.keySet())) stop(owner);
+        COOLDOWNS.clear();
+    }
+    public static void discardAll() {
+        SEARCHES.values().forEach(RuinLocator::cancelPending);
+        SEARCHES.clear(); COOLDOWNS.clear();
+    }
+    public static Map<String, Integer> lifecycleState() {
+        return Map.of("searches", SEARCHES.size(), "cooldowns", COOLDOWNS.size(),
+                "tickets", (int)SEARCHES.values().stream().filter(search -> search.ticket != null).count());
     }
     public static Map<String, Object> debug(ServerPlayer player) {
         var search = SEARCHES.get(player.getUUID());
@@ -128,6 +146,7 @@ public final class RuinLocator {
         final List<ChunkPos> candidates;
         final long started;
         int index, failedChunks;
+        volatile boolean closed;
         ChunkPos ticket;
         CompletableFuture<ChunkResult<ChunkAccess>> pending;
         Search(ServerLevel level, BlockPos origin, List<ChunkPos> candidates, long started) { this.level = level; this.origin = origin; this.candidates = candidates; this.started = started; }

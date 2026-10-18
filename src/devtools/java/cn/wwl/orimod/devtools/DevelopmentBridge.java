@@ -62,6 +62,8 @@ public final class DevelopmentBridge {
     private final ArrayList<JsonObject> inputScript = new ArrayList<>();
     private long inputScriptStart;
     private String inputScriptError = "";
+    private volatile Map<String, Object> lifecycleSnapshot = Map.of("frozen", 0, "challenges", 0, "regionTickets", 0,
+            "locator", Map.of("searches", 0, "cooldowns", 0, "tickets", 0));
     private Path directory;
 
     public DevelopmentBridge(IEventBus modBus) {
@@ -73,6 +75,8 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(this::tick);
         NeoForge.EVENT_BUS.addListener(this::frame);
         NeoForge.EVENT_BUS.addListener(this::playerTick);
+        NeoForge.EVENT_BUS.addListener(this::serverTick);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::serverStopped);
         NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
     }
 
@@ -581,6 +585,30 @@ public final class DevelopmentBridge {
                 "sampleNanos", System.nanoTime(), "state", spiritState(player)));
     }
 
+    private void captureLifecycle(net.minecraft.server.MinecraftServer server) {
+        lifecycleSnapshot = Map.of("frozen", cn.wwl.orimod.movement.BashSession.frozenCount(),
+                "challenges", cn.wwl.orimod.world.SpiritChallenge.sessionCount(),
+                "regionTickets", searchRegionTickets(server),
+                "locator", cn.wwl.orimod.world.RuinLocator.lifecycleState());
+    }
+    private void serverTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) { captureLifecycle(event.getServer()); }
+    private void serverStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) { captureLifecycle(event.getServer()); }
+
+    private static int searchRegionTickets(net.minecraft.server.MinecraftServer server) {
+        // Development-only observation of vanilla tickets, independent of search bookkeeping.
+        try {
+            var managerField = net.minecraft.server.level.ServerChunkCache.class.getDeclaredField("distanceManager"); managerField.setAccessible(true);
+            var ticketsField = net.minecraft.server.level.DistanceManager.class.getDeclaredField("tickets"); ticketsField.setAccessible(true);
+            int count = 0;
+            for (var level : server.getAllLevels()) {
+                var tickets = (java.util.Map<?, ?>)ticketsField.get(managerField.get(level.getChunkSource()));
+                for (var set : tickets.values()) for (var ticket : (Iterable<?>)set)
+                    if (((net.minecraft.server.level.Ticket<?>)ticket).getType().toString().equals("orimod_ruin_search")) count++;
+            }
+            return count;
+        } catch (ReflectiveOperationException e) { return -1; }
+    }
+
     private void frame(RenderFrameEvent.Post event) {
         frames++;
         long now = System.nanoTime();
@@ -606,6 +634,7 @@ public final class DevelopmentBridge {
         var mc = Minecraft.getInstance();
         Map<String, Object> state = new LinkedHashMap<>();
         state.put("tick", ticks);
+        state.put("serverLifecycle", lifecycleSnapshot);
         state.put("inputScriptError", inputScriptError);
         state.put("frame", frames);
         state.put("screen", mc.screen == null ? "gameplay" : mc.screen.getClass().getSimpleName());

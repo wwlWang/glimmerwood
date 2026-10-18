@@ -27,6 +27,17 @@ public final class SpiritChallenge {
     private static final Map<UUID, ChallengeSession> SESSIONS = new HashMap<>();
     private SpiritChallenge() {}
     public static ChallengeSession session(ServerPlayer player) { return SESSIONS.get(player.getUUID()); }
+    public static int sessionCount() { return SESSIONS.size(); }
+
+    public static void stopAll(net.minecraft.server.MinecraftServer server) {
+        for (var entry : Map.copyOf(SESSIONS).entrySet()) {
+            var player = server.getPlayerList().getPlayer(entry.getKey());
+            if (player != null) finish(player, "exit", true);
+            else discardTarget(server, entry.getValue());
+        }
+        SESSIONS.clear();
+    }
+    public static void discardAll() { SESSIONS.clear(); }
 
     public static void offer(ServerPlayer player, BlockPos shrine, RuinKind kind) {
         if (!player.isAlive() || player.distanceToSqr(Vec3.atCenterOf(shrine)) > 36) return;
@@ -186,7 +197,11 @@ public final class SpiritChallenge {
         SESSIONS.remove(player.getUUID());
         player.setData(SpiritData.CHALLENGE_ACTIVE, false);
         player.setData(SpiritData.CHALLENGE_RECOVERY, ChallengeRecovery.EMPTY);
-        var level = player.server.getLevel(s.dimension);
+        discardTarget(player.server, s);
+    }
+
+    private static void discardTarget(net.minecraft.server.MinecraftServer server, ChallengeSession s) {
+        var level = server.getLevel(s.dimension);
         if (level != null && s.target != null && level.getEntity(s.target) instanceof PracticeTarget target && s.id.equals(target.session)) target.discard();
     }
 

@@ -71,4 +71,11 @@ public final class BashSession {
     public static void changedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) SpiritMovement.cancel(player, player.getData(SpiritData.MOVEMENT));
     }
+
+    public static int frozenCount() { return FROZEN.size(); }
+    public static void releaseAll() {
+        for (var session : java.util.List.copyOf(FROZEN.values())) session.release(null);
+        FROZEN.clear();
+    }
+    public static void discardAll() { FROZEN.clear(); }
 }

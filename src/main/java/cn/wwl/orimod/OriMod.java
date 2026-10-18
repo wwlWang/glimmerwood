@@ -19,6 +19,8 @@ public final class OriMod {
         cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
         cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopping);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopped);
         modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
         modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
         modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);

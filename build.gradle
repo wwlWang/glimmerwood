@@ -50,6 +50,14 @@ sourceSets.main.resources {
     exclude '**/*.bbmodel', '**/.cache/**'
 }
 
+// Exercise the shipped cave layout under the isolated GameTest namespace without a stale copy.
+tasks.named('processGametestResources') {
+    from('src/main/resources/data/orimod/structure/ruins/cave_altar.nbt') {
+        into 'data/orimod_gametest/structure'
+        rename { 'cave.nbt' }
+    }
+}
+
 neoForge {
     version = project.neo_version
     addModdingDependenciesTo sourceSets.devtools
