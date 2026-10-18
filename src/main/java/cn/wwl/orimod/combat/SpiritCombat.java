@@ -44,7 +44,7 @@ public final class SpiritCombat {
 
     private static boolean movementOwnsAction(Player player) {
         return switch (player.getData(SpiritData.MOVEMENT).mode) {
-            case "dash", "bash_aim", "grapple", "stomp" -> true;
+            case DASH, BASH_AIM, GRAPPLE, STOMP -> true;
             default -> false;
         };
     }

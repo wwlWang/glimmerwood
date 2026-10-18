@@ -1,5 +1,9 @@
 package cn.wwl.orimod.client;
 
+import cn.wwl.orimod.movement.MoveMode;
+import cn.wwl.orimod.movement.MovementRules;
+import static cn.wwl.orimod.movement.MoveMode.*;
+
 import cn.wwl.orimod.network.ToggleSpiritPayload;
 import cn.wwl.orimod.network.MovementInputPayload;
 import cn.wwl.orimod.movement.SpiritMovement;
@@ -53,16 +57,16 @@ public final class SpiritControls {
         if (SpiritMovement.canMove(player)) input.jumping = false;
         state.active = active;
         if (!active) {
-            if (state.mode.equals("bash_aim")) player.setDeltaMovement(state.suspendedVelocity);
-            state.mode = "idle";
+            if (state.mode == BASH_AIM) player.setDeltaMovement(state.suspendedVelocity);
+            state.mode = IDLE;
             state.activeTicks = 0;
         }
         if (state.activeTicks > 0 && active) {
-            if (state.mode.equals("bash_aim")) {
+            if (state.mode == BASH_AIM) {
                 player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 player.fallDistance = state.suspendedFallDistance;
                 input.forwardImpulse = input.leftImpulse = 0;
-            } else if (state.mode.equals("grapple")) {
+            } else if (state.mode == GRAPPLE) {
                 if (input.shiftKeyDown) state.activeTicks = 0;
                 else {
                     var velocity = AirMovement.grappleVelocity(player, state.targetPosition);
@@ -70,42 +74,36 @@ public final class SpiritControls {
                     else { player.setDeltaMovement(velocity); player.fallDistance = 0; }
                     input.forwardImpulse = input.leftImpulse = 0;
                 }
-            } else if (state.mode.equals("stomp") && !player.onGround()) {
-                player.setDeltaMovement(0, Math.max(AirMovement.STOMP_SPEED, player.getDeltaMovement().y - .55), 0);
+            } else if (state.mode == STOMP && !player.onGround()) {
+                player.setDeltaMovement(MovementRules.stompVelocity(player.getDeltaMovement().y));
                 input.forwardImpulse = input.leftImpulse = 0;
-            } else if (state.mode.equals("glide")) {
+            } else if (state.mode == GLIDE) {
                 if ((flags & MovementInputPayload.JUMP) == 0 || input.shiftKeyDown || player.onGround() || player.horizontalCollision) state.activeTicks = 0;
                 else {
-                    var steer = new cn.wwl.orimod.movement.MovementState();
-                    steer.forward = input.forwardImpulse; steer.left = input.leftImpulse; steer.yaw = player.getYRot();
-                    var motion = player.getDeltaMovement();
-                    var horizontal = new net.minecraft.world.phys.Vec3(motion.x, 0, motion.z).scale(.92)
-                            .add(SpiritMovement.inputDirection(steer, false).scale(cn.wwl.orimod.progression.Shard.AIR_CONTROL.equipped(player) ? .075 : .06));
-                    if (horizontal.lengthSqr() > .25) horizontal = horizontal.normalize().scale(.5);
-                    player.setDeltaMovement(horizontal.x, Math.max(motion.y, AirMovement.GLIDE_FALL_SPEED), horizontal.z);
+                    var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
+                    player.setDeltaMovement(MovementRules.glideVelocity(player.getDeltaMovement(), direction,
+                            cn.wwl.orimod.progression.Shard.AIR_CONTROL.equipped(player)));
                     player.fallDistance = 0;
                     input.forwardImpulse = input.leftImpulse = 0;
                 }
-            } else if (state.mode.equals("dash")) {
+            } else if (state.mode == MoveMode.DASH) {
                 if (player.horizontalCollision || input.shiftKeyDown) state.activeTicks = 0;
                 else {
-                    player.setDeltaMovement(state.velocity.x, Math.min(0, player.getDeltaMovement().y), state.velocity.z);
+                    player.setDeltaMovement(MovementRules.dashVelocity(state.velocity, player.getDeltaMovement().y));
                     input.forwardImpulse = input.leftImpulse = 0;
                 }
-            } else if (state.mode.equals("wall_slide") && !player.onGround() && !input.shiftKeyDown) {
-                var probe = new cn.wwl.orimod.movement.MovementState();
-                probe.forward = input.forwardImpulse; probe.left = input.leftImpulse; probe.yaw = player.getYRot();
-                if (SpiritMovement.touchingWall(player, SpiritMovement.inputDirection(probe, false), -1) != null) {
-                    var velocity = player.getDeltaMovement();
-                    player.setDeltaMovement(velocity.x, Math.max(velocity.y, SpiritMovement.WALL_SLIDE_SPEED), velocity.z);
+            } else if (state.mode == WALL_SLIDE && !player.onGround() && !input.shiftKeyDown) {
+                var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
+                if (SpiritMovement.touchingWall(player, direction, -1) != null) {
+                    player.setDeltaMovement(MovementRules.wallSlideVelocity(player.getDeltaMovement()));
                     player.fallDistance = 0;
                 }
             }
             state.activeTicks--;
         }
         if (state.activeTicks <= 0) {
-            if (state.mode.equals("bash_aim")) player.setDeltaMovement(state.suspendedVelocity);
-            state.mode = "idle";
+            if (state.mode == BASH_AIM) player.setDeltaMovement(state.suspendedVelocity);
+            state.mode = IDLE;
         }
     }
 
@@ -146,8 +144,8 @@ public final class SpiritControls {
             if (mc.player != null) {
                 PacketDistributor.sendToServer(new MovementInputPayload(++inputSequence, mc.player.level().getGameTime(), 0, 0, 0, mc.player.getYRot(), mc.player.getXRot()));
                 var state = mc.player.getData(SpiritData.MOVEMENT);
-                if (state.mode.equals("bash_aim")) mc.player.setDeltaMovement(state.suspendedVelocity);
-                state.mode = "idle"; state.activeTicks = 0; state.active = false;
+                if (state.mode == BASH_AIM) mc.player.setDeltaMovement(state.suspendedVelocity);
+                state.mode = IDLE; state.activeTicks = 0; state.active = false;
                 state.predictedJumps.clear();
             }
             sentActive = false;

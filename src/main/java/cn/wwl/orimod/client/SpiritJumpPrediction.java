@@ -1,5 +1,9 @@
 package cn.wwl.orimod.client;
 
+import cn.wwl.orimod.movement.MoveMode;
+import cn.wwl.orimod.movement.MovementRules;
+import static cn.wwl.orimod.movement.MoveMode.*;
+
 import cn.wwl.orimod.movement.MovementState;
 import cn.wwl.orimod.movement.SpiritMovement;
 import cn.wwl.orimod.network.MovementInputPayload;
@@ -28,20 +32,17 @@ public final class SpiritJumpPrediction {
         // During combat, wait for the existing server cancellation rules instead of predicting
         // an action whose weapon state may still be in transit.
         if (!combat.mode().equals("idle") || SpiritCombatClient.awaitingAttack()) return false;
-        if (state.activeTicks > 0 && (state.mode.equals("dash") || state.mode.equals("bash_aim")
-                || state.mode.equals("grapple") || state.mode.equals("stomp"))) return false;
         state.forward = forward; state.left = left; state.yaw = player.getYRot();
         var wall = SpiritMovement.touchingWall(player, SpiritMovement.inputDirection(state, false), state.wallDirection);
-        String mode = state.groundJumpAvailable && now - state.groundedAt <= SpiritMovement.COYOTE_TICKS ? "jump"
-                : !grounded && wall != null && now >= state.wallReadyAt ? "wall_jump"
-                : !grounded && !state.airJumpSpent ? "double_jump" : "";
-        if (mode.isEmpty()) return false;
+        MoveMode mode = MovementRules.jumpMode(state.groundJumpAvailable, now, state.groundedAt,
+                grounded, wall != null, now >= state.wallReadyAt, state.airJumpSpent,
+                state.activeTicks > 0 && state.mode.blocksJump());
+        if (mode == IDLE) return false;
         Vec3 previous = player.getDeltaMovement();
         player.jumpFromGround();
         state.groundJumpAvailable = false; state.groundLockUntil = now + 4;
-        if (mode.equals("wall_jump")) {
-            Vec3 away = Vec3.atLowerCornerOf(wall.getNormal()).scale(-SpiritMovement.WALL_JUMP_SPEED);
-            player.setDeltaMovement(away.x, Math.max(.5, player.getDeltaMovement().y), away.z);
+        if (mode == WALL_JUMP) {
+            player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));
             player.fallDistance = 0; state.wallReadyAt = now + 8;
             String surface = SpiritMovement.wallSurface(player, wall);
             if (!surface.equals(state.lastWallRefill)) { state.airJumpSpent = state.airDashSpent = false; state.lastWallRefill = surface; }
@@ -49,7 +50,7 @@ public final class SpiritJumpPrediction {
             // Match the established movement contract: normal/double jumps preserve horizontal
             // momentum while wall jumps replace it with the approved outward impulse.
             player.setDeltaMovement(previous.x, player.getDeltaMovement().y, previous.z);
-            if (mode.equals("double_jump")) { player.fallDistance = 0; state.airJumpSpent = true; }
+            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; state.airJumpSpent = true; }
         }
         player.setOnGround(false);
         state.predictedJumps.put(sequence, mode);

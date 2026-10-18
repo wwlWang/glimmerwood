@@ -8,8 +8,10 @@ p = argparse.ArgumentParser(); p.add_argument('build_id')
 args = p.parse_args(); c = DevClient(args.build_id)
 try:
     c.action('focus_game'); c.action('close_screen'); c.ready()
-    c.command('gamemode creative'); c.command('tp @s 40.5 110 40.5'); c.ticks(30)
+    c.command('gamemode creative')
     c.command('fill 36 99 36 48 99 60 moss_block'); c.command('fill 36 100 36 48 111 60 air')
+    c.command('tp @s 40.5 100 40.5'); c.ticks(8)
+    assert c.spirit()['server']['movement']['grounded'], 'Fixture must land before leaving creative mode'
     c.command('gamemode survival'); c.command('difficulty peaceful')
     if not c.spirit()['server']['form']: c.action('toggle_form'); c.ticks(3)
     peaks = []

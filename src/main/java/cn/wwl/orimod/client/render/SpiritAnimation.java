@@ -60,7 +60,7 @@ final class SpiritAnimation {
         if (discontinuity) {
             position = null; shotUntil = -100; lag = speed = 0;
             previousYaw = Mth.rotLerp(partial, player.yBodyRotO, player.yBodyRot);
-            lastMoveId = movement.actionId; lastPrediction = movement.predictedJumpCount; previousMode = movement.mode;
+            lastMoveId = movement.actionId; lastPrediction = movement.predictedJumpCount; previousMode = movement.mode.id();
             grounded = player.onGround(); wasMoving = runningGait = false; lastHurt = player.hurtTime;
             wasBow = false; bowReleasedAt = -100;
             itemPoseWeight = 0;
@@ -76,11 +76,11 @@ final class SpiritAnimation {
             lag = Mth.lerp(1 - (float)Math.exp(-dt * 9), lag, Math.clamp(-angular * .0013f, -.17f, .17f));
         }
         previousYaw = yaw;
-        String mode = movement.mode;
+        String mode = movement.mode.id();
         boolean newPrediction = movement.predictedJumpCount != lastPrediction;
         boolean newAction = movement.actionId != lastMoveId;
         if (newPrediction || newAction) {
-            String action = newPrediction ? movement.lastAction : mode;
+            String action = newPrediction ? movement.lastAction.id() : mode;
             switch (action) {
                 case "double_jump" -> trigger("double_jump", now, .5f);
                 case "wall_jump" -> trigger(movement.left < 0 ? "wall_jump_r" : "wall_jump_l", now, .4f);

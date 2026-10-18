@@ -8,7 +8,8 @@ public final class MovementState {
     public int sequence = -1, actionId, activeTicks, wallDirection = -1;
     public boolean jumpHeld, dashHeld, crouching, active, airJumpSpent = true, airDashSpent = true, groundJumpAvailable;
     public float forward, left, yaw;
-    public String mode = "idle", lastAction = "none", lastWallRefill = "", dimension = "";
+    public MoveMode mode = MoveMode.IDLE, lastAction = MoveMode.IDLE;
+    public String lastWallRefill = "", dimension = "";
     public Vec3 velocity = Vec3.ZERO, previousPosition;
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes;
     public boolean bashHeld;
@@ -23,7 +24,7 @@ public final class MovementState {
     public int grappleStalls, acceptedGrapples, completedGrapples, cancelledGrapples, acceptedStomps, stompImpacts, startedGlides;
     public final java.util.Map<String, Long> targetCooldowns = new java.util.HashMap<>();
     public final java.util.ArrayDeque<JumpRequest> jumps = new java.util.ArrayDeque<>();
-    public final java.util.Map<Integer, String> predictedJumps = new java.util.LinkedHashMap<>();
+    public final java.util.Map<Integer, MoveMode> predictedJumps = new java.util.LinkedHashMap<>();
     public int predictedJumpCount, jumpPredictionMismatches, jumpPredictionRejections;
     public record JumpRequest(int sequence, long pressedAt, long expiresAt, Vec3 position,
                               Vec3 velocity, float fallDistance, net.minecraft.core.Direction wall, boolean predicted) {}

@@ -94,7 +94,7 @@ public final class DamageGameTests {
                     case "glide" -> { s.jumpHeld = true; s.observedDy = -.1; AirMovement.glide(p, s, s.lastInput, false, false); }
                 }
                 boolean combat = action.equals("blade") || action.equals("bow");
-                h.assertValueEqual(combat ? p.getData(SpiritData.COMBAT).mode : s.mode, action, "Action fixture failed");
+                h.assertValueEqual(combat ? p.getData(SpiritData.COMBAT).mode : s.mode.id(), action, "Action fixture failed");
                 float health = p.getHealth();
                 var damageSource = source(p, enemy, arrow, source);
                 if (source.equals("own_arrow")) {
@@ -107,7 +107,7 @@ public final class DamageGameTests {
                     h.assertTrue(p.getHealth() < health, "Damage did not reduce health");
                 }
                 SpiritMovement.tick(new PlayerTickEvent.Post(p)); SpiritCombat.tick(new PlayerTickEvent.Post(p));
-                h.assertValueEqual(combat ? p.getData(SpiritData.COMBAT).mode : s.mode, interrupt ? "idle" : action, "Damage interruption rule");
+                h.assertValueEqual(combat ? p.getData(SpiritData.COMBAT).mode : s.mode.id(), interrupt ? "idle" : action, "Damage interruption rule");
                 if (action.equals("bow")) h.assertTrue(p.isUsingItem() != interrupt, "Bow item use did not follow interruption");
                 if (action.equals("bash_aim") && interrupt) {
                     h.assertTrue(s.bash == null, "Interrupted Bash retained session");

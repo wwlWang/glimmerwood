@@ -686,10 +686,10 @@ public final class DevelopmentBridge {
                 Map.entry("bladeHits", combat.bladeHits), Map.entry("bowShots", combat.bowShots), Map.entry("cancellations", combat.cancellations),
                 Map.entry("lastCancel", combat.lastCancel), Map.entry("usingItem", player.isUsingItem()),
                 Map.entry("useTicks", player.getTicksUsingItem()), Map.entry("energy", cn.wwl.orimod.progression.SpiritProgression.energy(player))));
-        state.put("movement", Map.ofEntries(Map.entry("mode", movement.mode), Map.entry("activeTicks", movement.activeTicks),
+        state.put("movement", Map.ofEntries(Map.entry("mode", movement.mode.id()), Map.entry("activeTicks", movement.activeTicks),
                 Map.entry("airJumpSpent", movement.airJumpSpent), Map.entry("airDashSpent", movement.airDashSpent),
                 Map.entry("inputSequence", movement.sequence), Map.entry("inputActive", movement.active),
-                Map.entry("lastAction", movement.lastAction), Map.entry("wallDirection", movement.wallDirection),
+                Map.entry("lastAction", movement.lastAction.id()), Map.entry("wallDirection", movement.wallDirection),
                 Map.entry("jumps", movement.acceptedJumps), Map.entry("wallJumps", movement.acceptedWallJumps),
                 Map.entry("dashes", movement.acceptedDashes), Map.entry("rejectedDashes", movement.rejectedDashes),
                 Map.entry("dashUnlocked", cn.wwl.orimod.spirit.SpiritData.hasDash(player)),

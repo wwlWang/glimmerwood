@@ -1,5 +1,7 @@
 package cn.wwl.orimod.client;
 
+import static cn.wwl.orimod.movement.MoveMode.*;
+
 import cn.wwl.orimod.OriMod;
 import cn.wwl.orimod.movement.SpiritMovement;
 import cn.wwl.orimod.movement.SpiritTargets;
@@ -33,7 +35,7 @@ public final class SpiritTargetOverlay {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
         var state = mc.player.getData(SpiritData.MOVEMENT);
-        if (state.mode.equals("bash_aim") && state.activeTicks > 0 && state.targetId == event.getEntity().getId()) {
+        if (state.mode == BASH_AIM && state.activeTicks > 0 && state.targetId == event.getEntity().getId()) {
             event.getEntity().setPos(state.targetPosition);
             event.getEntity().setDeltaMovement(Vec3.ZERO);
         }
@@ -44,7 +46,7 @@ public final class SpiritTargetOverlay {
             var mc = Minecraft.getInstance();
             if (mc.player == null || mc.screen != null || mc.options.hideGui || !SpiritData.isSpirit(mc.player)) return;
             var state = mc.player.getData(SpiritData.MOVEMENT);
-            boolean aiming = state.mode.equals("bash_aim");
+            boolean aiming = state.mode == BASH_AIM;
             if (!aiming && candidate == null) return;
             Component text = Component.translatable(aiming ? "hud.orimod.bash_aim" : candidate.grapple() ? "hud.orimod.grapple_target" : "hud.orimod.bash_target",
                     SpiritControls.BASH.getTranslatedKeyMessage());
@@ -63,7 +65,7 @@ public final class SpiritTargetOverlay {
         var mc = Minecraft.getInstance();
         if (mc.player == null || mc.screen != null || mc.options.hideGui || !SpiritData.isSpirit(mc.player)) return;
         var state = mc.player.getData(SpiritData.MOVEMENT);
-        boolean aiming = state.mode.equals("bash_aim");
+        boolean aiming = state.mode == BASH_AIM;
         if (!aiming && candidate == null) return;
         var poses = new PoseStack();
         // LevelRenderer already applies the camera matrix to RenderSystem at this stage.

@@ -1,5 +1,8 @@
 package cn.wwl.orimod.movement;
 
+import static cn.wwl.orimod.movement.MoveMode.*;
+import static cn.wwl.orimod.movement.MovementRules.*;
+
 import cn.wwl.orimod.network.MovementInputPayload;
 import cn.wwl.orimod.network.MovementResultPayload;
 import cn.wwl.orimod.spirit.SpiritData;
@@ -14,13 +17,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class SpiritMovement {
-    public static final int INPUT_BUFFER_TICKS = 2, COYOTE_TICKS = 2, DASH_TICKS = 5, DASH_COOLDOWN_TICKS = 12;
-    public static final double DASH_SPEED = 1.12, WALL_SLIDE_SPEED = -0.12, WALL_JUMP_SPEED = 0.47;
     private static final Direction[] WALLS = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
     private SpiritMovement() {}
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("1");
+        var registrar = event.registrar("2");
         registrar.playToServer(MovementInputPayload.TYPE, MovementInputPayload.CODEC, (input, context) -> {
             if (context.player() instanceof ServerPlayer player) accept(player, input);
         });
@@ -70,17 +71,17 @@ public final class SpiritMovement {
             if (dash && !s.dashHeld) {
                 if (s.bash != null || s.grapple != null) cancel(player, s);
                 if (s.crouching) AirMovement.beginStomp(player, s, now);
-                else if (!s.mode.equals("stomp")) tryDash(player, s, now);
+                else if (s.mode != STOMP) tryDash(player, s, now);
             }
             if (bash && !s.bashHeld) {
                 if (s.grapple != null) cancel(player, s);
-                else if (!s.mode.equals("stomp")) beginBash(player, s, now);
+                else if (s.mode != STOMP) beginBash(player, s, now);
             }
             else if (!bash && s.bashHeld && s.bash != null) releaseBash(player, s, now);
         } else {
             s.jumpUntil = -100;
             s.jumps.clear();
-            if (wasActive || !s.mode.equals("idle")) cancel(player, s);
+            if (wasActive || s.mode != IDLE) cancel(player, s);
         }
         s.jumpHeld = jump;
         s.dashHeld = dash;
@@ -110,13 +111,13 @@ public final class SpiritMovement {
             s.groundJumpAvailable = true;
             s.groundedAt = now;
             s.lastWallRefill = "";
-            if (refilled && !s.mode.equals("dash") && !s.mode.equals("stomp") && s.bash == null && s.grapple == null) signal(player, s, "idle", 0, Vec3.ZERO);
+            if (refilled && s.mode != DASH && s.mode != STOMP && s.bash == null && s.grapple == null) signal(player, s, IDLE, 0, Vec3.ZERO);
         }
         if (!s.active || now - s.lastInput > 4 || !canMove(player)) {
             s.active = false;
             s.jumpUntil = -100;
             s.jumps.clear();
-            if (!s.mode.equals("idle")) cancel(player, s);
+            if (s.mode != IDLE) cancel(player, s);
             return;
         }
         if (s.bash != null) {
@@ -134,40 +135,38 @@ public final class SpiritMovement {
             else break;
         }
         s.jumpUntil = s.jumps.isEmpty() ? -100 : s.jumps.getFirst().expiresAt();
-        if (s.mode.equals("dash")) {
+        if (s.mode == DASH) {
             if (s.activeTicks-- <= 0 || player.horizontalCollision || s.crouching) cancel(player, s);
             return;
         }
         if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && player.getDeltaMovement().y < 0) {
             // A short renewable lease prevents a missed release from leaving the client attached to a wall.
-            signal(player, s, "wall_slide", 3, Vec3.ZERO);
+            signal(player, s, WALL_SLIDE, 3, Vec3.ZERO);
             player.fallDistance = 0;
         } else {
-            if (s.mode.equals("wall_slide")) cancel(player, s);
+            if (s.mode == WALL_SLIDE) cancel(player, s);
             AirMovement.glide(player, s, now, grounded, wall != null || player.horizontalCollision);
         }
     }
 
     private static boolean tryJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request, long now) {
-        if (s.crouching || s.bash != null || s.grapple != null || s.mode.equals("stomp") || s.mode.equals("dash")) return false;
+        if (s.crouching || s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
         Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
         if (wall == null) wall = request.wall();
-        String mode = s.groundJumpAvailable && request.pressedAt() - s.groundedAt <= COYOTE_TICKS ? "jump"
-                : !onGround && wall != null && now >= s.wallReadyAt ? "wall_jump"
-                : !onGround && !s.airJumpSpent ? "double_jump" : "";
-        if (mode.isEmpty() || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
+        MoveMode mode = MovementRules.jumpMode(s.groundJumpAvailable, request.pressedAt(), s.groundedAt,
+                onGround, wall != null, now >= s.wallReadyAt, s.airJumpSpent, false);
+        if (mode == IDLE || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
         player.jumpFromGround();
         s.groundJumpAvailable = false; s.groundLockUntil = now + 4; s.jumpPressedAt = request.pressedAt();
-        if (mode.equals("wall_jump")) {
-            Vec3 away = Vec3.atLowerCornerOf(wall.getNormal()).scale(-WALL_JUMP_SPEED);
-            player.setDeltaMovement(away.x, Math.max(.5, player.getDeltaMovement().y), away.z);
+        if (mode == WALL_JUMP) {
+            player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));
             player.fallDistance = 0; s.wallReadyAt = now + 8;
             String surface = wallSurface(player, wall);
             if (!surface.equals(s.lastWallRefill)) { s.airJumpSpent = s.airDashSpent = false; s.lastWallRefill = surface; }
             s.acceptedWallJumps++;
         } else {
-            if (mode.equals("double_jump")) { player.fallDistance = 0; s.airJumpSpent = true; }
+            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; s.airJumpSpent = true; }
             s.acceptedJumps++;
         }
         player.setOnGround(false);
@@ -189,7 +188,7 @@ public final class SpiritMovement {
         player.setDeltaMovement(request.velocity());
         player.fallDistance = Math.max(player.fallDistance, request.fallDistance());
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
-                ++s.actionId, request.sequence(), "jump_reject", 0, request.velocity(), s.airJumpSpent, s.airDashSpent, -1, Vec3.ZERO));
+                ++s.actionId, request.sequence(), JUMP_REJECT, 0, request.velocity(), s.airJumpSpent, s.airDashSpent, -1, Vec3.ZERO));
     }
 
     private static void tryDash(ServerPlayer player, MovementState s, long now) {
@@ -209,9 +208,9 @@ public final class SpiritMovement {
         s.acceptedDashes++;
         Vec3 direction = inputDirection(s, true).scale(DASH_SPEED);
         // Horizontal dash preserves falling history. It never sets noGravity, noPhysics or fallDistance.
-        Vec3 velocity = new Vec3(direction.x, Math.min(0, player.getDeltaMovement().y), direction.z);
+        Vec3 velocity = MovementRules.dashVelocity(direction, player.getDeltaMovement().y);
         player.setDeltaMovement(velocity);
-        signal(player, s, "dash", DASH_TICKS, velocity);
+        signal(player, s, DASH, DASH_TICKS, velocity);
     }
 
     public static boolean grounded(Player player) {
@@ -219,11 +218,7 @@ public final class SpiritMovement {
     }
 
     public static Vec3 inputDirection(MovementState s, boolean fallback) {
-        float yaw = s.yaw * Mth.DEG_TO_RAD;
-        Vec3 direction = new Vec3(s.left * Mth.cos(yaw) - s.forward * Mth.sin(yaw), 0,
-                s.forward * Mth.cos(yaw) + s.left * Mth.sin(yaw));
-        if (direction.lengthSqr() < 0.01) return fallback ? new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw)) : Vec3.ZERO;
-        return direction.normalize();
+        return MovementRules.inputDirection(s.forward, s.left, s.yaw, fallback);
     }
 
     public static Direction touchingWall(Player player, Vec3 toward, int previous) {
@@ -244,7 +239,7 @@ public final class SpiritMovement {
 
     public static void interrupt(ServerPlayer player) {
         var s = player.getData(SpiritData.MOVEMENT);
-        if (!s.active && s.mode.equals("idle") && s.bash == null && s.grapple == null) return;
+        if (!s.active && s.mode == IDLE && s.bash == null && s.grapple == null) return;
         s.active = false;
         cancel(player, s, true);
     }
@@ -262,11 +257,11 @@ public final class SpiritMovement {
             s.bash = null;
             s.cancelledBashes++;
             player.setDeltaMovement(velocity);
-            signal(player, s, "resume", 0, velocity);
-            s.mode = "idle";
+            signal(player, s, RESUME, 0, velocity);
+            s.mode = IDLE;
             return;
         }
-        signal(player, s, "idle", 0, Vec3.ZERO);
+        signal(player, s, IDLE, 0, Vec3.ZERO);
     }
 
     private static void beginBash(ServerPlayer player, MovementState s, long now) {
@@ -284,7 +279,7 @@ public final class SpiritMovement {
         s.bash = new BashSession(player, target);
         s.jumpUntil = -100;
         s.bash.hold(player);
-        signal(player, s, "bash_aim", BashSession.AIM_TICKS, Vec3.ZERO);
+        signal(player, s, BASH_AIM, BashSession.AIM_TICKS, Vec3.ZERO);
     }
 
     private static void releaseBash(ServerPlayer player, MovementState s, long now) {
@@ -302,16 +297,16 @@ public final class SpiritMovement {
         Vec3 velocity = direction.scale(1.25);
         player.setDeltaMovement(velocity);
         player.fallDistance = 0;
-        signal(player, s, "bash_launch", 0, velocity);
+        signal(player, s, BASH_LAUNCH, 0, velocity);
     }
 
-    static void signal(ServerPlayer player, MovementState s, String mode, int ticks, Vec3 velocity) {
+    static void signal(ServerPlayer player, MovementState s, MoveMode mode, int ticks, Vec3 velocity) {
         signal(player, s, mode, ticks, velocity, -1);
     }
 
-    private static void signal(ServerPlayer player, MovementState s, String mode, int ticks, Vec3 velocity, int jumpSequence) {
+    private static void signal(ServerPlayer player, MovementState s, MoveMode mode, int ticks, Vec3 velocity, int jumpSequence) {
         s.mode = mode;
-        if (!mode.equals("idle") && !mode.equals("wall_slide")) s.lastAction = mode;
+        if (mode != IDLE && mode != WALL_SLIDE) s.lastAction = mode;
         s.activeTicks = ticks;
         s.velocity = velocity;
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
