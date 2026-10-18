@@ -8,7 +8,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -18,7 +17,7 @@ import java.util.TreeMap;
  * ({@code shaderpacks/Spirit Glow.zip.txt}).
  *
  * <p>Only the {@link #MANAGED} options are touched, and only while they still hold the value this
- * mod wrote last; an option the player changed in the Iris pack screen stays theirs. Like Iris, the
+ * mod wrote last or the pack default; a non-default value the player set in the Iris pack screen stays theirs. Like Iris, the
  * file lists only values that differ from the pack defaults, so an absent key means "default".
  */
 public final class SpiritGlowProfile {
@@ -70,8 +69,10 @@ public final class SpiritGlowProfile {
         for (var key : MANAGED) {
             String expected = owned.get(key);
             if (expected != null && expected.isEmpty()) expected = null;
-            // Ours while it still holds what we wrote (or the default, which we may always take back).
-            if (!Objects.equals(current.get(key), expected)) continue;
+            // Ours while it still holds what we wrote, or the pack default (absent), which we may always take back:
+            // Iris also drops values it does not recognise as options, and those must not stay locked.
+            String now = current.get(key);
+            if (now != null && !now.equals(expected)) continue;
             String value = target.get(key);
             if (value == null) options.remove(key); else options.put(key, value);
             nowOwned.put(key, value == null ? "" : value);

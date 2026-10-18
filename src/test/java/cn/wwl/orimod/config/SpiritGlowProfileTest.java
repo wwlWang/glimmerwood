@@ -60,6 +60,15 @@ class SpiritGlowProfileTest {
         assertFalse(plan.owned().containsKey("SHADOW_MAP_RESOLUTION"));
     }
 
+    @Test void anOptionBackAtItsDefaultIsManagedAgain() {
+        var detailed = SpiritGlowProfile.plan(Map.of(), Map.of(), VisualQuality.DETAILED);
+        var dropped = new java.util.TreeMap<>(detailed.options());
+        dropped.remove("IMAGE_SHARPENING");     // Iris rewrote the file without it (or the player reset it)
+        var again = SpiritGlowProfile.plan(dropped, detailed.owned(), VisualQuality.DETAILED);
+        assertEquals("true", again.options().get("IMAGE_SHARPENING"));
+        assertTrue(again.changed());
+    }
+
     @Test void filesRoundTrip(@TempDir Path dir) throws Exception {
         var file = dir.resolve("Spirit Glow.zip.txt");
         assertTrue(SpiritGlowProfile.read(file).isEmpty());
