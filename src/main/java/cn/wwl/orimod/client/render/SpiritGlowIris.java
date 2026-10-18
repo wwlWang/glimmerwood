@@ -51,6 +51,17 @@ final class SpiritGlowIris {
         invalidatePhoton();
     }
 
+    /** Iris keeps a pack's option values next to it as {@code <pack>.txt}. */
+    static java.nio.file.Path optionsFile() {
+        return Iris.getShaderpacksDirectory().resolve(SpiritGlowSync.PACK + ".txt");
+    }
+
+    /** Rebuilds the active pipeline so changed pack options take effect. */
+    static void reload() throws IOException {
+        Iris.reload();
+        invalidatePhoton();
+    }
+
     static boolean exists(String pack) {
         try {
             return Files.exists(Iris.getShaderpacksDirectory().resolve(pack));

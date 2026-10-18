@@ -1,8 +1,9 @@
 package cn.wwl.orimod.config;
 
 /**
- * Mod-owned effect quality tiers. They scale only effects that this mod emits; the shader pack,
- * vanilla video settings and other mods keep their own controls.
+ * Mod-owned effect quality tiers. They scale effects that this mod emits and pick the profile of the
+ * bundled Spirit Glow pack ({@link SpiritGlowProfile}); other shader packs, vanilla video settings and
+ * other mods keep their own controls.
  */
 public enum VisualQuality implements net.neoforged.neoforge.common.TranslatableEnum {
     FLUENT(0.5), BALANCED(1.0), DETAILED(1.5);

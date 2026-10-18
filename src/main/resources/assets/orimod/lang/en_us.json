@@ -175,7 +175,7 @@
   "orimod.configuration.visuals.button": "Effect quality",
   "orimod.configuration.visuals.tooltip": "Effects emitted by this mod. Shader packs and vanilla video settings keep their own options.",
   "orimod.configuration.quality": "Effect quality",
-  "orimod.configuration.quality.tooltip": "Fluent, Balanced (default) or Detailed: number of decorative spirit particles.",
+  "orimod.configuration.quality.tooltip": "Fluent, Balanced (default) or Detailed: number of decorative spirit particles, and the Spirit Glow shader profile (Fast / Fancy / Fabulous) while that pack is used. Pack options you change in Iris are kept.",
   "orimod.configuration.advancedParticles": "Advanced particles",
   "orimod.configuration.advancedParticles.tooltip": "Off keeps only the particles that mark hits, landings, arrows and challenge routes. Abilities stay available.",
   "orimod.configuration.spiritGlow": "Spirit Glow shader",

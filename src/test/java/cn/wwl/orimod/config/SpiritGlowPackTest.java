@@ -81,4 +81,35 @@ class SpiritGlowPackTest {
         assertTrue(settings.contains("\n// #define SPIRIT_PAINTERLY\n"), "painterly smoothing stays opt-in");
         assertTrue(settings.contains("\n#define GODRAYS\n"), "god rays on by default");
     }
+
+    /** PERF04: the pack's profile lines and the mod's tier overrides must describe the same settings. */
+    @Test void qualityTiersMatchThePackProfiles() throws Exception {
+        var settings = read("shaders/lib/settings.glsl");
+        var properties = read("shaders/shaders.properties");
+        var defaults = new java.util.HashMap<String, String>();
+        for (var key : SpiritGlowProfile.MANAGED) {
+            var value = Pattern.compile("^#define " + key + " (\\S+)", Pattern.MULTILINE).matcher(settings);
+            if (value.find()) { defaults.put(key, value.group(1)); continue; }
+            boolean on = Pattern.compile("^#define " + key + "\\s*$", Pattern.MULTILINE).matcher(settings).find();
+            boolean off = Pattern.compile("^//\\s*#define " + key + "\\s*$", Pattern.MULTILINE).matcher(settings).find();
+            assertTrue(on ^ off, "default of " + key);
+            defaults.put(key, Boolean.toString(on));
+        }
+        for (var quality : VisualQuality.values()) {
+            var line = Pattern.compile("^profile\\." + SpiritGlowProfile.profile(quality) + "=(.*)$", Pattern.MULTILINE).matcher(properties);
+            assertTrue(line.find(), "profile line for " + quality);
+            var profile = new java.util.HashMap<String, String>();
+            for (var entry : line.group(1).trim().split("\\s+")) {
+                if (entry.startsWith("!")) profile.put(entry.substring(1), "false");
+                else if (entry.contains("=")) profile.put(entry.substring(0, entry.indexOf('=')), entry.substring(entry.indexOf('=') + 1));
+                else profile.put(entry, "true");
+            }
+            assertEquals(new java.util.HashSet<>(SpiritGlowProfile.MANAGED), profile.keySet(), "profile " + quality + " lists exactly the managed options");
+            var expected = new java.util.HashMap<>(defaults);
+            expected.putAll(SpiritGlowProfile.overrides(quality));
+            assertEquals(profile, expected, quality + " = pack defaults + overrides");
+            for (var entry : SpiritGlowProfile.overrides(quality).entrySet())
+                assertNotEquals(defaults.get(entry.getKey()), entry.getValue(), "override equal to the default: " + entry.getKey());
+        }
+    }
 }

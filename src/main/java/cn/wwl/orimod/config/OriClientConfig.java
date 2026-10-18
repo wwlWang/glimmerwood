@@ -28,8 +28,9 @@ public final class OriClientConfig {
                         "Switching the camera with F5 while in spirit form updates this value.")
                 .defineEnum("spiritCamera", SpiritCameraView.THIRD_PERSON_BACK);
         builder.push("visuals");
-        QUALITY = builder.comment("Spirit effect quality: FLUENT, BALANCED (default) or DETAILED. Scales only particles emitted by this mod;",
-                        "the shader pack and vanilla video settings are unchanged.")
+        QUALITY = builder.comment("Spirit effect quality: FLUENT, BALANCED (default) or DETAILED. Scales particles emitted by this mod and,",
+                        "while the bundled Spirit Glow pack is used, selects its FAST / FANCY / FABULOUS shader profile.",
+                        "Spirit Glow options changed in the Iris pack screen are kept; other packs and vanilla video settings are unchanged.")
                 .defineEnum("quality", VisualQuality.BALANCED);
         ADVANCED_PARTICLES = builder.comment("Decorative spirit particles. When off, only the few particles that mark hits, landings,",
                         "arrows and challenge routes are kept, so gameplay feedback stays readable. Abilities are never disabled.")

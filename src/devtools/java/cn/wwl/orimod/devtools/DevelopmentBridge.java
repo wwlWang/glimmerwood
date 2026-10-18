@@ -526,6 +526,12 @@ public final class DevelopmentBridge {
                 cn.wwl.orimod.config.OriClientConfig.SPEC.save();
                 return Map.of("spiritGlow", cn.wwl.orimod.client.render.SpiritGlow.diagnostics());
             }
+            case "visual_quality" -> {
+                // Same stored value the settings screen cycles; SpiritGlow maps it to a shader profile on its next check.
+                cn.wwl.orimod.config.OriClientConfig.QUALITY.set(cn.wwl.orimod.config.VisualQuality.valueOf(action.get("quality").getAsString()));
+                cn.wwl.orimod.config.OriClientConfig.SPEC.save();
+                return Map.of("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
+            }
             case "render_diagnostics" -> {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()));
