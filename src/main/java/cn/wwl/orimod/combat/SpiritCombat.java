@@ -175,7 +175,10 @@ public final class SpiritCombat {
     }
 
     public static void damaged(LivingDamageEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer player && event.getNewDamage() > 0) cancel(player, "damage");
+        if (event.getEntity() instanceof ServerPlayer player && DamageInterrupts.action(player, event.getSource(), event.getNewDamage())) {
+            cancel(player, "damage");
+            cn.wwl.orimod.movement.SpiritMovement.interrupt(player);
+        }
         if (event.getSource().getDirectEntity() instanceof Arrow arrow && arrow.getTags().contains("orimod_spirit_arrow")
                 && event.getSource().getEntity() instanceof ServerPlayer player && event.getNewDamage() > 0) {
             player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, .35f, 1.25f);

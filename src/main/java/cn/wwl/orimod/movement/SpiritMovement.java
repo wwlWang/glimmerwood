@@ -112,9 +112,7 @@ public final class SpiritMovement {
             s.lastWallRefill = "";
             if (refilled && !s.mode.equals("dash") && !s.mode.equals("stomp") && s.bash == null && s.grapple == null) signal(player, s, "idle", 0, Vec3.ZERO);
         }
-        boolean hurt = player.hurtTime > s.lastHurtTime;
-        s.lastHurtTime = player.hurtTime;
-        if (!s.active || now - s.lastInput > 4 || !canMove(player) || hurt) {
+        if (!s.active || now - s.lastInput > 4 || !canMove(player)) {
             s.active = false;
             s.jumpUntil = -100;
             s.jumps.clear();
@@ -241,11 +239,24 @@ public final class SpiritMovement {
     }
 
     public static void cancel(ServerPlayer player, MovementState s) {
+        cancel(player, s, false);
+    }
+
+    public static void interrupt(ServerPlayer player) {
+        var s = player.getData(SpiritData.MOVEMENT);
+        if (!s.active && s.mode.equals("idle") && s.bash == null && s.grapple == null) return;
+        s.active = false;
+        cancel(player, s, true);
+    }
+
+    private static void cancel(ServerPlayer player, MovementState s, boolean interrupted) {
         s.jumpUntil = -100;
         s.jumps.clear();
         if (s.grapple != null) { s.grapple = null; s.cancelledGrapples++; }
         if (s.bash != null) {
-            Vec3 velocity = player.hurtTime > 0 ? player.getDeltaMovement() : s.bash.playerVelocity;
+            // LivingDamageEvent.Post precedes vanilla knockback and the hurtTime assignment.
+            // Preserve current motion for an attack; a manual/timeout release restores suspended motion.
+            Vec3 velocity = interrupted ? player.getDeltaMovement() : s.bash.playerVelocity;
             player.fallDistance = s.bash.playerFallDistance;
             s.bash.release(null);
             s.bash = null;

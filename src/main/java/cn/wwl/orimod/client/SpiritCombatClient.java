@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class SpiritCombatClient {
     private static boolean blockUse, sentCancel;
-    private static int lastAction, lastHurt, awaitingAttackUntil;
+    private static int lastAction, awaitingAttackUntil;
     private SpiritCombatClient() {}
 
     public static void input(InputEvent.InteractionKeyMappingTriggered event) {
@@ -55,11 +55,10 @@ public final class SpiritCombatClient {
 
     public static void tick(ClientTickEvent.Pre event) {
         var mc = Minecraft.getInstance();
-        if (mc.player == null) { lastAction = lastHurt = awaitingAttackUntil = 0; blockUse = sentCancel = false; return; }
+        if (mc.player == null) { lastAction = awaitingAttackUntil = 0; blockUse = sentCancel = false; return; }
         if (!mc.options.keyUse.isDown()) blockUse = false;
-        if (mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player) || mc.player.hurtTime > lastHurt) cancel();
+        if (mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player)) cancel();
         else sentCancel = false;
-        lastHurt = mc.player.hurtTime;
         var view = mc.player.getData(SpiritData.COMBAT_VIEW);
         if (view.actionId() != lastAction) {
             awaitingAttackUntil = 0;

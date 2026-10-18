@@ -23,8 +23,7 @@ public final class SpiritJumpPrediction {
             state.airJumpSpent = state.airDashSpent = false;
             state.groundJumpAvailable = true; state.groundedAt = now; state.lastWallRefill = "";
         }
-        if (!edge || (flags & MovementInputPayload.CROUCH) != 0 || state.predictedJumps.size() >= 4
-                || player.hurtTime > state.lastHurtTime) return false;
+        if (!edge || (flags & MovementInputPayload.CROUCH) != 0 || state.predictedJumps.size() >= 4) return false;
         var combat = player.getData(SpiritData.COMBAT_VIEW);
         // During combat, wait for the existing server cancellation rules instead of predicting
         // an action whose weapon state may still be in transit.

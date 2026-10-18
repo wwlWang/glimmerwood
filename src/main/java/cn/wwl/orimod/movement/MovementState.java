@@ -11,7 +11,6 @@ public final class MovementState {
     public String mode = "idle", lastAction = "none", lastWallRefill = "", dimension = "";
     public Vec3 velocity = Vec3.ZERO, previousPosition;
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes;
-    public int lastHurtTime;
     public boolean bashHeld;
     public float pitch;
     public BashSession bash;

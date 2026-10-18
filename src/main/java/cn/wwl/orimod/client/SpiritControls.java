@@ -52,12 +52,11 @@ public final class SpiritControls {
         sentActive = active;
         if (SpiritMovement.canMove(player)) input.jumping = false;
         state.active = active;
-        if (!active || player.hurtTime > state.lastHurtTime) {
-            if (state.mode.equals("bash_aim") && player.hurtTime <= state.lastHurtTime) player.setDeltaMovement(state.suspendedVelocity);
+        if (!active) {
+            if (state.mode.equals("bash_aim")) player.setDeltaMovement(state.suspendedVelocity);
             state.mode = "idle";
             state.activeTicks = 0;
         }
-        state.lastHurtTime = player.hurtTime;
         if (state.activeTicks > 0 && active) {
             if (state.mode.equals("bash_aim")) {
                 player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);

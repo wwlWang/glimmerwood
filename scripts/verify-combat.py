@@ -97,7 +97,7 @@ try:
         before=c.start();c.key('use',80);c.ticks(10)
         assert combat()['mode']=='bow',combat()
         if reason=='menu':c.action('open_inventory')
-        elif reason=='damage':c.command('damage @s 1 minecraft:generic')
+        elif reason=='damage':c.command('damage @s 1 minecraft:mob_attack by @e[tag=orimod_combat_test,limit=1]')
         elif reason=='form':c.action('toggle_form')
         else:c.action('select_slot',slot=0)
         c.ticks(5);c.action('release_keys');c.action('close_screen');c.ticks(10)

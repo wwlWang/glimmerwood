@@ -62,7 +62,7 @@ try:
             client.ticks(4)
             client.action('close_screen', keepKeys=True)
         elif reason == 'damage':
-            client.command('damage @s 1 minecraft:generic')
+            client.command('damage @s 1 minecraft:mob_attack by @e[tag=orimod_bash_test,limit=1]')
             client.ticks(3)
         elif reason == 'form':
             client.action('toggle_form')
