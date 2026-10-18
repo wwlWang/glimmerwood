@@ -6,6 +6,7 @@ from pathlib import Path
 import struct
 
 ROOT=Path(__file__).resolve().parents[1]
+ANIMATION_CONTRACT=json.loads((ROOT/'src/main/resources/assets/orimod/models/entity/animation_contract.json').read_text(encoding='utf-8'))['required']
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -48,6 +49,9 @@ def validate(manifest, formal=False):
     expected=manifest['animation']['clips'] if formal else manifest['clips']
     names=[a['name'] for a in gltf['animations']]
     assert len(names)==len(set(names)) and set(names)==set(expected)
+    if formal:
+        missing=set(ANIMATION_CONTRACT)-set(names)
+        assert not missing, ('Runtime animation contract missing', sorted(missing))
     vertices=triangles=0
     for p in gltf['meshes'][0]['primitives']:
         a=p['attributes']

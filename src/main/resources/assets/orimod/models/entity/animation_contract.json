@@ -1,0 +1,13 @@
+{
+  "required": [
+    "alert", "apex", "bash_aim", "bash_launch", "bend",
+    "blade_1", "blade_1_left", "blade_2", "blade_2_left", "blade_3", "blade_3_left",
+    "block", "block_left", "bow_charge", "bow_charge_left", "bow_hold", "bow_hold_left",
+    "bow_release", "bow_release_left", "climb", "crouch", "dash_end", "dash_start", "death",
+    "double_jump", "fall", "glide", "glide_close", "glide_open", "grapple", "hold", "hold_left",
+    "hurt", "idle", "jump_start", "land_heavy", "land_light", "recover", "rise", "run", "sit",
+    "sleep", "start", "stomp", "stop", "swim", "tail_sway", "transform_in", "transform_out",
+    "turn_left", "turn_right", "use_item", "use_item_left", "walk", "wall_hold", "wall_jump_l",
+    "wall_jump_r", "wall_slide"
+  ]
+}

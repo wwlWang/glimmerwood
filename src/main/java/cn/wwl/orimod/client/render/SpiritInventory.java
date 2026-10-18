@@ -55,10 +55,13 @@ public final class SpiritInventory {
         ItemStack rightItem = mainLeft ? player.getOffhandItem() : player.getMainHandItem();
         BlendMask held = !leftItem.isEmpty() && !rightItem.isEmpty() ? bothArms : !leftItem.isEmpty() ? leftArm : !rightItem.isEmpty() ? rightArm : null;
         float now = (player.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) / 20f;
-        BLEND.clear().override(model.animation("idle"), model.animation("idle").loop(now), 1,
+        var idle = SpiritClips.get(model, "idle");
+        var holdLeft = SpiritClips.get(model, "hold_left");
+        var holdRight = SpiritClips.get(model, "hold");
+        BLEND.clear().override(idle, idle.loop(now), 1,
                 held == null ? BlendMask.ALL : held.complement(table));
-        if (!leftItem.isEmpty()) BLEND.override(model.animation("hold_left"), model.animation("hold_left").loop(now), 1, leftArm);
-        if (!rightItem.isEmpty()) BLEND.override(model.animation("hold"), model.animation("hold").loop(now), 1, rightArm);
+        if (!leftItem.isEmpty()) BLEND.override(holdLeft, holdLeft.loop(now), 1, leftArm);
+        if (!rightItem.isEmpty()) BLEND.override(holdRight, holdRight.loop(now), 1, rightArm);
         BLEND.additive(lookYaw, -Mth.wrapDegrees(player.yHeadRot - player.yBodyRot) * Mth.DEG_TO_RAD, 1, head, rest);
         BLEND.additive(lookPitch, player.getXRot() * Mth.DEG_TO_RAD, 1, head, rest);
         GltfPose.evaluate(model.layout(), BLEND, palette, model.morphs(), null, SCRATCH);

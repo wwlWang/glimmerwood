@@ -37,6 +37,7 @@ final class SpiritAnimation {
     private Vec3 position;
     private String previousMode = "idle", selected = "", shot = "", overlay = "";
     private float selectedClock, clipTime;
+    private String baseClipName = "", overlayClipName = "";
 
     SpiritAnimation(Player player) { this.player = player; }
 
@@ -44,6 +45,9 @@ final class SpiritAnimation {
     String overlay() { return overlay; }
     float clipTime() { return clipTime; }
     float speed() { return speed; }
+    String baseClip() { return baseClipName; }
+    String overlayClip() { return overlayClipName; }
+    java.util.List<String> missingClips() { return loaded == null ? java.util.List.of() : SpiritClips.missing(loaded); }
     float aimContactError() { return armPose == null || !overlay.startsWith("bow_") && itemPoseWeight == 0 ? 0 : armPose.contactError(); }
 
     void write(GemRenderGltfModel model, float partial, AnimationBlend blend) {
@@ -130,25 +134,27 @@ final class SpiritAnimation {
             else if (moving) next = runningGait ? "run" : "walk";
             else next = now - lastMovingAt > 9 ? "alert" : "idle";
         }
-        if (model.animation(next) == null) next = "idle";
-        float rate = switch (next) {
-            case "walk" -> speed * model.animation(next).duration() / .8f;
-            case "run" -> speed * model.animation(next).duration() / 2f;
+        GltfAnimation nextClip = SpiritClips.get(model, next);
+        baseClipName = nextClip.name();
+        float rate = nextClip.name().equals(next) ? switch (next) {
+            case "walk" -> speed * nextClip.duration() / .8f;
+            case "run" -> speed * nextClip.duration() / 2f;
             case "climb" -> Math.clamp((float)Math.abs(player.getDeltaMovement().y) * 10, .2f, 2);
             default -> 1;
-        };
+        } : 1;
         clock += dt * Math.max(.05f, rate);
         if (!next.equals(selected)) {
-            float duration = model.animation(next).duration();
-            float playSpeed = next.equals("start") ? duration / .12f : next.equals("jump_start") ? duration / .15f : 1;
-            base.play(model.animation(next), clock, next.equals("double_jump") ? .045f : .11f, FadeCurve.SMOOTH, 0, playSpeed, loops(next));
+            float duration = nextClip.duration();
+            float playSpeed = !nextClip.name().equals(next) ? 1 : next.equals("start") ? duration / .12f : next.equals("jump_start") ? duration / .15f : 1;
+            base.play(nextClip, clock, next.equals("double_jump") ? .045f : .11f, FadeCurve.SMOOTH, 0, playSpeed, loops(nextClip.name()));
             selected = next; selectedClock = clock; selectedPlaySpeed = playSpeed;
         }
         float elapsedClip = (clock - selectedClock) * selectedPlaySpeed;
-        clipTime = loops(next) ? model.animation(next).loop(elapsedClip) : Math.min(model.animation(next).duration(), elapsedClip);
+        clipTime = loops(nextClip.name()) ? nextClip.loop(elapsedClip) : Math.min(nextClip.duration(), elapsedClip);
 
         var combat = player.getData(SpiritData.COMBAT_VIEW);
         overlay = "";
+        overlayClipName = "";
         float overlayTime = 0;
         BlendMask mask = null, below = null;
         boolean mainLeft = player.getMainArm() == HumanoidArm.LEFT;
@@ -189,7 +195,7 @@ final class SpiritAnimation {
             if (combat.mode().equals("blade")) {
                 overlay = handed("blade_" + Math.clamp(combat.stage(), 1, 3), mainLeft);
                 float elapsed = (player.level().getGameTime() - combat.startedAt() + partial) / 20f;
-                overlayTime = elapsed * model.animation(overlay).duration() / (SpiritCombat.duration(combat.stage()) / 20f);
+                overlayTime = elapsed * SpiritClips.get(model, overlay).duration() / (SpiritCombat.duration(combat.stage()) / 20f);
                 mask = upperBody; below = belowUpper;
             } else if (player.isUsingItem()) {
                 float elapsed = (player.getTicksUsingItem() + partial) / 20f;
@@ -210,7 +216,7 @@ final class SpiritAnimation {
             } else if (player.getAttackAnim(partial) > .001f) {
                 overlayLeft = player.swingingArm == InteractionHand.OFF_HAND ? !mainLeft : mainLeft;
                 overlay = handed("blade_1", overlayLeft);
-                overlayTime = player.getAttackAnim(partial) * model.animation(overlay).duration();
+                overlayTime = player.getAttackAnim(partial) * SpiritClips.get(model, overlay).duration();
                 mask = overlayLeft ? leftArm : rightArm; below = overlayLeft ? belowLeft : belowRight;
             }
         }
@@ -223,8 +229,9 @@ final class SpiritAnimation {
         if (below == null) base.write(clock, blend);
         else base.write(clock, blend, 1, below);
         if (mask != null) {
-            GltfAnimation action = model.animation(overlay);
-            float time = loops(overlay) ? action.loop(overlayTime) : Math.clamp(overlayTime, 0, Math.max(0, action.duration() - .0001f));
+            GltfAnimation action = SpiritClips.get(model, overlay);
+            overlayClipName = action.name();
+            float time = loops(action.name()) ? action.loop(overlayTime) : Math.clamp(overlayTime, 0, Math.max(0, action.duration() - .0001f));
             blend.override(action, time, 1, mask);
         }
         if (holdLeft) hold(model, blend, now, true);
@@ -268,7 +275,7 @@ final class SpiritAnimation {
     }
 
     private void hold(GemRenderGltfModel model, AnimationBlend blend, float now, boolean left) {
-        GltfAnimation clip = model.animation(handed("hold", left));
+        GltfAnimation clip = SpiritClips.get(model, handed("hold", left));
         blend.override(clip, clip.loop(now), 1, left ? leftArm : rightArm);
     }
 

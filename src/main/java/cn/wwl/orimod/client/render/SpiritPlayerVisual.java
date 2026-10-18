@@ -30,6 +30,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
     private Body body;
 
     public static void register() {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritClips::tick);
         SimpleEntityVisualizer.builder(EntityType.PLAYER).factory(SpiritPlayerVisual::new)
                 .skipVanillaRender(player -> SpiritAppearance.visible(player) && GemRenderModels.handle(MODEL).get() != null).apply();
     }
@@ -58,6 +59,8 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         var result = new java.util.LinkedHashMap<String, Object>();
         result.put("visible", true); result.put("base", b.animation.selected()); result.put("overlay", b.animation.overlay());
         result.put("clipTime", b.animation.clipTime()); result.put("speed", b.animation.speed());
+        result.put("baseClip", b.animation.baseClip()); result.put("overlayClip", b.animation.overlayClip());
+        result.put("missingClips", b.animation.missingClips());
         result.put("aimContactError", b.animation.aimContactError());
         result.put("sockets", b.socketsReady); result.put("shadow", b.shadow != null);
         if (b.socketsReady) {
@@ -151,7 +154,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         }
 
         @Override protected void animate(float partialTick, GltfAnimation[] clips, float[] times) {
-            clips[0] = model() == null ? null : model().animation("idle");
+            clips[0] = model() == null ? null : SpiritClips.get(model(), "idle");
             times[0] = (entity.tickCount + partialTick) / 20.0f;
         }
     }
