@@ -57,4 +57,28 @@ class SpiritGlowPackTest {
             }
         }
     }
+
+    @Test void spiritStyleOptionsAreOnTheirScreenAndNamedInBothLanguages() throws Exception {
+        var settings = read("shaders/lib/settings.glsl");
+        var properties = read("shaders/shaders.properties");
+        var english = read("shaders/lang/en_US.lang");
+        var chinese = read("shaders/lang/zh_CN.lang");
+        var screen = Pattern.compile("^screen\\.SPIRIT_STYLE_SETTINGS=(.*)$", Pattern.MULTILINE).matcher(properties);
+        assertTrue(screen.find(), "Spirit Style screen");
+        var onScreen = java.util.Arrays.asList(screen.group(1).trim().split("\\s+"));
+        var defined = Pattern.compile("#define (SPIRIT_\\w+)").matcher(settings);
+        int count = 0;
+        while (defined.find()) {
+            String name = defined.group(1);
+            if (name.equals("SPIRIT_STYLE")) assertTrue(properties.contains("SPIRIT_STYLE [SPIRIT_STYLE_SETTINGS]"), "main screen entry");
+            else assertTrue(onScreen.contains(name), name + " on the Spirit Style screen");
+            assertTrue(english.contains("option." + name + "="), "en " + name);
+            assertTrue(chinese.contains("option." + name + "="), "zh " + name);
+            count++;
+        }
+        assertTrue(count >= 11, "parsed " + count + " Spirit Style options");
+        assertTrue(settings.contains("\n#define SPIRIT_STYLE\n") && settings.contains("\n#define SPIRIT_DEPTH_HAZE\n"), "style and haze on by default");
+        assertTrue(settings.contains("\n// #define SPIRIT_PAINTERLY\n"), "painterly smoothing stays opt-in");
+        assertTrue(settings.contains("\n#define GODRAYS\n"), "god rays on by default");
+    }
 }
