@@ -18,7 +18,15 @@ public final class SpiritScreenFeedback {
     private static int lastHurtTime;
     private SpiritScreenFeedback() {}
 
-    static void stomp(OriClientConfig.Visuals visuals) { FEEDBACK.stomp(visuals.screenShake()); }
+    /** Read-only state for the development bridge. */
+    public static java.util.Map<String, Object> diagnostics() {
+        var angles = FEEDBACK.angles(0);
+        return java.util.Map.of("active", FEEDBACK.active(), "flashAlpha", FEEDBACK.flashAlpha(0),
+                "pitch", angles.pitch(), "yaw", angles.yaw(), "roll", angles.roll(), "hurtTriggers", hurtTriggers, "lastShake", FEEDBACK.lastShakeAmplitude(), "lastFlash", FEEDBACK.lastFlashAlpha(), "stompTriggers", stompTriggers);
+    }
+    private static int hurtTriggers, stompTriggers;
+
+    static void stomp(OriClientConfig.Visuals visuals) { stompTriggers++; FEEDBACK.stomp(visuals.screenShake()); }
 
     public static void tick(ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();
@@ -26,7 +34,7 @@ public final class SpiritScreenFeedback {
         if (player == null || !SpiritData.isSpirit(player) || !player.isAlive()) { FEEDBACK.clear(); lastHurtTime = 0; return; }
         var visuals = OriClientConfig.visuals();
         // Vanilla sets hurtTime to hurtDuration when the damage event arrives; a rise marks a new hit.
-        if (player.hurtTime > lastHurtTime) FEEDBACK.hurt(visuals.screenShake(), visuals.screenFlash());
+        if (player.hurtTime > lastHurtTime) { hurtTriggers++; FEEDBACK.hurt(visuals.screenShake(), visuals.screenFlash()); }
         lastHurtTime = player.hurtTime;
         FEEDBACK.tick();
         // Settings lowered to zero while an effect plays: stop immediately rather than finishing at the old strength.

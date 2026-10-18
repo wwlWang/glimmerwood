@@ -18,6 +18,16 @@ public final class SpiritFxClient {
         return kind == SpiritFxKind.BLADE_HIT ? ParticleTypes.CRIT : ParticleTypes.END_ROD;
     }
 
+    private static final java.util.Map<String, Object> LAST = new java.util.concurrent.ConcurrentHashMap<>();
+    private static int received;
+
+    /** Read-only state for the development bridge: last spawn budget per effect kind. */
+    public static java.util.Map<String, Object> diagnostics() {
+        var copy = new java.util.TreeMap<String, Object>(LAST);
+        copy.put("received", received);
+        return copy;
+    }
+
     public static void play(SpiritFxPayload payload) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
@@ -26,6 +36,8 @@ public final class SpiritFxClient {
         var kind = payload.kind();
         var split = FxBudget.of(kind, visuals.quality(), visuals.advancedParticles());
         var options = particle(kind);
+        received++;
+        LAST.put(kind.name(), java.util.Map.of("essential", split.essential(), "decorative", split.decorative(), "quality", visuals.quality().name(), "advanced", visuals.advancedParticles()));
         for (int i = 0; i < split.total(); i++) {
             // Same distribution as ServerLevel.sendParticles: gaussian offset and speed.
             double x = payload.x() + RANDOM.nextGaussian() * kind.spreadX();

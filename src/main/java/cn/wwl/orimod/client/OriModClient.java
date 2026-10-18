@@ -11,7 +11,8 @@ public final class OriModClient {
     public OriModClient(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
         // Mods list -> Config: NeoForge's generated screen over orimod-client.toml; edits save to the same file.
         container.registerExtensionPoint(net.neoforged.neoforge.client.gui.IConfigScreenFactory.class,
-                (mod, parent) -> new net.neoforged.neoforge.client.gui.ConfigurationScreen(mod, parent));
+                (mod, parent) -> new net.neoforged.neoforge.client.gui.ConfigurationScreen(mod, parent,
+                        (context, key, element) -> cn.wwl.orimod.config.OriClientConfig.HIDDEN_IN_MENU.contains(key) ? null : element));
         modEventBus.addListener(OriModClient::configLoaded);
         modEventBus.addListener(OriModClient::configReloaded);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);

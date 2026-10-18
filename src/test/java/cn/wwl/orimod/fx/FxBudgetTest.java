@@ -59,4 +59,20 @@ class FxBudgetTest {
         assertEquals(VisualQuality.BALANCED, VisualQuality.parse("fluent"));
         assertEquals(VisualQuality.DETAILED, VisualQuality.parse("DETAILED"));
     }
+
+    @Test void qualityLabelsAreTranslatedInBothLanguages() throws Exception {
+        for (var lang : new String[]{"en_us", "zh_cn"}) {
+            try (var in = FxBudgetTest.class.getResourceAsStream("/assets/orimod/lang/" + lang + ".json")) {
+                assertNotNull(in, lang);
+                var json = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                for (var quality : VisualQuality.values()) {
+                    var key = ((net.minecraft.network.chat.contents.TranslatableContents)quality.getTranslatedName().getContents()).getKey();
+                    assertTrue(json.has(key), lang + " missing " + key);
+                }
+                for (var key : new String[]{"orimod.configuration.title", "orimod.configuration.quality", "orimod.configuration.advancedParticles",
+                        "orimod.configuration.screenShake", "orimod.configuration.screenFlash", "orimod.configuration.spiritCamera"})
+                    assertTrue(json.has(key), lang + " missing " + key);
+            }
+        }
+    }
 }

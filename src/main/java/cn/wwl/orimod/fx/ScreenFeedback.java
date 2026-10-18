@@ -49,6 +49,10 @@ public final class ScreenFeedback {
     /** Settings changed to zero mid-effect, menu opened, form changed, death or disconnect. */
     public void clear() { shakeAge = SHAKE_TICKS; flashAge = FLASH_TICKS; shakeAmplitude = flashAlpha = 0; }
 
+    /** Peak strengths of the latest accepted triggers, for diagnostics. */
+    public double lastShakeAmplitude() { return shakeAmplitude; }
+    public double lastFlashAlpha() { return flashAlpha; }
+
     public boolean active() { return shakeAge < SHAKE_TICKS || flashAge < FLASH_TICKS; }
 
     private double currentShake(double partial) {

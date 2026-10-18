@@ -13,6 +13,8 @@ public final class OriClientConfig {
     public static final ModConfigSpec.IntValue SCREEN_FLASH;
     /** Plan default: shake is light; flash is moderate. */
     public static final int DEFAULT_SHAKE = 30, DEFAULT_FLASH = 40;
+    /** Bookkeeping entries kept in the file but not offered in the settings screen. */
+    public static final java.util.Set<String> HIDDEN_IN_MENU = java.util.Set.of("configVersion", "keyDefaultsApplied");
 
     static {
         var builder = new ModConfigSpec.Builder();
