@@ -64,6 +64,9 @@ public final class RuinApproachPiece extends StructurePiece {
             int ground = height(level, generator, dx, -9);
             var landing = placement.block(new BlockPos(dx, 0, -9));
             clearAbove(level, chunkBounds, landing.getX(), landing.getZ(), ground - 1, ground + 2);
+            // Carvers cut caves and ravines after the noise samples; bridge a hole under the landing
+            // so the first step never towers over the real ground (R16 site audit: landing:step).
+            support(level, chunkBounds, landing.atY(ground - 1), true);
             clearCanopy(level, chunkBounds, landing.getX(), landing.getZ(), ground + 3, boundingBox.maxY());
             for (int i = 0; i < 8; i++) {
                 int floor = floor(ground, i);
@@ -82,17 +85,22 @@ public final class RuinApproachPiece extends StructurePiece {
                 int top = Math.max(floor + 3, oldGround + 2);
                 clearAbove(level, chunkBounds, pos.getX(), pos.getZ(), floor, top);
                 clearCanopy(level, chunkBounds, pos.getX(), pos.getZ(), top + 1, boundingBox.maxY());
-                for (int dy = 1; dy <= 16; dy++) {
-                    var below = pos.below(dy);
-                    if (!chunkBounds.isInside(below) || below.getY() < level.getMinBuildHeight()) break;
-                    if (level.getBlockState(below).isCollisionShapeFullBlock(level, below)) break;
-                    level.setBlock(below, Blocks.MOSSY_STONE_BRICKS.defaultBlockState(), 2);
-                }
+                support(level, chunkBounds, pos, false);
             }
         }
     }
 
-    private int floor(int ground, int step) { return ground - 1 + Math.round((placement.origin().getY() - ground) * step / 7.0f); }
+    private int floor(int ground, int step) { return RuinSiteRules.stepFloor(ground, placement.origin().getY(), step); }
+
+    /** Fills a column under {@code top} (and {@code top} itself when asked) down to the first full block. */
+    private static void support(WorldGenLevel level, BoundingBox chunkBounds, BlockPos top, boolean includeTop) {
+        for (int dy = includeTop ? 0 : 1; dy <= RuinSiteRules.MAX_FILL; dy++) {
+            var below = top.below(dy);
+            if (!chunkBounds.isInside(below) || below.getY() < level.getMinBuildHeight()) break;
+            if (level.getBlockState(below).isCollisionShapeFullBlock(level, below)) break;
+            level.setBlock(below, Blocks.MOSSY_STONE_BRICKS.defaultBlockState(), 2);
+        }
+    }
 
     private int height(WorldGenLevel level, ChunkGenerator generator, int x, int z) {
         if (terrain.length > 0) return terrain[(x + 2) * DEPTH + z + 9];

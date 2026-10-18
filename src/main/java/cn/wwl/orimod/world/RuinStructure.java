@@ -31,7 +31,7 @@ public final class RuinStructure extends Structure {
         // final entry quart-height, so this cannot reject a start the vanilla biome check accepts.
         int entryDelta = (int)Math.floor(layout.entry().y) - layout.surfaceY();
         boolean possibleBiome = false;
-        for (int y = QuartPos.fromBlock(63 + entryDelta); y <= QuartPos.fromBlock(145 + entryDelta); y++) {
+        for (int y = QuartPos.fromBlock(RuinSiteRules.MIN_SURFACE + entryDelta); y <= QuartPos.fromBlock(RuinSiteRules.MAX_SURFACE + entryDelta); y++) {
             if (context.validBiome().test(context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(entryColumn.getX()), y,
                     QuartPos.fromBlock(entryColumn.getZ()), context.randomState().sampler()))) { possibleBiome = true; break; }
         }
@@ -48,7 +48,7 @@ public final class RuinStructure extends Structure {
         for (var sample : footprintPoints) {
             int y = samples.height(sample);
             min = Math.min(min, y); max = Math.max(max, y);
-            if (max - min > 4 || min < 63 || max > 145) return Optional.empty();
+            if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
         }
         // Include the ground immediately outside the doorway. Surface stairs cover
         // the entire accepted four-block drop; cave stairs start at this ground height.
@@ -58,7 +58,7 @@ public final class RuinStructure extends Structure {
             var sample = approach.block(new BlockPos(dx, 0, -1));
             int height = samples.height(sample);
             min = Math.min(min, height); max = Math.max(max, height);
-            if (max - min > 4 || min < 63 || max > 145) return Optional.empty();
+            if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
         }
         int surface = kind == RuinKind.CAVE ? approachHeight : max;
         var origin = footprint.origin().atY(surface - layout.surfaceY());
@@ -68,15 +68,15 @@ public final class RuinStructure extends Structure {
         for (int dx = -2; dx <= 2; dx++) for (int dz = -9; dz <= -1; dz++) {
             var sample = doorway.block(new BlockPos(dx, 0, dz));
             int height = samples.height(sample);
-            if (height < 63 || height > 145 || Math.abs(height - doorway.origin().getY()) > 7) return Optional.empty();
+            if (!RuinSiteRules.approachOk(height, doorway.origin().getY())) return Optional.empty();
             terrain[(dx + 2) * RuinApproachPiece.DEPTH + dz + 9] = height;
         }
         var entry = BlockPos.containing(placement.point(layout.entry()));
         if (!context.validBiome().test(context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(entry.getX()), QuartPos.fromBlock(entry.getY()),
                 QuartPos.fromBlock(entry.getZ()), context.randomState().sampler()))) return Optional.empty();
         if (!samples.dry()) return Optional.empty();
-        if (origin.getY() < context.heightAccessor().getMinBuildHeight() + 8
-                || origin.getY() + layout.size().getY() >= context.heightAccessor().getMaxBuildHeight()) return Optional.empty();
+        if (!RuinSiteRules.fitsWorld(origin.getY(), layout.size().getY(),
+                context.heightAccessor().getMinBuildHeight(), context.heightAccessor().getMaxBuildHeight())) return Optional.empty();
         return Optional.of(new GenerationStub(entry, builder -> {
             builder.addPiece(new RuinPiece(context.structureTemplateManager(), kind, placement));
             builder.addPiece(new RuinApproachPiece(doorway, terrain));
