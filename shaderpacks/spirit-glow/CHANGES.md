@@ -34,3 +34,5 @@
 8. Saturation (oriMod R25): the mid-tone saturation boost is scaled by how unsaturated a colour
    already is (vibrance), and very bright, very saturated areas are eased back slightly, so a frame
    full of lava or nether fog no longer becomes a flat saturated sheet.
+9. Torch light range (oriMod R26): block light falloff curve 1.6 → 2.4 (menu values extended to 2.8),
+   so torches and lanterns light a wider warm pool; caves stay deep blue away from the light.
