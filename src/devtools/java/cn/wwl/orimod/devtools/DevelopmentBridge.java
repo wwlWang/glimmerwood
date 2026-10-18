@@ -544,6 +544,24 @@ public final class DevelopmentBridge {
                 Files.writeString(file, JSON.toJson(Map.of("frameTimeMs", frameTimes, "state", state())));
                 return Map.of("path", file.toAbsolutePath().toString(), "samples", frameTimes.size());
             }
+            case "open_mod_config" -> {
+                // Same path as Mods list -> Config: the factory registered by the shipped client entry point.
+                var container = net.neoforged.fml.ModList.get().getModContainerById("orimod").orElseThrow();
+                var factory = net.neoforged.neoforge.client.gui.IConfigScreenFactory.getForMod(container.getModInfo());
+                require(factory.isPresent(), "orimod registered no config screen");
+                mc.setScreen(factory.get().createScreen(container, mc.screen));
+            }
+            case "mod_config" -> {
+                var values = new LinkedHashMap<String, Object>();
+                values.put("loaded", cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded());
+                values.put("configVersion", cn.wwl.orimod.config.OriClientConfig.CONFIG_VERSION.get());
+                values.put("spiritCamera", cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get());
+                values.put("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
+                values.put("feedback", cn.wwl.orimod.client.fx.SpiritScreenFeedback.diagnostics());
+                values.put("fx", cn.wwl.orimod.client.fx.SpiritFxClient.diagnostics());
+                values.put("screen", mc.screen == null ? null : mc.screen.getClass().getName());
+                return values;
+            }
             case "quit" -> mc.stop();
             default -> throw new IllegalArgumentException("Unknown operation: " + operation);
         }
