@@ -6,7 +6,7 @@ public final class OriClientConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.IntValue CONFIG_VERSION;
     public static final ModConfigSpec.BooleanValue KEY_DEFAULTS_APPLIED;
-    public static final ModConfigSpec.ConfigValue<String> SPIRIT_CAMERA;
+    public static final ModConfigSpec.EnumValue<SpiritCameraView> SPIRIT_CAMERA;
     public static final ModConfigSpec.EnumValue<VisualQuality> QUALITY;
     public static final ModConfigSpec.BooleanValue ADVANCED_PARTICLES;
     public static final ModConfigSpec.IntValue SCREEN_SHAKE;
@@ -22,8 +22,10 @@ public final class OriClientConfig {
                 .defineInRange("configVersion", ClientConfigMigration.LEGACY, 1, Integer.MAX_VALUE);
         KEY_DEFAULTS_APPLIED = builder.comment("One-time setup of the bundled key layout. Custom bindings are preserved.")
                 .define("keyDefaultsApplied", false);
-        SPIRIT_CAMERA = builder.comment("Remembered camera used in spirit form.").define("spiritCamera", "THIRD_PERSON_BACK",
-                value -> value instanceof String text && java.util.Set.of("FIRST_PERSON", "THIRD_PERSON_BACK", "THIRD_PERSON_FRONT").contains(text));
+        // R19: an enum so the settings screen offers a cycle button; stored names are unchanged from the v1 text field.
+        SPIRIT_CAMERA = builder.comment("Camera used in spirit form: FIRST_PERSON, THIRD_PERSON_BACK (default) or THIRD_PERSON_FRONT.",
+                        "Switching the camera with F5 while in spirit form updates this value.")
+                .defineEnum("spiritCamera", SpiritCameraView.THIRD_PERSON_BACK);
         builder.push("visuals");
         QUALITY = builder.comment("Spirit effect quality: FLUENT, BALANCED (default) or DETAILED. Scales only particles emitted by this mod;",
                         "the shader pack and vanilla video settings are unchanged.")

@@ -28,6 +28,8 @@ public final class SpiritControls {
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
     private static CameraType spiritCamera = CameraType.THIRD_PERSON_BACK;
     private static boolean wasSpirit;
+    /** Spirit camera last applied or saved while in spirit form; {@code null} outside it. */
+    private static cn.wwl.orimod.config.SpiritCameraView syncedCamera;
     private static boolean sentActive;
     private static boolean blockJumpUntilReleased, blockDashUntilReleased, blockBashUntilReleased;
     private static int inputSequence;
@@ -136,18 +138,27 @@ public final class SpiritControls {
         }
         SpiritKeyDefaults.tick(mc);
         if (spirit && !wasSpirit) {
-            if (cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded()) spiritCamera = CameraType.valueOf(cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get());
+            if (cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded()) spiritCamera = CameraType.valueOf(cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get().name());
             humanCamera = mc.options.getCameraType();
             mc.options.setCameraType(spiritCamera);
         } else if (!spirit && wasSpirit) {
             spiritCamera = mc.options.getCameraType();
             mc.options.setCameraType(humanCamera);
         }
-        if (spirit && wasSpirit && cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded()
-                && !mc.options.getCameraType().name().equals(cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get())) {
-            cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.set(mc.options.getCameraType().name());
-            cn.wwl.orimod.config.OriClientConfig.SPEC.save();
-        }
+        if (spirit && wasSpirit && cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded()) {
+            var configured = cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get();
+            var live = cn.wwl.orimod.config.SpiritCameraView.parse(mc.options.getCameraType().name());
+            switch (cn.wwl.orimod.config.SpiritCameraSync.decide(configured, syncedCamera, live)) {
+                case APPLY_SETTING -> mc.options.setCameraType(CameraType.valueOf(configured.name()));
+                case SAVE_CAMERA -> {
+                    cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.set(live);
+                    cn.wwl.orimod.config.OriClientConfig.SPEC.save();
+                    configured = live;
+                }
+                case NONE -> {}
+            }
+            syncedCamera = configured;
+        } else if (!spirit) syncedCamera = null;
         wasSpirit = spirit;
         if (sentActive && (mc.player == null || mc.screen != null || !mc.isWindowActive() || !spirit)) {
             blockJumpUntilReleased = blockDashUntilReleased = blockBashUntilReleased = true;

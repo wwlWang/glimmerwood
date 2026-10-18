@@ -21,7 +21,7 @@ class ClientConfigTest {
         OriClientConfig.SPEC.correct(config);
         assertTrue(OriClientConfig.SPEC.isCorrect(config));
         assertEquals(true, config.get("keyDefaultsApplied"));
-        assertEquals("FIRST_PERSON", config.get("spiritCamera"));
+        assertEquals("FIRST_PERSON", String.valueOf(config.<Object>get("spiritCamera")));
         assertEquals(ClientConfigMigration.LEGACY, (int)config.<Integer>get("configVersion"));
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
         assertEquals(true, config.get("visuals.advancedParticles"));
@@ -33,7 +33,7 @@ class ClientConfigTest {
         var config = CommentedConfig.inMemory();
         OriClientConfig.SPEC.correct(config);
         assertEquals(false, config.get("keyDefaultsApplied"));
-        assertEquals("THIRD_PERSON_BACK", config.get("spiritCamera"));
+        assertEquals("THIRD_PERSON_BACK", String.valueOf(config.<Object>get("spiritCamera")));
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
         // Plan 10.1: shake light by default; it must not start at full strength.
         assertTrue(OriClientConfig.DEFAULT_SHAKE > 0 && OriClientConfig.DEFAULT_SHAKE <= 40);
@@ -64,7 +64,7 @@ class ClientConfigTest {
         int shake = config.<Integer>get("feedback.screenShake");
         assertTrue(shake >= 0 && shake <= 100, "corrected to " + shake);
         assertEquals(7, (int)config.<Integer>get("feedback.screenFlash"));
-        assertEquals("FIRST_PERSON", config.get("spiritCamera"));
+        assertEquals("FIRST_PERSON", String.valueOf(config.<Object>get("spiritCamera")));
     }
 
     @Test void unknownQualityAndCameraFallBackToDefaults() {
@@ -73,8 +73,24 @@ class ClientConfigTest {
         config.set("spiritCamera", "SPECTATOR");
         OriClientConfig.SPEC.correct(config);
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
-        assertEquals("THIRD_PERSON_BACK", config.get("spiritCamera"));
+        assertEquals("THIRD_PERSON_BACK", String.valueOf(config.<Object>get("spiritCamera")));
         assertEquals(true, config.get("keyDefaultsApplied"));
+    }
+
+    @Test void everyStoredCameraNameStillLoads() {
+        for (var view : SpiritCameraView.values()) {
+            var config = legacyV1();
+            config.set("spiritCamera", view.name());
+            OriClientConfig.SPEC.correct(config);
+            assertEquals(view.name(), String.valueOf(config.<Object>get("spiritCamera")));
+        }
+    }
+
+    @Test void cameraViewNamesMatchVanillaCameraTypes() {
+        for (var view : SpiritCameraView.values()) assertEquals(view.name(), net.minecraft.client.CameraType.valueOf(view.name()).name());
+        assertEquals(net.minecraft.client.CameraType.values().length, SpiritCameraView.values().length);
+        assertEquals(SpiritCameraView.THIRD_PERSON_BACK, SpiritCameraView.parse("SPECTATOR"));
+        assertEquals(SpiritCameraView.THIRD_PERSON_BACK, SpiritCameraView.parse(null));
     }
 
     @Test void migrationPlans() {

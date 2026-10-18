@@ -187,5 +187,8 @@
   "orimod.configuration.screenFlash.tooltip": "百分比。精灵形态受击时的短暂亮光；0 为关闭。",
   "orimod.quality.fluent": "流畅",
   "orimod.quality.balanced": "均衡",
-  "orimod.quality.detailed": "精致"
+  "orimod.quality.detailed": "精致",
+  "orimod.camera.first_person": "第一人称",
+  "orimod.camera.third_person_back": "第三人称（背后）",
+  "orimod.camera.third_person_front": "第三人称（正面）"
 }

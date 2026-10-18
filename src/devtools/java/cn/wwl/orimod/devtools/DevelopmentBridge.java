@@ -555,7 +555,7 @@ public final class DevelopmentBridge {
                 var values = new LinkedHashMap<String, Object>();
                 values.put("loaded", cn.wwl.orimod.config.OriClientConfig.SPEC.isLoaded());
                 values.put("configVersion", cn.wwl.orimod.config.OriClientConfig.CONFIG_VERSION.get());
-                values.put("spiritCamera", cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get());
+                values.put("spiritCamera", cn.wwl.orimod.config.OriClientConfig.SPIRIT_CAMERA.get().name());
                 values.put("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
                 values.put("feedback", cn.wwl.orimod.client.fx.SpiritScreenFeedback.diagnostics());
                 values.put("fx", cn.wwl.orimod.client.fx.SpiritFxClient.diagnostics());

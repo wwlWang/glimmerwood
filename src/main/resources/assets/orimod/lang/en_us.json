@@ -187,5 +187,8 @@
   "orimod.configuration.screenFlash.tooltip": "Percent. Brief light flash when hurt in spirit form. 0 disables it.",
   "orimod.quality.fluent": "Fluent",
   "orimod.quality.balanced": "Balanced",
-  "orimod.quality.detailed": "Detailed"
+  "orimod.quality.detailed": "Detailed",
+  "orimod.camera.first_person": "First person",
+  "orimod.camera.third_person_back": "Third person (behind)",
+  "orimod.camera.third_person_front": "Third person (front)"
 }

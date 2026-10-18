@@ -70,6 +70,10 @@ class FxBudgetTest {
                     var key = ((net.minecraft.network.chat.contents.TranslatableContents)quality.getTranslatedName().getContents()).getKey();
                     assertTrue(json.has(key), lang + " missing " + key);
                 }
+                for (var view : cn.wwl.orimod.config.SpiritCameraView.values()) {
+                    var key = ((net.minecraft.network.chat.contents.TranslatableContents)view.getTranslatedName().getContents()).getKey();
+                    assertTrue(json.has(key), lang + " missing " + key);
+                }
                 for (var key : new String[]{"orimod.configuration.title", "orimod.configuration.quality", "orimod.configuration.advancedParticles",
                         "orimod.configuration.screenShake", "orimod.configuration.screenFlash", "orimod.configuration.spiritCamera"})
                     assertTrue(json.has(key), lang + " missing " + key);
