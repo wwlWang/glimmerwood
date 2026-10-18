@@ -17,12 +17,14 @@ public final class OriMod {
         cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
         cn.wwl.orimod.world.OriEntities.register(modEventBus);
         cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
+        cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
         modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
         modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
         modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.CombatInputPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.ChallengeActionPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.recipe.OriRecipes::difficultyChanged);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::dimension);
