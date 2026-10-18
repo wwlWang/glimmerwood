@@ -62,8 +62,10 @@ public final class SpiritCombatClient {
         var view = mc.player.getData(SpiritData.COMBAT_VIEW);
         if (view.actionId() != lastAction) {
             awaitingAttackUntil = 0;
-            if (view.mode().equals("idle") && mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) {
-                mc.player.stopUsingItem();
+            if (view.mode().equals("idle")) {
+                // Vanilla's using-item flag may arrive before this attachment. Latch the held
+                // key even when vanilla already stopped use, or its auto-repeat restarts the bow.
+                if (mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) mc.player.stopUsingItem();
                 blockUse = mc.options.keyUse.isDown();
             }
             lastAction = view.actionId();

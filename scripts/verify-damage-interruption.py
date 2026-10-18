@@ -29,8 +29,9 @@ try:
         c.command(text)
     if not c.spirit()['server']['form']: c.action('toggle_form'); c.ticks(3)
     for action in ['blade', 'bow', 'dash', 'bash_aim', 'grapple', 'stomp', 'glide']:
-        for external in [False, True]:
-            name = action + ('-attack' if external else '-environment')
+        cases = [(False, 0), (True, 0)] + ([(True, n) for n in range(1, 4)] if action == 'bow' else [])
+        for external, repeat in cases:
+            name = action + ('-attack' if external else '-environment') + (f'-repeat-{repeat}' if repeat else '')
             c.action('release_keys'); c.action('close_screen')
             c.command('kill @e[tag=orimod_damage_test]')
             c.command('setblock 0 164 4 air')
@@ -42,7 +43,7 @@ try:
             c.action('set_energy', amount=100); c.ticks(3)
             steps = []; damage_at = 2; duration = 10
             if action == 'blade': steps = [press(0, 'attack'), press(1, 'attack', False)]
-            elif action == 'bow': steps = [press(0, 'use')]; damage_at = 6; duration = 14
+            elif action == 'bow': steps = [press(0, 'use')]; damage_at = 6 + repeat % 3; duration = damage_at + 10
             elif action == 'dash': steps = [press(0, 'orimod.dash'), press(1, 'orimod.dash', False)]
             elif action == 'bash_aim': steps = [press(0, 'orimod.bash')]; damage_at = 5
             elif action == 'grapple':
