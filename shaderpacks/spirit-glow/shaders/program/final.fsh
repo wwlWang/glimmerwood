@@ -114,12 +114,15 @@ vec3 spirit_grade(vec3 C) {
 layout(location = 0) out vec4 Color;
 
 void main() {
-    #if defined SPIRIT_PAINTERLY
+    // Plain #ifdef on each option: Iris only offers a toggle for defines it finds in #ifdef / #ifndef.
+    #ifdef SPIRIT_PAINTERLY
         Color = vec4(spirit_painterly(texcoord), 1);
-    #elif defined IMAGE_SHARPENING
+    #else
+    #ifdef IMAGE_SHARPENING
         Color = vec4(CAS(colortex0), 1);
     #else
         Color = texture(colortex0, texcoord);
+    #endif
     #endif
 
     Color.rgb = pow(Color.rgb, vec3(1/2.2));

@@ -112,4 +112,23 @@ class SpiritGlowPackTest {
                 assertNotEquals(defaults.get(entry.getKey()), entry.getValue(), "override equal to the default: " + entry.getKey());
         }
     }
+
+    /** Iris offers a toggle only for a define it sees in a plain #ifdef / #ifndef; R22 briefly hid two behind #elif / #if defined. */
+    @Test void everyBooleanOptionIsReadByAPlainIfdef() throws Exception {
+        var settings = read("shaders/lib/settings.glsl");
+        var booleans = new java.util.TreeSet<String>();
+        var define = Pattern.compile("^\\s*(?://\\s*)?#define\\s+(\\w+)\\s*(?://.*)?$", Pattern.MULTILINE).matcher(settings);
+        while (define.find()) booleans.add(define.group(1));
+        var used = new java.util.HashSet<String>();
+        try (var files = Files.walk(PACK.resolve("shaders"))) {
+            for (var file : (Iterable<Path>)files.filter(f -> f.toString().matches(".*\\.(glsl|fsh|vsh|gsh|csh)$"))::iterator) {
+                var ifdef = Pattern.compile("^\\s*#ifn?def\\s+(\\w+)", Pattern.MULTILINE).matcher(Files.readString(file));
+                while (ifdef.find()) used.add(ifdef.group(1));
+            }
+        }
+        var checked = new java.util.ArrayList<String>();
+        for (var name : booleans) if (name.startsWith("SPIRIT_") || SpiritGlowProfile.MANAGED.contains(name)) checked.add(name);
+        for (var name : checked) assertTrue(used.contains(name), name + " needs a plain #ifdef/#ifndef somewhere");
+        assertTrue(checked.size() >= 10, "checked " + checked);
+    }
 }
