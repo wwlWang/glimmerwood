@@ -49,3 +49,12 @@
 R10 显示精灵盔甲偏离了原计划，R12 已恢复默认隐藏原版盔甲几何；装备和属性仍由原版管理，鞘翅和南瓜头等独立附件保留。此前刚性护腿穿插的图片仍是 R10 的真实结果，但该显示路径已撤回。
 
 `audit-r12-appearance-v003-2026-10-18` 的 20 张最终截图均已查看，光影开关下世界和背包显示符合约定，两端护甲/韧性在往返变身中均保持 20/8，卸下均归零。用实际使用键把牛拴到玩家后，第一、第三人称均有绳子，往返形态仍连接；原版绳子本来由牛的渲染器绘制，无需补一个玩家层。前两版夹具的人形镜头被视角偏好覆盖，保留局部结果，不作为有效人形世界对照。
+
+## R20：自带光影 Spirit Glow（ENV05）
+
+- 上游：Codeberg `TheCMK/mellow-shader` 提交 `3ad9445`（2026-09-19）。其 `shaders.properties`、`block.properties`、`item.properties` 与英文语言文件和 v3.4.1a 发行包逐字节相同，而 v3.4.1a 已在本机 Iris 1.8.12 / MC 1.21.1 验证（`rendering-2026-10-15`），故直接采用，无需移植或换旧版本。
+- 导入 `shaders/`、`LICENSE`、`LICENSE-APACHE`；未导入仓库截图和 `mellow.png` 调色表。改名、致谢、自制调色表见包内 `CHANGES.md`。
+- 运行：模组首次客户端 tick 将包写入 `Iris.getShaderpacksDirectory()/Spirit Glow.zip`（只替换自己的文件，内容相同则不写）；切换经 `IrisConfig` 保存后 `Iris.reload()`，再调用 Photon `IrisCompat.invalidate()`。Iris 为 `compileOnly`，只有 `SpiritGlowIris` 引用它，且仅在装有 Iris 时加载。
+- 云端：llvmpipe 能编译运行 Mellow 与 Spirit Glow 管线（日志只有原包已有的兼容性补丁警告与缺失标签警告）。帧率 2–20 FPS，不代表性能。截图存于云端 `/workspace/oriMod/shots/r20-*`，只作管线可运行的证据。
+- 待本机：真实 GPU 上的观感、帧率、与 Photon 微粒/角色发光共存的复查，以及发行 JAR 在干净实例上的首次安装。
+

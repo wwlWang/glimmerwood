@@ -115,3 +115,13 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 404 项 JUnit、183 项 GameTest 通过（新增 `SpiritCameraSyncTest` 6 项、`ClientConfigTest` 2 项）。`spiritCamera` 改为枚举配置，名称与旧文本值相同，三种旧值均原样加载，未知值回到默认第三人称背后。设置界面根页第一行显示为循环按钮，标签中英文。精灵形态中在菜单改视角会立即应用到当前镜头，按 F5 改视角会写回设置；同一 tick 两者都变时以菜单为准。
 
 云端实机：`fx-r18-lifecycle-v002-2026-10-18` 在精灵形态连续三次“打开设置 → 点循环按钮 → 完成”，设置依次为第三人称背后、正面、第一人称并回到起点，每次实际镜头与设置一致；截图 `settings-camera-cycled.png`。v001 失败是脚本在“完成”之前读取设置（NeoForge 界面在完成时才提交），同时暴露了旧逻辑会用当前镜头覆盖菜单选择，已修复。多 GUI 缩放未截。
+
+## R20：自带光影 Spirit Glow
+
+417 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`，新增 `SpiritGlowSyncTest` 13 项：首次运行、自选包保留、开关应用、Iris 侧变化写回、恢复规则、状态文件读写/损坏回退、打包内容含两份许可证且无 `mellow.png`）。发行 JAR 含 `orimod_shaderpack/spirit_glow.zip`（`zipSpiritGlow` 生成，固定文件顺序与时间戳），不含开发或 GameTest 条目，SHA-256 `d1f14f20a343eb39bf38595bab9d9ff2b078b1c9ec3bfb1dc6a7351f725123ea`（云端构建）。
+
+云端实机（Xvfb 1920×1080、llvmpipe，Iris 1.8.12）：
+- `glow-r20-v002-2026-10-18`（`scripts/verify-spirit-glow.py`，Iris 原选 Mellow）：首次运行 `save_off`，Mellow 保留；开 → `Spirit Glow.zip` 管线建立且 `Iris.getStoredError` 为空，白天/夜晚截图；在 Iris 侧关光影 → 开关写为关；Iris 侧再开 → 开关写为开；关 → 恢复 Mellow。v001 在开启后发现记住的原包为空：设置文件保存后 NeoForge 的重载与同时写入的记录竞争，记录已移到独立的 `config/orimod-spirit-glow.properties`，v001 证据保留。
+- 未选光影包的新配置：首次运行直接 `enable`；随后经真实设置界面（模组 → 配置 → 画面 → 开关 → 完成）关闭，因无原包而关闭光影；再开启回到 Spirit Glow。
+- 自选包被保留时的一次性提示已触发（诊断 `keptPackHint=true`），截图时提示已消失，画面未截到。
+

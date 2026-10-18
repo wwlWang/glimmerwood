@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-18 23:40–2026-10-19 00:20（UTC+8）云端 R20（ENV05）：自带光影 **Spirit Glow**（改编自 TheCMK 的 Mellow，上游提交 `3ad9445`，与此前本机验证过的 v3.4.1a 发行包一致，无需移植）。包源码在 `shaderpacks/spirit-glow/`，构建时打进 JAR，首次运行装入 Iris 的 `shaderpacks/`；设置界面“画面”页新增“Spirit Glow 光影”开关。首次运行只在 Iris 未选光影包时启用，已有自选包则保留并提示一次；开启记住原包、关闭恢复；在 Iris 里换包或关光影会同步到开关。MIT 与 Apache 许可原文保留，改编声明加在原文上方，包内与 `THIRD_PARTY.md` 注明出处和链接，不用 Mellow 名称、截图、标志或其调色表。417 项 JUnit、183 项 GameTest 通过。云端 Xvfb + llvmpipe **能**编译运行该光影管线（约 2–20 FPS），首次保留自选包、开/关、Iris 侧变化与恢复均实测通过；画面只证明管线可运行，观感和性能需本机复查。见 [RENDERING_CHECKPOINT](RENDERING_CHECKPOINT.md#r20自带光影-spirit-glowenv05)。
+
 2026-10-18 23:00–23:50（UTC+8）云端 R19（UI02/PLAY08）：精灵视角改为设置界面的循环按钮，旧配置原样加载；修复精灵形态下当前镜头覆盖菜单选择的问题。累计 404 项 JUnit、183 项 GameTest 通过。用户已决定自带 Mellow 改编光影并在设置中提供开关，许可证核查通过，作为下一轮 R20，计划与本轮各项自主决定见 [DECISIONS](DECISIONS.md)。截图在云端 `/workspace/oriMod/shots/`（不入 Git）。
 
 2026-10-18 云端 R18（FX01/AUDIO01/COMBAT04/SAVE03）：`spirit_fx` 载荷升为带阶段的版本 2，新增六种动作单发效果和滑翔、牵引绳两种持续效果；正式声音表覆盖全部效果。持续效果由服务端按移动状态开始/心跳/停止，变身、死亡、换维度、退出统一结束，客户端另有实体消失与心跳超时兜底。396 项 JUnit、183 项 GameTest 通过；云端客户端实测滑翔效果与循环音在四种退出路径后都清空。声音和观感需本机试听。
