@@ -91,3 +91,6 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 
 `scripts/verify-client-settings.py <运行名>` 在开发客户端中走真实设置界面完成上述受击与刀命中检查；重启后用 `--expect '{"visuals": "..."}'` 断言保持。脚本前三版因点击过早、刀连击恢复期和死亡动画中的旧僵尸被选中而失败，均为夹具问题，已修正，失败目录未保留到证据（运行在云端，未产生需要保存的游戏状态）。连续截图未捕捉到 4 tick 闪光帧，闪光与震动观感需本机复查；界面截图只覆盖 GUI 4。
 
+## R16：遗迹世界边界
+
+云端 `build runGameTestServer`：337 项 JUnit、164 项 GameTest 通过（R15 为 312 / 154）。新增 `RuinSiteRulesTest`（25）和 `RuinBoundaryGameTests`（10）。自然站点审计 `scripts/verify-ruin-sites.py`：修复前 117 个站点 115 个无问题，修复后 117 / 117；详见 [WORLD_CHECKPOINT](WORLD_CHECKPOINT.md#r16-自然站点审计world02-边界)。
