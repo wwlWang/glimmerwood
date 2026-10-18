@@ -480,4 +480,100 @@ const float f_WATER_ALPHA = max_const(0.7 + WATER_ALPHA);
 const float f_BIOME_WATER_CONTRIBUTION = max_const(0.5 + BIOME_WATER_CONTRIBUTION);
 const float f_BIOME_SKY_CONTRIBUTION = max_const(0.3 + BIOME_SKY_CONTRIBUTION);
 
+// Spirit (Spirit Glow default): blue-teal darks and moonlight, violet dusk, teal water, brighter nights
+#elif COLOR_SCHEME == 6
+
+const float f_LM_RED = max_const(1.0 + LM_RED);
+const float f_LM_GREEN = max_const(0.78 + LM_GREEN);
+const float f_LM_BLUE = max_const(0.55 + LM_BLUE);
+
+const float f_NOON_RED = max_const(1.15 + NOON_RED);
+const float f_NOON_GREEN = max_const(1.1 + NOON_GREEN);
+const float f_NOON_BLUE = max_const(1.05 + NOON_BLUE);
+
+const float f_SUNRISE_RED = max_const(0.85 + SUNRISE_RED);
+const float f_SUNRISE_GREEN = max_const(0.62 + SUNRISE_GREEN);
+const float f_SUNRISE_BLUE = max_const(0.5 + SUNRISE_BLUE);
+
+const float f_SUNSET_RED = max_const(0.85 + SUNSET_RED);
+const float f_SUNSET_GREEN = max_const(0.5 + SUNSET_GREEN);
+const float f_SUNSET_BLUE = max_const(0.38 + SUNSET_BLUE);
+
+const float f_MOON_RED = max_const(0.35 + MOON_RED);
+const float f_MOON_GREEN = max_const(0.5 + MOON_GREEN);
+const float f_MOON_BLUE = max_const(0.85 + MOON_BLUE);
+
+const float f_NOON_SKY_T_R = max_const(0.15 + NOON_SKY_T_R);
+const float f_NOON_SKY_T_G = max_const(0.4 + NOON_SKY_T_G);
+const float f_NOON_SKY_T_B = max_const(0.75 + NOON_SKY_T_B);
+
+const float f_SUNRISE_SKY_T_R = max_const(0.05 + SUNRISE_SKY_T_R);
+const float f_SUNRISE_SKY_T_G = max_const(0.28 + SUNRISE_SKY_T_G);
+const float f_SUNRISE_SKY_T_B = max_const(0.55 + SUNRISE_SKY_T_B);
+
+const float f_SUNSET_SKY_T_R = max_const(0.08 + SUNSET_SKY_T_R);
+const float f_SUNSET_SKY_T_G = max_const(0.12 + SUNSET_SKY_T_G);
+const float f_SUNSET_SKY_T_B = max_const(0.32 + SUNSET_SKY_T_B);
+
+const float f_NIGHT_SKY_T_R = max_const(0.0 + NIGHT_SKY_T_R);
+const float f_NIGHT_SKY_T_G = max_const(0.05 + NIGHT_SKY_T_G);
+const float f_NIGHT_SKY_T_B = max_const(0.13 + NIGHT_SKY_T_B);
+
+const float f_END_SKY_T_R = max_const(0.15 + END_SKY_T_R);
+const float f_END_SKY_T_G = max_const(0.1 + END_SKY_T_G);
+const float f_END_SKY_T_B = max_const(0.2 + END_SKY_T_B);
+
+const float f_NOON_SKY_G_R = max_const(0.5 + NOON_SKY_G_R);
+const float f_NOON_SKY_G_G = max_const(0.6 + NOON_SKY_G_G);
+const float f_NOON_SKY_G_B = max_const(0.65 + NOON_SKY_G_B);
+
+const float f_SUNRISE_SKY_G_R = max_const(0.55 + SUNRISE_SKY_G_R);
+const float f_SUNRISE_SKY_G_G = max_const(0.42 + SUNRISE_SKY_G_G);
+const float f_SUNRISE_SKY_G_B = max_const(0.45 + SUNRISE_SKY_G_B);
+
+const float f_SUNSET_SKY_G_R = max_const(0.4 + SUNSET_SKY_G_R);
+const float f_SUNSET_SKY_G_G = max_const(0.25 + SUNSET_SKY_G_G);
+const float f_SUNSET_SKY_G_B = max_const(0.35 + SUNSET_SKY_G_B);
+
+const float f_NIGHT_SKY_G_R = max_const(0.08 + NIGHT_SKY_G_R);
+const float f_NIGHT_SKY_G_G = max_const(0.2 + NIGHT_SKY_G_G);
+const float f_NIGHT_SKY_G_B = max_const(0.32 + NIGHT_SKY_G_B);
+
+const float f_SUN_GLARE_R = max_const(0.8 + SUN_GLARE_R);
+const float f_SUN_GLARE_G = max_const(0.55 + SUN_GLARE_G);
+const float f_SUN_GLARE_B = max_const(0.25 + SUN_GLARE_B);
+
+const float f_NETHER_AMBIENT_R = max_const(0.48 + NETHER_AMBIENT_R);
+const float f_NETHER_AMBIENT_G = max_const(0.24 + NETHER_AMBIENT_G);
+const float f_NETHER_AMBIENT_B = max_const(0.18 + NETHER_AMBIENT_B);
+
+const float f_END_AMBIENT_R = max_const(0.2 + END_AMBIENT_R);
+const float f_END_AMBIENT_G = max_const(0.17 + END_AMBIENT_G);
+const float f_END_AMBIENT_B = max_const(0.25 + END_AMBIENT_B);
+
+const float f_END_DIRECT_R = max_const(0.3 + END_DIRECT_R);
+const float f_END_DIRECT_G = max_const(0.23 + END_DIRECT_G);
+const float f_END_DIRECT_B = max_const(0.45 + END_DIRECT_B);
+
+const float f_END_AURORA1_R = max_const(0.0 + END_AURORA1_R);
+const float f_END_AURORA1_G = max_const(0.45 + END_AURORA1_G);
+const float f_END_AURORA1_B = max_const(0.25 + END_AURORA1_B);
+
+const float f_END_AURORA2_R = max_const(0.45 + END_AURORA2_R);
+const float f_END_AURORA2_G = max_const(0.3 + END_AURORA2_G);
+const float f_END_AURORA2_B = max_const(0.1 + END_AURORA2_B);
+
+const float f_SUNRISE_AMBIENT = max_const(0.42 + SUNRISE_AMBIENT);
+const float f_NOON_AMBIENT = max_const(0.55 + NOON_AMBIENT);
+const float f_SUNSET_AMBIENT = max_const(0.45 + SUNSET_AMBIENT);
+const float f_NIGHT_AMBIENT = max_const(0.4 + NIGHT_AMBIENT);
+
+const float f_WATER_RED = max_const(0.0 + WATER_RED);
+const float f_WATER_GREEN = max_const(0.4 + WATER_GREEN);
+const float f_WATER_BLUE = max_const(0.45 + WATER_BLUE);
+const float f_WATER_ALPHA = max_const(0.4 + WATER_ALPHA);
+
+const float f_BIOME_WATER_CONTRIBUTION = max_const(0.5 + BIOME_WATER_CONTRIBUTION);
+const float f_BIOME_SKY_CONTRIBUTION = max_const(0.25 + BIOME_SKY_CONTRIBUTION);
+
 #endif

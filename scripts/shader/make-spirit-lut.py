@@ -15,11 +15,11 @@ PACK = Path(sys.argv[1] if len(sys.argv) > 1 else Path(__file__).resolve().paren
 SRC = PACK / "shaders/img/luts/neutral.png"
 DST = PACK / "shaders/img/luts/spirit.png"
 
-SHADOW_TINT = np.array([-0.025, 0.020, 0.075])   # colored darks: deep blue-teal instead of grey
+SHADOW_TINT = np.array([-0.008, 0.014, 0.040])   # colored darks: blue-teal instead of grey, without crushing dark reds
 HIGHLIGHT_TINT = np.array([0.015, 0.025, 0.010])  # soft luminous highlights, slightly cyan-warm
-SATURATION = 1.10
-TEAL_SHIFT_DEG = 10.0                              # pull foliage greens a little towards teal
-CONTRAST = 0.10
+SATURATION = 1.04
+TEAL_SHIFT_DEG = 8.0                              # pull foliage greens a little towards teal
+CONTRAST = 0.06
 
 
 def rgb_to_hsv(c):
@@ -51,9 +51,10 @@ def hsv_to_rgb(c):
 
 def grade(c):
     luma = c @ np.array([0.2126, 0.7152, 0.0722])
-    # gentle S-curve around mid grey
-    c = c + CONTRAST * (c - 0.5) * (1 - np.abs(2 * c - 1))
-    w_shadow = ((1 - luma) ** 2)[..., None]
+    # gentle S-curve on the upper half only, so darks are tinted rather than crushed
+    c = c + CONTRAST * np.maximum(c - 0.5, 0) * (1 - np.abs(2 * c - 1))
+    # tint fades out towards pure black so very dark materials keep their own hue
+    w_shadow = ((1 - luma) ** 2 * np.clip(luma / 0.08, 0.35, 1))[..., None]
     w_high = (luma ** 3)[..., None]
     c = c + w_shadow * SHADOW_TINT + w_high * HIGHLIGHT_TINT
     hsv = rgb_to_hsv(np.clip(c, 0, 1))
