@@ -8,7 +8,15 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod(value = OriMod.MOD_ID, dist = Dist.CLIENT)
 public final class OriModClient {
-    public OriModClient(IEventBus modEventBus) {
+    public OriModClient(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
+        // Mods list -> Config: NeoForge's generated screen over orimod-client.toml; edits save to the same file.
+        container.registerExtensionPoint(net.neoforged.neoforge.client.gui.IConfigScreenFactory.class,
+                (mod, parent) -> new net.neoforged.neoforge.client.gui.ConfigurationScreen(mod, parent));
+        modEventBus.addListener(OriModClient::configLoaded);
+        modEventBus.addListener(OriModClient::configReloaded);
+        modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::camera);
         modEventBus.addListener(SpiritControls::registerKeys);
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
@@ -25,6 +33,14 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritAppearance::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritHands::emptyArm);
         modEventBus.addListener(this::onClientSetup);
+    }
+
+    private static void configLoaded(net.neoforged.fml.event.config.ModConfigEvent.Loading event) {
+        if (event.getConfig().getSpec() == cn.wwl.orimod.config.OriClientConfig.SPEC) cn.wwl.orimod.config.OriClientConfig.upgrade(OriMod.LOGGER);
+    }
+
+    private static void configReloaded(net.neoforged.fml.event.config.ModConfigEvent.Reloading event) {
+        if (event.getConfig().getSpec() == cn.wwl.orimod.config.OriClientConfig.SPEC) cn.wwl.orimod.config.OriClientConfig.upgrade(OriMod.LOGGER);
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {

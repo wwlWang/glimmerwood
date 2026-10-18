@@ -3,7 +3,6 @@ package cn.wwl.orimod.movement;
 import static cn.wwl.orimod.movement.MoveMode.*;
 
 import cn.wwl.orimod.spirit.SpiritData;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -118,7 +117,7 @@ public final class AirMovement {
             Vec3 away = target.position().subtract(player.position()).normalize();
             target.push(away.x * .35, .3, away.z * .35);
         }
-        player.serverLevel().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + .1, player.getZ(), 20, 1.5, .06, 1.5, .02);
+        cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, player.getX(), player.getY() + .1, player.getZ(), player);
         player.level().playSound(null, player.blockPosition(), SoundEvents.MACE_SMASH_GROUND, SoundSource.PLAYERS, .7f, 1.3f);
         SpiritMovement.signal(player, s, STOMP_LAND, 0, Vec3.ZERO);
     }

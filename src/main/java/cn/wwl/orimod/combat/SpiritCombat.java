@@ -5,7 +5,6 @@ import cn.wwl.orimod.movement.SpiritTargets;
 import cn.wwl.orimod.progression.Ability;
 import cn.wwl.orimod.progression.SpiritProgression;
 import cn.wwl.orimod.spirit.SpiritData;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -167,7 +166,7 @@ public final class SpiritCombat {
             if (target.hurt(player.damageSources().playerAttack(player), DAMAGE[s.stage])) {
                 s.bladeHits++;
                 target.knockback(s.stage == 3 ? .45 : .15, -direction.x, -direction.z);
-                player.serverLevel().sendParticles(ParticleTypes.CRIT, closest.x, closest.y, closest.z, 4, .12, .12, .12, .03);
+                cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.BLADE_HIT, closest, player);
                 player.level().playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, .5f, 1 + s.stage * .1f);
                 s.weapon.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             }
@@ -194,8 +193,8 @@ public final class SpiritCombat {
         if (event.getEntity() instanceof Arrow arrow && !arrow.level().isClientSide && arrow.getTags().contains("orimod_spirit_arrow")) {
             if (arrow.tickCount >= 100) arrow.discard();
             else if (arrow.tickCount % 2 == 0 && arrow.getDeltaMovement().lengthSqr() > .01) {
-                ((net.minecraft.server.level.ServerLevel)arrow.level()).sendParticles(ParticleTypes.END_ROD,
-                        arrow.getX(), arrow.getY(), arrow.getZ(), 1, 0, 0, 0, 0);
+                cn.wwl.orimod.fx.SpiritFx.emit((net.minecraft.server.level.ServerLevel)arrow.level(), cn.wwl.orimod.fx.SpiritFxKind.ARROW_TRAIL,
+                        arrow.getX(), arrow.getY(), arrow.getZ(), arrow.getOwner());
             }
         }
     }

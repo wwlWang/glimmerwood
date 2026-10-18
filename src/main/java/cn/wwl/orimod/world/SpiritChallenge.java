@@ -7,7 +7,6 @@ import cn.wwl.orimod.network.RuinOfferPayload;
 import cn.wwl.orimod.progression.SpiritProgression;
 import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -160,7 +159,7 @@ public final class SpiritChallenge {
         Vec3 destination = s.placement.point(checkpoint.position());
         if (!checkpoint.action().equals("blade") && player.onGround() && player.position().distanceToSqr(destination) <= 3.24
                 && Math.abs(player.getY() - destination.y) < .35 && actionCount(player, checkpoint.action()) - s.baseline >= checkpoint.count()) {
-            player.serverLevel().sendParticles(ParticleTypes.END_ROD, destination.x, destination.y + .5, destination.z, 12, .4, .5, .4, .015);
+            cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, destination.x, destination.y + .5, destination.z, player);
             s.checkpoint++;
             if (s.checkpoint >= s.kind.layout().checkpoints().size()) { complete(player, s); return; }
             var next = s.kind.layout().checkpoints().get(s.checkpoint);
@@ -170,7 +169,7 @@ public final class SpiritChallenge {
         if (elapsed % 10 == 0) {
             var next = s.kind.layout().checkpoints().get(s.checkpoint);
             var point = s.placement.point(next.position());
-            player.serverLevel().sendParticles(ParticleTypes.END_ROD, point.x, point.y + .2, point.z, 1, .2, .1, .2, 0);
+            cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.ROUTE_MARKER, point.x, point.y + .2, point.z, player);
             player.displayClientMessage(Component.translatable("challenge.orimod.status", s.checkpoint + 1, s.kind.layout().checkpoints().size(),
                     Component.translatable("challenge.orimod.action." + next.action()), (LIMIT - elapsed + 19) / 20), true);
         }
