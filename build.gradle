@@ -179,6 +179,8 @@ tasks.named('test') {
     testLogging { events 'failed', 'skipped'; exceptionFormat = 'full' }
     dependsOn zipSpiritGlow
     systemProperty 'orimod.spiritGlowZip', zipSpiritGlow.get().archiveFile.get().asFile.absolutePath
+    systemProperty 'orimod.spiritGlowSource', file('shaderpacks/spirit-glow').absolutePath
+    inputs.dir 'shaderpacks/spirit-glow'
 }
 
 tasks.register('verifyPreparedDependencies') {
