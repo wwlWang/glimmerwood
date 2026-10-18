@@ -107,6 +107,25 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+tasks.register('verifyPreparedDependencies') {
+    group = 'verification'
+    description = 'Check the Git LFS dependency artifacts before compiling.'
+    def workspace = layout.projectDirectory.asFile
+    inputs.file 'dependencies/prepared.json'
+    inputs.files fileTree('libs')
+    doLast {
+        def prepared = new groovy.json.JsonSlurper().parse(new File(workspace, 'dependencies/prepared.json'))
+        prepared.artifacts.each { entry ->
+            def artifact = new File(workspace, entry.path)
+            if (!artifact.isFile()) throw new GradleException("Missing ${entry.path}; install Git LFS and run git lfs pull")
+            def digest = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
+            if (digest != entry.sha256) throw new GradleException("Dependency checksum mismatch: ${entry.path}; restore with git lfs pull")
+        }
+    }
+}
+tasks.named('compileJava') { dependsOn 'verifyPreparedDependencies' }
+tasks.named('jar') { from 'THIRD_PARTY.md' }
+
 tasks.register('prepareDevtoolsEnvironment') {
     group = 'development'
     description = 'Verify locked rendering dependencies and initialize a new development shader profile.'
@@ -115,7 +134,7 @@ tasks.register('prepareDevtoolsEnvironment') {
         def lock = new groovy.json.JsonSlurper().parse(new File(workspace, 'dependencies/lock.json'))
         (lock.artifacts + lock.sourceBuilds).each { artifact ->
             def jar = new File(workspace, "libs/${artifact.kind ?: 'runtime'}/${artifact.filename}")
-            if (!jar.isFile()) throw new GradleException("Missing ${jar.name}; run scripts/sync-dependencies.ps1 and scripts/build-renderer.ps1")
+            if (!jar.isFile()) throw new GradleException("Missing ${jar.name}; install Git LFS and run git lfs pull")
             def digest = java.security.MessageDigest.getInstance('SHA-512').digest(jar.bytes).encodeHex().toString()
             if (digest != artifact.sha512) throw new GradleException("Dependency differs from lock: ${jar.name}")
         }

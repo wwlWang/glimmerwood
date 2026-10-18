@@ -1,10 +1,28 @@
 # OriMod
 
-Minecraft 方块世界中的 Ori 形态、跑酷、战斗与风格化画面模组。首版范围与验收标准见 [项目计划](docs/PROJECT_PLAN.md) 和 [验收计划](docs/ACCEPTANCE.md)。
+Minecraft 1.21.1 / NeoForge 的单人开发项目，包含 Ori 形态、移动能力、刀弓、成长面板与三类遗迹挑战。当前首版尚未完成：正式角色已有可编辑源文件和部分实机验证，特效声音、完整无命令流程、安装与总验收仍待完成。
 
-目前已建立开发工程，尚未实现变身、技能、动画或光影。现有模型正在检查，未打入模组。
+按用户决定，仅供自己玩，使用 [私有仓库](https://github.com/wwlWang/oriMod) 备份。模型署名与依赖许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。当前进展见 [WORK_STATUS](docs/WORK_STATUS.md)，审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)。
 
-## 开发环境
+## 从干净检出构建
+
+需要 Git、Git LFS、JDK 21。不要使用 GitHub 的源码 ZIP；它可能只有大文件指针。
+
+```sh
+git lfs install
+git clone https://github.com/wwlWang/oriMod.git
+cd oriMod
+git lfs pull
+./gradlew build --console=plain
+```
+
+Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopback socket 错误，可运行 `./scripts/gradle.ps1 build --console=plain`；此包装只为当前进程设置临时目录。首次构建仍需要下载 Gradle、Minecraft 和 NeoForge 工具链依赖。
+
+锁定的 GemRender 和 Flywheel 编译接口保存在 `libs/`，由 LFS 管理。构建前校验 `dependencies/prepared.json`，缺失或损坏时明确失败。其余开发画面依赖按 `dependencies/lock.json` 从上游下载，不上传到本仓库。
+
+产物为 `build/libs/orimod-0.1.0-SNAPSHOT.jar`。当前客户端至少需要 GemRender 0.1.17 和其内置的 Flywheel 1.0.6；仅复制 OriMod JAR 还不是完整安装包。干净游戏实例安装仍待验收。
+
+## 开发与检查
 
 | 项目 | 固定版本 |
 | --- | --- |
@@ -14,29 +32,20 @@ Minecraft 方块世界中的 Ori 形态、跑酷、战斗与风格化画面模�
 | Gradle Wrapper | 9.2.1 |
 | ModDevGradle | 2.0.148 |
 | Parchment | 1.21.1 / 2024.11.17 |
-| Mod ID / Java 包 | `orimod` / `cn.wwl.orimod` |
+| 当前角色制作 | Blender 5.1.2；4.5.14 LTS 已完成兼容重导出数据对比，游戏内复查待完成 |
 
-安装 JDK 21，确认 `java -version`。在项目根目录的 PowerShell 中执行：
+`runDevtoolsClient` 启动包含可选画面库与本地测试接口的实例；接口仅在显式开发启动中开启，发行 JAR 不含开发工具。操作和录制方法见 [DEVELOPMENT](docs/DEVELOPMENT.md)。
 
-```powershell
-.\scripts\gradle.ps1 build --console=plain
-.\scripts\gradle.ps1 runClient --console=plain
-```
+运行开发客户端前先用 Python 3 执行 `python scripts/sync-dependencies.py`，下载并核验可选依赖。该脚本适用于 Windows、Linux 和 macOS；原 PowerShell 脚本保留供本机重建渲染库使用。
 
-产物为 `build/libs/orimod-0.1.0-SNAPSHOT.jar`，开发客户端目录为 `run/`，日志在 `run/logs/latest.log`。客户端中的 `OriMod common setup ready` 与 `OriMod client setup ready` 日志表示两个入口已加载。
+已有 Python 脚本通过真实客户端验证玩法和视觉，不能把它们当作 JVM 单元测试。审查修复开始时尚无 JUnit / GameTest 用例；对应测试基建正在补齐，`test NO-SOURCE` 不代表通过。
 
-也可以在普通终端使用 `gradlew.bat build` / `gradlew.bat runClient`。`scripts/gradle.ps1` 仅为本次进程设置 Windows Java socket 临时目录，解决此机器受控终端出现的 `Unable to establish loopback connection`；执行后恢复原来的环境变量，不改系统、代理或全局 Gradle 设置。
+## 文件与恢复
 
-IDEA 中打开根目录，按 Gradle 工程导入，Gradle JVM 选择 JDK 21。首次导入和构建会下载依赖。当前没有 GameTest 用例，`gameTestServer` 只是预留运行配置，不能将 `test NO-SOURCE` 当作游戏功能通过。
+- `src/`：模组与独立开发源码集。
+- `art/source/`：当前身体与手部 v010、技术样例 v008 的 Blender 工程、导出物与清单；大文件使用 LFS。
+- `models/`：当前角色的下载原件和来源记录；未采用的原件留在本地。
+- `libs/`、`dependencies/`：可恢复的依赖包与校验记录。
+- `docs/`：计划、当前状态、审查修复和验收记录。
 
-## 文件组织
-
-- `src/main/java/cn/wwl/orimod/`：公共入口；`client/` 为客户端入口。
-- `src/main/templates/`：构建时展开版本号的模组元信息。
-- `docs/`：项目计划、验收标准和初始化记录。
-- `models/`：用户提供的原始模型与资产检查记录。
-- `scripts/`：本地开发辅助脚本。
-
-原始模型和压缩包保留在本地，暂不纳入 Git；来源记录可入库。确定生产资产后再选择大文件存储方案。`.gitignore` 同时排除构建缓存、开发存档和大体积验收证据。
-
-本仓库使用本地 `main` 分支，未配置远程仓库。MDK 来源和版本见 [初始化记录](docs/BOOTSTRAP.md)。模板许可保留在 `TEMPLATE_LICENSE.txt`；项目源码许可暂用 MDK 的默认 `All Rights Reserved`，第三方资产各自记录许可。
+运行存档、原始录像、证据、历史资产候选、外部工具与反编译源码不上传 GitHub。本地完整备份保存到仓库外，并附逐文件 SHA-256 清单。阶段提交和标签标记可恢复位置；标签本身不等于质量验收通过。

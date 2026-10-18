@@ -9,9 +9,10 @@ config="orimod.mixins.json"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+credits="Character model: Ori Rigged by Random modeler (Seea_Rooster), CC BY 4.0; modified rig, materials and animations. See THIRD_PARTY.md. Ori belongs to its respective rights holders."
 description='''
-Ori-inspired movement, character animation and exploration in Minecraft.
-In development. Includes a spirit form prototype; the complete gameplay is not yet delivered.
+Private single-player Ori-inspired spirit form, movement abilities, combat and exploration.
+Development build; character, effects and complete survival acceptance remain in progress.
 '''
 
 [[dependencies.${mod_id}]]
@@ -25,6 +26,13 @@ side="BOTH"
 modId="gemrender"
 type="required"
 versionRange="[0.1.17]"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
+modId="flywheel"
+type="required"
+versionRange="[1.0.6]"
 ordering="AFTER"
 side="CLIENT"
 

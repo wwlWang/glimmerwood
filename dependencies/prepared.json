@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "purpose": "Private reproducible development dependencies; sources and licenses in lock.json and THIRD_PARTY.md",
+  "artifacts": [
+    {
+      "path": "libs/compile/flywheel-neoforge-1.21.1-1.0.6.jar",
+      "sha256": "31dda15c205eb596d3b3449ef03f6af7363a6cd35b3da4bfe916b304f9e5337e",
+      "bytes": 873570
+    },
+    {
+      "path": "libs/runtime/gemrender-0.1.17.jar",
+      "sha256": "28759c5d10b4d873b4b5fdae905d319d067519511069b93005414c0e13e69d7f",
+      "bytes": 8309378
+    }
+  ]
+}
