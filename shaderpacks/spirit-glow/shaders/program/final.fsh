@@ -82,16 +82,22 @@ vec3 spirit_grade(vec3 C) {
     #else
         const vec3 DarkMul = vec3(0.80, 0.62, 1.25); const vec3 DarkLift = vec3(0.035, 0.010, 0.065); // purple
     #endif
+    // The Nether keeps its own warm reds: only a fraction of the cool grade applies there.
+    #ifdef DIMENSION_NETHER
+        const float Cool = SPIRIT_NETHER_GRADE;
+    #else
+        const float Cool = 1.0;
+    #endif
     // warm, saturated pixels (torches, lava, sunset) are the focal accents: keep them out of the cool grade
     float Warm = clamp((C.r - max(C.g * 0.8, C.b)) * 4, 0, 1) * smoothstep(0.15, 0.45, L);
 
     // darks hold the frame in deep blue/teal/purple
     float Dark = (1 - smoothstep(0.0, 0.55, L)) * (1 - Warm);
-    C = mix(C, C * DarkMul + DarkLift, Dark * SPIRIT_SHADOW_TINT);
+    C = mix(C, C * DarkMul + DarkLift, Dark * SPIRIT_SHADOW_TINT * Cool);
 
     // yellow-green foliage leans towards emerald/teal, the way painted forests read
     float Green = clamp((C.g - max(C.r, C.b)) * 5, 0, 1) * (1 - Warm);
-    C = mix(C, vec3(C.r * 0.82, C.g * 0.96, max(C.b, C.g * 0.78)), Green * SPIRIT_FOLIAGE_TEAL);
+    C = mix(C, vec3(C.r * 0.82, C.g * 0.96, max(C.b, C.g * 0.78)), Green * SPIRIT_FOLIAGE_TEAL * Cool);
 
     // more colour in the mid tones, less in deep darks and highlights, so glows stay near white
     L = get_luminance(C);

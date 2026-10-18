@@ -403,6 +403,7 @@ const float voxelDistance = VOXEL_DISTANCE;
 #define SPIRIT_SHADOW_TINT 0.8 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 #define SPIRIT_SHADOW_HUE 1 // [0 1 2]
 #define SPIRIT_FOLIAGE_TEAL 0.5 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+#define SPIRIT_NETHER_GRADE 0.3 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 #define SPIRIT_MID_SATURATION 0.35 // [0.0 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5]
 #define SPIRIT_HIGHLIGHT_SOFTNESS 0.3 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6]
 #define SPIRIT_DEPTH_HAZE

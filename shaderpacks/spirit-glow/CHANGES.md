@@ -29,3 +29,5 @@
    god rays, reflections, water normals and volumetric clouds; FABULOUS adds SSAO, TAA, SMAA, sharpening and
    finer god rays. Spirit Style options read by `#if defined` / `#elif defined` were changed to plain
    `#ifdef`, so Iris lists them as toggles again (`IMAGE_SHARPENING`, `SPIRIT_DEPTH_HAZE`).
+7. Nether (oriMod R24): new `SPIRIT_NETHER_GRADE` (default 0.3) scales the cool dark tint and the
+   teal foliage shift in the Nether, which otherwise turned netherrack navy-purple.
