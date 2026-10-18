@@ -688,6 +688,9 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
+        state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
+                "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
+                "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks()));
         state.put("collision", Map.of("stepHeight", player.maxUpStep(), "horizontal", player.horizontalCollision,
                 "vertical", player.verticalCollision, "crouching", player.isCrouching(), "flying", player.getAbilities().flying,
                 "forward", player.zza, "strafe", player.xxa, "bounds", player.getBoundingBox().toString()));

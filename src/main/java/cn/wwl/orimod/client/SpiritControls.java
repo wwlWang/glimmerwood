@@ -12,6 +12,8 @@ import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
@@ -43,6 +45,15 @@ public final class SpiritControls {
         if (!input.jumping) blockJumpUntilReleased = false;
         if (!DASH.isDown()) blockDashUntilReleased = false;
         if (!BASH.isDown()) blockBashUntilReleased = false;
+        var state = player.getData(SpiritData.MOVEMENT);
+        // Vanilla checks this jump edge after the input event. Try the same guarded
+        // transition before Ori consumes it, so usable wings take priority in midair.
+        if (active && input.jumping && !blockJumpUntilReleased && !state.jumpHeld
+                && player.getItemBySlot(EquipmentSlot.CHEST).canElytraFly(player)
+                && player.tryToStartFallFlying()) {
+            mc.player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
+            active = false;
+        }
         if (!active) { blockJumpUntilReleased = blockDashUntilReleased = blockBashUntilReleased = true; }
         int flags = (active ? MovementInputPayload.ACTIVE : 0)
                 | (input.jumping && !blockJumpUntilReleased ? MovementInputPayload.JUMP : 0)
@@ -50,7 +61,6 @@ public final class SpiritControls {
                 | (BASH.isDown() && !blockBashUntilReleased ? MovementInputPayload.BASH : 0)
                 | (input.shiftKeyDown ? MovementInputPayload.CROUCH : 0);
         int sequence = ++inputSequence;
-        var state = player.getData(SpiritData.MOVEMENT);
         if (SpiritJumpPrediction.apply(player, state, sequence, flags, input.forwardImpulse, input.leftImpulse)) flags |= MovementInputPayload.PREDICTED_JUMP;
         PacketDistributor.sendToServer(new MovementInputPayload(sequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
         sentActive = active;

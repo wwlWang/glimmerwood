@@ -136,7 +136,12 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
             float yaw = Mth.rotLerp(partial, entity.yBodyRotO, entity.yBodyRot);
             if (entity.isSleeping() && entity.getBedOrientation() != null) yaw = entity.getBedOrientation().toYRot();
             target.rotationY(-yaw * Mth.DEG_TO_RAD).scale(entity.getScale());
-            if (entity.isVisuallySwimming() || entity.isFallFlying()) target.rotateX(-entity.getViewXRot(partial) * Mth.DEG_TO_RAD);
+            if (entity.isAutoSpinAttack()) {
+                // The swim pose is already horizontal along +Z. Roll about its torso,
+                // at vanilla's 75 degrees per tick, including every fitted attachment.
+                target.translate(0, .35f, 0).rotateX(-entity.getViewXRot(partial) * Mth.DEG_TO_RAD)
+                        .rotateZ((entity.tickCount + partial) * -75f * Mth.DEG_TO_RAD).translate(0, -.35f, 0);
+            } else if (entity.isVisuallySwimming() || entity.isFallFlying()) target.rotateX(-entity.getViewXRot(partial) * Mth.DEG_TO_RAD);
         }
 
         @Override protected void transform(Matrix4f target, float partial) {

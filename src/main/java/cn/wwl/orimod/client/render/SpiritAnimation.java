@@ -112,6 +112,7 @@ final class SpiritAnimation {
         else if (!SpiritData.isSpirit(player)) next = "transform_out";
         else if (player.isSleeping()) next = "sleep";
         else if (player.isPassenger()) next = "sit";
+        else if (player.isAutoSpinAttack()) next = "swim";
         else if (now - lastHurtAt < .3f) next = "hurt";
         else if (now - lastHurtAt < .55f) next = "recover";
         else if (player.isVisuallySwimming() || player.isFallFlying()) next = "swim";

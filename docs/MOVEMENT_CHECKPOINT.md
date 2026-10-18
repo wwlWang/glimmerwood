@@ -63,3 +63,9 @@
 首轮半砖测试 `movement-surfaces-2026-10-16` 发现落地后迟到的移动包再次结算摔伤，已在确认下砸落地时清理本次摔落累计并复测。`movement-surfaces-2026-10-16-fixed` 未进入测试：开发接口在首次资源覆盖层消失前打开世界，导致加载等待；线程记录在 `.external/movement-surfaces-startup-threads.txt`。已添加就绪检查及 `scripts/open-dev-world.py`，最终复测为 `movement-surfaces-2026-10-16-verified`。失败记录均保留。
 
 新增复现脚本：`scripts/verify-bash.py`、`scripts/verify-air-movement.py`、`scripts/verify-movement-surfaces.py`。开发环境的 `grant_air_movement` 仅供测试，尚不代表正式获取流程通过。
+
+## 2026-10-18：鞘翅起飞 R11
+
+可用鞘翅在空中再次按跳跃时优先展开，使用原版的可用性检查和起飞指令，随后停止 Ori 移动接管。损坏到不能飞的鞘翅与未穿鞘翅时继续使用正常二段跳；地面第一跳不变。
+
+`scripts/verify-vanilla-flight.py` 通过真实按键检查起飞、保持按键、落地与再起跳，并以客户端/服务端状态和服务端计数断言结果。`audit-r11-flight-v004-2026-10-18` 的光影开/关各三组鞘翅条件均通过，另外两组水中激流已确认真实 `SPIN_ATTACK` 状态。v002 / v003 残留流水导致的夹具失败保留，已加入每例清场和干地断言。完整原版特殊状态矩阵仍待执行。
