@@ -2,7 +2,7 @@
 
 Minecraft 1.21.1 / NeoForge 的单人开发项目，包含 Ori 形态、移动能力、刀弓、成长面板与三类遗迹挑战。当前首版尚未完成：正式角色已有可编辑源文件和部分实机验证，特效声音、完整无命令流程、安装与总验收仍待完成。
 
-按用户决定，仅供自己玩，使用 [私有仓库](https://github.com/wwlWang/oriMod) 备份。模型署名与依赖许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。当前进展见 [WORK_STATUS](docs/WORK_STATUS.md)，审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)。
+按用户决定，仅供自己玩，使用 [私有仓库](https://github.com/wwlWang/oriMod) 备份。模型署名与依赖许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。当前进展见 [WORK_STATUS](docs/WORK_STATUS.md)，79 项验收结果见 [ACCEPTANCE_STATUS](docs/ACCEPTANCE_STATUS.md)，审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)。
 
 ## 从干净检出构建
 

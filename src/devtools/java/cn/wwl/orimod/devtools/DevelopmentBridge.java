@@ -300,7 +300,8 @@ public final class DevelopmentBridge {
                             "type", entity.getType().toString(), "alive", entity.isAlive(), "position", new double[]{entity.getX(), entity.getY(), entity.getZ()},
                             "velocity", new double[]{entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z},
                             "health", entity instanceof net.minecraft.world.entity.LivingEntity living ? living.getHealth() : -1,
-                            "noGravity", entity.isNoGravity(), "noAi", entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi())).toList());
+                            "noGravity", entity.isNoGravity(), "noAi", entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi(),
+                            "leashHolder", entity instanceof net.minecraft.world.entity.Mob leashed && leashed.getLeashHolder() != null ? leashed.getLeashHolder().getId() : -1)).toList());
                 }).get(5, TimeUnit.SECONDS);
             }
             case "progress_state" -> {
@@ -690,7 +691,8 @@ public final class DevelopmentBridge {
         if (player.level().isClientSide) state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
-                "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks()));
+                "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),
+                "armor", player.getArmorValue(), "armorToughness", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS)));
         state.put("collision", Map.of("stepHeight", player.maxUpStep(), "horizontal", player.horizontalCollision,
                 "vertical", player.verticalCollision, "crouching", player.isCrouching(), "flying", player.getAbilities().flying,
                 "forward", player.zza, "strafe", player.xxa, "bounds", player.getBoundingBox().toString()));

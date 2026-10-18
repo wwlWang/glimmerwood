@@ -26,6 +26,8 @@ R10 含多轮失败和复测，共约 81 MB。148 个截图或大 JSON 已无损
 
 R11 的八组实机鞘翅/激流回归位于 `audit-r11-flight-v004-2026-10-18`，脚本为 `verify-vanilla-flight.py`；前面三轮保留视觉缺陷或测试区流水污染的记录。最新代码再次在 Windows / Linux 通过 262 项 JUnit 与 146 项 GameTest。发行 JAR SHA-256 为 `9c92e27c2680bad7ba9aba2ba81a105c14d7b3e08653bf57086784a0501e4279`，原始模型哈希与开发工具隔离检查通过，详见 `audit-r11-builds-2026-10-18/report.json`。该轮同样使用逐像素核对的 WebP 与可恢复原字节的 gzip，映射保存在 `audit-r11-storage-2026-10-18/manifest.json`。
 
+R12 恢复计划规定的精灵默认隐藏盔甲，真实客户端用 `verify-spirit-appearance.py` 检查两种光影下各五组装备状态和实际牵绳输入；最终 20 张图已查看。证据为 `audit-r12-appearance-v003-2026-10-18`，前两版观察镜头夹具问题保留。两系统 262 / 146 项通过，报告、原始 JUnit XML 与构建/客户端日志保存在 `audit-r12-builds-2026-10-18`。JAR SHA-256 为 `05648dbc7a9439fd050b00ccfdf694e255d82119a6a6018bafddbc3f680f1a08`，无开发或 GameTest 条目，原角色源文件与 GLB 哈希未变。60 张截图逐像素核对后保存为无损 WebP，全轮约 27.59 MB，映射见 `audit-r12-storage-2026-10-18/manifest.json`。
+
 GameTest 位于独立 `src/gametest` 源码集，仅 `runGameTestServer` 加载。夹具使用每例新建的 FakePlayer、真实 ServerLevel、注册项和事件；FakePlayer 默认不会自动 tick，也不会受到伤害，测试涉及相应行为时须显式处理，不能把直接调用当作网络客户端证据。房间模板为 12×8×12，包含完整空气体积和石地板；结构方块坐标比模板原点低一格，玩家脚部使用相对 y=2。
 
 合成用例另建真实生存 ServerPlayer，经 NeoForge `configureMockConnection` 配置 EmbeddedChannel，再正常加入和移出 PlayerList；因此难度变更会通知真实容器。它验证菜单与服务器逻辑，不代表真实客户端连线。对应实机脚本 `verify-peaceful-crafting.py` 已验证背包与工作台四种难度、旧产物清理和切回和平后的自动恢复；截图与数据在 `evidence/audit-r3-peaceful-crafting-v001-2026-10-18/`，约 5.2 MB。

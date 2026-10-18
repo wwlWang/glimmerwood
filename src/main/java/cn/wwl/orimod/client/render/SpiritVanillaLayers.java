@@ -65,11 +65,8 @@ public final class SpiritVanillaLayers {
         if (layer instanceof CapeLayer && (player.isInvisible() || !player.isModelPartShown(PlayerModelPart.CAPE))) return;
         if (layer instanceof ElytraLayer elytra && !elytra.shouldRender(player.getItemBySlot(EquipmentSlot.CHEST), player)) return;
         if (layer instanceof ParrotOnShoulderLayer && player.getShoulderEntityLeft().isEmpty() && player.getShoulderEntityRight().isEmpty()) return;
-        if (layer instanceof HumanoidArmorLayer) {
-            boolean armor = false;
-            for (var stack : player.getArmorSlots()) armor |= stack.getItem() instanceof ArmorItem;
-            if (!armor) return;
-        }
+        // The agreed spirit appearance hides armor geometry; vanilla equipment stats stay intact.
+        if (layer instanceof HumanoidArmorLayer) return;
         if (layer instanceof CustomHeadLayer) {
             var head = player.getItemBySlot(EquipmentSlot.HEAD);
             if (head.isEmpty() || head.getItem() instanceof ArmorItem armor && armor.getEquipmentSlot() == EquipmentSlot.HEAD) return;
@@ -106,8 +103,8 @@ public final class SpiritVanillaLayers {
             current.parrot(poses, buffers, light, frame, player.getShoulderEntityLeft(), true, swing, amount, yaw, pitch, player.tickCount);
             current.parrot(poses, buffers, light, frame, player.getShoulderEntityRight(), false, swing, amount, yaw, pitch, player.tickCount);
         } else {
-            // Armor retains its material, trim, enchantment and slot rules. Head items and stuck
-            // arrows use those same fitted parts. Restore every field before another player renders.
+            // Head items and other model-based layers use fitted parts. Restore every field
+            // before another player renders.
             ModelPart[] parts = {model.head, model.hat, model.body, model.rightArm, model.leftArm,
                     model.rightLeg, model.leftLeg, model.jacket, model.rightSleeve, model.leftSleeve,
                     model.rightPants, model.leftPants};
@@ -116,7 +113,7 @@ public final class SpiritVanillaLayers {
             try {
                 current.fit(frame, model);
                 if (layer instanceof CustomHeadLayer) current.fitHeadItem(frame, model);
-                if (!(layer instanceof HumanoidArmorLayer || layer instanceof CustomHeadLayer || layer instanceof StuckInBodyLayer)) {
+                if (!(layer instanceof CustomHeadLayer || layer instanceof StuckInBodyLayer)) {
                     poses.mulPose(current.delta(frame, "spine").translate(0, .9f, 0).rotateX((float)Math.PI).scale(.6f));
                 }
                 layer.render(poses, buffers, light, (LivingEntity)player, swing, amount, partial, age, yaw, pitch);
