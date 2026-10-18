@@ -312,6 +312,8 @@ public final class SpiritMovement {
     }
 
     private static void signal(ServerPlayer player, MovementState s, MoveMode mode, int ticks, Vec3 velocity, int jumpSequence) {
+        // Grapple re-signals every pull tick; only its first signal is a new action.
+        if (mode != GRAPPLE || s.mode != GRAPPLE) cn.wwl.orimod.fx.SpiritFxLifecycle.moved(player, mode);
         s.mode = mode;
         if (mode != IDLE && mode != WALL_SLIDE && mode != RELOCATE) s.lastAction = mode;
         s.activeTicks = ticks;

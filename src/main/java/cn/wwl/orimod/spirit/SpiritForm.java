@@ -26,6 +26,7 @@ public final class SpiritForm {
         cn.wwl.orimod.combat.SpiritCombat.cancel(player, "form");
         player.setData(SpiritData.FORM, becomingSpirit);
         player.refreshDimensions();
+        cn.wwl.orimod.fx.SpiritFxLifecycle.formChanged(player);
         player.displayClientMessage(Component.translatable(becomingSpirit ? "message.orimod.spirit_form" : "message.orimod.human_form"), true);
         return true;
     }

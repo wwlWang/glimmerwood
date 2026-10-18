@@ -33,5 +33,6 @@ public final class OriServerLifecycle {
         RuinLocator.discardAll();
         SpiritChallenge.discardAll();
         BashSession.discardAll();
+        cn.wwl.orimod.fx.SpiritFxLifecycle.reset();
     }
 }

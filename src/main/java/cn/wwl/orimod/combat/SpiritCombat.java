@@ -166,8 +166,7 @@ public final class SpiritCombat {
             if (target.hurt(player.damageSources().playerAttack(player), DAMAGE[s.stage])) {
                 s.bladeHits++;
                 target.knockback(s.stage == 3 ? .45 : .15, -direction.x, -direction.z);
-                cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.BLADE_HIT, closest, player);
-                player.level().playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, .5f, 1 + s.stage * .1f);
+                cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.BLADE_HIT, closest.x, closest.y, closest.z, player, 1 + s.stage * .1f);
                 s.weapon.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             }
         }

@@ -5,8 +5,6 @@ import static cn.wwl.orimod.movement.MoveMode.*;
 import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -118,7 +116,6 @@ public final class AirMovement {
             target.push(away.x * .35, .3, away.z * .35);
         }
         cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, player.getX(), player.getY() + .1, player.getZ(), player);
-        player.level().playSound(null, player.blockPosition(), SoundEvents.MACE_SMASH_GROUND, SoundSource.PLAYERS, .7f, 1.3f);
         SpiritMovement.signal(player, s, STOMP_LAND, 0, Vec3.ZERO);
     }
 }

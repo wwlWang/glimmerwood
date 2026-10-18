@@ -11,15 +11,32 @@ public enum SpiritFxKind {
     STOMP_IMPACT(1, 20, 4, 1.5, .06, 1.5, .02),
     ARROW_TRAIL(2, 1, 1, 0, 0, 0, 0),
     CHECKPOINT_REACHED(3, 12, 3, .4, .5, .4, .015),
-    ROUTE_MARKER(4, 1, 1, .2, .1, .2, 0);
+    ROUTE_MARKER(4, 1, 1, .2, .1, .2, 0),
+    DASH(5, 8, 2, .3, .3, .3, .02),
+    DOUBLE_JUMP(6, 8, 2, .3, .05, .3, .01),
+    WALL_JUMP(7, 6, 2, .1, .4, .1, .02),
+    BASH(8, 12, 3, .3, .3, .3, .04),
+    GRAPPLE_HOOK(9, 6, 2, .15, .15, .15, .02),
+    FORM_SWITCH(10, 16, 4, .3, .8, .3, .02),
+    /** Persistent: spawned every client tick while the server keeps the effect alive. */
+    GLIDE(11, 2, 1, .25, .1, .25, 0, true),
+    GRAPPLE_TETHER(12, 3, 1, 0, 0, 0, 0, true);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;
+    private final boolean persistent;
 
     SpiritFxKind(int wireId, int base, int essential, double spreadX, double spreadY, double spreadZ, double speed) {
-        this.wireId = wireId; this.base = base; this.essential = essential;
-        this.spreadX = spreadX; this.spreadY = spreadY; this.spreadZ = spreadZ; this.speed = speed;
+        this(wireId, base, essential, spreadX, spreadY, spreadZ, speed, false);
     }
+
+    SpiritFxKind(int wireId, int base, int essential, double spreadX, double spreadY, double spreadZ, double speed, boolean persistent) {
+        this.wireId = wireId; this.base = base; this.essential = essential;
+        this.spreadX = spreadX; this.spreadY = spreadY; this.spreadZ = spreadZ; this.speed = speed; this.persistent = persistent;
+    }
+
+    /** Persistent effects follow their source entity between START and STOP; the rest are one-shot bursts. */
+    public boolean persistent() { return persistent; }
 
     public int wireId() { return wireId; }
     public int base() { return base; }

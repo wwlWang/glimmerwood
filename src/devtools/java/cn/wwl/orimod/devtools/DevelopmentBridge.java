@@ -559,6 +559,7 @@ public final class DevelopmentBridge {
                 values.put("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
                 values.put("feedback", cn.wwl.orimod.client.fx.SpiritScreenFeedback.diagnostics());
                 values.put("fx", cn.wwl.orimod.client.fx.SpiritFxClient.diagnostics());
+                values.put("fxLifecycle", cn.wwl.orimod.client.fx.SpiritFxClient.lifecycle());
                 values.put("screen", mc.screen == null ? null : mc.screen.getClass().getName());
                 return values;
             }

@@ -10,7 +10,8 @@ class FxBudgetTest {
     @ParameterizedTest @EnumSource(SpiritFxKind.class)
     void balancedKeepsVerifiedServerCounts(SpiritFxKind kind) {
         // R1–R13 runtime evidence used these server sendParticles counts.
-        int verified = switch (kind) { case BLADE_HIT -> 4; case STOMP_IMPACT -> 20; case ARROW_TRAIL -> 1; case CHECKPOINT_REACHED -> 12; case ROUTE_MARKER -> 1; };
+        int verified = switch (kind) { case BLADE_HIT -> 4; case STOMP_IMPACT -> 20; case ARROW_TRAIL -> 1; case CHECKPOINT_REACHED -> 12; case ROUTE_MARKER -> 1;
+            default -> kind.base(); }; // R18 kinds have no older server count to preserve.
         assertEquals(verified, FxBudget.of(kind, VisualQuality.BALANCED, true).total());
     }
 
@@ -42,7 +43,7 @@ class FxBudgetTest {
     }
 
     @Test void wireIdsAreStableAndUnique() {
-        int[] expected = {0, 1, 2, 3, 4};
+        int[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         var kinds = SpiritFxKind.values();
         assertEquals(expected.length, kinds.length, "new kinds need a new id and test entry");
         for (int i = 0; i < kinds.length; i++) {
@@ -50,7 +51,7 @@ class FxBudgetTest {
             assertSame(kinds[i], SpiritFxKind.byWireId(expected[i]));
         }
         assertNull(SpiritFxKind.byWireId(-1));
-        assertNull(SpiritFxKind.byWireId(5));
+        assertNull(SpiritFxKind.byWireId(13));
     }
 
     @Test void unknownQualityNamesFallBackToBalanced() {
