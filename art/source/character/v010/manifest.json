@@ -1,0 +1,641 @@
+{
+  "stage": "Character candidate; visual and runtime acceptance pending",
+  "revision": 10,
+  "source": "models/ori/3/ori_rigged.glb",
+  "source_sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
+  "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
+  "license": "CC-BY-4.0",
+  "author": "Random modeler (Seea_Rooster)",
+  "blend": "art/source/character/v010/ori.blend",
+  "blend_sha256": "602746c3ed9f1845894cf3de14b32f08e0ad6aa89fef009511b650b66b32f99c",
+  "export": "art/source/character/v010/ori.glb",
+  "export_sha256": "5a51d332f2757aa01078dea02180938e2c0715f8567e1220f80b763e806c05e8",
+  "triangles": 12399,
+  "bones": 60,
+  "height": 1.2,
+  "blender": "5.1.2",
+  "textures": {
+    "orimod:textures/entity/ori_emission.png": {
+      "path": "art/source/character/v010/ori_emission.png",
+      "sha256": "754e86d0476fe47ab71d355f719043c7e193f9c76914b251fa7b24a695373b18"
+    },
+    "orimod:textures/entity/ori_base.png": {
+      "path": "art/source/character/v010/ori_base.png",
+      "sha256": "01dcde9fca2fdb722d09973954ea3731d1dd020d8cef988a202d2895f06f1547"
+    },
+    "orimod:textures/entity/ori_surface.png": {
+      "path": "art/source/character/v010/ori_surface.png",
+      "sha256": "00d82af5c6e06f916ba9e174adf402c5f7ee0db25580e2facf5b75c830073792"
+    }
+  },
+  "animation": {
+    "fps": 30,
+    "clips": {
+      "idle": {
+        "frames": 90,
+        "seconds": 3.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "alert": {
+        "frames": 60,
+        "seconds": 2.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "transform_in": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "transform_out": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "death": {
+        "frames": 27,
+        "seconds": 0.9,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "start": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "walk": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [
+          {
+            "frame": 0,
+            "foot": "l"
+          },
+          {
+            "frame": 15,
+            "foot": "r"
+          }
+        ],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "metres_per_cycle": 0.8
+      },
+      "run": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [
+          {
+            "frame": 0,
+            "foot": "l"
+          },
+          {
+            "frame": 12,
+            "foot": "r"
+          }
+        ],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "metres_per_cycle": 2.0
+      },
+      "stop": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "turn_left": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "turn_right": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "crouch": {
+        "frames": 60,
+        "seconds": 2.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "jump_start": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "rise": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "apex": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "fall": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "double_jump": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "double_jump"
+          }
+        ],
+        "max_ik_target_clamp": 0
+      },
+      "land_light": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "foot_contact"
+          }
+        ],
+        "max_ik_target_clamp": 0
+      },
+      "land_heavy": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "foot_contact"
+          }
+        ],
+        "max_ik_target_clamp": 0
+      },
+      "wall_hold": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "wall_slide": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "wall_jump_l": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "wall_jump_r": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "dash_start": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "dash_start"
+          }
+        ],
+        "max_ik_target_clamp": 0
+      },
+      "dash_end": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "bash_aim": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "bash_launch": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "bash_launch"
+          }
+        ],
+        "max_ik_target_clamp": 0
+      },
+      "glide_open": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "glide": {
+        "frames": 36,
+        "seconds": 1.2,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "glide_close": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "grapple": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "stomp": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "blade_1": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 3.0,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 6.0,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.6,
+        "hand": "right"
+      },
+      "blade_2": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 4.615384615384615,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 7.6923076923076925,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.65,
+        "hand": "right"
+      },
+      "blade_3": {
+        "frames": 27,
+        "seconds": 0.9,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 6.0,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 9.0,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.9,
+        "hand": "right"
+      },
+      "bow_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "bow_hold": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "bow_release": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "bow_release"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hurt": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "recover": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "hold": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "use_item": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "block": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "swim": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "climb": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "sit": {
+        "frames": 60,
+        "seconds": 2.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "sleep": {
+        "frames": 90,
+        "seconds": 3.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "bend": {
+        "frames": 60,
+        "seconds": 2.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "tail_sway": {
+        "frames": 60,
+        "seconds": 2.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "hold_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "use_item_left": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "block_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "blade_1_left": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 3.0,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 6.0,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.6,
+        "hand": "left"
+      },
+      "blade_2_left": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 4.615384615384615,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 7.6923076923076925,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.65,
+        "hand": "left"
+      },
+      "blade_3_left": {
+        "frames": 27,
+        "seconds": 0.9,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 6.0,
+            "event": "blade_hit_start"
+          },
+          {
+            "frame": 9.0,
+            "event": "blade_recovery"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "logic_seconds": 0.9,
+        "hand": "left"
+      },
+      "bow_charge_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "bow_hold_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "bow_release_left": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [
+          {
+            "frame": 0,
+            "event": "bow_release"
+          }
+        ],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      }
+    },
+    "max_ik_target_clamp": 0
+  },
+  "attachments": [
+    "grip_l",
+    "grip_r",
+    "sole_l",
+    "sole_r",
+    "body_center"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "Character candidates and technical effects; full visual acceptance pending",
+  "character": "source/character/manifest.json",
+  "first_person": "source/first-person/manifest.json",
+  "preserved_technical_sample": "source/deformation-sample/manifest.json",
+  "character_source_license": "CC-BY-4.0",
+  "character_source_author": "Random modeler (Seea_Rooster)",
+  "character_source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
+  "review_record": "../docs/CHARACTER_CHECKPOINT.md"
+}

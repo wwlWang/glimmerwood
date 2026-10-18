@@ -7,6 +7,8 @@
 *.md text eol=lf
 gradlew text eol=lf
 gradlew.bat text eol=crlf
-*.jar binary
-*.glb binary
-*.blend binary
+libs/**/*.jar filter=lfs diff=lfs merge=lfs -text
+*.glb filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text

@@ -264,14 +264,14 @@ remaining_chunks = glb[20 + json_length:]
 export.write_bytes(struct.pack("<III", 0x46546C67, 2, 20 + len(encoded) + len(remaining_chunks))
                    + struct.pack("<II", len(encoded), 0x4E4F534A) + encoded + remaining_chunks)
 mesh.data.calc_loop_triangles()
-report = {"stage": "Deformation sample; not the final character", "source": str(SOURCE.relative_to(ROOT)),
+report = {"stage": "Deformation sample; not the final character", "source": str(SOURCE.relative_to(ROOT).as_posix()),
           "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-          "blend": str(blend_path.relative_to(ROOT)), "export": str(export.relative_to(ROOT)),
+          "blend": str(blend_path.relative_to(ROOT).as_posix()), "export": str(export.relative_to(ROOT).as_posix()),
           "triangles": len(mesh.data.loop_triangles), "bones": len(armature.data.bones), "original_bones": original_bones,
           "aliases": ALIASES, "clips": dict(clips), "fps": 30, "height": 1.2,
           "blender": bpy.app.version_string, "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
           "license": "CC-BY-4.0", "author": "Random modeler (Seea_Rooster)",
-          "texture": str(texture_path.relative_to(ROOT)), "texture_resource": texture_id,
+          "texture": str(texture_path.relative_to(ROOT).as_posix()), "texture_resource": texture_id,
           "texture_sha256": hashlib.sha256(texture_path.read_bytes()).hexdigest(),
           "modifications": "Decimated to 20%, baked corrective pose, 64-bone hierarchy with merged weights, normalized height/origin, grey test material, five sampled deformation clips",
           "export_sha256": hashlib.sha256(export.read_bytes()).hexdigest()}

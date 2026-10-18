@@ -6,6 +6,8 @@ import shutil
 import struct
 
 root = Path(__file__).resolve().parents[2]
+if (root / 'art/source/character/manifest.json').exists():
+    raise SystemExit('A character revision is packaged. Use promote_character.py; the technical sample must not overwrite it.')
 manifest_path = root / 'art/source/deformation-sample/manifest.json'
 manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
 source = root / manifest['export']

@@ -1,9 +1,9 @@
 {
   "stage": "Deformation sample; not the final character",
-  "source": "models\\ori\\3\\ori_rigged.glb",
+  "source": "models/ori/3/ori_rigged.glb",
   "source_sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
-  "blend": "art\\source\\deformation-sample\\ori-deformation-v008.blend",
-  "export": "src\\devtools\\resources\\assets\\orimod_devtools\\models\\ori_deformation_sample.glb",
+  "blend": "art/source/deformation-sample/ori-deformation-v008.blend",
+  "export": "src/devtools/resources/assets/orimod_devtools/models/ori_deformation_sample.glb",
   "triangles": 12876,
   "bones": 64,
   "original_bones": 186,
@@ -40,12 +40,12 @@
   "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
   "license": "CC-BY-4.0",
   "author": "Random modeler (Seea_Rooster)",
-  "texture": "src\\devtools\\resources\\assets\\orimod_devtools\\textures\\entity\\ori_pearl.png",
+  "texture": "src/devtools/resources/assets/orimod_devtools/textures/entity/ori_pearl.png",
   "texture_resource": "orimod_devtools:textures/entity/ori_pearl.png",
   "texture_sha256": "15cce3db3586ba5b0fc153146dad7475f42bd876be2f4be42467d0f41bdab238",
   "modifications": "Decimated to 20%, baked corrective pose, 64-bone hierarchy with merged weights, normalized height/origin, grey test material, five sampled deformation clips",
   "export_sha256": "a8719745d66aa9ba131e501a50f54f232bdbac4e619df35bac1a0df536a63e91",
-  "player_export": "src\\main\\resources\\assets\\orimod\\models\\entity\\ori.glb",
+  "player_export": "src/main/resources/assets/orimod/models/entity/ori.glb",
   "player_export_sha256": "77d1e9c886cd256de4fc21e3f45689f2c837d01de7d58a7278882b60fafefd7f",
   "player_asset_status": "Temporary deformation sample; final model and animation acceptance pending"
 }

@@ -1,0 +1,38 @@
+{
+  "status": "candidate; first-person runtime review pending",
+  "revision": 10,
+  "derived_from": "art/source/character/v010/ori.blend",
+  "derived_from_sha256": "602746c3ed9f1845894cf3de14b32f08e0ad6aa89fef009511b650b66b32f99c",
+  "blend": "art/source/first-person/v010/paws.blend",
+  "blend_sha256": "62c7f2413f449f875bf57e5e152040f56a7afd9d25472c49663833eb25ba3e73",
+  "models": {
+    "paw_right_open": {
+      "triangles": 1740,
+      "vertices": 872,
+      "source": "art/source/first-person/v010/paw_right_open.glb",
+      "packaged": "src/main/resources/assets/orimod/models/entity/paw_right_open.glb",
+      "sha256": "aa737cd3f9794a687de9a45523a667a03c0010dbd0d772935b4ea8d33a1ed513"
+    },
+    "paw_right_grip": {
+      "triangles": 1728,
+      "vertices": 866,
+      "source": "art/source/first-person/v010/paw_right_grip.glb",
+      "packaged": "src/main/resources/assets/orimod/models/entity/paw_right_grip.glb",
+      "sha256": "9dd2e8070cb098a6d45abc33c703dc93afc45e03b784f59ece9a5fb03cb3d00b"
+    },
+    "paw_left_open": {
+      "triangles": 1768,
+      "vertices": 886,
+      "source": "art/source/first-person/v010/paw_left_open.glb",
+      "packaged": "src/main/resources/assets/orimod/models/entity/paw_left_open.glb",
+      "sha256": "2aaf43474b4e0f2326796d4170f83452e6b657bc1a7be573e31505bbf82465b1"
+    },
+    "paw_left_grip": {
+      "triangles": 1748,
+      "vertices": 876,
+      "source": "art/source/first-person/v010/paw_left_grip.glb",
+      "packaged": "src/main/resources/assets/orimod/models/entity/paw_left_grip.glb",
+      "sha256": "b548a87fd7fe3af0a6c2146811d27a1dd70d8d06dfc06e791178d9f006269e96"
+    }
+  }
+}
