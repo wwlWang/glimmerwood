@@ -19,6 +19,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
+import cn.wwl.orimod.mixin.SpiritRenderLayersAccessor;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -79,8 +82,19 @@ public final class SpiritInventory {
             DirectRenderer.submit(model, palette, null, pose, 15728880, OverlayTexture.NO_OVERLAY, -1,
                     DirectPass.GUI, VariantUv.NONE, Paint.NONE, 0, palette);
             DirectRenderer.flush(DirectPass.GUI);
-            item(graphics, player, leftItem, true, pose, palette[table.slotOfName("grip_r")]);
-            item(graphics, player, rightItem, false, pose, palette[table.slotOfName("grip_l")]);
+            if (player instanceof AbstractClientPlayer clientPlayer
+                    && Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(clientPlayer) instanceof PlayerRenderer renderer) {
+                var frame = new SpiritPlayerVisual.Frame(model, (slot, out) -> out.set(palette[slot]), new Matrix4f(), false);
+                var poses = new com.mojang.blaze3d.vertex.PoseStack(); poses.mulPose(pose);
+                var parent = renderer.getModel();
+                parent.setAllVisible(true); parent.young = false; parent.riding = false;
+                parent.prepareMobModel(clientPlayer, 0, 0, 0);
+                parent.setupAnim(clientPlayer, 0, 0, now * 20, 0, 0);
+                for (var layer : ((SpiritRenderLayersAccessor)renderer).orimod$layers()) {
+                    SpiritVanillaLayers.render(layer, parent, player, frame, poses, graphics.bufferSource(), 15728880,
+                            0, 0, 0, now * 20, 0, 0);
+                }
+            }
             graphics.flush();
         } finally {
             graphics.pose().popPose();
@@ -89,12 +103,4 @@ public final class SpiritInventory {
         return true;
     }
 
-    private static void item(GuiGraphics graphics, Player player, ItemStack item, boolean left, Matrix4f modelPose, Matrix4f palm) {
-        if (item.isEmpty()) return;
-        var poses = new com.mojang.blaze3d.vertex.PoseStack();
-        poses.mulPose(modelPose);
-        poses.translate(palm.m30(), palm.m31(), palm.m32());
-        poses.mulPose(palm.getUnnormalizedRotation(new Quaternionf()));
-        SpiritHeldItems.renderAtPalm(player, item, left, poses, .72f, graphics.bufferSource(), 15728880);
-    }
 }

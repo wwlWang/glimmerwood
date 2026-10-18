@@ -78,6 +78,7 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(this::serverTick);
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::serverStopped);
         NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
+        NeoForge.EVENT_BUS.addListener(LayerPreview::tick);
     }
 
     private void setup(FMLClientSetupEvent event) {
@@ -511,6 +512,7 @@ public final class DevelopmentBridge {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()));
             }
+            case "layer_preview" -> { return LayerPreview.configure(action); }
             case "preview_effect" -> {
                 return SpiritMotePreview.start(directory, new net.minecraft.core.BlockPos(
                         action.get("x").getAsInt(), action.get("y").getAsInt(), action.get("z").getAsInt()));

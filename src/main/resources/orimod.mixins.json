@@ -4,6 +4,6 @@
   "package":"cn.wwl.orimod.mixin",
   "compatibilityLevel":"JAVA_21",
   "mixins":["PlayerDimensionsMixin", "PlayerAirControlMixin", "MovementTeleportMixin", "RuinTreeFeatureMixin"],
-  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin", "SpiritAutoJumpMixin"],
+  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin", "SpiritAutoJumpMixin", "SpiritPlayerLayersMixin", "SpiritStuckLayerAccessor", "SpiritRenderLayersAccessor"],
   "injectors":{"defaultRequire":1}
 }

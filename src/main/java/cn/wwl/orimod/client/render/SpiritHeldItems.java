@@ -3,22 +3,17 @@ package cn.wwl.orimod.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /** Vanilla item renderers and display transforms, attached to this frame's skinned palms. */
 public final class SpiritHeldItems {
-    private static final Matrix4f SOCKET = new Matrix4f();
-    private static final Quaternionf ROTATION = new Quaternionf();
-    private static final Vector3f POSITION = new Vector3f();
     private SpiritHeldItems() { }
 
     public static java.util.Map<String, Object> diagnostics(Player player) {
@@ -38,31 +33,22 @@ public final class SpiritHeldItems {
                 "arrowDirection", new float[]{arrow.x, arrow.y, arrow.z});
     }
 
-    public static void render(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
-        var mc = Minecraft.getInstance();
-        if (mc.level == null) return;
-        for (Player player : mc.level.players()) {
-            if (!SpiritAppearance.visible(player) || player.isInvisible()
-                    || player == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson()) continue;
-            boolean mainLeft = player.getMainArm() == HumanoidArm.LEFT;
-            draw(event, player, player.getMainHandItem(), mainLeft);
-            draw(event, player, player.getOffhandItem(), !mainLeft);
-        }
+    static void render(Player player, SpiritPlayerVisual.Frame frame, PoseStack base,
+                       net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        boolean mainLeft = player.getMainArm() == HumanoidArm.LEFT;
+        draw(player, frame, base, buffers, light, player.getMainHandItem(), mainLeft);
+        draw(player, frame, base, buffers, light, player.getOffhandItem(), !mainLeft);
     }
 
-    private static void draw(RenderLevelStageEvent event, Player player, ItemStack item, boolean left) {
-        if (item.isEmpty() || !SpiritPlayerVisual.socket(player, left, SOCKET)) return;
-        var mc = Minecraft.getInstance();
-        var camera = event.getCamera().getPosition();
-        SOCKET.getTranslation(POSITION);
-        SOCKET.getUnnormalizedRotation(ROTATION);
-        var poses = new PoseStack();
-        poses.translate(POSITION.x - camera.x, POSITION.y - camera.y, POSITION.z - camera.z);
-        poses.mulPose(ROTATION);
-        renderAtPalm(player, item, left, poses, .72f * player.getScale(),
-                mc.renderBuffers().bufferSource(), LevelRenderer.getLightColor(player.level(), player.blockPosition().above()));
-        mc.renderBuffers().bufferSource().endBatch();
+    private static void draw(Player player, SpiritPlayerVisual.Frame frame, PoseStack poses,
+                             net.minecraft.client.renderer.MultiBufferSource buffers, int light, ItemStack item, boolean left) {
+        if (item.isEmpty()) return;
+        Matrix4f socket = frame.boneMatrix(left ? "grip_r" : "grip_l", new Matrix4f());
+        poses.pushPose();
+        poses.translate(socket.m30(), socket.m31(), socket.m32());
+        poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
+        renderAtPalm(player, item, left, poses, .72f, buffers, light);
+        poses.popPose();
     }
 
     static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale,

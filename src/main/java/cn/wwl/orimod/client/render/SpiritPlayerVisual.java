@@ -14,8 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import dev.engine_room.flywheel.lib.visual.component.ShadowComponent;
-import dev.engine_room.flywheel.lib.visual.component.FireComponent;
+import com.wf.gemrender.gltf.GemRenderGltfModel;
 import org.joml.Matrix4f;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +31,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
     public static void register() {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritClips::tick);
         SimpleEntityVisualizer.builder(EntityType.PLAYER).factory(SpiritPlayerVisual::new)
-                .skipVanillaRender(player -> SpiritAppearance.visible(player) && GemRenderModels.handle(MODEL).get() != null).apply();
+                .skipVanillaRender(player -> false).apply();
     }
 
     private SpiritPlayerVisual(VisualizationContext context, Player player, float partialTick) {
@@ -43,7 +42,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
 
     @Override public void beginFrame(Context frame) {
         var mc = Minecraft.getInstance();
-        boolean visible = SpiritAppearance.visible(entity) && !entity.isInvisible()
+        boolean visible = SpiritAppearance.visible(entity)
                 && (entity != mc.getCameraEntity() || !mc.options.getCameraType().isFirstPerson());
         if (!visible) {
             if (body != null) { body.delete(); body = null; }
@@ -62,7 +61,8 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         result.put("baseClip", b.animation.baseClip()); result.put("overlayClip", b.animation.overlayClip());
         result.put("missingClips", b.animation.missingClips());
         result.put("aimContactError", b.animation.aimContactError());
-        result.put("sockets", b.socketsReady); result.put("shadow", b.shadow != null);
+        result.put("sockets", b.socketsReady); result.put("shadow", !SpiritShaders.active() && !player.isInvisible());
+        result.put("layers", SpiritVanillaLayers.diagnostics());
         if (b.socketsReady) {
             result.put("poseNanos", b.poseNanos);
             result.put("position", new double[]{b.position.x, b.position.y, b.position.z});
@@ -82,6 +82,19 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         return true;
     }
 
+    /** This frame's exact pose, shared by the body, equipment and outline. */
+    public static Frame frame(Player player) {
+        Body b = BODIES.get(player.getUUID());
+        return b != null && b.socketsReady && SpiritAppearance.visible(player)
+                ? new Frame(b.model(), b.pose()::boneMatrix, new Matrix4f(b.local), true) : null;
+    }
+
+    @FunctionalInterface public interface Bones { Matrix4f read(int slot, Matrix4f out); }
+    public record Frame(GemRenderGltfModel model, Bones bones, Matrix4f transform, boolean world) {
+        public Matrix4f boneMatrix(String name, Matrix4f out) { return boneMatrix(model.layout().nodeTable().slotOfName(name), out); }
+        public Matrix4f boneMatrix(int slot, Matrix4f out) { return bones.read(slot, out); }
+    }
+
     @Override protected void _delete() {
         if (body != null) { body.delete(); body = null; }
         super._delete();
@@ -94,24 +107,15 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         private final Matrix4f leftSole = new Matrix4f(), rightSole = new Matrix4f();
         private Vec3 position = Vec3.ZERO;
         private long poseNanos;
-        private ShadowComponent shadow;
         private boolean socketsReady, animatedThisFrame;
         Body(VisualizationContext context, Player player, float partialTick, SpiritAnimation animation) {
             super(context, player, partialTick, GemRenderModels.handle(MODEL));
             this.context = context;
             this.animation = animation;
-            addComponent(new FireComponent(context, player));
             BODIES.put(player.getUUID(), this);
         }
 
         @Override public void beginFrame(Context frame) {
-            boolean wantsShadow = !SpiritShaders.active();
-            if (wantsShadow && shadow == null) {
-                shadow = new ShadowComponent(context, entity).radius(.30f).strength(.65f);
-                addComponent(shadow);
-            } else if (!wantsShadow && shadow != null) {
-                components.remove(shadow); shadow.delete(); shadow = null;
-            }
             socketsReady = animatedThisFrame = false;
             super.beginFrame(frame);
             if (animatedThisFrame && pose() != null) {
@@ -138,6 +142,8 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         @Override protected void transform(Matrix4f target, float partial) {
             modelTransform(local, partial);
             target.translation(getVisualPosition(partial)).mul(local);
+            // Keep the pose available to visible equipment and glowing outlines.
+            if (entity.isInvisible()) target.scale(0);
         }
 
         @Override protected boolean blend(float partialTick, AnimationBlend blend) {

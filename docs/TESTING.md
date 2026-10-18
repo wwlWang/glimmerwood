@@ -18,6 +18,12 @@ Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gr
 
 2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 262 项 JUnit 和 146 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
 
+R10 在最新渲染代码上重复上述两系统检查，构建与 JAR 检查记录见 `evidence/audit-r10-builds-2026-10-18/report.json`。发行 JAR SHA-256 为 `31d26687c73f7aa692ad1eb50b944fd7d083c77b60d82f0cca54c08aff099778`，不含开发接口和 GameTest。源码摘要与最终静态、动态、飞行和火焰记录一致；原始 Blender / GLB 哈希未变。第一次 Linux 命令误用不存在的 Ubuntu 发行版，保留失败日志，随后在实际 Debian 环境执行通过。
+
+渲染脚本为 `scripts/verify-player-layers.py` 和 `scripts/verify-player-layer-motion.py`，须在专用世界运行，会使用命令布置平台和装备。最终记录分别为 `audit-r10-layers-v004-2026-10-18`（24 组）和 `audit-r10-motion-v003-2026-10-18`（实际按键录像、14 张补充截图、两次资源重载）。额外飞行与火焰夹具的完整脚本随 `audit-r10-effects-v001-2026-10-18`、`audit-r10-fire-spin-v001-2026-10-18` 保存。已发现的起飞失败与未有效触发的旋转均未改记通过，视觉检查范围见 `RENDERING_CHECKPOINT.md`。
+
+R10 含多轮失败和复测，共约 81 MB。148 个截图或大 JSON 已无损压缩：截图保存为 WebP，逐张确认解码后的 RGBA 字节一致；JSON 使用可精确恢复原字节的 gzip。原/新文件哈希、像素哈希与路径映射见 `audit-r10-storage-2026-10-18/manifest.json`。原速 MP4 未重新编码，原失败版本没有删除。
+
 GameTest 位于独立 `src/gametest` 源码集，仅 `runGameTestServer` 加载。夹具使用每例新建的 FakePlayer、真实 ServerLevel、注册项和事件；FakePlayer 默认不会自动 tick，也不会受到伤害，测试涉及相应行为时须显式处理，不能把直接调用当作网络客户端证据。房间模板为 12×8×12，包含完整空气体积和石地板；结构方块坐标比模板原点低一格，玩家脚部使用相对 y=2。
 
 合成用例另建真实生存 ServerPlayer，经 NeoForge `configureMockConnection` 配置 EmbeddedChannel，再正常加入和移出 PlayerList；因此难度变更会通知真实容器。它验证菜单与服务器逻辑，不代表真实客户端连线。对应实机脚本 `verify-peaceful-crafting.py` 已验证背包与工作台四种难度、旧产物清理和切回和平后的自动恢复；截图与数据在 `evidence/audit-r3-peaceful-crafting-v001-2026-10-18/`，约 5.2 MB。
