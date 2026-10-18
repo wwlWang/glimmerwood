@@ -9,6 +9,7 @@ public final class OriClientConfig {
     public static final ModConfigSpec.EnumValue<SpiritCameraView> SPIRIT_CAMERA;
     public static final ModConfigSpec.EnumValue<VisualQuality> QUALITY;
     public static final ModConfigSpec.BooleanValue ADVANCED_PARTICLES;
+    public static final ModConfigSpec.BooleanValue SPIRIT_GLOW;
     public static final ModConfigSpec.IntValue SCREEN_SHAKE;
     public static final ModConfigSpec.IntValue SCREEN_FLASH;
     /** Plan default: shake is light; flash is moderate. */
@@ -33,6 +34,10 @@ public final class OriClientConfig {
         ADVANCED_PARTICLES = builder.comment("Decorative spirit particles. When off, only the few particles that mark hits, landings,",
                         "arrows and challenge routes are kept, so gameplay feedback stays readable. Abilities are never disabled.")
                 .define("advancedParticles", true);
+        SPIRIT_GLOW = builder.comment("Use the bundled Spirit Glow shader pack (needs Iris). Off restores the shader pack used before.",
+                        "On first start it is only selected when no other shader pack is chosen in Iris.",
+                        "Choosing another pack in Iris turns this off.")
+                .define("spiritGlow", true);
         builder.pop();
         builder.push("feedback");
         SCREEN_SHAKE = builder.comment("Camera shake strength in percent when hurt or landing a stomp. 0 disables it.")

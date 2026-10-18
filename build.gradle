@@ -39,6 +39,8 @@ dependencies {
     compileOnly files('libs/runtime/gemrender-0.1.17.jar')
     clientLaunchRuntimeOnly files('libs/runtime/gemrender-0.1.17.jar')
     compileOnly fileTree(dir: 'libs/compile', include: '*.jar')
+    // Optional: only SpiritGlowIris touches Iris, and it is loaded only when Iris is installed.
+    compileOnly files('libs/runtime/iris-neoforge-1.8.12+mc1.21.1.jar')
     devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
     devtoolsCompileOnly fileTree(dir: 'libs/compile', include: '*.jar')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
@@ -152,6 +154,20 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
     into 'build/generated/sources/modMetadata'
 }
 sourceSets.main.resources.srcDir generateModMetadata
+
+// R20: bundled Spirit Glow shader pack (adapted from Mellow by TheCMK, see shaderpacks/spirit-glow/README.md).
+var zipSpiritGlow = tasks.register('zipSpiritGlow', Zip) {
+    group = 'build'
+    description = 'Package shaderpacks/spirit-glow as the shader pack bundled in the mod jar.'
+    from('shaderpacks/spirit-glow') {
+        include 'shaders/**', 'LICENSE', 'LICENSE-APACHE', 'README.md', 'UPSTREAM.md', 'CHANGES.md'
+    }
+    archiveFileName = 'spirit_glow.zip'
+    destinationDirectory = layout.buildDirectory.dir('generated/shaderpack/orimod_shaderpack')
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/shaderpack')).builtBy(zipSpiritGlow))
 neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
@@ -161,6 +177,8 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('test') {
     useJUnitPlatform()
     testLogging { events 'failed', 'skipped'; exceptionFormat = 'full' }
+    dependsOn zipSpiritGlow
+    systemProperty 'orimod.spiritGlowZip', zipSpiritGlow.get().archiveFile.get().asFile.absolutePath
 }
 
 tasks.register('verifyPreparedDependencies') {

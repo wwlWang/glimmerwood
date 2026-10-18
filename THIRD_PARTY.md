@@ -25,4 +25,12 @@ Ori 角色、名称及相关原作内容归各自权利人所有。这里记录�
 | Photon、LDLib2、KilaGraph | [Low-Drag-MC](https://github.com/Low-Drag-MC) | Photon 源码与制品许可标注存在差异，尚未解决公开再分发条件；LDLib2 为 LGPL-3.0-only，KilaGraph 为 MIT |
 | Mellow | [TheCMK/mellow-shader](https://codeberg.org/TheCMK/mellow-shader) | MIT；预设修改单独保存在 `dependencies/shader-settings/` |
 
+## 随模组附带的光影包 Spirit Glow
+
+`shaderpacks/spirit-glow/` 是 TheCMK 的 [Mellow](https://codeberg.org/TheCMK/mellow-shader)（[Modrinth](https://modrinth.com/shader/mellow)）改编版，基于上游提交 `3ad9445`（与 v3.4.1a 发行包一致）。构建时由 `zipSpiritGlow` 打成 `orimod_shaderpack/spirit_glow.zip` 放入模组 JAR，首次运行时复制到 Iris 的 `shaderpacks/Spirit Glow.zip`。
+
+- 许可：MIT。包内 `LICENSE` 在原文之上加了我们的改编声明，原 MIT 文本（Copyright (c) 2026 TheCMK）未改；`LICENSE-APACHE` 原样保留。
+- 按作者要求：注明出处并附链接（包内 `README.md`、光影设置页 INFO 行）；不使用 Mellow 名称作为包名，不带 Mellow 的截图、标志和 `mellow.png` 调色表。声明 Spirit Glow 不是官方版本，也未获作者背书。
+- 改动清单见包内 `CHANGES.md`；导入范围见 `UPSTREAM.md`。调色表 `img/luts/spirit.png` 由 `scripts/shader/make-spirit-lut.py` 从包内中性表生成。
+
 Minecraft 反编译源码只用于本机核对接口，位于被忽略的 `.external/`，不进入 Git 或备份仓库。完整本地恢复备份另行保留。

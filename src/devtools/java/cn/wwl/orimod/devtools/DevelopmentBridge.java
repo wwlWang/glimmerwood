@@ -509,6 +509,12 @@ public final class DevelopmentBridge {
                         .setShadersEnabledAndApply(action.get("enabled").getAsBoolean());
                 com.lowdragmc.photon.client.compat.iris.IrisCompat.invalidate();
             }
+            case "spirit_glow" -> {
+                // Same path as the settings screen: change the stored toggle; SpiritGlow applies it on its next check.
+                cn.wwl.orimod.config.OriClientConfig.SPIRIT_GLOW.set(action.get("enabled").getAsBoolean());
+                cn.wwl.orimod.config.OriClientConfig.SPEC.save();
+                return Map.of("spiritGlow", cn.wwl.orimod.client.render.SpiritGlow.diagnostics());
+            }
             case "render_diagnostics" -> {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()));
@@ -560,6 +566,7 @@ public final class DevelopmentBridge {
                 values.put("feedback", cn.wwl.orimod.client.fx.SpiritScreenFeedback.diagnostics());
                 values.put("fx", cn.wwl.orimod.client.fx.SpiritFxClient.diagnostics());
                 values.put("fxLifecycle", cn.wwl.orimod.client.fx.SpiritFxClient.lifecycle());
+                values.put("spiritGlow", cn.wwl.orimod.client.render.SpiritGlow.diagnostics());
                 values.put("screen", mc.screen == null ? null : mc.screen.getClass().getName());
                 return values;
             }

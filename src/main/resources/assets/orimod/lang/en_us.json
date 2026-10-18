@@ -178,6 +178,8 @@
   "orimod.configuration.quality.tooltip": "Fluent, Balanced (default) or Detailed: number of decorative spirit particles.",
   "orimod.configuration.advancedParticles": "Advanced particles",
   "orimod.configuration.advancedParticles.tooltip": "Off keeps only the particles that mark hits, landings, arrows and challenge routes. Abilities stay available.",
+  "orimod.configuration.spiritGlow": "Spirit Glow shader",
+  "orimod.configuration.spiritGlow.tooltip": "Bundled shader pack, adapted from Mellow by TheCMK. Needs Iris; without Iris this has no effect. Off restores the shader pack used before. Choosing another pack in Iris turns this off.",
   "orimod.configuration.feedback": "Shake and flash",
   "orimod.configuration.feedback.button": "Shake and flash",
   "orimod.configuration.feedback.tooltip": "Hit and landing feedback. Set to 0 to turn it off.",
