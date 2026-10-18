@@ -16,7 +16,7 @@ public final class SpiritGlow {
     private static final boolean IRIS = net.neoforged.fml.ModList.get() != null && net.neoforged.fml.ModList.get().isLoaded("iris");
     private static Boolean synced;
     private static SpiritGlowState saved;
-    private static boolean installed, installFailed;
+    private static boolean installed, installFailed, hinted;
     private static int ticks;
     private static String lastAction = "none", lastError;
 
@@ -57,6 +57,7 @@ public final class SpiritGlow {
                 lastAction = action.name().toLowerCase(java.util.Locale.ROOT);
                 OriMod.LOGGER.info("Spirit Glow: {} (Iris pack {}, shaders {})", lastAction, iris.pack(), iris.enabled());
             }
+            if (!setupDone && action == SpiritGlowSync.Action.SAVE_OFF) hintKeptPack();
             if (!setupDone) state = state.withSetupDone();
             if (!state.equals(saved)) { state.save(file); saved = state; }
             if (action == SpiritGlowSync.Action.SAVE_ON || action == SpiritGlowSync.Action.SAVE_OFF) OriClientConfig.SPEC.save();
@@ -69,6 +70,16 @@ public final class SpiritGlow {
         }
     }
 
+    /** Plan 10.1: a pack the player already chose is kept; say once that Spirit Glow can be switched on. */
+    private static void hintKeptPack() {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        net.minecraft.client.gui.components.toasts.SystemToast.add(mc.getToasts(),
+                net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow.kept.title"),
+                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow.kept.body"));
+        hinted = true;
+    }
+
     public static java.util.Map<String, Object> diagnostics() {
         var values = new java.util.LinkedHashMap<String, Object>();
         values.put("iris", IRIS);
@@ -77,6 +88,7 @@ public final class SpiritGlow {
         values.put("setupDone", saved == null ? null : saved.setupDone());
         values.put("previousPack", saved == null ? null : saved.previousPack());
         values.put("lastAction", lastAction);
+        values.put("keptPackHint", hinted);
         values.put("lastError", lastError);
         if (IRIS) values.put("irisError", SpiritGlowIris.storedError());
         return values;

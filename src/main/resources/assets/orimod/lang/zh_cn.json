@@ -180,6 +180,8 @@
   "orimod.configuration.advancedParticles.tooltip": "关闭后只保留标示命中、落地、箭矢和挑战路线的粒子；能力仍可使用。",
   "orimod.configuration.spiritGlow": "Spirit Glow 光影",
   "orimod.configuration.spiritGlow.tooltip": "随模组附带的光影包，改编自 TheCMK 的 Mellow。需要 Iris；未安装 Iris 时此项无效。关闭后恢复之前使用的光影包。在 Iris 中选择其他光影包会自动关闭此项。",
+  "orimod.spirit_glow.kept.title": "已保留你选择的光影包",
+  "orimod.spirit_glow.kept.body": "可在 模组 > OriMod > 配置 > 画面 中开启 Spirit Glow。",
   "orimod.configuration.feedback": "震动与闪光",
   "orimod.configuration.feedback.button": "震动与闪光",
   "orimod.configuration.feedback.tooltip": "受击与落地反馈。设为 0 即关闭。",

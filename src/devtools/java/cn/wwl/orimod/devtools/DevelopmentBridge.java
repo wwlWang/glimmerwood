@@ -509,6 +509,17 @@ public final class DevelopmentBridge {
                         .setShadersEnabledAndApply(action.get("enabled").getAsBoolean());
                 com.lowdragmc.photon.client.compat.iris.IrisCompat.invalidate();
             }
+            case "iris_pack" -> {
+                // Development only: select a pack in Iris directly, like the Iris pack screen does.
+                String pack = action.get("name").getAsString();
+                require(pack.matches("[A-Za-z0-9 ._()-]{1,80}"), "Invalid pack name");
+                var config = net.irisshaders.iris.Iris.getIrisConfig();
+                config.setShaderPackName(pack);
+                config.setShadersEnabled(true);
+                config.save();
+                net.irisshaders.iris.Iris.reload();
+                com.lowdragmc.photon.client.compat.iris.IrisCompat.invalidate();
+            }
             case "spirit_glow" -> {
                 // Same path as the settings screen: change the stored toggle; SpiritGlow applies it on its next check.
                 cn.wwl.orimod.config.OriClientConfig.SPIRIT_GLOW.set(action.get("enabled").getAsBoolean());
