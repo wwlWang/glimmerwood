@@ -14,6 +14,8 @@
 
 `evidence` 和 `.external` 已移至 `D:/ProjectData/oriMod/evidence`、`D:/ProjectData/oriMod/external`，原位置保留目录联接以兼容既有脚本与证据链接。两者继续被 Git 忽略。当前主工程构建、开发源码编译和资产校验通过；构建中的 `test NO-SOURCE` 明确不计为玩法测试。
 
+私有仓库已收到三次主题提交：资产 `59c8543`、角色运行时 `15c7868`、依赖与说明 `c0665d2`。标签 `ori-baseline-2026-10-18` 指向该恢复基线；LFS 上传约 34 MB（十进制）。从 GitHub 新检出到独立目录后，Windows `clean build --no-build-cache` 和资产校验通过。Linux 验证仍在处理下载与隔离目录问题，未计为通过。
+
 ## 问题登记
 
 | 编号 | 核实结果 | 后续处理 / 验证 |
