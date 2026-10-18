@@ -51,6 +51,14 @@ final class SpiritGlowIris {
         invalidatePhoton();
     }
 
+    static boolean exists(String pack) {
+        try {
+            return Files.exists(Iris.getShaderpacksDirectory().resolve(pack));
+        } catch (java.nio.file.InvalidPathException invalid) {
+            return false;
+        }
+    }
+
     static String storedError() {
         return Iris.getStoredError().map(Throwable::toString).orElse(null);
     }

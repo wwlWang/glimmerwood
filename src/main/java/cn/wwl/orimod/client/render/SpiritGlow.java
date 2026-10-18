@@ -47,6 +47,8 @@ public final class SpiritGlow {
                 }
                 case DISABLE -> {
                     var restore = SpiritGlowSync.restore(state.previousPack(), state.previousEnabled());
+                    // The remembered pack may have been deleted meanwhile; turn shaders off rather than select a missing pack.
+                    if (restore.pack() != null && !SpiritGlowIris.exists(restore.pack())) restore = SpiritGlowSync.restore("", false);
                     SpiritGlowIris.apply(restore.pack(), restore.enabled());
                 }
                 case SAVE_ON -> OriClientConfig.SPIRIT_GLOW.set(true);
