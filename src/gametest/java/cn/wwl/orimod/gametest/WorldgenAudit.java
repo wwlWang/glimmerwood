@@ -23,6 +23,7 @@ final class WorldgenAudit {
     private WorldgenAudit() {}
 
     static void started(ServerStartedEvent event) {
+        if ("site".equals(System.getProperty("orimod.worldgen.audit.mode"))) { sites(event); return; }
         var server = event.getServer();
         var level = server.overworld();
         var spawn = level.getSharedSpawnPos();
@@ -77,6 +78,65 @@ final class WorldgenAudit {
             report.put("status", "failed");
             report.put("error", error.toString());
             OriMod.LOGGER.error("Worldgen audit failed", error);
+        } finally {
+            report.put("elapsedSeconds", (System.nanoTime() - started) / 1_000_000_000.0);
+            write(output, report);
+            server.halt(false);
+        }
+    }
+
+    /**
+     * WORLD02: locate real starts on a coarse grid, generate their chunks to FULL (with one chunk of
+     * neighbours so trees and fluids settle), then inspect the placed result with RuinSiteInspector.
+     */
+    static void sites(ServerStartedEvent event) {
+        var server = event.getServer();
+        var level = server.overworld();
+        var spawn = level.getSharedSpawnPos();
+        var rows = new ArrayList<Map<String, Object>>();
+        var report = new LinkedHashMap<String, Object>();
+        report.put("seed", level.getSeed());
+        report.put("mode", "site");
+        report.put("grid", "4 x 4; 1024 blocks; centered on world spawn; each start inspected once");
+        report.put("rows", rows);
+        var output = Path.of("ruin-sites.json");
+        var seen = new java.util.HashSet<String>();
+        long started = System.nanoTime();
+        try {
+            var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+            for (int z = -2; z <= 1; z++) for (int x = -2; x <= 1; x++) for (var kind : RuinKind.values()) {
+                var origin = spawn.offset(x * 1024 + 512, 0, z * 1024 + 512);
+                var holder = registry.getHolderOrThrow(ResourceKey.create(Registries.STRUCTURE, kind.location()));
+                var found = level.getChunkSource().getGenerator().findNearestMapStructure(level, HolderSet.direct(holder), origin, 100, false);
+                if (found == null) continue;
+                var chunkPos = new ChunkPos(found.getFirst());
+                var start = level.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.STRUCTURE_STARTS).getStartForStructure(holder.value());
+                if (start == null || !start.isValid()) throw new IllegalStateException("Locate returned no real structure start");
+                if (!seen.add(kind.id + chunkPos)) continue;
+                var bounds = start.getBoundingBox();
+                for (int cx = (bounds.minX() >> 4) - 1; cx <= (bounds.maxX() >> 4) + 1; cx++)
+                    for (int cz = (bounds.minZ() >> 4) - 1; cz <= (bounds.maxZ() >> 4) + 1; cz++) level.getChunk(cx, cz);
+                var piece = start.getPieces().stream().filter(RuinPiece.class::isInstance).map(RuinPiece.class::cast).findFirst().orElseThrow();
+                var result = cn.wwl.orimod.world.RuinSiteInspector.inspect(level, kind, piece.placement());
+                var row = new LinkedHashMap<String, Object>();
+                row.put("kind", kind.id);
+                row.put("origin", coordinates(piece.origin()));
+                row.put("rotation", piece.getRotation().name());
+                var entry = BlockPos.containing(piece.placement().point(kind.layout().entry()));
+                row.put("biome", level.getBiome(entry).unwrapKey().map(key -> key.location().toString()).orElse("?"));
+                row.putAll(result.metrics());
+                row.put("issues", result.issues());
+                rows.add(row);
+                write(output, report);
+                OriMod.LOGGER.info("Ruin site audit seed={} n={} kind={} issues={}", level.getSeed(), rows.size(), kind.id, result.issues());
+                // Keep memory bounded: let the generated area unload before the next start.
+                level.getChunkSource().tick(() -> true, false);
+            }
+            report.put("status", "complete");
+        } catch (Exception error) {
+            report.put("status", "failed");
+            report.put("error", error.toString());
+            OriMod.LOGGER.error("Ruin site audit failed", error);
         } finally {
             report.put("elapsedSeconds", (System.nanoTime() - started) / 1_000_000_000.0);
             write(output, report);

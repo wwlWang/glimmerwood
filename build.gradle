@@ -123,6 +123,7 @@ neoForge {
             loadedMods = [mods.orimod, mods.orimod_gametest]
             gameDirectory = file(providers.gradleProperty('worldgenAuditDir').getOrElse('.external/worldgen-audit'))
             systemProperty 'orimod.worldgen.audit', 'true'
+            systemProperty 'orimod.worldgen.audit.mode', providers.gradleProperty('worldgenAuditMode').getOrElse('locate')
             jvmArgument '-Xmx4G'
             programArgument '--nogui'
         }
