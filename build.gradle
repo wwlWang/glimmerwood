@@ -10,22 +10,39 @@ base.archivesName = mod_id
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets {
+    clientLaunch {
+        runtimeClasspath += sourceSets.main.output
+    }
+    gametest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
     devtools {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
 }
 configurations {
+    clientLaunchImplementation.extendsFrom implementation
+    clientLaunchRuntimeOnly.extendsFrom runtimeOnly
+    gametestImplementation.extendsFrom implementation
+    gametestCompileOnly.extendsFrom compileOnly
+    gametestRuntimeOnly.extendsFrom runtimeOnly
     devtoolsImplementation.extendsFrom implementation
     devtoolsRuntimeOnly.extendsFrom runtimeOnly
 }
 
+repositories { mavenCentral() }
+
 // Candidate rendering dependencies stay in the development tools until combined runtime acceptance passes.
 dependencies {
-    implementation files('libs/runtime/gemrender-0.1.17.jar')
+    compileOnly files('libs/runtime/gemrender-0.1.17.jar')
+    clientLaunchRuntimeOnly files('libs/runtime/gemrender-0.1.17.jar')
     compileOnly fileTree(dir: 'libs/compile', include: '*.jar')
     devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
     devtoolsCompileOnly fileTree(dir: 'libs/compile', include: '*.jar')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 
 sourceSets.main.resources {
@@ -36,6 +53,8 @@ sourceSets.main.resources {
 neoForge {
     version = project.neo_version
     addModdingDependenciesTo sourceSets.devtools
+    addModdingDependenciesTo sourceSets.gametest
+    addModdingDependenciesTo sourceSets.clientLaunch
 
     mods {
         "${mod_id}" {
@@ -44,6 +63,15 @@ neoForge {
         orimod_devtools {
             sourceSet sourceSets.devtools
         }
+        orimod_gametest {
+            sourceSet sourceSets.gametest
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods.orimod
+        loadedMods = [mods.orimod]
     }
 
     parchment {
@@ -58,6 +86,7 @@ neoForge {
         }
         client {
             client()
+            sourceSet = sourceSets.clientLaunch
         }
         devtoolsClient {
             client()
@@ -74,7 +103,11 @@ neoForge {
         }
         gameTestServer {
             type = 'gameTestServer'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            sourceSet = sourceSets.gametest
+            loadedMods = [mods.orimod, mods.orimod_gametest]
+            gameDirectory = project.file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'orimod_gametest'
+            systemProperty 'orimod.gametest.report', file('build/test-results/gametest.xml').absolutePath
         }
         data {
             data()
@@ -105,6 +138,11 @@ neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging { events 'failed', 'skipped'; exceptionFormat = 'full' }
 }
 
 tasks.register('verifyPreparedDependencies') {

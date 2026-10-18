@@ -38,7 +38,7 @@ Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopba
 
 运行开发客户端前先用 Python 3 执行 `python scripts/sync-dependencies.py`，下载并核验可选依赖。该脚本适用于 Windows、Linux 和 macOS；原 PowerShell 脚本保留供本机重建渲染库使用。
 
-已有 Python 脚本通过真实客户端验证玩法和视觉，不能把它们当作 JVM 单元测试。审查修复开始时尚无 JUnit / GameTest 用例；对应测试基建正在补齐，`test NO-SOURCE` 不代表通过。
+`./gradlew test runGameTestServer` 运行规则与存档单元测试，以及独立的无界面服务端回归。首批 85 项 JUnit、30 项 GameTest 已在 Windows 和 Linux 通过，覆盖范围与报告路径见 [TESTING](docs/TESTING.md)。真实客户端 Python 脚本继续用于输入同步和视觉验收；无界面测试不能替代这些检查。
 
 ## 文件与恢复
 

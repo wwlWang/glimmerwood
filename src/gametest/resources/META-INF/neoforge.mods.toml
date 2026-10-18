@@ -1,0 +1,16 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="orimod_gametest"
+version="0.1.0"
+displayName="OriMod Game Tests"
+description="Headless regression fixtures, excluded from the normal client and release JAR."
+
+[[dependencies.orimod_gametest]]
+modId="orimod"
+type="required"
+versionRange="[0.1.0-SNAPSHOT,)"
+ordering="AFTER"
+side="BOTH"
