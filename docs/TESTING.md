@@ -140,3 +140,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R24：下界、末地、雨天
 
 430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`；新选项由现有 `SpiritGlowPackTest` 覆盖：在设置页、中英文名称、默认值在可选值内）。发行 JAR SHA-256 `778a254f54c7f53386721a719b2cc6e378e9c695724cf4d9e4ded5a448c26df1`（云端构建）。云端实机截图见渲染记录。
+
+## R25：下界与末地画面
+
+430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`，仅光影改动）。云端实机截图与对照见渲染记录。
