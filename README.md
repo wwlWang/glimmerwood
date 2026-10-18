@@ -6,6 +6,8 @@ Minecraft 1.21.1 / NeoForge 的单人开发项目，包含 Ori 形态、移动�
 
 云端 Agent 接手请先读 [CLOUD_HANDOFF](docs/CLOUD_HANDOFF.md)，其中包含构建步骤、建议任务和 R14 未完成的测试边界。
 
+按用户要求，所有开发直接在 `main` 提交并推送，不新建功能分支；协作时先同步主分支并保留其他 Agent 的改动，禁止强推覆盖。
+
 ## 从干净检出构建
 
 需要 Git、Git LFS、JDK 21。不要使用 GitHub 的源码 ZIP；它可能只有大文件指针。
