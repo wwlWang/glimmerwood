@@ -98,3 +98,14 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R17：无命令生存流程（服务端）
 
 337 项 JUnit、167 项 GameTest 通过（新增 `SurvivalFlowGameTests` 3 项）。全新连接的生存玩家（未觉醒、空背包）只通过玩家输入会到达的服务端入口推进：工作台菜单点击制作核心、`useItem` 觉醒、面板领取刀、`LivingDropsEvent` 掉落后 `playerTouch` 拾取（和平改为工作台合成灵光后拾取）、`useItemOn` 使用石台、面板购买能力、挑战首通，最后 `saveWithoutId` → 新 `ServerPlayer.load` 比较觉醒、能力和进度。另测配方书：拿到铜锭解锁核心/指引/灵光配方，紫水晶解锁刀/弓配方。路径与灵光预算见 [SURVIVAL_FLOW](SURVIVAL_FLOW.md)。
+
+## R18：正式效果与声音生命周期
+
+396 项 JUnit、183 项 GameTest 通过（新增 `SpiritFxLifecycleTest` 21 项、载荷与预算参数化用例随新类型增加，`FxLifecycleGameTests` 8 项、`FxGameTests` 新类型路由 8 项）。
+
+- 协议：`orimod:spirit_fx` 版本 2 增加阶段字段：BURST 单发、START 开始或心跳、STOP 结束一项、STOP_ALL 结束该实体全部持续效果；单发类型收到 START/STOP 时拒绝解码。新类型编号 5–12 只追加，R15 的 0–4 不变。
+- 服务端：`SpiritFxLifecycle` 在移动 tick 之后按权威状态（滑翔模式、抓钩进行中）计算应有的持续效果，变化时发 START/STOP，每 20 tick 心跳；变身、死亡、换维度、退出发 STOP_ALL，停服清空。动作单发效果在 `signal` 处产生，抓钩每 tick 重发的信号只产生一次钩出效果。
+- 客户端：`SpiritFxTracker`（纯逻辑，可单测）记录持续效果；实体消失、三次心跳缺失（60 tick）、离开或切换世界、断线都结束效果并停止循环音。
+- 声音：`SpiritSoundCue` 为每一类列出原版声音或静音（尾迹、标记、牵引绳）；刀命中与下砸原有声音并入表中，音量音高不变。
+
+云端实机（Xvfb，光影关闭，无声卡）：`scripts/verify-fx-lifecycle.py` 在开发世界中用真实跳跃键滑翔，确认客户端出现 GLIDE 持续效果和一个循环音，松键、变身、死亡、进入下界后分别在数 tick 内清空，最终 `active=[]`、`loops=0`，开始/结束次数 9/9。能力和平台用开发夹具。v001 因设置界面值在“完成”后才提交、脚本过早读取而失败（夹具问题，见 R19），证据保留在 `evidence/fx-r18-lifecycle-v001-2026-10-18/`；v002 通过。实际声音、粒子观感和动态灯光未验证。
