@@ -10,6 +10,8 @@ Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gr
 
 ## 测试边界
 
+最新 R13 构建与源码摘要见 `evidence/character-r13-builds-2026-10-18/report.json`，两系统仍各通过 262 / 146 项。实机脚本 `verify-character-crossbow.py` 覆盖八组装填、保持、发射和取消，`verify-character-fishing.py` 检查八组主副手与光影组合、潜行和连续移动。已修复第三人称鱼线起点；完整结果与启动失败记录见 [审查记录 R13](AUDIT_FIXES.md#r13连续持弓特殊物品与鱼线)。
+
 | 层次 | 当前内容 | 报告 |
 | --- | --- | --- |
 | JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项、遗迹旋转与指引 24 项，共 262 项 | `build/test-results/test/`、`build/reports/tests/test/` |

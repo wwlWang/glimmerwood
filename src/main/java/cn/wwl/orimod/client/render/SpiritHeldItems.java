@@ -8,6 +8,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -55,6 +56,32 @@ public final class SpiritHeldItems {
                              net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
         if (item.isEmpty()) return;
         var mc = Minecraft.getInstance();
+        var model = itemTransform(player, item, left, poses, scale);
+        var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+        mc.getItemRenderer().render(item, display, left, poses, buffers, light, OverlayTexture.NO_OVERLAY, model);
+    }
+
+    /** The same centered item transform used to draw the rod, evaluated at its tip. */
+    public static Vec3 fishingLineOrigin(Player player, float partialTick) {
+        var frame = SpiritPlayerVisual.frame(player);
+        if (frame == null) return null;
+        boolean main = player.getMainHandItem().canPerformAction(net.neoforged.neoforge.common.ItemAbilities.FISHING_ROD_CAST);
+        var item = main ? player.getMainHandItem() : player.getOffhandItem();
+        if (!item.canPerformAction(net.neoforged.neoforge.common.ItemAbilities.FISHING_ROD_CAST)) return null;
+        boolean left = (player.getMainArm() == HumanoidArm.LEFT) == main;
+        var socket = frame.boneMatrix(left ? "grip_r" : "grip_l", new Matrix4f());
+        var poses = new PoseStack();
+        poses.mulPose(frame.transform());
+        poses.translate(socket.m30(), socket.m31(), socket.m32());
+        poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
+        var model = itemTransform(player, item, left, poses, .72f);
+        model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poses, left);
+        var tip = poses.last().pose().transformPosition(new Vector3f(.40625f, .40625f, 0));
+        return player.getPosition(partialTick).add(tip.x, tip.y, tip.z);
+    }
+
+    private static net.minecraft.client.resources.model.BakedModel itemTransform(Player player, ItemStack item, boolean left, PoseStack poses, float scale) {
+        var mc = Minecraft.getInstance();
         // Attachment axes match vanilla arm space; the origin is already at the palm.
         poses.mulPose(Axis.XP.rotationDegrees(-90));
         poses.mulPose(Axis.YP.rotationDegrees(180));
@@ -67,6 +94,6 @@ public final class SpiritHeldItems {
         SpiritItemGrip.local(item, contact, new Vector3f());
         itemPose.last().pose().transformPosition(contact);
         poses.translate(-contact.x, -contact.y, -contact.z);
-        mc.getItemRenderer().render(item, display, left, poses, buffers, light, OverlayTexture.NO_OVERLAY, model);
+        return model;
     }
 }

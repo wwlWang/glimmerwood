@@ -1,5 +1,6 @@
 """Sweep real bow aim while walking and jumping; keep render-frame poses and video."""
 import math, shutil, sys
+from pathlib import Path
 from devtools_client import DevClient
 
 c = DevClient(sys.argv[1])
@@ -26,7 +27,11 @@ try:
         c.action('input_script', steps=steps); c.ticks(245)
         result=c.action('save_pose', name=c.build_id+'-'+name+'-pose')
         shutil.copy2(result['path'], c.out/(name+'-pose.json'))
-        c.finish(name,before,video=c.action('save_video'))
+        video = c.action('save_video')
+        c.finish(name,before,video=video)
+        manifest = Path('run-devtools') / video['manifest']
+        shutil.copy2(manifest, c.out / (name + '-frames.json'))
+        shutil.copy2(manifest.parent / 'capture.mp4', c.out / (name + '.mp4'))
         assert not c.request()['inputScriptError']
     c.action('release_keys'); c.reset(); c.action('review_camera', enabled=False)
     c.action('settings', mainArm='RIGHT', fov=70, hideGui=False, fpsLimit=260)
