@@ -103,3 +103,10 @@ R10 显示精灵盔甲偏离了原计划，R12 已恢复默认隐藏原版盔甲
 - 未检查：诡异森林（该种子附近未定位到）、玄武岩三角洲、末影龙吐息与死亡光束（`/kill` 后未截到光束）。
 - 截图（云端 `/workspace/oriMod/shots/`）：`r25-nether-end-mellow-r24-r25.png`（三列对照）、`r25-quick-turn-lava-to-dark-t0-t2-t20-t160.png`、`r25-end-dragon-fight.png`、`r25-lava-shore-r24.png` / `r25-lava-shore-r25.png`、`r25-soul-valley-r24.png`。
 - 待本机：真实 GPU 下熔岩 Bloom 强度、龙战斗中的吐息与水晶光束、诡异森林。
+
+## R26：洞穴火把范围
+
+- 场景：脚本新增 `cave-corridor`（主世界 y=-50，(41..65, -2..2) 深板岩走廊，两支火把、一盏灯笼、一处发光地衣，镜头沿走廊看去），以及原 `cave-torch` 房间。
+- 比较 `LM_FALLOFF_CURVE` 1.6（原包默认）/2.0/2.4/2.8，整幅平均亮度（0–255）：走廊 20.8 / 22.8 / 25.9 / 30.9，房间 26.7 / 29.9 / 34.6 / 41.2。采用 2.4：光圈明显变大，墙面暖光可见，远处与角落仍为深蓝；2.8 时整个房间被染暖。
+- 截图：`r26-cave-torch-falloff-1.6-2.0-2.4-2.8.png`（四列对照）、`r26-cave-corridor-2.4.png`、`r26-cave-torch-2.4.png`。
+- 待本机：真实 GPU 下手持火把（`HANDHELD_FALLOFF_CURVE`）与自然洞穴中的观感。

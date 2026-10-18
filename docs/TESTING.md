@@ -144,3 +144,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R25：下界与末地画面
 
 430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`，仅光影改动）。云端实机截图与对照见渲染记录。
+
+## R26：洞穴火把范围
+
+430 项 JUnit、183 项 GameTest 通过（仅光影默认值改动，由 `SpiritGlowPackTest` 检查默认值在可选值内）。
