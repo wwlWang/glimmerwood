@@ -6,6 +6,8 @@
 ./gradlew test runGameTestServer --console=plain
 ```
 
+Linux / macOS 也可执行 `scripts/check.sh`（加 `--devtools` 同时同步可选依赖并编译开发源码）：先做 `git lfs fsck` 与锁定 JAR 实体检查，再运行 `build runGameTestServer`，最后由 `scripts/test-summary.py` 汇总 JUnit / GameTest 数与失败名单，任何失败或缺报告返回非零。
+
 Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gradle.ps1 test runGameTestServer --console=plain`。
 
 ## 测试边界
@@ -14,8 +16,8 @@ Windows 可用 `gradlew.bat`，或使用本机 socket 兼容包装 `./scripts/gr
 
 | 层次 | 当前内容 | 报告 |
 | --- | --- | --- |
-| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项、遗迹旋转与指引 24 项，共 262 项 | `build/test-results/test/`、`build/reports/tests/test/` |
-| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项、真实传送入口 9 项、遗迹旋转与生成顺序 18 项，共 146 项 | `build/test-results/gametest.xml` 和控制台 |
+| JUnit | 存档编解码与旧字段、价格和前置、刀连击时间线、形态尺寸、三类布局契约 85 项，GLB 动画契约与缺片段回退 61 项、移动规则和协议 92 项、遗迹旋转与指引 24 项；R15 客户端配置修正与升级 9 项、粒子预算与画质 19 项、震动闪光时间线 14 项、特效载荷 8 项，共 312 项 | `build/test-results/test/`、`build/reports/tests/test/` |
+| GameTest | 形态与成长 30 项、Bash 22 项、刀目标与伤害 17 项、和平合成 16 项、伤害打断 24 项、会话生命周期 10 项、真实传送入口 9 项、遗迹旋转与生成顺序 18 项、R15 特效载荷路由 8 项，共 154 项 | `build/test-results/gametest.xml` 和控制台 |
 | 真实客户端 | 形态、模型、跳跃；自投射物与 Boss 拒绝、有效 Bash、村民保护与敌怪伤害 | 仓库外 `evidence/audit-r1-smoke-v002-2026-10-18/`、`evidence/audit-r2-target-safety-v001-2026-10-18/` |
 
 2026-10-18，Windows JDK 21.0.4 与 WSL Debian / Linux JDK 21.0.8 均通过 262 项 JUnit 和 146 项 GameTest，失败数为零。Linux 使用独立源码目录、构建输出和 Gradle 缓存；Gradle 发行包复用了已下载副本。其直接访问插件仓库曾超时，使用本机现有代理后完成下载和执行。游戏认证服务的后台连接在 Linux 留有超时日志，未影响离线 GameTest；不据此宣称在线连接通过。
@@ -67,3 +69,25 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 模板生成器输出统一 UTF-8/LF，`check-ruins.py` 同时检查 NBT、布局、群系与生成间距的重复生成哈希。第一次检查发现手工改过的间距文件被 Windows 换行重写；修正写入方式后重复生成一致，生成内容未因此改变。完整无命令生存流程仍须单独验收。
 
 最后关闭客户端后再次执行 Windows `clean build runGameTestServer compileDevtoolsJava`，262 / 146 项仍全部通过，日志为 `.external/audit-r9-clean-final-win-v2.log`。此前客户端运行时的 `clean` 因游戏 JAR 被占用而失败，且已经删除部分松散资源；同期远距离搜索记录已明确作废。新的独立世界复测通过，见 `WORLD_CHECKPOINT.md`。发行 JAR 另检查内部布局位置与开发/测试源码隔离。
+
+## R15：客户端设置与特效预算
+
+2026-10-18 云端 Debian 13 / OpenJDK 21.0.12，新检出 `1c58dee` 后先跑基线：262 项 JUnit、146 项 GameTest 通过，`compileDevtoolsJava` 通过。R15 后 `scripts/check.sh --devtools` 结果为 312 / 154 全部通过；发行 JAR 不含开发或 GameTest 条目，SHA-256 `60df1c069d300f653ad81526b53263e21eec5c21df68487ca6218916f1a7dcd4`（云端构建，与 Windows 构建哈希不可直接比较）。Windows 未复跑。
+
+- 配置：`orimod-client.toml` 新增 `configVersion`（缺失视为 v1，加载时升级到 v2 并记日志）、`visuals.quality`（FLUENT / BALANCED / DETAILED，默认均衡）、`visuals.advancedParticles`（默认开）、`feedback.screenShake`（0–100，默认 30，较轻）、`feedback.screenFlash`（0–100，默认 40）。JUnit 直接对真实 `ModConfigSpec` 执行 NeoForge 加载时的修正：v1 文件保留 `keyDefaultsApplied` / `spiritCamera` 并补默认值；越界强度、未知画质和视角名回到默认，其他值不变；新版本写入的更高 `configVersion` 不降级。运动模糊、强景深和动态灯光在模组中不存在，因此没有对应开关，也没有默认开启的效果。
+- 粒子：原先五处服务端 `sendParticles`（刀命中、下砸落地、灵光箭尾迹、挑战检查点、路线标记）改为 `SpiritFx.emit`，向 32 格内玩家发送一个固定编号的 `orimod:spirit_fx` 载荷。客户端 `FxBudget` 把每类效果分为关键粒子（强制生成，原版“最少”粒子也保留）与装饰粒子（按画质 0.5 / 1.0 / 1.5 缩放，上限 48，仍走原版粒子等级）。均衡档总数与 R1–R13 实机证据使用的数量一致；关闭高级粒子只保留关键粒子。GameTest 用真实连接玩家检查每类效果只发一个载荷、坐标和来源正确、超出范围不发送，并确认刀命中不再发送原版粒子包；临时改回 `sendParticles` 时该用例失败，恢复后通过。
+- 震动与闪光：`ScreenFeedback` 是纯逻辑时间线。精灵形态受击触发震动（100% 时峰值 2.5°，6 tick 二次衰减）和冷白闪光（100% 时 α 0.35，4 tick 线性衰减）；本人下砸落地只触发 0.6 倍震动。两项都只按用户百分比缩放，0 完全不触发，设置中途归零立即停止；形态切换、死亡或断线清空。原版受伤镜头倾斜保持原版设置，独立存在。
+- 设置界面：模组列表的“配置”按钮使用 NeoForge 生成界面，分“画面”“震动与闪光”两节，画质显示流畅/均衡/精致；`configVersion` 与按键标记仍保存在文件中但不显示。
+
+云端实机：Xvfb 1920×1080、Mesa llvmpipe（OpenGL 4.5），开发客户端约 18 FPS，光影关闭，无声卡。只说明设置链路与数值行为，不作画面、光影或性能验收。
+
+| 检查 | 结果 | 记录 |
+| --- | --- | --- |
+| v1 配置启动 | NeoForge 修正文件并记录 “v1 -> v2”，保留 `keyDefaultsApplied = true`、`spiritCamera = "FIRST_PERSON"` | `evidence/settings-r15-manual-v001-2026-10-18/`（含前后文件与日志） |
+| 界面修改 | 真实滑块与按钮修改震动、闪光、画质、高级粒子；“完成”后写回文件 | 同目录截图（英文初版、中文 v2/v3） |
+| 受击 | 0% 震动 / 100% 闪光时只记录闪光峰值 0.35；100% / 0% 时只有震动峰值 2.5，且相机角度非零 | `settings-r15-script-v004-2026-10-18/results.json` |
+| 刀命中粒子 | 均衡+高级：1 关键 + 3 装饰；流畅+高级：1+1；流畅+关闭：1+0 | 同上及手动记录 |
+| 重启 | 设置修改后两次客户端进程重启值不变；第二次由脚本 `--expect` 断言 | `settings-r15-restart-v001-2026-10-18/` |
+
+`scripts/verify-client-settings.py <运行名>` 在开发客户端中走真实设置界面完成上述受击与刀命中检查；重启后用 `--expect '{"visuals": "..."}'` 断言保持。脚本前三版因点击过早、刀连击恢复期和死亡动画中的旧僵尸被选中而失败，均为夹具问题，已修正，失败目录未保留到证据（运行在云端，未产生需要保存的游戏状态）。连续截图未捕捉到 4 tick 闪光帧，闪光与震动观感需本机复查；界面截图只覆盖 GUI 4。
+

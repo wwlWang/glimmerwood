@@ -41,6 +41,8 @@ python3 scripts/sync-dependencies.py
 
 ## 建议云端首轮：正式设置与持久化
 
+> 2026-10-18 R15 已完成本节可在云端完成的部分：设置入口、版本化配置、画质/高级粒子/震动/闪光及其实际行为、旧配置与重启持久化，见 [TESTING](TESTING.md#r15客户端设置与特效预算)。仍待：光影包首次启用与外部 Iris 变化的生命周期、动态灯光（无实现）、本机观感复查。
+
 无图形环境时，优先推进 ENV05、VIS05、VIS06、SAVE01/SAVE05 对应的设置实现。这是尚未完成且能拆成独立提交的工作；真实画面效果和菜单可用性留待有客户端时验证。
 
 - 入口代码：`src/main/java/cn/wwl/orimod/config/OriClientConfig.java` 目前只有按键默认值标记和精灵视角；客户端注册在 `client/OriModClient.java`，现有界面可参考 `client/SpiritScreen.java`，视角保存见 `client/SpiritControls.java`。
