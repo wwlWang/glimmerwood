@@ -83,3 +83,13 @@ R10 显示精灵盔甲偏离了原计划，R12 已恢复默认隐藏原版盔甲
 - 发现并修复 R22 的问题：`IMAGE_SHARPENING`、`SPIRIT_DEPTH_HAZE` 只出现在 `#elif defined` / `#if defined` 中，Iris 不识别为开关，写入的锐化值被丢弃；已改为普通 `#ifdef`，并对 `SPIRIT_*` 及受管选项加检查。
 - 截图（云端 `/workspace/oriMod/shots/`）：`r23-quality-tiers-fluent-balanced-detailed.png`（森林白天/夜晚，左到右三档），`r23-fluent-without-dynamic-shadows-rejected.png`（被撤回的首版快速档）。llvmpipe 帧率（2–9 FPS）不能代表性能。
 - 待本机：真实 GPU 上三档在同一路线的帧率与画面对照。
+
+## R24：下界、末地、雨天与维度切换（VIS01/VIS02）
+
+- 场景：同一种子世界；下界 (300, 77, -200)（地狱岩地面、青色生物群系雾），末地主岛 (40, 48, 40)，樱花林雨天白天与雷雨夜，以及主世界→下界、末地→主世界森林白天两次切换（切换后第 5、40、200 刻截图）。
+- 下界：同一位置对比原 Mellow、R23 与修正后：R22 的冷色暗部把地狱岩压成蓝紫，失去暖红；新增 `SPIRIT_NETHER_GRADE`（默认 0.3）后与原包接近，仍保留轻微冷调。青色雾来自该处生物群系，三个包一致。
+- 末地：整体蓝紫，主角受末地环境光偏紫，可辨认，暂不调整。
+- 雨天：白天灰蓝、远景雾层减弱但仍有层次；雷雨夜深蓝，地面与主角可辨。
+- 维度切换：第 5 刻仍在加载画面或曝光偏亮，第 40 刻已稳定，第 200 刻无变化；未见过曝、黑屏或残留雾色。
+- 截图（云端 `/workspace/oriMod/shots/`）：`r24-overview-switch-end-rain.png`（总览）、`r24-nether-mellow-vs-r23-vs-r24.png`、`r24-nether-fixed.png`、`r24-end.png`、`r24-cherry-rain-day.png`、`r24-cherry-thunder-night.png`、`r24-dimension-switch-*.png`。
+- 待本机：真实 GPU 上下界熔岩海、绯红/诡异森林、末地龙战斗、快速转头时的曝光变化。

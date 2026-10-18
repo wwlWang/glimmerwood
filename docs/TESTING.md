@@ -136,3 +136,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R23：画质档与光影性能档
 
 430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`；新增 `SpiritGlowProfileTest` 7 项：映射、首次写入、档位切换只换自己的值、保留玩家修改、首次运行前已有的值不接管、默认值收回、文件读写；`SpiritGlowPackTest` 新增 2 项：profile 行等于包默认加模组覆盖值、布尔选项都有普通 `#ifdef`）。发行 JAR SHA-256 `ccb541a2b8a86333500ca94ec79e8868c50887503e2f8063a692f4364b8ab765`（云端构建）。云端实机见渲染记录。
+
+## R24：下界、末地、雨天
+
+430 项 JUnit、183 项 GameTest 通过（`scripts/check.sh --devtools`；新选项由现有 `SpiritGlowPackTest` 覆盖：在设置页、中英文名称、默认值在可选值内）。发行 JAR SHA-256 `778a254f54c7f53386721a719b2cc6e378e9c695724cf4d9e4ded5a448c26df1`（云端构建）。云端实机截图见渲染记录。
