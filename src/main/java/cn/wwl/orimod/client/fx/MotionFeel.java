@@ -54,10 +54,10 @@ public final class MotionFeel {
         try {
             // Soft trail: motes spread along last tick's path, so the light reads as continuous at 20 TPS.
             for (int i = 0; i < n; i++) {
-                double t = (i + r.nextDouble()) / Math.max(1, n);
-                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), FeelTuning.trailColor(i, n), .11f + r.nextFloat() * .05f, 9 + r.nextInt(4)), true,
-                        p.getX() - dx * t + (r.nextDouble() - .5) * .15, p.getY() + .45 - dy * t + (r.nextDouble() - .5) * .15, p.getZ() - dz * t + (r.nextDouble() - .5) * .15,
-                        -dx * .05, .01, -dz * .05);
+                double t = (i + .5) / Math.max(1, n); // even spacing along the path — continuous ribbon, not random scatter
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), FeelTuning.trailColor(i, n), .09f + r.nextFloat() * .04f, 11 + r.nextInt(4)), true,
+                        p.getX() - dx * t + (r.nextDouble() - .5) * .06, p.getY() + .4 - dy * t + (r.nextDouble() - .5) * .05, p.getZ() - dz * t + (r.nextDouble() - .5) * .06,
+                        -dx * .08, .005, -dz * .08);
             }
             double ground = Math.hypot(dx, dz) * 20;
             if (p.onGround() && ground > 1.5 && (time + p.getId()) % FeelTuning.FOOTSTEP_SPACING_TICKS == 0) {

@@ -52,8 +52,8 @@ class FeelTuningTest {
     }
 
     @Test void heldJumpGoesHigherThanTappedAndFallsAreCapped() {
-        assertTrue(apex(true) > 1.45, "held " + apex(true));
-        assertTrue(apex(false) < apex(true) * .6 && apex(false) >= 1.0, "tap " + apex(false));   // a tap still clears one block
+        assertTrue(apex(true) > 1.35, "held " + apex(true));
+        assertTrue(apex(false) < apex(true) * .7 && apex(false) >= .85, "tap " + apex(false));
         double vy = -1;
         for (int i = 0; i < 80; i++) vy = (vertical(vy, false, false) - GRAVITY) * .98;
         assertTrue(vy >= MAX_FALL - 1e-6, "terminal " + vy);
@@ -108,8 +108,8 @@ class FeelTuningTest {
 
     @Test void trailIsContinuousAboveThresholdAndRespectsSettings() {
         assertEquals(0, trailMotes(.5, 1, true, 0));
-        assertEquals(1, trailMotes(2, 1, true, 0));
-        assertEquals(3, trailMotes(9, 1, true, 0));
+        assertEquals(2, trailMotes(2, 1, true, 0));
+        assertEquals(5, trailMotes(9, 1, true, 0));
         assertEquals(1, trailMotes(9, .5, true, 0) > 0 ? 1 : 0);
         assertEquals(1, trailMotes(9, 1, false, 0)); assertEquals(0, trailMotes(9, 1, false, 1));
     }

@@ -50,7 +50,8 @@ public final class SpiritJumpPrediction {
             // Match the established movement contract: normal/double jumps preserve horizontal
             // momentum while wall jumps replace it with the approved outward impulse.
             player.setDeltaMovement(previous.x, player.getDeltaMovement().y, previous.z);
-            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; state.airJumpSpent = true; }
+            player.fallDistance = 0; // R84: every predicted jump clears fall distance
+            if (mode == DOUBLE_JUMP) state.airJumpSpent = true;
         }
         player.setOnGround(false);
         state.predictedJumps.put(sequence, mode);

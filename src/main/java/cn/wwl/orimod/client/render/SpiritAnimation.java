@@ -200,7 +200,10 @@ final class SpiritAnimation {
                 }
             }
         }
-        boolean contactUse = handsAvailable && (contactAnimation == UseAnim.SPYGLASS
+        // R87: spirit hammer/spear use SPEAR UseAnim but must not drive vanilla humanoid arm posing — use our overlays.
+        boolean spiritWeapon = contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)
+                || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE) || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_BOW);
+        boolean contactUse = handsAvailable && !spiritWeapon && (contactAnimation == UseAnim.SPYGLASS
                 || contactAnimation == UseAnim.SPEAR || contactAnimation == UseAnim.CROSSBOW);
         if (contactUse) {
             if (posedUse != contactAnimation || posedLeft != contactLeft || posedItem.isEmpty()) {
@@ -223,6 +226,11 @@ final class SpiritAnimation {
                 } else if (bow) {
                     overlay = handed(elapsed < 1 ? "bow_charge" : "bow_hold", useLeft);
                     overlayTime = elapsed < 1 ? elapsed : elapsed - 1;
+                    mask = upperBody; below = belowUpper;
+                } else if (player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) || player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)) {
+                    // Wind-up / throw: full upper-body clip so sprint gait on the legs stays intact.
+                    overlay = handed(player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) ? "blade_3" : "use_item", useLeft);
+                    overlayTime = Math.min(now, SpiritClips.get(model, overlay).duration() * .95f);
                     mask = upperBody; below = belowUpper;
                 } else {
                     overlay = handed(use == UseAnim.BLOCK ? "block" : "use_item", useLeft); overlayTime = now; overlayLeft = useLeft;
@@ -256,7 +264,9 @@ final class SpiritAnimation {
             GltfAnimation walkClip = SpiritClips.get(model, "walk"), runClip = SpiritClips.get(model, "run");
             float phase = walkClip.duration() > 0 ? walkClip.loop((clock - selectedClock) * selectedPlaySpeed) / walkClip.duration() : 0;
             if (selected.equals("walk")) { locoPhase = phase; }
-            blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, below == null ? BlendMask.ALL : below);
+            // R87: gait always stays below the spine so blade/bow/hammer overlays keep the upper body.
+            var gaitMask = below != null ? below : belowUpper;
+            blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, gaitMask);
         }
         if (mask != null) {
             GltfAnimation action = SpiritClips.get(model, overlay);

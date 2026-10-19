@@ -9,8 +9,8 @@
       "outward": 0.02,
       "particle": "orimod:spirit_mote",
       "shape": "line",
-      "share": 0.6,
-      "size": 0.42,
+      "share": 0.75,
+      "size": 0.28,
       "speed": 0.005,
       "spread": [
         0.05,
@@ -22,9 +22,9 @@
       "color": "#ffffff",
       "lifetime": 10,
       "particle": "orimod:spirit_spark",
-      "share": 0.4,
-      "size": 0.22,
-      "speed": 0.06,
+      "share": 0.25,
+      "size": 0.14,
+      "speed": 0.04,
       "spread": [
         0.25,
         0.25,

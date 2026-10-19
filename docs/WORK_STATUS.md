@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 21:46（UTC+8）云端 ori-r84（落地伤害与 GemRender 结论）：精灵形态取消摔落伤害并清零 fallDistance；跳/二段跳/墙跳也会清零。GemRender 不嵌入 OriMod jar（mixin + JarJar 原生库 + GPL-3），继续与发行包并排放在 mods/。JUnit 558 / GameTest 234。
+
 2026-10-19 21:42（UTC+8）云端 ori-r83（创造模式标签页与调试命令）：之前物品虽然已注册，但没有加进任何创造标签页，大部分遗迹方块也没有物品形式。现在新增“OriMod 精灵”创造标签页，列出全部物品；12 个遗迹方块有了物品形式；新增 5 个刷怪蛋（喷吐者、腐光鸦、腐光之心、翼母、练习靶）。新增 `/orimod`（`/ori`）命令，权限 2，包含 awaken、form、unlock、giveall、light、energy、cells、locate、spawn、god、status、reset。ContentGameTests 有 3 项：标签页包含全部物品；中英文名称和物品模型齐全；命令需要权限并且实际生效。JUnit 558 / GameTest 233。
 
 2026-10-19 21:35（UTC+8）发布包重建（R82，8a3716782b）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-8a3716782b.jar`，sha256 `67ee5db8382eee7e2cdb55cc98fc9998d8727504755d456461826128d23fd189`；同目录有 `gemrender-0.1.17.jar`。

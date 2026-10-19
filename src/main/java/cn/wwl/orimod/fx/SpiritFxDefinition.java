@@ -33,15 +33,17 @@ public record SpiritFxDefinition(SpiritFxKind kind, List<Layer> layers) {
 
     /** Built-in look used when a resource pack removes or breaks a definition (the R18 table). */
     public static SpiritFxDefinition fallback(SpiritFxKind kind) {
-        String particle = switch (kind) {
-            case BLADE_HIT -> "minecraft:crit";
-            case DASH, DOUBLE_JUMP, WALL_JUMP -> "minecraft:cloud";
-            case BASH -> "minecraft:firework";
-            case GRAPPLE_HOOK, GRAPPLE_TETHER -> "minecraft:electric_spark";
-            case FORM_SWITCH -> "minecraft:glow";
-            default -> "minecraft:end_rod";
+        // R86: never fall back to vanilla crit/cloud/end_rod — those look Minecraft. Soft spirit motes instead.
+        int color = switch (kind) {
+            case BLADE_HIT -> 0xE8FBFF;
+            case DASH, DOUBLE_JUMP, WALL_JUMP -> 0xD8F6FF;
+            case BASH, SPIRIT_FLAME -> 0xF2F8FF;
+            case FORM_SWITCH -> 0xBFF0FF;
+            default -> 0xC8F4FF;
         };
-        return new SpiritFxDefinition(kind, List.of(Layer.simple(particle, 1, kind.spreadX(), kind.spreadY(), kind.spreadZ(), kind.speed())));
+        var layer = new Layer("orimod:spirit_mote", 1, kind.spreadX(), kind.spreadY(), kind.spreadZ(), kind.speed(),
+                "burst", 0, 0, 0, color, .22f, 14);
+        return new SpiritFxDefinition(kind, List.of(layer));
     }
 
     /** Strict parse; throws IllegalArgumentException naming the problem so a broken file falls back visibly in the log. */

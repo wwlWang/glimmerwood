@@ -23,10 +23,11 @@ public final class FeelTuning {
     public static final double WALL_JUMP_CONTROL_SCALE = .25;
     // ---- vertical ----------------------------------------------------------------------------------------
     public static final double GRAVITY = .08;            // vanilla
-    public static final double RISE_GRAVITY_SCALE = .72; // jump held while rising
-    public static final double APEX_SPEED = .1, APEX_GRAVITY_SCALE = .45;
-    public static final double FALL_GRAVITY_SCALE = 1.35, MAX_FALL = -1.4;
-    public static final double JUMP_CUT = .45, JUMP_CUT_MIN = .12;
+    // R85: softer takeoff (rise gravity near/above vanilla so climb decelerates sooner), less apex hang, snappier fall.
+    public static final double RISE_GRAVITY_SCALE = .9;  // jump held while rising (was .72 — too floaty / snappy)
+    public static final double APEX_SPEED = .08, APEX_GRAVITY_SCALE = .8;  // was .45 hang
+    public static final double FALL_GRAVITY_SCALE = 1.9, MAX_FALL = -1.55; // was 1.35 / -1.4
+    public static final double JUMP_CUT = .4, JUMP_CUT_MIN = .1;
     // ---- dash ---------------------------------------------------------------------------------------------
     /** Dash speed multiplier by tick (DASH_TICKS long): a burst, then ease out instead of a hard stop. */
     public static final double[] DASH_PROFILE = {1.0, 1.0, .92, .78, .62};
@@ -133,13 +134,14 @@ public final class FeelTuning {
     public static int trailMotes(double speedMps, double particleScale, boolean advanced, long tick) {
         if (speedMps < TRAIL_MIN_SPEED) return 0;
         if (!advanced) return tick % 2 == 0 ? 1 : 0;
-        int n = speedMps > 8 ? 3 : speedMps > 4 ? 2 : 1;
+        // R86: denser trail so the light reads continuous (was 1/2/3).
+        int n = speedMps > 8 ? 5 : speedMps > 4 ? 4 : 2;
         return Math.max(1, (int) Math.round(n * particleScale));
     }
 
     // ---- R80 gait blend --------------------------------------------------------------------------------------------
     public static final float GAIT_RUN_FROM = 1.4f, GAIT_RUN_TO = 3.4f, GAIT_SPRINT_FROM = 6.6f, GAIT_SPRINT_TO = 9f;   // m/s
-    public static final float STRIDE_WALK = .8f, STRIDE_RUN = 2.0f, STRIDE_SPRINT = 2.6f, SPRINT_LEAN = .08f;           // metres per cycle, rad
+    public static final float STRIDE_WALK = .8f, STRIDE_RUN = 2.0f, STRIDE_SPRINT = 2.6f, SPRINT_LEAN = .03f;           // metres per cycle, rad
 
     public static float smoothstep(float a, float b, float x) { float t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 

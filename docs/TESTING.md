@@ -386,3 +386,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r83：创造模式标签页与调试命令
 
 - `ContentGameTests`：创造标签页包含全部 orimod 物品；每个物品都有 en_us/zh_cn 名称和物品模型；`/orimod` 在权限 0 时不可见，在权限 2 时 unlock、cells、form、energy、light、giveall、reset 都生效，未知的生物会被拒绝。
+
+## ori-r84：落地伤害与 GemRender 结论
+
+- `ContentGameTests.spirit_form_cancels_fall_damage`：精灵形态取消摔落，人类形态不取消。

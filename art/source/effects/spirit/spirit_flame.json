@@ -1,7 +1,7 @@
 {
   "format": 1,
   "kind": "spirit_flame",
-  "notes": "灵焰（R37）：从同伴光点到敌人的暖白光束 + 命中闪点。数量预算由 FxBudget 决定，必显粒子在第一层。",
+  "notes": "灵焰（R37/R86）：从同伴光点到敌人的冷白蓝光束 + 命中闪点。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
@@ -13,8 +13,8 @@
       ],
       "speed": 0.004,
       "shape": "beam",
-      "color": "#fff0c8",
-      "size": 0.3,
+      "color": "#e8f4ff",
+      "size": 0.22,
       "lifetime": 8,
       "notes": "光束"
     },
@@ -27,8 +27,8 @@
         0.15
       ],
       "speed": 0.06,
-      "color": "#ffd27a",
-      "size": 0.28,
+      "color": "#9ec8ff",
+      "size": 0.18,
       "lifetime": 8,
       "notes": "命中闪点"
     }

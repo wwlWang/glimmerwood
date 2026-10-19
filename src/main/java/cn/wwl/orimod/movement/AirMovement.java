@@ -102,6 +102,12 @@ public final class AirMovement {
         if (s.mode == STOMP && s.active && player.level().getGameTime() - s.lastInput <= 4 && SpiritMovement.canMove(player)) {
             event.setCanceled(true);
             impact(player, s);
+            return;
+        }
+        // R84: spirit form never takes fall damage — Ori landings are soft. Ability landings also clear the meter.
+        if (SpiritData.isSpirit(player)) {
+            event.setCanceled(true);
+            player.fallDistance = 0;
         }
     }
 

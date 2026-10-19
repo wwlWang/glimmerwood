@@ -32,7 +32,7 @@ Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopba
 
 1. 安装 Minecraft 1.21.1，并安装 NeoForge 21.1.248 或任意更高的 21.1.x（模组声明的范围为 `[21.1.248,21.2)`；Minecraft 仍限定为 1.21.1）。NeoForge 安装器：<https://neoforged.net/>，选择 21.1.x 中较新的版本，“Install client”。
 2. 在官方启动器中选择 NeoForge 配置并启动一次，生成游戏目录下的 `mods/`。
-3. 放入 `mods/`：OriMod JAR 与 GemRender 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装 Flywheel）。GemRender 没有公开下载页：用本仓库 `libs/runtime/gemrender-0.1.17.jar`（Git LFS），或发行目录里与 OriMod JAR 放在一起的那份；它由上游 [Warfactory-Official/GemRender](https://github.com/Warfactory-Official/GemRender) 提交 `839c927` 构建（见 `dependencies/lock.json`）。缺少 GemRender 时 NeoForge 启动界面会列出缺少的模组。
+3. 放入 `mods/`：**两个 jar**——OriMod JAR 与 GemRender 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装 Flywheel）。**不能**把 GemRender 打进 OriMod（它自带 mixin 和原生库，JarJar 不安全）；必须并排放在 `mods/`。GemRender 没有公开下载页：用本仓库 `libs/runtime/gemrender-0.1.17.jar`（Git LFS），或发行目录里那份（上游 [Warfactory-Official/GemRender](https://github.com/Warfactory-Official/GemRender) 提交 `839c927`，见 `dependencies/lock.json`）。缺少时 NeoForge 启动界面会列出缺少的模组。
 4. 推荐：Sodium 0.6.13 与 Iris 1.8.12。装有 Iris 且未选择其他光影时，首次启动自动装入并启用自带的 Spirit Glow 光影；已选其他光影则保留，可在 OriMod 设置中切换。
 5. 可直接打开已有原版存档；遗迹在新探索的区块生成。
 

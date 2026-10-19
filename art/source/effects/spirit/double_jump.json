@@ -5,7 +5,7 @@
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.65,
+      "share": 0.75,
       "spread": [
         0.02,
         0.02,
@@ -16,13 +16,13 @@
       "radius": 0.35,
       "outward": 0.18,
       "color": "#c8f4ff",
-      "size": 0.38,
+      "size": 0.28,
       "lifetime": 19,
       "notes": "跳环"
     },
     {
       "particle": "orimod:spirit_spark",
-      "share": 0.35,
+      "share": 0.25,
       "spread": [
         0.2,
         0.05,
@@ -30,7 +30,7 @@
       ],
       "speed": 0.03,
       "color": "#ffffff",
-      "size": 0.2,
+      "size": 0.14,
       "lifetime": 10,
       "notes": "闪点"
     }

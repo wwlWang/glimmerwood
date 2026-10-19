@@ -3,12 +3,12 @@
   "kind": "spirit_flame",
   "layers": [
     {
-      "color": "#fff0c8",
+      "color": "#e8f4ff",
       "lifetime": 8,
       "particle": "orimod:spirit_mote",
       "shape": "beam",
       "share": 0.7,
-      "size": 0.3,
+      "size": 0.22,
       "speed": 0.004,
       "spread": [
         0.03,
@@ -17,11 +17,11 @@
       ]
     },
     {
-      "color": "#ffd27a",
+      "color": "#9ec8ff",
       "lifetime": 8,
       "particle": "orimod:spirit_spark",
       "share": 0.3,
-      "size": 0.28,
+      "size": 0.18,
       "speed": 0.06,
       "spread": [
         0.15,

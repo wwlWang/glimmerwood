@@ -81,6 +81,22 @@ public final class ContentGameTests {
                 throw new RuntimeException(e);
             }
         });
+                add(tests, "spirit_form_cancels_fall_damage", h -> {
+            var p = Fixtures.player(h);
+            cn.wwl.orimod.spirit.SpiritForm.toggle(p);
+            h.assertTrue(SpiritData.isSpirit(p), "spirit");
+            p.fallDistance = 20;
+            var event = new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p, 20, 1);
+            cn.wwl.orimod.movement.AirMovement.fall(event);
+            h.assertTrue(event.isCanceled(), "fall canceled");
+            h.assertValueEqual(p.fallDistance, 0f, "fallDistance cleared");
+            // Human form still takes fall damage (event not canceled by our handler when not spirit — leave to vanilla).
+            p.setData(SpiritData.FORM, false); p.fallDistance = 20;
+            var human = new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p, 20, 1);
+            cn.wwl.orimod.movement.AirMovement.fall(human);
+            h.assertTrue(!human.isCanceled(), "human falls");
+        });
+
         return tests;
     }
 

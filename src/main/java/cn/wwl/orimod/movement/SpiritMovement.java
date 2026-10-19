@@ -177,7 +177,8 @@ public final class SpiritMovement {
             if (!surface.equals(s.lastWallRefill)) { s.airJumpSpent = s.airDashSpent = false; s.lastWallRefill = surface; }
             s.acceptedWallJumps++;
         } else {
-            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; if (s.airJumpSpent) s.tripleJumpSpent = true; s.airJumpSpent = true; }
+            player.fallDistance = 0; // R84: ground / air / triple jump all clear fall distance
+            if (mode == DOUBLE_JUMP) { if (s.airJumpSpent) s.tripleJumpSpent = true; s.airJumpSpent = true; }
             s.acceptedJumps++;
         }
         player.setOnGround(false);

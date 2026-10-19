@@ -84,12 +84,18 @@ public final class SpiritFxClient {
     /** R37: one glowing mote per tick at each nearby spirit player's companion: a small Sein-like light with a short trail. */
     private static void companions(Minecraft mc, net.minecraft.client.multiplayer.ClientLevel level) {
         if (mc.player == null) return;
-        if (companionOrb == null) companionOrb = new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0xFFF4D8, .3f, 6);
+        // R86: cool white-blue Sein-like orb (not warm vanilla gold), with a short soft trail.
+        if (companionOrb == null) companionOrb = new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0xF2F8FF, .22f, 8);
         for (var player : level.players()) {
             if (!cn.wwl.orimod.spirit.SpiritData.isSpirit(player) || player.isSpectator() || player.distanceToSqr(mc.player) > 32 * 32) continue;
             if (player == mc.player && mc.options.getCameraType().isFirstPerson()) continue;   // never in your own face
             var at = companion(player, level.getGameTime());
-            try { level.addParticle(companionOrb, true, at.x, at.y, at.z, 0, 0, 0); } catch (Throwable ignored) { return; }
+            var prev = companion(player, level.getGameTime() - 1);
+            try {
+                level.addParticle(companionOrb, true, at.x, at.y, at.z, 0, 0, 0);
+                level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x9EC8FF, .14f, 10), false,
+                        (at.x + prev.x) * .5, (at.y + prev.y) * .5, (at.z + prev.z) * .5, 0, .01, 0);
+            } catch (Throwable ignored) { return; }
         }
     }
 
