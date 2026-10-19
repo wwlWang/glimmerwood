@@ -119,6 +119,29 @@ public final class ParityGameTests {
             h.setBlock(b, net.minecraft.world.level.block.Blocks.AIR);
             h.assertTrue(cn.wwl.orimod.world.SpiritWell.destination(h.getLevel(), absA, records.keySet()) == null, "Travel to a destroyed well");
         });
+        add(tests, "gloom_spitter_spits_bashable_orbs", h -> {
+            var p = spirit(h, 127);
+            var spitter = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get(), new Vec3(5.5, 2, 9.5)); spitter.setNoAi(true);
+            try {
+                h.assertTrue(spitter instanceof net.minecraft.world.entity.monster.Enemy, "Spitter must be an enemy (light drops, flame, Bash)");
+                var shot = spitter.spit(p);
+                h.assertTrue(shot.getOwner() == spitter, "Shot owner");
+                h.assertTrue(shot.getDeltaMovement().z < 0, "Shot not aimed at the player");
+                h.assertTrue(cn.wwl.orimod.movement.SpiritTargets.eligible(p, shot), "Gloom orb is not Bashable");
+                // FakePlayer ignores damage; a villager stands in for the victim of an un-redirected orb.
+                var victim = h.spawn(net.minecraft.world.entity.EntityType.VILLAGER, new Vec3(3.5, 2, 5.5)); victim.setNoAi(true);
+                float before = victim.getHealth();
+                h.assertTrue(shot.strike(victim), "Gloom orb did not hurt its target");
+                h.assertTrue(victim.getHealth() < before && victim.getLastHurtByMob() == spitter, "Orb hit not credited to the spitter");
+                victim.discard();
+                shot.setOwner(p);   // as after a Bash redirect
+                float spitterBefore = spitter.getHealth();
+                h.assertTrue(shot.strike(spitter), "Redirected orb did not hurt the spitter");
+                Fixtures.near(h, spitterBefore - spitter.getHealth(), cn.wwl.orimod.entity.GloomShot.DAMAGE, "Redirected orb damage");
+                h.assertTrue(spitter.getLastHurtByMob() == p, "Redirected hit not credited to the player");
+                shot.discard();
+            } finally { spitter.discard(); }
+        });
         return tests;
     }
 

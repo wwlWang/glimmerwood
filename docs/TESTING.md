@@ -214,3 +214,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R41：灵泉 Spirit Well
 
 499 JUnit（`SpiritWellTest` 排序循环、维度隔离、键解析）、203 GameTest（新增：回满生命能量并有冷却；只有一处时不能传送；两处时落点在第二处神龛前；第二处被毁后无落点）。
+
+## R42：原创射弹敌人：腐光喷吐者
+
+501 JUnit（`GloomSpitterTest`：球速、伤害、射击间隔，生成数据只在主世界）、204 GameTest（新增 `gloom_spitter_spits_bashable_orbs`：喷吐者是 Enemy；吐出的球归属喷吐者、朝向玩家、可 Bash；未反弹时伤害记在喷吐者名下；反弹后命中喷吐者伤害 3 并记在玩家名下）。

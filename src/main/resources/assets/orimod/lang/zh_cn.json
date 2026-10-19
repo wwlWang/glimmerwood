@@ -227,5 +227,7 @@
   "screen.orimod.well_travel": "灵泉：传送到下一处（已发现 %s 处）",
   "message.orimod.well.refilled": "灵泉恢复了你的生命与能量",
   "message.orimod.well.travelled": "已传送到灵泉 %s, %s, %s",
-  "message.orimod.well.none": "没有其他已发现的灵泉可传送"
+  "message.orimod.well.none": "没有其他已发现的灵泉可传送",
+  "entity.orimod.gloom_spitter": "腐光喷吐者",
+  "entity.orimod.gloom_shot": "腐光球"
 }

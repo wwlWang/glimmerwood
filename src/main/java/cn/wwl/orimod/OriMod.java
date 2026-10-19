@@ -17,6 +17,7 @@ public final class OriMod {
         cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
         cn.wwl.orimod.world.OriEntities.register(modEventBus);
         cn.wwl.orimod.fx.OriParticles.register(modEventBus);
+        cn.wwl.orimod.entity.OriMobs.register(modEventBus);
         cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
         cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);

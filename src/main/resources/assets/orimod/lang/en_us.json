@@ -227,5 +227,7 @@
   "screen.orimod.well_travel": "Spirit Well: travel to the next well (%s discovered)",
   "message.orimod.well.refilled": "The Spirit Well restores your health and energy",
   "message.orimod.well.travelled": "Travelled to the well at %s, %s, %s",
-  "message.orimod.well.none": "No other discovered well to travel to"
+  "message.orimod.well.none": "No other discovered well to travel to",
+  "entity.orimod.gloom_spitter": "Gloom Spitter",
+  "entity.orimod.gloom_shot": "Gloom Orb"
 }
