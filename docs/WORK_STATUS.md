@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 19:25（UTC+8）发布包重建（R81，ed12c46872）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-ed12c46872.jar`，sha256 `f112ed80f2fda6a3bf5673fa7eb6ecf2925399f18096567d7b92df8821c8e22b`。
+
 2026-10-19 19:24（UTC+8）云端 ori-r81（拖尾改冷色）：拖尾从白色渐变到冷蓝（#F2F8FF→#8EC8FF），光点缩小到 0.11–0.16；脚步光点和残影改成白蓝色。JUnit 555 / GameTest 230。
 
 2026-10-19 19:24（UTC+8）云端 ori-r80（走、跑、疾跑权重混合）：基础层一直是 walk，run 片段按同一相位以速度权重叠加（1.4→3.4 m/s）；超过最高速时混合到疾跑（6.6→9 m/s，步幅更长，加前倾）；步幅随权重连续变化。devtools 里可以看到 gaitWalk/gaitRun/gaitSprint。
