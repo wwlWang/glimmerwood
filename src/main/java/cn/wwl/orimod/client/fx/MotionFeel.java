@@ -55,7 +55,7 @@ public final class MotionFeel {
             // Soft trail: motes spread along last tick's path, so the light reads as continuous at 20 TPS.
             for (int i = 0; i < n; i++) {
                 double t = (i + r.nextDouble()) / Math.max(1, n);
-                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? 0xE8FBFF : 0x9FE8FF, .17f + r.nextFloat() * .07f, 10 + r.nextInt(5)), true,
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), FeelTuning.trailColor(i, n), .11f + r.nextFloat() * .05f, 9 + r.nextInt(4)), true,
                         p.getX() - dx * t + (r.nextDouble() - .5) * .15, p.getY() + .45 - dy * t + (r.nextDouble() - .5) * .15, p.getZ() - dz * t + (r.nextDouble() - .5) * .15,
                         -dx * .05, .01, -dz * .05);
             }
@@ -63,14 +63,14 @@ public final class MotionFeel {
             if (p.onGround() && ground > 1.5 && (time + p.getId()) % FeelTuning.FOOTSTEP_SPACING_TICKS == 0) {
                 int puffs = advanced ? 3 : 1;
                 for (int i = 0; i < puffs; i++)
-                    level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xCFF6FF, .16f, 10), false,
+                    level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xD8F0FF, .11f, 9), false,
                             p.getX() + (r.nextDouble() - .5) * .3, p.getY() + .05, p.getZ() + (r.nextDouble() - .5) * .3,
                             (r.nextDouble() - .5) * .04, .03 + r.nextDouble() * .03, (r.nextDouble() - .5) * .04);
             }
             if (dash) {
                 // Afterimage: a short-lived silhouette column at the previous position.
                 for (int i = 0; i < 6; i++)
-                    level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xBFF2FF, i == 2 || i == 3 ? .45f : .32f, 6), true,
+                    level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 2 || i == 3 ? 0xEEF8FF : 0xA9D4FF, i == 2 || i == 3 ? .3f : .2f, 6), true,
                             p.xo, p.yo + .1 + i * .16, p.zo, 0, 0, 0);
             }
         } catch (Throwable ignored) { }

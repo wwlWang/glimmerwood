@@ -373,3 +373,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r80：走、跑、疾跑权重混合
 
 - `FeelTuningTest`：权重和为 1，随速度单调变化，步幅连续。
+
+## ori-r81：拖尾改冷色
+
+- `FeelTuningTest`：拖尾头部白、尾部冷蓝，任何位置蓝分量都不低于红分量。
