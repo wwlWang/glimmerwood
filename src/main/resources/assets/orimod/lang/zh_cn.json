@@ -238,5 +238,10 @@
   "item.orimod.spirit_hammer": "灵锤",
   "tooltip.orimod.hammer": "按住使用蓄力，松开重砸前方地面；可把空中的敌人砸落",
   "message.orimod.hammer_spirit": "灵锤只在精灵形态下响应",
-  "message.orimod.hammer_energy": "灵能不足，无法重砸"
+  "message.orimod.hammer_energy": "灵能不足，无法重砸",
+  "entity.orimod.gloom_heart": "腐光之心",
+  "block.orimod.gloom_altar": "腐光祭坛",
+  "message.orimod.altar_dormant": "唤醒灵核之前，祭坛不会回应",
+  "message.orimod.altar_awake": "腐光之心已经醒来",
+  "message.orimod.altar_woke": "腐光之心苏醒了！用 Bash 把它的光球打回去"
 }

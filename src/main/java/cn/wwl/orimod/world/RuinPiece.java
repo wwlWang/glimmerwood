@@ -59,6 +59,11 @@ public final class RuinPiece extends TemplateStructurePiece {
             level.setBlock(pos, block.get().defaultBlockState(), 2);
             placed++;
         }
+        // R50: the boss altar replaces one floor block of the arena hall.
+        if (kind.layout().bossAltar() != null) {
+            var pos = placement.block(kind.layout().bossAltar());
+            if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_ALTAR.get().defaultBlockState(), 2); placed++; }
+        }
         // R46: updraft vents over the creek gaps, so the glide route can climb.
         for (var local : kind.layout().updrafts()) {
             var pos = placement.block(local);

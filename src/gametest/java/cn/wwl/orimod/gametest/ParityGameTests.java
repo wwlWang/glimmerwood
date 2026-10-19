@@ -173,6 +173,59 @@ public final class ParityGameTests {
                 h.assertTrue(behind.getHealth() == b, "Smash hit behind the player");
             } finally { ground.discard(); flyer.discard(); behind.discard(); }
         });
+        add(tests, "gloom_heart_altar_summons_one_boss", h -> {
+            var p = spirit(h, 127);
+            var altar = h.absolutePos(new net.minecraft.core.BlockPos(5, 1, 9));
+            h.getLevel().setBlock(altar, cn.wwl.orimod.block.OriBlocks.GLOOM_ALTAR.get().defaultBlockState(), 3);
+            var heart = cn.wwl.orimod.block.GloomAltarBlock.summon(p, altar);
+            try {
+                h.assertTrue(heart != null && heart.home().equals(altar), "Altar did not wake the Heart");
+                h.assertTrue(cn.wwl.orimod.block.GloomAltarBlock.summon(p, altar) == null, "Altar woke a second Heart");
+            } finally { if (heart != null) heart.discard(); }
+        });
+        add(tests, "gloom_heart_telegraphs_volleys_and_rings", h -> {
+            var p = spirit(h, 127);
+            var heart = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), new Vec3(5.5, 5, 10.5)); heart.setNoAi(true);
+            try {
+                heart.startAttack(cn.wwl.orimod.entity.GloomHeart.VOLLEY, p);
+                for (int i = 1; i < cn.wwl.orimod.entity.GloomHeart.VOLLEY_TELEGRAPH; i++) h.assertTrue(heart.tickAttack().isEmpty(), "Volley left early");
+                var volley = heart.tickAttack();
+                h.assertValueEqual(volley.size(), 3, "Phase 1 volley");
+                for (var s : volley) { h.assertTrue(s.getOwner() == heart && cn.wwl.orimod.movement.SpiritTargets.eligible(p, s), "Volley orb not Bashable"); s.discard(); }
+                heart.startAttack(cn.wwl.orimod.entity.GloomHeart.RING, p);
+                java.util.List<cn.wwl.orimod.entity.GloomShot> ring = java.util.List.of();
+                for (int i = 0; i < cn.wwl.orimod.entity.GloomHeart.RING_TELEGRAPH; i++) ring = heart.tickAttack();
+                h.assertValueEqual(ring.size(), 8, "Phase 1 ring");
+                ring.forEach(net.minecraft.world.entity.Entity::discard);
+                // Its own orbs never hurt it; a Bashed orb hurts it hard.
+                var own = new cn.wwl.orimod.entity.GloomShot(cn.wwl.orimod.entity.OriMobs.GLOOM_SHOT.get(), h.getLevel()); own.setOwner(heart);
+                h.assertTrue(!own.strike(heart), "Heart hurt by its own orb");
+                own.setOwner(p); float hp = heart.getHealth();
+                h.assertTrue(own.strike(heart), "Bashed orb did not hurt the Heart");
+                h.assertTrue(hp - heart.getHealth() >= cn.wwl.orimod.entity.GloomHeart.REFLECT_DAMAGE - 2, "Reflected damage " + (hp - heart.getHealth()));
+                own.discard();
+            } finally { heart.discard(); }
+        });
+        add(tests, "gloom_heart_enrages_at_half_health", h -> {
+            var p = spirit(h, 127);
+            var heart = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), new Vec3(5.5, 5, 10.5)); heart.setNoAi(true);
+            heart.setHome(h.absolutePos(new net.minecraft.core.BlockPos(5, 1, 10)));
+            try {
+                heart.setHealth(cn.wwl.orimod.entity.GloomHeart.MAX_HEALTH / 2 + 2);
+                heart.hurt(h.getLevel().damageSources().playerAttack(p), 6);
+                h.assertValueEqual(heart.phase(), 2, "Phase after half health");
+                h.assertTrue(heart.enraging(), "No invulnerable window");
+                float hp = heart.getHealth(); heart.invulnerableTime = 0;
+                h.assertTrue(!heart.hurt(h.getLevel().damageSources().playerAttack(p), 6) && heart.getHealth() == hp, "Hurt while enraging");
+                var spitters = h.getLevel().getEntitiesOfClass(cn.wwl.orimod.entity.GloomSpitter.class, heart.getBoundingBox().inflate(12));
+                h.assertValueEqual(spitters.size(), 2, "Spitters called");
+                spitters.forEach(net.minecraft.world.entity.Entity::discard);
+                h.assertValueEqual(cn.wwl.orimod.entity.GloomHeart.volleyCount(heart.phase()), 5, "Phase 2 volley");
+                // Phase 2 slam: marked on the ground, hits only near the mark.
+                heart.startAttack(cn.wwl.orimod.entity.GloomHeart.SLAM, p);
+                h.assertTrue(heart.slamTarget() != null && heart.slamTarget().distanceTo(p.position()) < .01, "Slam not marked at the player");
+            } finally { heart.discard(); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

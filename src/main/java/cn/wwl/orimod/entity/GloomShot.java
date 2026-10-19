@@ -39,6 +39,9 @@ public final class GloomShot extends ThrowableProjectile {
     /** Damage the struck entity on behalf of the current owner (the player after a Bash redirect). */
     public boolean strike(Entity target) {
         var owner = getOwner() instanceof LivingEntity living ? living : null;
-        return target.hurt(damageSources().mobProjectile(this, owner), DAMAGE);
+        // R50: Bashed orbs are the main way to hurt the Gloom Heart.
+        float damage = target instanceof GloomHeart && owner instanceof net.minecraft.world.entity.player.Player ? GloomHeart.REFLECT_DAMAGE : DAMAGE;
+        if (target instanceof GloomHeart && owner instanceof GloomHeart) return false;
+        return target.hurt(damageSources().mobProjectile(this, owner), damage);
     }
 }

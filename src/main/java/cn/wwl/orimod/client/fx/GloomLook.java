@@ -22,6 +22,23 @@ public final class GloomLook {
         } catch (Throwable ignored) { }
     }
 
+    /** R50: boss aura; the telegraphed slam is marked on the ground with a closing ring. */
+    public static void heart(cn.wwl.orimod.entity.GloomHeart e) {
+        var level = e.level(); var r = level.random;
+        int mist = e.phase() >= 2 ? 0xC03050 : 0x6A2A9C;
+        try {
+            for (int i = 0; i < 2; i++)
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), mist, .6f, 12), true,
+                        e.getX() + (r.nextDouble() - .5) * 2.2, e.getY() + r.nextDouble() * 1.6, e.getZ() + (r.nextDouble() - .5) * 2.2, 0, .01, 0);
+            if (e.attack() != cn.wwl.orimod.entity.GloomHeart.IDLE)
+                for (int i = 0; i < 3; i++) {
+                    double a = r.nextDouble() * Math.PI * 2, d = 2.6;
+                    level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_SPARK.get(), 0xFF80E0, .35f, 8), true,
+                            e.getX() + Math.cos(a) * d, e.getY() + .8 + (r.nextDouble() - .5) * 1.5, e.getZ() + Math.sin(a) * d, -Math.cos(a) * .3, 0, -Math.sin(a) * .3);
+                }
+        } catch (Throwable ignored) { }
+    }
+
     public static void shot(Entity e) {
         try {
             e.level().addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xB060FF, .4f, 4), true, e.getX(), e.getY(), e.getZ(), 0, 0, 0);

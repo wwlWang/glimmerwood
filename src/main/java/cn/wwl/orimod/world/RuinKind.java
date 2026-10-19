@@ -54,10 +54,11 @@ public enum RuinKind {
             }
             var updrafts = new ArrayList<BlockPos>();
             if (root.has("updrafts")) for (var value : root.getAsJsonArray("updrafts")) updrafts.add(BlockPos.containing(vector(value.getAsJsonArray())));
+            BlockPos altar = root.has("boss_altar") ? BlockPos.containing(vector(root.getAsJsonArray("boss_altar"))) : null;
             layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
-                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts));
+                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar);
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }
@@ -66,7 +67,7 @@ public enum RuinKind {
     public record Anchor(BlockPos position, ResourceLocation block) {}
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
-                         List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts) {}
+                         List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts, BlockPos bossAltar) {}
     /** R44: a Life / Energy Cell pedestal spot (template-local, standing on solid ground). */
     public record Cell(BlockPos position, cn.wwl.orimod.progression.SpiritCells.Kind kind) {}
 }

@@ -246,3 +246,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R49：灵锤 Spirit Smash
 
 507 JUnit（`SpiritHammerTest`：落点沿朝向、蓄力和冷却下限、伤害）、209 GameTest（新增 `parity.spirit_smash_hits_ahead_and_downs_flyers`：前方地面目标和空中目标都受伤，空中目标被砸落，地面目标被掀起，身后的目标不受伤）。
+
+## R50：首个原创首领：腐光之心
+
+510 JUnit（`GloomHeartTest`：一半生命时换阶段，二阶段更难，重击只在二阶段出现，每种攻击预警 ≥20 tick）、213 GameTest（新增：祭坛只唤醒一只；齐射和环形在预警结束前不出球，之后分别出 3 颗、8 颗可 Bash 的球；自己的球不伤自己，反弹球造成约 10 伤害；半血进入二阶段、无敌窗口、召唤 2 只喷吐者、重击标记在玩家位置；洞穴遗迹逆时针 90° 放置后祭坛存在，上方 7 格是空气）。

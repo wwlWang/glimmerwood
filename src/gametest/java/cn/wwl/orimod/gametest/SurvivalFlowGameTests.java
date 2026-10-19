@@ -57,6 +57,15 @@ public final class SurvivalFlowGameTests {
         add(tests, "fresh_peaceful_world_to_all_ruins", h -> flow(h, Difficulty.PEACEFUL));
         add(tests, "ruins_hold_claimable_cell_pedestals", SurvivalFlowGameTests::cellPedestals);
         add(tests, "glide_ruins_lift_over_their_gaps", SurvivalFlowGameTests::updrafts);
+        add(tests, "cave_ruin_holds_the_gloom_altar", h -> {
+            var placement = place(h, RuinKind.CAVE, Rotation.COUNTERCLOCKWISE_90);
+            try {
+                var pos = placement.block(RuinKind.CAVE.layout().bossAltar());
+                h.assertTrue(h.getLevel().getBlockState(pos).is(cn.wwl.orimod.block.OriBlocks.GLOOM_ALTAR.get()), "Gloom altar missing at " + pos);
+                for (int dy = 1; dy <= 7; dy++) h.assertTrue(h.getLevel().getBlockState(pos.above(dy)).isAir(), "Boss space blocked at +" + dy);
+            } finally { clear(h, placement, RuinKind.CAVE); }
+            h.succeed();
+        });
         return tests;
     }
 

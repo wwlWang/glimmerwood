@@ -238,5 +238,10 @@
   "item.orimod.spirit_hammer": "Spirit Hammer",
   "tooltip.orimod.hammer": "Hold use to wind up, release to Smash the ground ahead; knocks flying enemies down",
   "message.orimod.hammer_spirit": "The Spirit Hammer only answers in spirit form",
-  "message.orimod.hammer_energy": "Not enough spirit energy to Smash"
+  "message.orimod.hammer_energy": "Not enough spirit energy to Smash",
+  "entity.orimod.gloom_heart": "Gloom Heart",
+  "block.orimod.gloom_altar": "Gloom Altar",
+  "message.orimod.altar_dormant": "The altar ignores you until your spirit core awakens",
+  "message.orimod.altar_awake": "The Gloom Heart is already awake",
+  "message.orimod.altar_woke": "The Gloom Heart wakes! Bash its orbs back at it"
 }
