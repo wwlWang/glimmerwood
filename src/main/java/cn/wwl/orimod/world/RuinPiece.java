@@ -19,12 +19,19 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 public final class RuinPiece extends TemplateStructurePiece {
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement) {
         super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(placement.rotation()), placement.origin());
+        this.kind = kind;
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, ignored -> settings(RuinPlacement.readRotation(tag.getString("Rot"))));
+        this.kind = kindOf(templateName);
     }
+    private final RuinKind kind;
     private static ResourceLocation template(RuinKind kind) { return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + kind.id); }
     private static StructurePlaceSettings settings(Rotation rotation) { return new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation); }
+    private static RuinKind kindOf(String template) {
+        for (var kind : RuinKind.values()) if (template.endsWith("ruins/" + kind.id)) return kind;
+        return null;
+    }
     public BlockPos origin() { return templatePosition; }
     public RuinPlacement placement() { return new RuinPlacement(templatePosition, getRotation()); }
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
@@ -39,6 +46,20 @@ public final class RuinPiece extends TemplateStructurePiece {
         for (int x = Math.max(boundingBox.minX(), chunkBounds.minX()); x <= Math.min(boundingBox.maxX(), chunkBounds.maxX()); x++)
             for (int z = Math.max(boundingBox.minZ(), chunkBounds.minZ()); z <= Math.min(boundingBox.maxZ(), chunkBounds.maxZ()); z++)
                 RuinApproachPiece.clearCanopy(level, chunkBounds, x, z, boundingBox.maxY() + 1, boundingBox.maxY() + 48);
+        if (kind != null) placeCells(level, kind, placement(), chunkBounds);
+    }
+
+    /** R44: put the layout's cell pedestals into the ruin (only the parts inside the chunk being generated). */
+    public static int placeCells(net.minecraft.world.level.LevelAccessor level, RuinKind kind, RuinPlacement placement, BoundingBox bounds) {
+        int placed = 0;
+        for (var cell : kind.layout().cells()) {
+            var pos = placement.block(cell.position());
+            if (!bounds.isInside(pos)) continue;
+            var block = cell.kind() == cn.wwl.orimod.progression.SpiritCells.Kind.LIFE ? cn.wwl.orimod.block.OriBlocks.LIFE_CELL_PEDESTAL : cn.wwl.orimod.block.OriBlocks.ENERGY_CELL_PEDESTAL;
+            level.setBlock(pos, block.get().defaultBlockState(), 2);
+            placed++;
+        }
+        return placed;
     }
     @Override protected void handleDataMarker(String marker, BlockPos pos, ServerLevelAccessor level, RandomSource random, BoundingBox bounds) {}
 }

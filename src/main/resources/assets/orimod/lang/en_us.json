@@ -229,5 +229,10 @@
   "message.orimod.well.travelled": "Travelled to the well at %s, %s, %s",
   "message.orimod.well.none": "No other discovered well to travel to",
   "entity.orimod.gloom_spitter": "Gloom Spitter",
-  "entity.orimod.gloom_shot": "Gloom Orb"
+  "entity.orimod.gloom_shot": "Gloom Orb",
+  "block.orimod.life_cell_pedestal": "Life Cell Pedestal",
+  "block.orimod.energy_cell_pedestal": "Energy Cell Pedestal",
+  "message.orimod.cell_site.found.life": "Found a Life Cell",
+  "message.orimod.cell_site.found.energy": "Found an Energy Cell",
+  "message.orimod.cell_site.taken": "You already took this cell"
 }

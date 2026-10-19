@@ -229,5 +229,10 @@
   "message.orimod.well.travelled": "已传送到灵泉 %s, %s, %s",
   "message.orimod.well.none": "没有其他已发现的灵泉可传送",
   "entity.orimod.gloom_spitter": "腐光喷吐者",
-  "entity.orimod.gloom_shot": "腐光球"
+  "entity.orimod.gloom_shot": "腐光球",
+  "block.orimod.life_cell_pedestal": "生命格祭台",
+  "block.orimod.energy_cell_pedestal": "能量格祭台",
+  "message.orimod.cell_site.found.life": "找到一枚生命格",
+  "message.orimod.cell_site.found.energy": "找到一枚能量格",
+  "message.orimod.cell_site.taken": "你已取走这里的灵格"
 }

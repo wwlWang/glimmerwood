@@ -156,5 +156,15 @@
       "action": "dash",
       "count": 1
     }
+  ],
+  "cells": [
+    {
+      "position": [
+        5,
+        13,
+        12
+      ],
+      "kind": "life"
+    }
   ]
 }

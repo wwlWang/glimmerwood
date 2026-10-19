@@ -222,3 +222,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R43：灵光球发光拖尾
 
 504 JUnit（`LightOrbGlowTest`：静止不拖尾，飞行拖尾不超过 3，光晕尺寸范围）、204 GameTest。
+
+## R44：遗迹内的生命格/能量格祭台
+
+504 JUnit、205 GameTest（新增 `flow.ruins_hold_claimable_cell_pedestals`：三种遗迹按不同旋转放置，祭台存在、类型正确、脚下实心、上方是空气；同一玩家只能领一次，换一名玩家仍可领取）。

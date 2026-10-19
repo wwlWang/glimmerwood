@@ -112,5 +112,15 @@
       "action": "blade",
       "count": 1
     }
+  ],
+  "cells": [
+    {
+      "position": [
+        8,
+        8,
+        25
+      ],
+      "kind": "life"
+    }
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "orimod:block/energy_cell_pedestal"
+    }
+  }
+}

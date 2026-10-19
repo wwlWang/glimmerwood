@@ -55,6 +55,7 @@ public final class SurvivalFlowGameTests {
         add(tests, "recipes_unlock_from_vanilla_materials", SurvivalFlowGameTests::recipes);
         add(tests, "fresh_easy_world_to_all_ruins", h -> flow(h, Difficulty.EASY));
         add(tests, "fresh_peaceful_world_to_all_ruins", h -> flow(h, Difficulty.PEACEFUL));
+        add(tests, "ruins_hold_claimable_cell_pedestals", SurvivalFlowGameTests::cellPedestals);
         return tests;
     }
 
@@ -208,6 +209,33 @@ public final class SurvivalFlowGameTests {
         entity.setNoPickUpDelay(); h.getLevel().addFreshEntity(entity);
         entity.playerTouch(player);
         h.assertTrue(entity.isRemoved(), "Spirit Light item was not absorbed");
+    }
+
+    /** R44: every ruin carries a cell pedestal on solid ground; each player may take its cell once. */
+    private static void cellPedestals(GameTestHelper h) {
+        var rotations = Rotation.values();
+        for (int i = 0; i < RuinKind.values().length; i++) {
+            var kind = RuinKind.values()[i];
+            var placement = place(h, kind, rotations[(i + 1) % rotations.length]);
+            try {
+                h.assertTrue(!kind.layout().cells().isEmpty(), kind.id + " has no cell spot");
+                for (var cell : kind.layout().cells()) {
+                    var pos = placement.block(cell.position());
+                    var state = h.getLevel().getBlockState(pos);
+                    h.assertTrue(state.getBlock() instanceof cn.wwl.orimod.block.CellPedestalBlock pedestal && pedestal.kind == cell.kind(), kind.id + " pedestal missing at " + pos);
+                    h.assertTrue(h.getLevel().getBlockState(pos.below()).isFaceSturdy(h.getLevel(), pos.below(), net.minecraft.core.Direction.UP), kind.id + " pedestal floats");
+                    h.assertTrue(h.getLevel().getBlockState(pos.above()).isAir(), kind.id + " pedestal is buried");
+                    var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+                    var pedestal = (cn.wwl.orimod.block.CellPedestalBlock) state.getBlock();
+                    var item = cell.kind() == cn.wwl.orimod.progression.SpiritCells.Kind.LIFE ? cn.wwl.orimod.item.OriItems.LIFE_CELL.get() : cn.wwl.orimod.item.OriItems.ENERGY_CELL.get();
+                    h.assertTrue(pedestal.claim(player, pos), kind.id + " cell not given");
+                    h.assertTrue(player.getInventory().countItem(item) == 1, kind.id + " cell item missing");
+                    h.assertTrue(!pedestal.claim(player, pos) && player.getInventory().countItem(item) == 1, kind.id + " cell given twice");
+                    h.assertTrue(pedestal.claim(cn.wwl.orimod.gametest.Fixtures.player(h), pos), kind.id + " second player got nothing");
+                }
+            } finally { clear(h, placement, kind); }
+        }
+        h.succeed();
     }
 
     private static RuinPlacement place(GameTestHelper h, RuinKind kind, Rotation rotation) {

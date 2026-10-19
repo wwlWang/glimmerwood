@@ -18,6 +18,13 @@ public final class OriBlocks {
     /** R40: glowing updraft vent that lifts gliding players. */
     public static final DeferredBlock<UpdraftBlock> UPDRAFT = BLOCKS.register("updraft", () -> new UpdraftBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noOcclusion().lightLevel(state -> 8).sound(SoundType.AMETHYST)));
+    /** R44: Life / Energy Cell pedestals placed inside ruins. */
+    public static final DeferredBlock<CellPedestalBlock> LIFE_CELL_PEDESTAL = pedestal(cn.wwl.orimod.progression.SpiritCells.Kind.LIFE);
+    public static final DeferredBlock<CellPedestalBlock> ENERGY_CELL_PEDESTAL = pedestal(cn.wwl.orimod.progression.SpiritCells.Kind.ENERGY);
+    private static DeferredBlock<CellPedestalBlock> pedestal(cn.wwl.orimod.progression.SpiritCells.Kind kind) {
+        return BLOCKS.register(kind.name().toLowerCase(java.util.Locale.ROOT) + "_cell_pedestal", () -> new CellPedestalBlock(kind,
+                BlockBehaviour.Properties.of().strength(3, 12).noOcclusion().lightLevel(state -> 11).sound(SoundType.AMETHYST)));
+    }
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);

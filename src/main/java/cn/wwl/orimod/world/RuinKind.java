@@ -46,10 +46,16 @@ public enum RuinKind {
                 var box = value.getAsJsonObject();
                 clearances.add(new Clearance(BlockPos.containing(vector(box.getAsJsonArray("from"))), BlockPos.containing(vector(box.getAsJsonArray("to")))));
             }
+            var cells = new ArrayList<Cell>();
+            if (root.has("cells")) for (var value : root.getAsJsonArray("cells")) {
+                var cell = value.getAsJsonObject();
+                cells.add(new Cell(BlockPos.containing(vector(cell.getAsJsonArray("position"))),
+                        cn.wwl.orimod.progression.SpiritCells.Kind.valueOf(cell.get("kind").getAsString().toUpperCase(java.util.Locale.ROOT))));
+            }
             layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
-                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances));
+                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells));
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }
@@ -58,5 +64,7 @@ public enum RuinKind {
     public record Anchor(BlockPos position, ResourceLocation block) {}
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
-                         List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances) {}
+                         List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells) {}
+    /** R44: a Life / Energy Cell pedestal spot (template-local, standing on solid ground). */
+    public record Cell(BlockPos position, cn.wwl.orimod.progression.SpiritCells.Kind kind) {}
 }
