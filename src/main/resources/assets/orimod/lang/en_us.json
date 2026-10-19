@@ -194,5 +194,14 @@
   "orimod.quality.detailed": "Detailed",
   "orimod.camera.first_person": "First person",
   "orimod.camera.third_person_back": "Third person (behind)",
-  "orimod.camera.third_person_front": "Third person (front)"
+  "orimod.camera.third_person_front": "Third person (front)",
+  "key.orimod.soul_link": "Soul Link (save here)",
+  "message.orimod.soul_link.created": "Soul Link created: you will return here",
+  "message.orimod.soul_link.returned": "Returned to your Soul Link",
+  "message.orimod.soul_link.broken": "Your Soul Link was blocked and has faded",
+  "message.orimod.soul_link.not_spirit": "Soul Link needs Spirit Form",
+  "message.orimod.soul_link.challenge": "Soul Link is unavailable during a trial",
+  "message.orimod.soul_link.unstable": "Stand on solid ground to create a Soul Link",
+  "message.orimod.soul_link.cooldown": "Soul Link is recovering",
+  "message.orimod.soul_link.energy": "Not enough energy for a Soul Link (25)"
 }

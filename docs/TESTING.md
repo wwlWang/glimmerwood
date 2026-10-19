@@ -180,3 +180,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R33：Bash 反弹投射物
 
 471 JUnit（`BashRedirectTest` 速度下限/增益/上限）、186 GameTest（新增飞行箭反弹归属与速度、插地箭不改归属）。
+
+## R34：灵魂链接
+
+474 JUnit（`SoulLinkTest` 拒绝原因与安全条件）、189 GameTest（新增：建立链接扣能量并存储、冷却；人形或能量不足时拒绝且不扣能量；头顶被堵的链接不安全）。复活回链接的实机检查见后续客户端验证。

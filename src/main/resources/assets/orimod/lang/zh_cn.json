@@ -194,5 +194,14 @@
   "orimod.quality.detailed": "精致",
   "orimod.camera.first_person": "第一人称",
   "orimod.camera.third_person_back": "第三人称（背后）",
-  "orimod.camera.third_person_front": "第三人称（正面）"
+  "orimod.camera.third_person_front": "第三人称（正面）",
+  "key.orimod.soul_link": "灵魂链接（在此存档）",
+  "message.orimod.soul_link.created": "已建立灵魂链接：死亡后将在此复活",
+  "message.orimod.soul_link.returned": "已回到灵魂链接",
+  "message.orimod.soul_link.broken": "灵魂链接被阻挡，已消散",
+  "message.orimod.soul_link.not_spirit": "灵魂链接需要精灵形态",
+  "message.orimod.soul_link.challenge": "挑战中不能建立灵魂链接",
+  "message.orimod.soul_link.unstable": "需站在稳固地面上才能建立灵魂链接",
+  "message.orimod.soul_link.cooldown": "灵魂链接正在恢复",
+  "message.orimod.soul_link.energy": "能量不足，灵魂链接需要 25"
 }

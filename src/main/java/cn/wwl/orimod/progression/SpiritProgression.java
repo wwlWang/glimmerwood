@@ -37,6 +37,7 @@ public final class SpiritProgression {
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
+            case "soul_link" -> SoulLink.create(player);
             case "locate" -> cn.wwl.orimod.world.RuinLocator.request(player);
             case "exit_challenge" -> cn.wwl.orimod.world.SpiritChallenge.finish(player, "exit", true);
             case "ability" -> {

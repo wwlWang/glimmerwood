@@ -41,6 +41,10 @@ public final class SpiritData {
             AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
 
     private SpiritData() {}
+    /** R34: the player's Soul Link respawn point (kept through death). */
+    public static final Supplier<AttachmentType<java.util.Optional<cn.wwl.orimod.progression.SoulLink.Link>>> SOUL_LINK = TYPES.register("soul_link", () ->
+            AttachmentType.<java.util.Optional<cn.wwl.orimod.progression.SoulLink.Link>>builder(java.util.Optional::empty)
+                    .serialize(cn.wwl.orimod.progression.SoulLink.Link.CODEC.optionalFieldOf("link").codec()).copyOnDeath().build());
     public static void register(IEventBus bus) { TYPES.register(bus); }
     public static boolean isSpirit(Player player) { return player.hasData(FORM) && player.getData(FORM); }
     public static boolean isAwakened(Player player) { return player.hasData(AWAKENED) && player.getData(AWAKENED); }

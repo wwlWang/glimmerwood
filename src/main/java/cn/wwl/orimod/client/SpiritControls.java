@@ -25,6 +25,7 @@ public final class SpiritControls {
     public static final KeyMapping DASH = new KeyMapping("key.orimod.dash", GLFW.GLFW_KEY_C, "key.categories.orimod");
     public static final KeyMapping BASH = new KeyMapping("key.orimod.bash", GLFW.GLFW_KEY_R, "key.categories.orimod");
     public static final KeyMapping PANEL = new KeyMapping("key.orimod.panel", GLFW.GLFW_KEY_G, "key.categories.orimod");
+    public static final KeyMapping SOUL_LINK = new KeyMapping("key.orimod.soul_link", GLFW.GLFW_KEY_B, "key.categories.orimod");
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
     private static CameraType spiritCamera = CameraType.THIRD_PERSON_BACK;
     private static boolean wasSpirit;
@@ -35,7 +36,7 @@ public final class SpiritControls {
     private static int inputSequence;
     private SpiritControls() {}
 
-    public static void registerKeys(RegisterKeyMappingsEvent event) { event.register(TOGGLE); event.register(DASH); event.register(BASH); event.register(PANEL); }
+    public static void registerKeys(RegisterKeyMappingsEvent event) { event.register(TOGGLE); event.register(DASH); event.register(BASH); event.register(PANEL); event.register(SOUL_LINK); }
 
     public static void movement(MovementInputUpdateEvent event) {
         var mc = Minecraft.getInstance();
@@ -175,6 +176,10 @@ public final class SpiritControls {
         while (BASH.consumeClick()) { }
         while (PANEL.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive()) mc.setScreen(new SpiritScreen(!SpiritData.isAwakened(mc.player)));
+        }
+        while (SOUL_LINK.consumeClick()) {
+            if (mc.player != null && mc.screen == null && mc.isWindowActive())
+                PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("soul_link", ""));
         }
         while (TOGGLE.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive()) {
