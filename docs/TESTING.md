@@ -196,3 +196,5 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R37：同伴灵焰
 
 486 JUnit（`SpiritFlameTest` 开火条件与调参；效果定义 15 个、编号 0–14、通道版本 4）、194 GameTest（新增：不打被动生物、锁定最近僵尸并造成 2 伤害、隔墙不打）。
+
+`scripts/verify-ori-parity.py parity-r37-v001`（云端客户端）：灵魂链接复活回位 True；灵焰对僵尸 18→4。
