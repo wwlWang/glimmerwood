@@ -314,3 +314,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R66：灵沙小洞奖励
 
 `flow.spirit_sand_lets_only_burrowers_through` 断言小洞里有生命格台；`flow.map_stone_surveys_the_cave_ruin` 改为勘察到 3 个灵格。
+
+## R67：灵弧齐射（Spirit Arc 变体）
+
+533 JUnit（新增 `ArcVolleyTest`：只有潜行、蓄满且能量足够才触发；三个方向都是单位向量，左右对称，夹角 9°）。

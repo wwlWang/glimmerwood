@@ -288,5 +288,10 @@
   "message.orimod.map_stone.survey": "Map stone: %s cells and %s keystones remain here; %s. The guide now points to the next ruin.",
   "message.orimod.map_stone.altar": "a gloom altar sleeps here",
   "message.orimod.map_stone.no_altar": "no altar",
-  "block.orimod.spirit_sand": "Spirit Sand"
+  "block.orimod.spirit_sand": "Spirit Sand",
+  "item.orimod.map_fragment": "Map Fragment",
+  "message.orimod.map_fragment.dormant": "The fragment's ink stays faint until your spirit core awakens",
+  "message.orimod.map_fragment.read": "The map fragment reveals the way: +%s Spirit Light, the guide points to the nearest ruin.",
+  "tooltip.orimod.map_fragment": "Use to point the ruin guide at the nearest ruin. Found at map stones and on Gloom Hawks.",
+  "tooltip.orimod.bow_volley": "Sneak on a full charge: Spirit Arc volley, three arrows for 20 energy"
 }

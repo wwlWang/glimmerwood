@@ -288,5 +288,10 @@
   "message.orimod.map_stone.survey": "地图石：此处还有 %s 个灵格、%s 枚钥石；%s。指引已指向下一处遗迹。",
   "message.orimod.map_stone.altar": "这里沉睡着一座腐光祭坛",
   "message.orimod.map_stone.no_altar": "没有祭坛",
-  "block.orimod.spirit_sand": "灵沙"
+  "block.orimod.spirit_sand": "灵沙",
+  "item.orimod.map_fragment": "地图碎片",
+  "message.orimod.map_fragment.dormant": "唤醒灵核之前，碎片上的墨迹看不清",
+  "message.orimod.map_fragment.read": "地图碎片指明了方向：+%s 灵光，指引指向最近的遗迹。",
+  "tooltip.orimod.map_fragment": "使用后让遗迹指引指向最近的遗迹。地图石首次激活和腐光鸦掉落。",
+  "tooltip.orimod.bow_volley": "潜行并蓄满：灵弧齐射，三支箭，消耗 20 能量"
 }

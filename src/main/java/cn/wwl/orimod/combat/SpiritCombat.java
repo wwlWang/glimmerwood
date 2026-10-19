@@ -94,16 +94,23 @@ public final class SpiritCombat {
         publish(player);
         if (!valid) return;
         float power = (float)charge / BOW_FULL_CHARGE;
-        var arrow = new Arrow(player.level(), player, new ItemStack(Items.ARROW), stack.copy());
-        arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
-        arrow.setBaseDamage(2.5);
-        arrow.setCritArrow(false); // Keep damage deterministic: no random full-charge critical bonus.
-        // Exclude shooter momentum so the reticle and the shot have the same direction during movement.
-        Vec3 direction = player.getLookAngle();
-        arrow.shoot(direction.x, direction.y, direction.z, 1.2f + 1.8f * power, 0);
-        arrow.addTag("orimod_spirit_arrow");
-        if (!player.serverLevel().addFreshEntity(arrow)) return;
-        SpiritProgression.spendEnergy(player, BOW_COST);
+        // R67: a full sneaking charge fans three arrows (Spirit Arc volley).
+        boolean volley = ArcVolley.applies(charge, player.isShiftKeyDown(), SpiritProgression.energy(player));
+        var directions = volley ? ArcVolley.directions(player.getLookAngle()) : java.util.List.of(player.getLookAngle());
+        int fired = 0;
+        for (Vec3 direction : directions) {
+            var arrow = new Arrow(player.level(), player, new ItemStack(Items.ARROW), stack.copy());
+            arrow.pickup = AbstractArrow.Pickup.DISALLOWED;
+            arrow.setBaseDamage(2.5);
+            arrow.setCritArrow(false); // Keep damage deterministic: no random full-charge critical bonus.
+            // Exclude shooter momentum so the reticle and the shot have the same direction during movement.
+            arrow.shoot(direction.x, direction.y, direction.z, 1.2f + 1.8f * power, 0);
+            arrow.addTag("orimod_spirit_arrow");
+            if (volley) arrow.addTag("orimod_arc_volley");
+            if (player.serverLevel().addFreshEntity(arrow)) fired++;
+        }
+        if (fired == 0) return;
+        SpiritProgression.spendEnergy(player, volley ? ArcVolley.COST : BOW_COST);
         s.bowShots++; s.nextBowAt = player.level().getGameTime() + 6;
         player.getCooldowns().addCooldown(OriItems.SPIRIT_BOW.get(), 6);
         stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(player.getUsedItemHand()));

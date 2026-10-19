@@ -16,6 +16,7 @@ public final class SpiritBowItem extends BowItem {
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<net.minecraft.network.chat.Component> lines, net.minecraft.world.item.TooltipFlag flag) {
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.bow_energy").withStyle(net.minecraft.ChatFormatting.AQUA));
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.bow_charge").withStyle(net.minecraft.ChatFormatting.GRAY));
+        lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.bow_volley").withStyle(net.minecraft.ChatFormatting.AQUA));
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.spirit_required").withStyle(net.minecraft.ChatFormatting.GRAY));
     }
 
