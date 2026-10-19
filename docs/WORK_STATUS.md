@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 23:09（UTC+8）发布包重建（R93，f4bb89d569）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-f4bb89d569.jar`，sha256 `757f378e42ea68522a909ddf10a23e2675a8d9f28bdf199d5614130474a056a3`；同目录有 `gemrender-0.1.17.jar`。
+
 2026-10-19 23:10（UTC+8）云端 ori-r93（整轮动画复验）：用户要求「提交下、确认多段灵动骨骼、全部动画自行复查、对照两代原作视频」。R92 已在 origin/main（`de6212f` / `ori-r92`，后续 jar 记录提交 `c9ec2b9`）确认干净。审计笔记见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md)（JXVD 地面/跳跃/墙面、RPS WotW 动画技术、Digital Foundry）。
 - **骨骼核实：** `SpringChain` + `SpiritSecondary` 仍驱动耳 3+3、触须 3+3、尾 5，共 10 链 / **34 角**；客户端 `verify-r93` 报告 `bones=34`，转向尾尖滞后且贴满 ±0.58 限幅，落地耳尖贴满 ±0.72。
 - **加强跟随：** 尖端更软、增益/限幅/气流/落地踢更大（见 FeelTuning `*_CHAIN_*`、`SEC_*`）；idle 摆动 0.18→0.28。
