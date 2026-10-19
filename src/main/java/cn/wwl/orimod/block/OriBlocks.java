@@ -58,6 +58,10 @@ public final class OriBlocks {
         OriItems.ITEMS.registerSimpleBlockItem(BASH_ANCHOR);
         OriItems.ITEMS.registerSimpleBlockItem(GRAPPLE_FLOWER);
         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
+        // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
+        for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
+                GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE))
+            OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }
 }

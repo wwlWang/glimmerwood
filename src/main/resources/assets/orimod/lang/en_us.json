@@ -299,5 +299,17 @@
   "message.orimod.matriarch.awake": "The Gloom Matriarch is already hunting",
   "message.orimod.matriarch.woke": "The Gloom Matriarch descends! Dash from the red ring, Bash her feathers back",
   "message.orimod.matriarch.victory": "The Gloom Matriarch falls: +100 Spirit Light, a life and an energy cell",
-  "message.orimod.matriarch.again": "The Gloom Matriarch falls again"
+  "message.orimod.matriarch.again": "The Gloom Matriarch falls again",
+  "itemGroup.orimod": "OriMod",
+  "item.orimod.gloom_spitter_spawn_egg": "Gloom Spitter Spawn Egg",
+  "item.orimod.gloom_hawk_spawn_egg": "Gloom Hawk Spawn Egg",
+  "item.orimod.gloom_heart_spawn_egg": "Gloom Heart Spawn Egg",
+  "item.orimod.gloom_matriarch_spawn_egg": "Gloom Matriarch Spawn Egg",
+  "item.orimod.practice_target_spawn_egg": "Practice Target Spawn Egg",
+  "commands.orimod.unknown": "Unknown value: %s",
+  "commands.orimod.done": "/orimod %s: applied to %s player(s)",
+  "commands.orimod.god.on": "OriMod god mode on",
+  "commands.orimod.god.off": "OriMod god mode off",
+  "commands.orimod.spawned": "Spawned %s",
+  "commands.orimod.status": "%s: awakened=%s spirit=%s abilities=%s light=%s energy=%s life cells=%s energy cells=%s"
 }

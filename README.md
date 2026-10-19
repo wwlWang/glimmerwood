@@ -38,6 +38,26 @@ Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopba
 
 R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；Windows 官方启动器与真实 GPU 仍待本机确认。
 
+### 创造模式与调试命令（R83）
+
+- 创造模式物品栏有“OriMod 精灵”标签页，包含本模组全部物品：武器、灵核、生命格、能量格、钥石、地图碎片、遗迹方块（祭台、灵泉、钥石门、地图石、灵沙、腐光水、上升气流等），以及敌人和首领的刷怪蛋。
+- `/orimod`（简写 `/ori`）需要权限等级 2：服务器管理员；单人世界需在创建时打开“允许作弊”，或者“对局域网开放 → 允许作弊”。每条命令都可以在末尾加 `<玩家>` 指定作用对象。
+
+| 命令 | 作用 |
+| --- | --- |
+| `/ori awaken` | 觉醒（相当于使用灵核） |
+| `/ori form on\|off\|toggle` | 切换精灵形态（没有觉醒时会自动觉醒） |
+| `/ori unlock all` / `/ori unlock <能力>` | 解锁全部能力与碎片 / 单个能力（可 Tab 补全） |
+| `/ori giveall` | 给予全部 OriMod 物品 |
+| `/ori light <数量>` | 增加灵光 |
+| `/ori energy fill` / `/ori energy set <n>` | 补满能量 / 设定能量 |
+| `/ori cells life\|energy <0-10>` | 设定生命格 / 能量格数量 |
+| `/ori locate forest_spring\|creek_ruins\|cave_altar` | 查找最近的遗迹（与原版 /locate 一样可以点击传送） |
+| `/ori spawn spitter\|hawk\|heart\|matriarch\|target` | 在前方生成敌人、首领或练习靶 |
+| `/ori god` | 开关无敌 |
+| `/ori status` | 显示觉醒、形态、能力、灵光、能量、灵格 |
+| `/ori reset` | 清空 OriMod 进度（能力、灵光、灵格，回到未觉醒） |
+
 ## 开发与检查
 
 | 项目 | 固定版本 |

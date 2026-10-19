@@ -23,5 +23,27 @@ public final class OriItems {
     public static final DeferredItem<Item> KEYSTONE = ITEMS.register("keystone", () -> new Item(new Item.Properties().stacksTo(16)));
     /** R60: Spirit Spear. */
     public static final DeferredItem<SpiritSpearItem> SPIRIT_SPEAR = ITEMS.register("spirit_spear", () -> new SpiritSpearItem(new Item.Properties().stacksTo(1)));
+    /** R83: spawn eggs for the original enemies and bosses (vanilla template egg, our colours). */
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_SPITTER_SPAWN_EGG = egg("gloom_spitter", cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER, 0x2A1238, 0xB060FF);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HAWK_SPAWN_EGG = egg("gloom_hawk", cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK, 0x1C1430, 0x8A3AD8);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HEART_SPAWN_EGG = egg("gloom_heart", cn.wwl.orimod.entity.OriMobs.GLOOM_HEART, 0x3A0A2C, 0xFF3A8A);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_MATRIARCH_SPAWN_EGG = egg("gloom_matriarch", cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH, 0x141A3A, 0x5A7BD8);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> PRACTICE_TARGET_SPAWN_EGG = egg("practice_target", cn.wwl.orimod.world.OriEntities.PRACTICE_TARGET, 0xAAB8C4, 0x9FE8FF);
+
+    private static <T extends net.minecraft.world.entity.Mob> DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> egg(String name,
+            java.util.function.Supplier<net.minecraft.world.entity.EntityType<T>> type, int base, int spots) {
+        return ITEMS.register(name + "_spawn_egg", () -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(type, base, spots, new Item.Properties()));
+    }
+
+    /** R83: the OriMod creative tab lists every item this mod registers, in registration order. */
+    public static final DeferredRegister<net.minecraft.world.item.CreativeModeTab> TABS = DeferredRegister.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, OriMod.MOD_ID);
+    public static final java.util.function.Supplier<net.minecraft.world.item.CreativeModeTab> TAB = TABS.register("orimod", () -> net.minecraft.world.item.CreativeModeTab.builder()
+            .title(net.minecraft.network.chat.Component.translatable("itemGroup.orimod"))
+            .icon(() -> new net.minecraft.world.item.ItemStack(SPIRIT_CORE.get()))
+            .displayItems((parameters, output) -> { for (var entry : ITEMS.getEntries()) output.accept(entry.get()); })
+            .build());
+
+    public static void register(net.neoforged.bus.api.IEventBus bus) { ITEMS.register(bus); TABS.register(bus); }
+
     private OriItems() {}
 }

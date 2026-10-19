@@ -382,3 +382,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 
 - `ModMetadataTest`：NeoForge 范围必须是 `[neo_version,21.2)`，模板不能再写回精确版本，GemRender 和 Flywheel 仍锁定，生成的 mods.toml 是开放区间。
 - `scripts/build-release.sh`：jar 里的 mods.toml 必须带这个范围，否则构建失败。
+
+## ori-r83：创造模式标签页与调试命令
+
+- `ContentGameTests`：创造标签页包含全部 orimod 物品；每个物品都有 en_us/zh_cn 名称和物品模型；`/orimod` 在权限 0 时不可见，在权限 2 时 unlock、cells、form、energy、light、giveall、reset 都生效，未知的生物会被拒绝。

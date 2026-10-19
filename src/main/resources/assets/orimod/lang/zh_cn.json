@@ -299,5 +299,17 @@
   "message.orimod.matriarch.awake": "腐光翼母正在盘旋",
   "message.orimod.matriarch.woke": "腐光翼母降临！冲刺躲开红圈，用 Bash 把羽刃打回去",
   "message.orimod.matriarch.victory": "腐光翼母倒下了：+100 灵光，获得生命格与能量格",
-  "message.orimod.matriarch.again": "腐光翼母再次倒下"
+  "message.orimod.matriarch.again": "腐光翼母再次倒下",
+  "itemGroup.orimod": "OriMod 精灵",
+  "item.orimod.gloom_spitter_spawn_egg": "腐光喷吐者刷怪蛋",
+  "item.orimod.gloom_hawk_spawn_egg": "腐光鸦刷怪蛋",
+  "item.orimod.gloom_heart_spawn_egg": "腐光之心刷怪蛋",
+  "item.orimod.gloom_matriarch_spawn_egg": "腐光翼母刷怪蛋",
+  "item.orimod.practice_target_spawn_egg": "练习靶刷怪蛋",
+  "commands.orimod.unknown": "未知的值：%s",
+  "commands.orimod.done": "/orimod %s：已应用到 %s 名玩家",
+  "commands.orimod.god.on": "OriMod 无敌模式：开",
+  "commands.orimod.god.off": "OriMod 无敌模式：关",
+  "commands.orimod.spawned": "已生成 %s",
+  "commands.orimod.status": "%s：已觉醒=%s 精灵形态=%s 能力=%s 灵光=%s 能量=%s 生命格=%s 能量格=%s"
 }

@@ -18,7 +18,7 @@ public final class OriMod {
         cn.wwl.orimod.world.OriEntities.register(modEventBus);
         cn.wwl.orimod.fx.OriParticles.register(modEventBus);
         cn.wwl.orimod.entity.OriMobs.register(modEventBus);
-        cn.wwl.orimod.item.OriItems.ITEMS.register(modEventBus);
+        cn.wwl.orimod.item.OriItems.register(modEventBus);
         cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopping);
@@ -64,6 +64,7 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::tickTarget);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.command.OriCommands::onRegisterCommands);
         modEventBus.addListener(this::onCommonSetup);
     }
 

@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 21:42（UTC+8）云端 ori-r83（创造模式标签页与调试命令）：之前物品虽然已注册，但没有加进任何创造标签页，大部分遗迹方块也没有物品形式。现在新增“OriMod 精灵”创造标签页，列出全部物品；12 个遗迹方块有了物品形式；新增 5 个刷怪蛋（喷吐者、腐光鸦、腐光之心、翼母、练习靶）。新增 `/orimod`（`/ori`）命令，权限 2，包含 awaken、form、unlock、giveall、light、energy、cells、locate、spawn、god、status、reset。ContentGameTests 有 3 项：标签页包含全部物品；中英文名称和物品模型齐全；命令需要权限并且实际生效。JUnit 558 / GameTest 233。
+
 2026-10-19 21:35（UTC+8）发布包重建（R82，8a3716782b）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-8a3716782b.jar`，sha256 `67ee5db8382eee7e2cdb55cc98fc9998d8727504755d456461826128d23fd189`；同目录有 `gemrender-0.1.17.jar`。
 
 2026-10-19 21:35（UTC+8）云端 ori-r82（NeoForge 版本范围放开）：mods.toml 的 NeoForge 依赖从精确的 `[21.1.248]` 改成 `[21.1.248,21.2)`（gradle.properties 的 neo_version_range），较新的 21.1.x NeoForge 也能加载；Minecraft 仍为 `[1.21.1]`，GemRender `[0.1.17]` 和 Flywheel `[1.0.6]` 仍锁定。发行脚本会检查 jar 里的范围不是精确值，并把 gemrender-0.1.17.jar 一起放进发行目录。ModMetadataTest 有 3 项测试。JUnit 558 / GameTest 230。
