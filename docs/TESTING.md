@@ -290,3 +290,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R60：灵矛 Spirit Spear
 
 224 GameTest（新增 `parity.spirit_spear_pierces_three`：投出成功、冷却生效、对 4 只排队的僵尸只伤 3 只、同一目标不重复、第 3 次穿透后消失、未学会时拒绝）。
+
+## R61：空中威胁：腐光鸦
+
+225 GameTest（新增 `parity.gloom_hawk_telegraphs_then_dives`：是 Enemy；预警 20 tick 内不俯冲；预警结束转入俯冲，速度朝向标记点下方；俯冲接触造成伤害）。

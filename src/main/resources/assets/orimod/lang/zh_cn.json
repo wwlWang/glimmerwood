@@ -281,5 +281,6 @@
   "ability.orimod.spear.description": "唤醒灵矛：投出高速光矛，最多穿透 3 名敌人，各造成 7 伤害（12 灵能）。",
   "message.orimod.spear.not_spirit": "灵矛需要精灵形态",
   "message.orimod.spear.locked": "先在能力面板学会灵矛",
-  "message.orimod.spear.energy": "灵能不足，无法投出灵矛（12）"
+  "message.orimod.spear.energy": "灵能不足，无法投出灵矛（12）",
+  "entity.orimod.gloom_hawk": "腐光鸦"
 }

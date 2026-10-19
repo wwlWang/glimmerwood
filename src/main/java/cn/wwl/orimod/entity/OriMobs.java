@@ -25,10 +25,16 @@ public final class OriMobs {
     public static final Supplier<EntityType<GloomHeart>> GLOOM_HEART = TYPES.register("gloom_heart", () -> EntityType.Builder
             .of(GloomHeart::new, MobCategory.MONSTER).sized(2.4f, 2.4f).fireImmune().clientTrackingRange(10).build("orimod:gloom_heart"));
 
+    /** R61: original aerial threat. */
+    public static final Supplier<EntityType<GloomHawk>> GLOOM_HAWK = TYPES.register("gloom_hawk", () -> EntityType.Builder
+            .of(GloomHawk::new, MobCategory.MONSTER).sized(1.2f, .6f).clientTrackingRange(10).build("orimod:gloom_hawk"));
+
     public static void register(IEventBus bus) {
         TYPES.register(bus);
-        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); });
+        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); event.put(GLOOM_HAWK.get(), GloomHawk.attributes().build()); });
         bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_SPITTER.get(), SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE));
+        bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_HAWK.get(), SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE));
     }
     private OriMobs() {}

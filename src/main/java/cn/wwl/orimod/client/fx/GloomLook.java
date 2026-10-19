@@ -39,6 +39,20 @@ public final class GloomLook {
         } catch (Throwable ignored) { }
     }
 
+    /** R61: hawk wake; red sparks while it telegraphs a dive, a dark trail while diving. */
+    public static void hawk(cn.wwl.orimod.entity.GloomHawk e) {
+        var level = e.level(); var r = level.random;
+        try {
+            if (e.state() == cn.wwl.orimod.entity.GloomHawk.TELEGRAPH)
+                for (int i = 0; i < 3; i++) level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_SPARK.get(), 0xFF3040, .4f, 8), true,
+                        e.getX() + (r.nextDouble() - .5) * 2, e.getY() + .4 + (r.nextDouble() - .5), e.getZ() + (r.nextDouble() - .5) * 2, 0, 0, 0);
+            else if (e.state() == cn.wwl.orimod.entity.GloomHawk.DIVE)
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0x5A1A6C, .55f, 10), true, e.getX(), e.getY() + .3, e.getZ(), 0, 0, 0);
+            else if (r.nextInt(3) == 0)
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0x8A3AB8, .3f, 10), false, e.getX(), e.getY() + .3, e.getZ(), 0, 0, 0);
+        } catch (Throwable ignored) { }
+    }
+
     public static void shot(Entity e) {
         try {
             e.level().addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xB060FF, .4f, 4), true, e.getX(), e.getY(), e.getZ(), 0, 0, 0);

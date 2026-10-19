@@ -307,6 +307,24 @@ public final class ParityGameTests {
                 h.assertTrue("locked".equals(cn.wwl.orimod.combat.SpiritSpear.refusal(true, false, 100, 0, 0)), "Locked refusal");
             } finally { zombies.forEach(net.minecraft.world.entity.Entity::discard); }
         });
+        add(tests, "gloom_hawk_telegraphs_then_dives", h -> {
+            var victim = h.spawn(net.minecraft.world.entity.EntityType.VILLAGER, new Vec3(5.5, 2, 5.5)); victim.setNoAi(true);
+            var hawk = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK.get(), new Vec3(5.5, 8, 9.5)); hawk.setNoAi(true);
+            try {
+                h.assertTrue(hawk instanceof net.minecraft.world.entity.monster.Enemy, "Hawk is not an enemy");
+                hawk.telegraph(victim);
+                h.assertValueEqual(hawk.state(), cn.wwl.orimod.entity.GloomHawk.TELEGRAPH, "State after telegraph");
+                for (int i = 1; i < cn.wwl.orimod.entity.GloomHawk.TELEGRAPH_TICKS; i++) hawk.step();
+                h.assertValueEqual(hawk.state(), cn.wwl.orimod.entity.GloomHawk.TELEGRAPH, "Dived before the telegraph ended");
+                hawk.step();
+                h.assertValueEqual(hawk.state(), cn.wwl.orimod.entity.GloomHawk.DIVE, "No dive after the telegraph");
+                hawk.step();
+                var v = hawk.getDeltaMovement();
+                h.assertTrue(v.y < 0 && v.z < 0, "Dive not aimed at the mark: " + v);
+                float hp = victim.getHealth();
+                h.assertTrue(hawk.strike(victim) && victim.getHealth() < hp, "Dive contact did not hurt");
+            } finally { hawk.discard(); victim.discard(); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

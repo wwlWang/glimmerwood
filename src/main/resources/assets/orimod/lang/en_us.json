@@ -281,5 +281,6 @@
   "ability.orimod.spear.description": "Wake the Spirit Spear: throw a fast spear of light that pierces up to three enemies for 7 damage each (12 energy).",
   "message.orimod.spear.not_spirit": "The Spirit Spear needs Spirit Form",
   "message.orimod.spear.locked": "Learn Spirit Spear in the ability panel first",
-  "message.orimod.spear.energy": "Not enough energy for the Spirit Spear (12)"
+  "message.orimod.spear.energy": "Not enough energy for the Spirit Spear (12)",
+  "entity.orimod.gloom_hawk": "Gloom Hawk"
 }
