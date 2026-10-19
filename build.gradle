@@ -104,6 +104,7 @@ neoForge {
             loadedMods = [mods.orimod, mods.orimod_devtools]
             gameDirectory = project.file('run-devtools')
             systemProperty 'orimod.devtools.enabled', 'true'
+            systemProperty 'orimod.debugPose', System.getenv('ORIMOD_DEBUG_POSE') ?: 'false'
             jvmArgument '-Xmx4G'
             programArguments.addAll '--width', '1920', '--height', '1080'
         }

@@ -229,6 +229,7 @@ final class SpiritSecondary {
 
     void reset() {
         for (Channel c : channels) c.chain.reset();
+        stream = 0; vertical = 1;
         lastVelocity = null; lastYaw = Float.NaN; smoothVelocity.zero(); smoothAccel.zero(); smoothTurn = 0;
         legTuck.reset(0); tuckOverride = Float.NaN;
         java.util.Arrays.fill(gaitQuat, 0); for (int i = 0; i < GAIT_BONES.length; i++) gaitQuat[i * 4 + 3] = 1;
@@ -250,6 +251,14 @@ final class SpiritSecondary {
         earSwingL.chain.kick(k * .6f); earSwingR.chain.kick(k * .6f);
         tailYaw.chain.kick(-k * .8f); feelPitchL.chain.kick(-k * .5f); feelPitchR.chain.kick(-k * .5f);
     }
+
+    private float stream, vertical = 1;
+    /**
+     * R95: medium for the next {@link #step}: {@code stream} (0..2) streams the ears, feelers and tail back along the body
+     * (water, glide airflow); {@code vertical} (0..1) scales how much vertical speed / acceleration reads as a fall or a
+     * take-off (0 while swimming or on elytra, where the body lies along the motion).
+     */
+    void medium(float stream, float vertical) { this.stream = stream; this.vertical = vertical; }
 
     private float tuckOverride = Float.NaN;
     /** R94: mantle: hold the knees tucked to this target (rad) while set; NaN returns control to the fall/land tuck. */
@@ -287,26 +296,26 @@ final class SpiritSecondary {
         float max = FeelTuning.SEC_FORCE_MAX;
         float fa = Math.clamp(forwardAccel / FeelTuning.SEC_ACCEL_UNIT, -max, max);
         float ra = Math.clamp(rightAccel / FeelTuning.SEC_ACCEL_UNIT, -max, max);
-        float va = Math.clamp(smoothAccel.y / FeelTuning.SEC_VERTICAL_ACCEL_UNIT, -max, max);
-        float fall = Math.clamp(-smoothVelocity.y / FeelTuning.SEC_FALL_UNIT, -max, max);
+        float va = Math.clamp(smoothAccel.y / FeelTuning.SEC_VERTICAL_ACCEL_UNIT, -max, max) * vertical;
+        float fall = Math.clamp(-smoothVelocity.y / FeelTuning.SEC_FALL_UNIT, -max, max) * vertical;
         float drag = Math.clamp(Math.abs(forwardSpeed) / 6.4f, 0, 1.4f) * FeelTuning.SEC_DRAG;
         float tw = Math.clamp(smoothTurn / FeelTuning.SEC_TURN_UNIT, -max, max);
         float sway = FeelTuning.SEC_IDLE_SWAY * Math.max(0, 1 - Math.abs(forwardSpeed) / 3f);
         float rate = FeelTuning.SEC_IDLE_RATE;
         // Ears (pointing back and out): falling lifts the tips (air from below), speed streams them down/back, a
         // forward lurch throws them back, upward acceleration (take-off, landing) presses them down.
-        float earLift = fall * .55f - drag * .6f - fa * .5f - va * .75f;
+        float earLift = fall * .55f - drag * .6f - fa * .5f - va * .75f - stream * .55f;
         earLiftL.chain.step(earLift, sway, rate, dt); earLiftR.chain.step(earLift, sway * .8f, rate * 1.13f, dt);
         // Turning and side acceleration swing both ears to the outside of the turn.
         float earSwing = -tw * .9f + ra * .6f;
         earSwingL.chain.step(earSwing, sway * .5f, rate * .7f, dt); earSwingR.chain.step(earSwing, sway * .5f, rate * .77f, dt);
         // Feelers (pointing up): pitch back with forward acceleration/speed, roll with side acceleration.
-        float feelPitch = -fa * .8f - drag * .5f + va * .4f;
+        float feelPitch = -fa * .8f - drag * .5f + va * .4f - stream * .4f;
         feelPitchL.chain.step(feelPitch, sway * .7f, rate * 1.4f, dt); feelPitchR.chain.step(feelPitch, sway * .7f, rate * 1.5f, dt);
         float feelRoll = ra * .9f + tw * .5f;
         feelRollL.chain.step(feelRoll, sway * .4f, rate * 1.2f, dt); feelRollR.chain.step(feelRoll, sway * .4f, rate * 1.3f, dt);
         // Tail (pointing back): rises while falling, droops on take-off, swings opposite the turn and with the stride.
-        float tailUp = fall * .45f - va * .55f + drag * .25f;
+        float tailUp = fall * .45f - va * .55f + drag * .25f + stream * .3f;
         tailLift.chain.step(tailUp, sway * .6f, rate * .8f, dt);
         float stride = grounded ? FeelTuning.SEC_TAIL_GAIT_SWAY * gaitWeight * Mth.sin(gaitPhase * Mth.TWO_PI) : 0;
         tailYaw.chain.step(-tw * 1.1f + ra * .7f + stride, sway * 1.4f, rate * .6f, dt);
@@ -318,6 +327,7 @@ final class SpiritSecondary {
             else
                 legTarget = -Math.min(FeelTuning.LEG_STRETCH_MAX, smoothVelocity.y / FeelTuning.SEC_FALL_UNIT * FeelTuning.LEG_STRETCH);
         }
+        legTarget *= vertical;   // R95: no fall tuck while swimming / on elytra (the pose owns the legs)
         if (Float.isFinite(tuckOverride)) legTarget = tuckOverride;
         legTuck.step(legTarget, dt);
         lastForce = earLift;

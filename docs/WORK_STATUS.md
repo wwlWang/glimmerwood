@@ -1,5 +1,17 @@
 # 当前工作状态
 
+2026-10-20 00:35（UTC+8）云端 ori-r95（姿态覆盖：跑 / 游 / 滑翔+鞘翅 / 手持物）：用户「弄完一起看」，一个 jar 覆盖四项。参考：WotW 游泳冲刺、Kuro 羽毛滑翔、Luma Pools、E3 2019 预告（仅截剪影对照，`shots/r95-ref-*.png`，不打包）。详见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md#r95--pose-overrides-run--swim--glide--elytra--held-items)。
+- **新姿态层：** `SpiritPoseLayer` / `SpiritPoses` 用模型系角度写绝对局部旋转。GemRender 会把 override 平均，所以对被覆盖骨骼把下层（基础、跑、落地跑、空中、overlay）蒙版按 1−占比缩小。
+- **关键修正：** glb 节点链把世界矩阵缩放约 0.08，JOML `getNormalizedRotation` 给出非单位且错误的四元数，导致姿态轴错（前臂弯曲变成扭转）。现先归一化列（`SpiritPoseLayerTest`）。修后游戏内混合结果与目标一致（`-Dorimod.debugPose=true` 时 poseError=0），持火把手高 0.36→0.68 m。
+- **整身俯仰：** 弹簧驱动，绕髋 0.5 m 转。游泳随速度方向（水平 π/2，原地踩水约 1.0）；旋转/鞘翅为 π/2+视角；滑翔 0.42。
+- **跑：** 胸前倾 0.12，前摆腿膝盖额外抬 0.42、折 0.5；前倾更快，次级拖曳 1.15，耳尾更飘。
+- **游：** 基础改 idle（原 swim 片段是狗刨），慢速软划水+小踢腿；水下冲刺（3D 速度 11.5→15 m/s）变成收臂并腿的飞镖姿态，耳尾触须拉直，身体拉长 12%。
+- **滑翔/鞘翅：** 双臂高举成宽 V（对照 Kuro 羽毛），躯干迎风，腿后拖微屈，耳尾随气流。
+- **手持：** 空闲手持物时贴胸抱持（肘折 1.85 rad），握点有柔光；三叉戟蓄力改为过肩持握，不再是原版双手举矛。
+- **客户端实测** `scripts/verify-r95.py r95-after-v004`：status ok。跑姿权重 1.0；游泳/冲刺 dart 1.0，俯仰 1.57；滑翔 0.42；鞘翅 1.83；抱持/投掷 1.0。对比图 `shots/r95-sheet-before.png` / `r95-sheet-after.png`。
+- JUnit **581** / GameTest **236**（新增 swimDart/swimPitch、restRotation 测试）。
+- 未做：仍是程序层叠社区模型片段；三叉戟蓄力朝后上方，不是水平；鞘翅仍显示原版翅膀模型；踩水姿态粗糙；Iris 与真 GPU 帧率未验。
+
 2026-10-19 23:40（UTC+8）发布包重建（R94，c031f1bb96）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-c031f1bb96.jar`，sha256 `fbd3936193f4aae06d92ba9dc980b3ba28677d8d8feeb3b3182111d9b5d72a6c`；同目录有 `gemrender-0.1.17.jar`。
 
 2026-10-19 23:37（UTC+8）云端 ori-r94（R93 延后的动画项一次做完）：用户「修，修啊，别一直问口牙！弄完一起看」。详见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md#r94--deferred-items-done)。

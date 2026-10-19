@@ -42,7 +42,8 @@ public final class FeelTuning {
     public static final float FACING_RATE = 16;           // 1/s: model turns toward its velocity
     public static final float FACING_MIN_SPEED = 1.2f;    // m/s
     // R88: Ori runs low and leaned; R74's ~6 degrees at top speed read as an upright vanilla jog.
-    public static final float LEAN_SPEED = .2f, LEAN_ACCEL = .018f, LEAN_MAX = .38f;    // rad, rad per m/s^2
+    // R95: a touch more forward lean at speed (light athletic run, chest over the knees).
+    public static final float LEAN_SPEED = .24f, LEAN_ACCEL = .018f, LEAN_MAX = .38f;    // rad, rad per m/s^2
     /** R88 air posture: lean with horizontal speed, nose up while rising and diving forward while falling (rad per b/t). */
     public static final float AIR_LEAN_SPEED = .12f, AIR_LEAN_VERTICAL = .35f;
     /** R88: vertical bounce of the run (squash target swing, two per stride) and stretch with vertical speed in the air. */
@@ -70,7 +71,7 @@ public final class FeelTuning {
     /** Forcing normalisers: one "unit" of force is this much body motion (m/s^2, m/s, rad/s). */
     public static final float SEC_ACCEL_UNIT = 20, SEC_VERTICAL_ACCEL_UNIT = 26, SEC_FALL_UNIT = 12, SEC_TURN_UNIT = 6, SEC_FORCE_MAX = 2.0f;
     /** Airflow drag: ears and tail stream back with forward speed (units per m/s / 6.4). */
-    public static final float SEC_DRAG = .9f;
+    public static final float SEC_DRAG = 1.15f;   // R95: ears stream back harder at a run (R93 .9)
     /** Idle travelling sway amplitude (force units) and rate (rad/s); tail also swings with the stride. */
     public static final float SEC_IDLE_SWAY = .28f, SEC_IDLE_RATE = 2.1f, SEC_TAIL_GAIT_SWAY = .75f;
     /** Landing flop and take-off flick (spring velocity impulse, rad/s, scaled by impact). */
@@ -93,8 +94,8 @@ public final class FeelTuning {
     /** Land into run: touchdown above this speed (m/s) keeps the run going and blends a short leg absorb instead. */
     public static final float LAND_RUN_SPEED = 2.2f, LAND_RUN_TIME = .26f, LAND_RUN_BLEND = .7f, LAND_RUN_LEAN_KICK = 2.6f;
     /** Gait knee depth: extra share of the authored leg bend (thigh, knee, ankle) at walk / run / sprint, capped (rad). */
-    public static final float GAIT_GAIN_WALK = .22f, GAIT_GAIN_RUN = .38f, GAIT_GAIN_SPRINT = .18f, GAIT_EXTRA_MAX = .5f;
-    public static final float[] GAIT_BONE_GAIN = {.8f, 1f, .9f};   // thigh, knee, ankle
+    public static final float GAIT_GAIN_WALK = .22f, GAIT_GAIN_RUN = .5f, GAIT_GAIN_SPRINT = .18f, GAIT_EXTRA_MAX = .6f;   // R95 run .38 -> .5
+    public static final float[] GAIT_BONE_GAIN = {1f, 1f, .9f};   // thigh, knee, ankle (R95 thigh .8 -> 1)
     /** Mantle pose: forward pitch over the lip (rad), knee tuck target (rad). */
     public static final float MANTLE_LEAN = .55f, MANTLE_TUCK = .5f;
     /** Weapon swings: torso twist (rad) that coils during the windup and whips through the hit; hit lean kick. */
@@ -105,6 +106,32 @@ public final class FeelTuning {
     public static final float HAMMER_ARCH = .26f, HAMMER_BREATH = .18f, HAMMER_SLAM = .42f;
     /** Spear: ready twist while held (rad), throw whip (rad). */
     public static final float SPEAR_READY_TWIST = .14f, SPEAR_THROW_TWIST = .5f;
+
+    // ---- R95 pose overrides (client/render/SpiritPoses, SpiritPoseLayer) --------------------------------------------
+    /** Run extras on top of the run clip: chest lean (rad), thigh lift and knee fold on each leg's forward swing (rad). */
+    public static final float RUN_CHEST_LEAN = .12f, RUN_KNEE_LIFT = .42f, RUN_KNEE_FOLD = .5f;
+    /** Swim: paddle stroke rate (Hz) floating / cruising; body pitch when floating (rad, 0 = upright, pi/2 = lying along
+     *  the swim direction); 3D speed (m/s) where the water-dash dart tuck starts / is full; drop of the lying body (blocks). */
+    public static final float SWIM_STROKE_FLOAT = .6f, SWIM_STROKE_CRUISE = 1.05f, SWIM_FLOAT_PITCH = 1.0f;
+    public static final float SWIM_CRUISE_FROM = .8f, SWIM_CRUISE_TO = 2.6f, SWIM_DART_FROM = 11.5f, SWIM_DART_TO = 15f, SWIM_DROP = .22f;
+    /** Spirit glide torso tilt into the airflow (rad). Elytra lies along the view like vanilla. */
+    public static final float GLIDE_TILT = .42f;
+    /** Whole-body pitch spring (swim / glide / elytra) and pose fade-in times (s). */
+    public static final float BODY_PITCH_STIFFNESS = 70, BODY_PITCH_DAMPING = 15, POSE_FADE = .18f, HOLD_FADE = .15f;
+
+    /** R95: 0 (floating in place) .. 1 (cruising) from the 3D swim speed in m/s. */
+    public static float swimCruise(float speed) { return smoothstep(SWIM_CRUISE_FROM, SWIM_CRUISE_TO, speed); }
+    /** R95: water-dash dart tuck share from the 3D speed in m/s (a cruise tops out near 11 m/s, a dash bursts to 19). */
+    public static float swimDart(float speed) { return smoothstep(SWIM_DART_FROM, SWIM_DART_TO, speed); }
+    /**
+     * R95: body pitch (rad) for a swimmer moving with velocity (horizontal {@code h}, vertical {@code vy}, m/s): lies along
+     * the motion when cruising ({@code pi/2} level, more nose-down when diving), stands up toward {@link #SWIM_FLOAT_PITCH}
+     * when floating in place.
+     */
+    public static float swimPitch(float h, float vy, float cruise) {
+        float along = (float) (Math.PI / 2 + Math.max(-1.2, Math.min(1.2, Math.atan2(-vy, Math.max(.3f, h)))));
+        return SWIM_FLOAT_PITCH + (along - SWIM_FLOAT_PITCH) * cruise;
+    }
 
     /**
      * R94: remaps a swing's linear progress {@code k} (0..1) so the authored clip anticipates, snaps through the hit and

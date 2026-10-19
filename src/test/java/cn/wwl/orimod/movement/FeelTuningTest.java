@@ -234,4 +234,20 @@ class FeelTuningTest {
         assertEquals(0, landRunWeight(-.01f), 1e-6);
         assertTrue(LAND_RUN_SPEED < TOP_SPEED * 20, "a full run lands into the run");
     }
+
+    // R95: swim pose drivers.
+    @Test void swimDartOnlyOnTheWaterDashBurst() {
+        assertEquals(0, swimDart(11), 1e-6, "a sprint-swim cruise (~11 m/s) is not a dart");
+        assertEquals(1, swimDart(19), 1e-6, "the water dash (~19 m/s) is a full dart");
+        assertEquals(0, swimCruise(0), 1e-6);
+        assertEquals(1, swimCruise(5), 1e-6);
+    }
+
+    @Test void swimPitchLiesAlongTheMotionAndStandsUpWhenFloating() {
+        assertEquals(Math.PI / 2, swimPitch(5, 0, 1), 1e-4, "level cruise lies flat");
+        assertTrue(swimPitch(3, -3, 1) > Math.PI / 2 + .5, "diving tips nose-down");
+        assertTrue(swimPitch(3, 3, 1) < Math.PI / 2 - .5, "rising tips nose-up");
+        assertEquals(SWIM_FLOAT_PITCH, swimPitch(0, 0, 0), 1e-6, "treading stays upright-ish");
+        assertTrue(swimPitch(0, -20, 1) <= Math.PI / 2 + 1.2 + 1e-4, "clamped");
+    }
 }

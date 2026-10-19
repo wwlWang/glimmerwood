@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
     /** Minimum block light on the spirit body (0-15). R92: full (15): Ori is a light source, white at any hour (R88 used 10, which read grey-pink at night). */
     public static final int SELF_LIGHT = 15;
+    /** R95: height (blocks) of the body centre the swim / glide / elytra pitch turns about. */
+    static final float BODY_PIVOT = .5f;
     private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "models/entity/ori.glb");
     private static final Map<UUID, Body> BODIES = new ConcurrentHashMap<>();
     /** R92: when any spirit body last posed; while visuals are live, a spirit never falls back to the humanoid. */
@@ -156,13 +158,17 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
             target.rotationY(-yaw * Mth.DEG_TO_RAD).scale(entity.getScale());
             // R74: lean into acceleration and turns about the hips, squash-stretch on jump/land (volume kept).
             float s = animation.squash(), w = 1 / (float) Math.sqrt(s);
-            target.translate(0, .45f, 0).rotateX(animation.leanPitch()).rotateZ(animation.leanRoll()).translate(0, -.45f, 0).scale(w, s, w);
-            if (entity.isAutoSpinAttack()) {
-                // The swim pose is already horizontal along +Z. Roll about its torso,
-                // at vanilla's 75 degrees per tick, including every fitted attachment.
-                target.translate(0, .35f, 0).rotateX(-entity.getViewXRot(partial) * Mth.DEG_TO_RAD)
-                        .rotateZ((entity.tickCount + partial) * -75f * Mth.DEG_TO_RAD).translate(0, -.35f, 0);
-            } else if (entity.isVisuallySwimming() || entity.isFallFlying()) target.rotateX(-entity.getViewXRot(partial) * Mth.DEG_TO_RAD);
+            target.translate(0, .45f, 0).rotateX(animation.leanPitch()).rotateZ(animation.leanRoll()).translate(0, -.45f, 0);
+            // R95: the whole body pitches about its centre: lies along the swim / elytra direction (the poses are authored
+            // upright), tilts into a spirit glide; riptide spins about the body's long axis at vanilla's 75 degrees per tick.
+            float pitch = animation.bodyPitch();
+            if (Math.abs(pitch) > 1e-3f) {
+                target.translate(0, BODY_PIVOT - animation.bodyDrop(), 0).rotateX(pitch);
+                if (entity.isAutoSpinAttack()) target.rotateY((entity.tickCount + partial) * -75f * Mth.DEG_TO_RAD);
+                target.translate(0, -BODY_PIVOT, 0);
+            }
+            // Squash last so a stretch runs along the body even when it lies flat (the water-dash dart).
+            target.scale(w, s, w);
         }
 
         @Override protected void transform(Matrix4f target, float partial) {

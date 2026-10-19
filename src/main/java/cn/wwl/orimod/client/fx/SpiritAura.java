@@ -28,6 +28,8 @@ public final class SpiritAura {
     public static final int[] BLOOM_COLOR = {0xFFFFFF, 0xE6F3FF, 0xBFE0FF, 0x9CCBFF};
     public static final String[] GLOW_BONES = {"head", "spine", "pelvis", "ear_l_3", "ear_r_3", "ear_l_2", "ear_r_2", "antenna_l_3", "antenna_r_3", "tail_3", "tail_5"};
     public static final float BONE_GLOW_RADIUS = .3f, BONE_GLOW_ALPHA = .2f;
+    /** R95: soft halo around a held tool at the grip (fraction of body height, alpha). */
+    public static final float HELD_GLOW_RADIUS = .42f, HELD_GLOW_ALPHA = .24f;
     /** Day light washes additive glow out; scale the aura up by this much in full daylight (skyDarken 0). */
     public static final float BLOOM_DAY_BOOST = 1.35f;
     /** Light the spirit casts on the ground under it: radius (blocks), peak alpha, and how high it still reaches. */
@@ -59,6 +61,13 @@ public final class SpiritAura {
             if (p == null) continue;
             float r = name.startsWith("ear") || name.startsWith("antenna") || name.startsWith("tail") ? BONE_GLOW_RADIUS : BONE_GLOW_RADIUS * 1.6f;
             SpiritEnergy.billboard(out, pose, p, rotation, h * r, 0xF4FAFF, BONE_GLOW_ALPHA * b * boost);
+        }
+        // R95: a held tool glows softly in the cradling hand (grip_l is the player's right hand).
+        for (var hand : net.minecraft.world.InteractionHand.values()) {
+            if (player.getItemInHand(hand).isEmpty()) continue;
+            boolean right = (hand == net.minecraft.world.InteractionHand.MAIN_HAND) == (player.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT);
+            var p = bone(frame, right ? "grip_l" : "grip_r", at, cam);
+            if (p != null) SpiritEnergy.billboard(out, pose, p, rotation, h * HELD_GLOW_RADIUS, 0xEAF6FF, HELD_GLOW_ALPHA * b * boost);
         }
     }
 

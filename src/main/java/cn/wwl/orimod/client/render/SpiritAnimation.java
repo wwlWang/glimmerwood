@@ -58,6 +58,20 @@ final class SpiritAnimation {
     private float spearSwingAt = -100;
 
     private String baseClipName = "", overlayClipName = "";
+    // R95 pose overrides: swim / glide / elytra body pose, held-item cradle per hand, run extras, whole-body pitch.
+    // cradleRight drives the "_l" bones (the player's right hand: the model faces +Z, -X is its right).
+    private final SpiritPoseLayer bodyPose = new SpiritPoseLayer("ori_pose_body"), cradleRight = new SpiritPoseLayer("ori_pose_hold_right"),
+            cradleLeft = new SpiritPoseLayer("ori_pose_hold_left"), runPose = new SpiritPoseLayer("ori_pose_run");
+    private BlendMask bodyPoseMask, cradleRightMask, cradleLeftMask, runPoseMask;
+    private final cn.wwl.orimod.movement.FeelTuning.Spring bodyPitch = new cn.wwl.orimod.movement.FeelTuning.Spring(0,
+            cn.wwl.orimod.movement.FeelTuning.BODY_PITCH_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.BODY_PITCH_DAMPING);
+    private float swimMix, glideMix, dart, cruise, swimPhase, speed3, cradleWeightRight, cradleWeightLeft, runPoseWeight;
+    private boolean throwing, throwLeft;
+    /** "", "swim", "spin" (riptide), "glide" (spirit glide) or "elytra". */
+    private String family = "";
+    private NodeTable table;
+    private float[] keep;
+    private float bodyShare;
 
     SpiritAnimation(Player player) { this.player = player; }
 
@@ -69,12 +83,23 @@ final class SpiritAnimation {
     float leanPitch() { return leanPitch.value; }
     float leanRoll() { return leanRoll.value; }
     float squash() { return squash.value; }
+    /** R95: whole-body pitch (rad) about the body centre: lie along the swim / elytra direction, tilt into a glide. */
+    float bodyPitch() { return bodyPitch.value; }
+    /** R95: how far the lying body is lowered toward vanilla's 0.6-high swim / elytra box (blocks). */
+    float bodyDrop() { return cn.wwl.orimod.movement.FeelTuning.SWIM_DROP * cn.wwl.orimod.movement.FeelTuning.smoothstep(.6f, 1.4f, bodyPitch.value); }
+    String family() { return family; }
     float speed() { return speed; }
     String baseClip() { return baseClipName; }
     String overlayClip() { return overlayClipName; }
     java.util.Map<String, Object> secondary() {
         var out = new java.util.LinkedHashMap<String, Object>(secondary.diagnostics());
         out.put("landRun", landRunWeight); out.put("mantle", mantling); out.put("twist", twist); out.put("spineArch", spineArch);
+        var pose = new java.util.LinkedHashMap<String, Object>();
+        pose.put("family", family); pose.put("swim", swimMix); pose.put("glide", glideMix); pose.put("dart", dart); pose.put("cruise", cruise);
+        pose.put("bodyPitch", bodyPitch.value); pose.put("cradleRight", cradleWeightRight); pose.put("cradleLeft", cradleWeightLeft);
+        pose.put("throw", throwing ? 1f : 0f); pose.put("run", runPoseWeight); pose.put("speed3", speed3);
+        out.put("pose", pose);
+        if (DEBUG_POSE) { out.put("poseError", new java.util.LinkedHashMap<>(poseError)); }
         return out;
     }
     java.util.List<String> missingClips() { return loaded == null ? java.util.List.of() : SpiritClips.missing(loaded); }
@@ -95,11 +120,15 @@ final class SpiritAnimation {
             wasBow = false; bowReleasedAt = -100;
             itemPoseWeight = 0;
             secondary.reset();
+            speed3 = 0; cradleWeightLeft = cradleWeightRight = 0;
         }
         float dt = Math.clamp(now - lastNow, 0, .1f);
         double distance = position == null ? 0 : at.subtract(position).horizontalDistance();
         float observedSpeed = dt > .00001f ? (float)(distance / dt) : speed;
         if (dt > 0) speed = Mth.lerp(1 - (float)Math.exp(-dt * 18), speed, observedSpeed);
+        // R95: 3D speed for the swim cruise / water-dash dart.
+        float observed3 = dt > .00001f && position != null ? (float) (at.distanceTo(position) / dt) : speed3;
+        if (dt > 0) speed3 = Mth.lerp(1 - (float)Math.exp(-dt * 18), speed3, observed3);
         float yaw = Mth.rotLerp(partial, player.yBodyRotO, player.yBodyRot);
         float angular = 0;
         if (dt > 0) {
@@ -110,9 +139,20 @@ final class SpiritAnimation {
         String mode = movement.mode.id();
         wasMantling = mantling;
         mantling = player == net.minecraft.client.Minecraft.getInstance().player && cn.wwl.orimod.client.SpiritMantle.active(player);
+        // R95: whole-body pose family. Spirit-form Ori swims whenever it is in water off the ground (not only while the
+        // vanilla sprint-swim flag is set), lies along the swim direction and paddles; elytra uses the glide silhouette.
+        boolean alive = player.isAlive() && !player.isSleeping() && !player.isPassenger() && SpiritData.isSpirit(player);
+        family = !alive ? "" : player.isAutoSpinAttack() ? "spin" : player.isFallFlying() ? "elytra"
+                : player.isVisuallySwimming() || player.isInWater() && !player.onGround() && !player.onClimbable() ? "swim"
+                : mode.equals("glide") ? "glide" : "";
         feel(at, yaw, angular, dt, mode, discontinuity);
         if (!discontinuity && position != null && dt > 0) {
             Vec3 velocity = at.subtract(position).scale(1 / dt);
+            boolean swimFamily = family.equals("swim") || family.equals("spin");
+            // R95: in water / in a glide the ears, feelers and tail stream back along the body instead of reacting to
+            // vertical speed as a fall.
+            secondary.medium(swimFamily ? 1 + dart : family.equals("elytra") ? 1 : family.equals("glide") ? .6f : 0,
+                    swimFamily || family.equals("elytra") ? 0 : 1);
             secondary.step(velocity, facing(yaw), locoPhase, locoWeight * Math.max(gaitRun + gaitSprint, .4f), player.onGround(), dt);
         }
         boolean newPrediction = movement.predictedJumpCount != lastPrediction;
@@ -161,10 +201,11 @@ final class SpiritAnimation {
         else if (!SpiritData.isSpirit(player)) next = "transform_out";
         else if (player.isSleeping()) next = "sleep";
         else if (player.isPassenger()) next = "sit";
-        else if (player.isAutoSpinAttack()) next = "swim";
+        else if (family.equals("spin")) next = "swim";
         else if (now - lastHurtAt < .3f) next = "hurt";
         else if (now - lastHurtAt < .55f) next = "recover";
-        else if (player.isVisuallySwimming() || player.isFallFlying()) next = "swim";
+        else if (family.equals("swim")) next = "swim";
+        else if (family.equals("elytra")) next = "elytra";
         else if (player.onClimbable()) next = "climb";
         else if (mode.equals("bash_aim")) next = "bash_aim";
         else if (mode.equals("grapple")) next = "grapple";
@@ -185,7 +226,9 @@ final class SpiritAnimation {
             else if (moving) next = "walk";   // R80: one locomotion base; run/sprint are weighted on top (gait blend)
             else next = now - lastMovingAt > 9 ? "alert" : "idle";
         }
-        GltfAnimation nextClip = SpiritClips.get(model, next);
+        // R95: the authored swim clip lies flat (a dog-paddle); swim and elytra now pose a standing base and the whole
+        // model is pitched in SpiritPlayerVisual, so the pose overrides below are authored upright.
+        GltfAnimation nextClip = SpiritClips.get(model, switch (next) { case "swim" -> "idle"; case "elytra" -> "glide"; default -> next; });
         baseClipName = nextClip.name();
         float rate = nextClip.name().equals(next) ? switch (next) {
             case "walk" -> speed * nextClip.duration() / cn.wwl.orimod.movement.FeelTuning.stride(speed);
@@ -243,8 +286,10 @@ final class SpiritAnimation {
         // R87: spirit hammer/spear use SPEAR UseAnim but must not drive vanilla humanoid arm posing — use our overlays.
         boolean spiritWeapon = contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)
                 || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE) || contactItem.is(cn.wwl.orimod.item.OriItems.SPIRIT_BOW);
+        // R95: a trident (SPEAR) no longer reaches the vanilla stretched arm; it is cocked by the shoulder (throwReady).
         boolean contactUse = handsAvailable && !spiritWeapon && (contactAnimation == UseAnim.SPYGLASS
-                || contactAnimation == UseAnim.SPEAR || contactAnimation == UseAnim.CROSSBOW);
+                || contactAnimation == UseAnim.CROSSBOW);
+        throwing = false;
         if (contactUse) {
             if (posedUse != contactAnimation || posedLeft != contactLeft || posedItem.isEmpty()) {
                 posedUse = contactAnimation; posedLeft = contactLeft; itemPoseWeight = 0;
@@ -295,6 +340,11 @@ final class SpiritAnimation {
                     overlay = handed("use_item", useLeft);
                     overlayTime = Math.min(now, SpiritClips.get(model, overlay).duration() * .95f);
                     mask = upperBody; below = belowUpper;
+                } else if (use == UseAnim.SPEAR) {
+                    overlay = handed("throw_ready", useLeft); throwing = true; throwLeft = useLeft;
+                    swingTwist = -cn.wwl.orimod.movement.FeelTuning.SPEAR_READY_TWIST * 1.6f * (useLeft ? -1 : 1);
+                    arch = -.06f;
+                    mask = useLeft ? leftArm : rightArm; below = useLeft ? belowLeft : belowRight;
                 } else {
                     overlay = handed(use == UseAnim.BLOCK ? "block" : "use_item", useLeft); overlayTime = now; overlayLeft = useLeft;
                     mask = useLeft ? leftArm : rightArm; below = useLeft ? belowLeft : belowRight;
@@ -344,10 +394,31 @@ final class SpiritAnimation {
                 && mask != upperBody && mask != leftArm;
         boolean holdRight = handsAvailable && !(mainLeft ? player.getOffhandItem() : player.getMainHandItem()).isEmpty()
                 && mask != upperBody && mask != rightArm;
-        boolean leftCovered = holdLeft || mask == leftArm, rightCovered = holdRight || mask == rightArm;
+        // R95: only weapon / use overlays exclude an arm from the base; cradles and body poses scale it instead (keepOut).
+        boolean leftCovered = mask == leftArm, rightCovered = mask == rightArm;
         if (mask != upperBody) below = leftCovered && rightCovered ? belowArms : leftCovered ? belowLeft : rightCovered ? belowRight : null;
-        if (below == null) base.write(clock, blend);
-        else base.write(clock, blend, 1, below);
+        // R95: swim / glide / elytra body pose (replaces the base on the body, limbs and the roots of ears, feelers, tail).
+        boolean swimFamily = family.equals("swim") || family.equals("spin"), glideFamily = family.equals("glide") || family.equals("elytra");
+        float poseFade = dt / cn.wwl.orimod.movement.FeelTuning.POSE_FADE;
+        swimMix = cn.wwl.orimod.movement.FeelTuning.approach(swimMix, swimFamily ? 1 : 0, poseFade);
+        glideMix = cn.wwl.orimod.movement.FeelTuning.approach(glideMix, glideFamily ? 1 : 0, poseFade);
+        float dartTarget = family.equals("spin") ? 1 : cn.wwl.orimod.movement.FeelTuning.swimDart(speed3);
+        dart = cn.wwl.orimod.movement.FeelTuning.approach(dart, dartTarget, dt / (dartTarget > dart ? .06f : .35f));
+        cruise = cn.wwl.orimod.movement.FeelTuning.approach(cruise, cn.wwl.orimod.movement.FeelTuning.swimCruise(speed3), dt / .3f);
+        swimPhase = (swimPhase + dt * Mth.TWO_PI * Mth.lerp(cruise, cn.wwl.orimod.movement.FeelTuning.SWIM_STROKE_FLOAT,
+                cn.wwl.orimod.movement.FeelTuning.SWIM_STROKE_CRUISE) * (1 - .85f * dart)) % (Mth.TWO_PI * 64);
+        // R95: held tools are cradled at the chest (weighted, eased), bobbing a little with the stride.
+        float holdFade = dt / cn.wwl.orimod.movement.FeelTuning.HOLD_FADE;
+        boolean leftFree = handsAvailable && mask != upperBody && mask != leftArm && !(throwing && throwLeft);
+        boolean rightFree = handsAvailable && mask != upperBody && mask != rightArm && !(throwing && !throwLeft);
+        cradleWeightLeft = leftFree ? cn.wwl.orimod.movement.FeelTuning.approach(cradleWeightLeft, holdLeft ? 1 : 0, holdFade) : 0;
+        cradleWeightRight = rightFree ? cn.wwl.orimod.movement.FeelTuning.approach(cradleWeightRight, holdRight ? 1 : 0, holdFade) : 0;
+        bodyShare = ease(Math.min(1, swimMix + glideMix));
+        keep = null;
+        keepOut(bodyPoseMask, bodyShare); keepOut(cradleRightMask, ease(cradleWeightRight)); keepOut(cradleLeftMask, ease(cradleWeightLeft));
+        var baseMask = kept(below);
+        if (baseMask == null) base.write(clock, blend);
+        else base.write(clock, blend, 1, baseMask);
         // R80: walk/run/sprint blend by speed. The run clip follows the walk's phase, weighted by speed and by how much
         // of the base is locomotion right now (fades with the base crossfade).
         var gait = cn.wwl.orimod.movement.FeelTuning.gaitWeights(speed);
@@ -360,7 +431,7 @@ final class SpiritAnimation {
         var gaitMask = below != null ? below : belowUpper;
         if (runWeight > .002f) {
             GltfAnimation runClip = SpiritClips.get(model, "run");
-            blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, gaitMask);
+            blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, kept(gaitMask));
         }
         // R94: deeper knee/thigh/ankle bend in phase with the stride (grounded locomotion only).
         float onFeet = player.onGround() && selected.equals("walk") ? locoWeight : 0;
@@ -370,30 +441,60 @@ final class SpiritAnimation {
         if (landRunWeight > .002f) {
             GltfAnimation landClip = SpiritClips.get(model, "land_light");
             float lk = (now - landRunAt) / cn.wwl.orimod.movement.FeelTuning.LAND_RUN_TIME;
-            blend.override(landClip, landClip.duration() * (.2f + .45f * lk), landRunWeight * cn.wwl.orimod.movement.FeelTuning.LAND_RUN_BLEND, gaitMask);
+            blend.override(landClip, landClip.duration() * (.2f + .45f * lk), landRunWeight * cn.wwl.orimod.movement.FeelTuning.LAND_RUN_BLEND, kept(gaitMask));
+        }
+        // R95: run extras: chest over the knees, head level, high knee on each leg's forward swing.
+        runPoseWeight = (gaitRun + gaitSprint) * onFeet;
+        if (runPoseWeight > .002f) {
+            runPose.clear(); SpiritPoses.run(runPose, locoPhase, runPoseWeight); runPose.publish();
+            blend.additive(runPose.clip(), now, 1, runPoseMask, rest);
         }
         // R88: airborne pose scrubs between rise, apex and fall by vertical velocity, like Ori's jump arc.
         airWeight = cn.wwl.orimod.movement.FeelTuning.approach(airWeight, selected.equals("apex") ? 1 : 0, dt / cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE_FAST);
         if (airWeight > .002f) {
             float[] air = cn.wwl.orimod.movement.FeelTuning.airWeights((float) player.getDeltaMovement().y);
-            var airMask = below != null ? below : BlendMask.ALL;
+            var airMask = kept(below != null ? below : BlendMask.ALL);
             GltfAnimation riseClip = SpiritClips.get(model, "rise"), fallClip = SpiritClips.get(model, "fall");
             if (air[0] > .002f) blend.override(riseClip, riseClip.loop(now), air[0] * airWeight, airMask);
             if (air[2] > .002f) blend.override(fallClip, fallClip.loop(now), air[2] * airWeight, airMask);
+        }
+        float poseSum = swimMix + glideMix;
+        if (poseSum > .002f) {
+            bodyPose.clear();
+            SpiritPoses.swim(bodyPose, swimPhase, dart, cruise, swimMix / poseSum);
+            SpiritPoses.glide(bodyPose, Mth.sin(now * 1.3f), glideMix / poseSum);
+            bodyPose.publish();
+            float w = Math.min(1, poseSum);
+            blend.override(bodyPose.clip(), now, bodyShare, bodyPoseMask);
+        }
+        if (throwing) {
+            // R95: trident cocked by the shoulder on the using arm.
+            var layer = throwLeft ? cradleLeft : cradleRight;
+            layer.clear(); SpiritPoses.throwReady(layer, throwLeft ? 1 : 0, 1); layer.publish();
+            blend.override(layer.clip(), now, 1, throwLeft ? cradleLeftMask : cradleRightMask);
+            overlayClipName = "throw_ready";
+            mask = null;
         }
         if (mask != null) {
             GltfAnimation action = SpiritClips.get(model, overlay);
             overlayClipName = action.name();
             float time = loops(action.name()) ? action.loop(overlayTime) : Math.clamp(overlayTime, 0, Math.max(0, action.duration() - .0001f));
-            blend.override(action, time, 1, mask);
+            blend.override(action, time, 1, kept(mask));
         }
         // R94: torso twist / arch layered on any weapon overlay (spring-smoothed so starts and ends never snap).
         float tk = 1 - (float) Math.exp(-dt * 30);
         twist = Mth.lerp(tk, twist, swingTwist); spineArch = Mth.lerp(tk, spineArch, arch);
         if (Math.abs(twist) > 1e-4f) blend.additive(aimYaw, twist, 1, upperBody, rest);
         if (Math.abs(spineArch) > 1e-4f) blend.additive(aimPitch, spineArch, 1, upperBody, rest);
-        if (holdLeft) hold(model, blend, now, true);
-        if (holdRight) hold(model, blend, now, false);
+        float bob = .07f * Mth.sin(locoPhase * Mth.TWO_PI * 2) * locoWeight * (player.onGround() ? 1 : 0) + .03f * Mth.sin(now * 2.1f);
+        if (cradleWeightRight > .002f) {
+            cradleRight.clear(); SpiritPoses.cradle(cradleRight, 0, bob, 1); cradleRight.publish();
+            blend.override(cradleRight.clip(), now, ease(cradleWeightRight), cradleRightMask);
+        }
+        if (cradleWeightLeft > .002f) {
+            cradleLeft.clear(); SpiritPoses.cradle(cradleLeft, 1, bob, 1); cradleLeft.publish();
+            blend.override(cradleLeft.clip(), now, ease(cradleWeightLeft), cradleLeftMask);
+        }
         if (overlay.isEmpty()) overlay = holdLeft && holdRight ? "hold_both" : holdLeft ? "hold_left" : holdRight ? "hold" : "";
         if (!next.equals("death") && !next.equals("sleep") && !next.equals("double_jump")) {
             float headYaw = Math.clamp(Mth.wrapDegrees(Mth.rotLerp(partial, player.yHeadRotO, player.yHeadRot) - facing(yaw)), -45, 45);
@@ -430,6 +531,7 @@ final class SpiritAnimation {
                     Math.clamp(player.getViewXRot(partial), -85, 85), headYaw);
         }
         if (secondary.clip() != null && !next.equals("death")) blend.additive(secondary.clip(), now, 1, BlendMask.ALL, rest);
+        if (DEBUG_POSE) debugPose(blend);
         lastNow = now; position = at; grounded = player.onGround(); wasMoving = moving;
         lastVertical = (float)player.getDeltaMovement().y;
         lastMoveId = movement.actionId; lastPrediction = movement.predictedJumpCount; lastHurt = player.hurtTime; previousMode = mode;
@@ -438,13 +540,24 @@ final class SpiritAnimation {
     /** R74: per-frame springs for facing, lean, squash and ears (constants in FeelTuning). */
     private void feel(Vec3 at, float bodyYaw, float angular, float dt, String mode, boolean discontinuity) {
         Vec3 v = player.getDeltaMovement();
+        // R95: whole-body pitch target for the pose family.
+        float vh = (float) Math.sqrt(v.x * v.x + v.z * v.z) * 20, vv = (float) v.y * 20;
+        float bodyTarget = switch (family) {
+            case "swim" -> cn.wwl.orimod.movement.FeelTuning.swimPitch(vh, vv, cruise);
+            case "spin", "elytra" -> Mth.HALF_PI + Math.clamp(player.getXRot(), -80, 80) * Mth.DEG_TO_RAD;
+            case "glide" -> cn.wwl.orimod.movement.FeelTuning.GLIDE_TILT;
+            default -> 0f;
+        };
         if (discontinuity || !Float.isFinite(facing)) {
+            bodyPitch.reset(bodyTarget);
             facing = bodyYaw; leanPitch.reset(0); leanRoll.reset(0); squash.reset(1);
             smoothSpeed = lastSpeedForAccel = speed; return;
         }
         if (dt <= 0) return;
+        bodyPitch.step(bodyTarget, dt);
         boolean busy = player.isUsingItem() || !player.getData(SpiritData.COMBAT_VIEW).mode().equals("idle") || mode.equals("bash_aim")
-                || mode.equals("wall_slide") || player.isSleeping() || player.isPassenger() || player.isVisuallySwimming() || player.isFallFlying();
+                || mode.equals("wall_slide") || player.isSleeping() || player.isPassenger() || player.isVisuallySwimming() || player.isFallFlying()
+                || family.equals("swim") || family.equals("spin");
         freeFacing = !busy;
         double hx = v.x, hz = v.z;
         float targetYaw = speed > cn.wwl.orimod.movement.FeelTuning.FACING_MIN_SPEED && hx * hx + hz * hz > 1e-4
@@ -469,14 +582,48 @@ final class SpiritAnimation {
                 ? 1 + cn.wwl.orimod.movement.FeelTuning.GAIT_BOUNCE * (gaitRun + gaitSprint) * locoWeight * Mth.cos(locoPhase * Mth.TWO_PI * 2)
                 : cn.wwl.orimod.movement.FeelTuning.airScale((float) v.y);
         if (busy) squashTarget = 1;
+        // R95: the water-dash dart stretches the lying body along its length.
+        if (family.equals("swim") || family.equals("spin")) squashTarget = 1 + .12f * dart;
         if (mantling) squashTarget = over ? .88f : 1.08f;
         squash.step(squashTarget, dt);
         squash.value = Math.clamp(squash.value, cn.wwl.orimod.movement.FeelTuning.SQUASH_MIN, cn.wwl.orimod.movement.FeelTuning.SQUASH_MAX);
     }
 
-    private void hold(GemRenderGltfModel model, AnimationBlend blend, float now, boolean left) {
-        GltfAnimation clip = SpiritClips.get(model, handed("hold", left));
-        blend.override(clip, clip.loop(now), 1, left ? leftArm : rightArm);
+    private static final boolean DEBUG_POSE = Boolean.getBoolean("orimod.debugPose");
+    private final java.util.Map<String, Float> poseError = new java.util.LinkedHashMap<>();
+    /** Debug only (-Dorimod.debugPose=true): angle (rad) between the blended local rotation and each layer's target. */
+    private void debugPose(AnimationBlend blend) {
+        float[] state = table.newScratch();
+        com.wf.gemrender.gltf.blend.BlendEvaluator.evaluate(table, blend, state, new com.wf.gemrender.gltf.blend.BlendEvaluator.Scratch());
+        poseError.clear();
+        var q = new Quaternionf();
+        for (var e : java.util.Map.of("cradleR", cradleRight, "body", bodyPose).entrySet())
+            for (int bone : new int[] {SpiritPoseLayer.UPPER_ARM_L, SpiritPoseLayer.FOREARM_L}) {
+                int slot = table.slotOfName(SpiritPoseLayer.BONES[bone]); int o = NodeRotation.offsetOf(table, slot);
+                q.set(state[o], state[o + 1], state[o + 2], state[o + 3]).normalize();
+                var t = e.getValue().target(bone);
+                poseError.put(e.getKey() + "_" + SpiritPoseLayer.BONES[bone], 2 * (float) Math.acos(Math.min(1, Math.abs(q.dot(t)))));
+            }
+    }
+
+    private static float ease(float w) { w = Math.clamp(w, 0, 1); return w * w * (3 - 2 * w); }
+
+    /**
+     * R95: GemRender averages all override layers by weight (BlendEvaluator.accumulate) and weights cap at 1, so a pose
+     * cannot simply be laid on top. Every other layer's mask is scaled by {@link #keep} (1 - the pose's share per node),
+     * which makes the pose's share exact and fades in and out without a T-pose.
+     */
+    private BlendMask kept(BlendMask mask) {
+        if (keep == null) return mask;
+        float[] w = new float[keep.length];
+        for (int i = 0; i < w.length; i++) w[i] = (mask == null ? 1 : mask.weight(i)) * keep[i];
+        return BlendMask.weights(table, w);
+    }
+
+    private void keepOut(BlendMask mask, float share) {
+        if (share <= 0) return;
+        if (keep == null) { keep = new float[table.nodeCount()]; java.util.Arrays.fill(keep, 1); }
+        for (int i = 0; i < keep.length; i++) keep[i] = Math.min(keep[i], 1 - share * mask.weight(i));
     }
 
     private static String handed(String name, boolean left) { return left ? name + "_left" : name; }
@@ -507,6 +654,16 @@ final class SpiritAnimation {
         aimYaw = GltfAnimation.procedural("ori_aim_yaw", angle(table, palette, "spine", new Vector3f(0,1,0), 1));
         aimPitch = GltfAnimation.procedural("ori_aim_pitch", angle(table, palette, "spine", new Vector3f(1,0,0), 1));
         secondary.bind(table, palette); secondary.bindGait(table, SpiritClips.get(model, "walk"), SpiritClips.get(model, "run")); secondary.reset();
+        this.table = table;
+        bodyPose.bind(table); cradleRight.bind(table); cradleLeft.bind(table); runPose.bind(table);
+        int[] all = new int[SpiritPoseLayer.BONES.length];
+        for (int i = 0; i < all.length; i++) all[i] = i;
+        bodyPoseMask = bodyPose.mask(all);
+        cradleRightMask = cradleRight.mask(SpiritPoseLayer.UPPER_ARM_L, SpiritPoseLayer.FOREARM_L, SpiritPoseLayer.HAND_L);
+        cradleLeftMask = cradleLeft.mask(SpiritPoseLayer.UPPER_ARM_R, SpiritPoseLayer.FOREARM_R, SpiritPoseLayer.HAND_R);
+        runPoseMask = runPose.mask(SpiritPoseLayer.SPINE, SpiritPoseLayer.NECK, SpiritPoseLayer.HEAD,
+                SpiritPoseLayer.THIGH_L, SpiritPoseLayer.THIGH_R, SpiritPoseLayer.KNEE_L, SpiritPoseLayer.KNEE_R);
+        swimMix = glideMix = dart = cruise = 0; cradleWeightLeft = cradleWeightRight = 0;
         createdAt = lastNow = now; clock = 0; position = player.getPosition(partial); grounded = player.onGround();
         selected = ""; shotUntil = -100; lag = speed = 0; runningGait = false; previousYaw = player.yBodyRot;
         var movement = player.getData(SpiritData.MOVEMENT);

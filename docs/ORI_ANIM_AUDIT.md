@@ -94,3 +94,58 @@ Ear/feeler/tail chains untouched (still 34 bone angles).
 - No authored land→run / mantle / weapon clips — all procedural layers over the community model's clips.
 - Hammer wind-up reads best from the side; from the front the head is mostly behind the body.
 - Secondary still has no terrain collision; true Iris bloom not verified; client only checked on Xvfb + llvmpipe (low FPS, so screenshots step a few ticks).
+
+## R95 — pose overrides (run / swim / glide + elytra / held items)
+
+User (after R94): "弄完一起看" — one jar covering the four pose targets. Model unchanged (CC BY community `ori.glb`); no official assets used. Reference frames were pulled from public 480p videos only to check silhouettes (`shots/r95-ref-*.png`, not shipped).
+
+### Sources
+
+| Source | What we took from it |
+| --- | --- |
+| WotW Swim Dash (`ZMlYqYiM5Ls`) | Under water Ori lies along the motion, body long; the dash is a tucked dart (arms back along the body, legs together), with ears and tail trailing straight behind. No upright paddling. |
+| Kuro's Feather / glide (`LrfuGa4im1Y`) | The feather is held overhead in both hands, so the arms make a high, wide V and the legs trail slightly bent. The torso tips about 25° into the airflow. Ears and tail stream back. |
+| Luma Pools (`QwT5M2V2IeI`) | Surface/slow swim: the head stays up while the body slopes down, with a soft, slow breast-stroke paddle and a small flutter kick. |
+| E3 2019 trailer (`2reK8k8nwBc`) | Run silhouette: chest leans forward, knees lift high, ears swept back, tail level and lagging. |
+| orithegame.com/media | Lists the same E3 2019 / 2017 trailers plus gallery stills. Only checked against the trailer above; nothing downloaded from it. |
+
+### What changed
+
+- **`SpiritPoseLayer` / `SpiritPoses` (new).** These are procedural override layers that write absolute local rotations from angles given in the model frame (+Z forward, +Y up, rest T-pose). A pose replaces what is under it: GemRender averages override layers and caps weights at 1, so every lower layer (base crossfade, run, land-run, air, overlay) has its mask scaled by `1 − share` on the posed bones (`keep[]`).
+- **Root-cause fix found while tuning:** the glb node chain scales world matrices by about 0.08 (0.159 × 0.01 × 51.3), and JOML's `getNormalizedRotation` returned a non-unit, wrong quaternion for those matrices. So the pose axes were wrong: the forearm "bend" was really a twist about the bone. `SpiritPoseLayer.restRotation` now normalizes the columns first (JUnit `SpiritPoseLayerTest`). With the fix the in-game blended local rotations match the targets exactly (debug `-Dorimod.debugPose=true` → `secondary.poseError` = 0). The held-torch grip went from 0.36 to 0.68 m, against 0.70 in the offline preview.
+- **Body pitch.** A spring-driven whole-body pitch around the hip pivot (0.5 m) lays the upright authored pose down:
+  - swim follows the velocity (π/2 when level, ±1.2 rad when diving or rising, about 1.0 rad when treading);
+  - spin and elytra use π/2 + look pitch (±80°);
+  - glide uses 0.42 rad.
+- **RUN** (additive, weight = run + sprint gait, on feet only): chest lean 0.12, extra knee lift 0.42 / fold 0.5 peaking at each leg's forward swing, neck and head counter-tilted to keep the gaze level. Lean speed 0.24, run gait gain 0.5, secondary drag 1.15, so the ears and tail stream and overshoot more.
+- **SWIM** (override; base switches to idle because the authored swim clip is a dog-paddle):
+  - Cruise/float: a slow soft paddle (0.6 → 1.05 strokes/s, elbows bent) and a small flutter kick.
+  - Water dash (3D speed 11.5 → 15 m/s): a dart tuck that rises in 0.06 s and decays over 0.35 s. Arms go back along the body, legs together, ears/tail/feelers trail flat, and the body stretches by 12%.
+- **GLIDE / FEATHER, also used for elytra:** arms raised in a high, wide V with the elbows soft, torso into the airflow, legs trailing with the knees bent. The secondary "medium" sets ears and tail to stream (glide 0.6, elytra 1.0) and switches gravity sag off for elytra.
+- **HOLD ITEM:**
+  - Any item in a free hand gets a chest cradle: upper arm forward and down, elbow folded 1.85 rad, hand curled in, with a small walk bob. A soft spirit-light halo sits at the grip.
+  - Trident charge no longer uses the vanilla two-hand spear stretch: the throw-ready pose holds it over the shoulder, close to the head.
+  - The R94 spirit spear and the weapon swings are unchanged.
+
+### Evidence (`scripts/verify-r95.py`, client on Xvfb + llvmpipe)
+
+- `r95-before-v001` against `r95-after-v004`, status ok.
+- Sheets: `shots/r95-sheet-before.png` and `shots/r95-sheet-after.png`. Per-shot `shots/r95-{before,after}-*.png`.
+- After, max values per scene:
+
+| Scene | Result |
+| --- | --- |
+| Run | run pose 1.0 |
+| Swim | swim 1.0, dart 1.0, body pitch 1.57 |
+| Tread | swim 1.0, pitch up to 1.82 while sinking |
+| Glide | glide 1.0, pitch 0.42 |
+| Elytra | glide 1.0, pitch 1.83 |
+| Hold | cradle 1.0, throw 1.0 |
+
+### Still not done
+
+- Everything is still a procedural layer over community-model clips; nothing is hand-keyed.
+- The trident's ready angle points up and back rather than level.
+- Elytra shows the vanilla wing model on Ori's back.
+- The tread pose is only approximate.
+- Not checked with Iris, nor on real GPU frame rates.
