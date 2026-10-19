@@ -184,3 +184,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R34：灵魂链接
 
 474 JUnit（`SoulLinkTest` 拒绝原因与安全条件）、189 GameTest（新增：建立链接扣能量并存储、冷却；人形或能量不足时拒绝且不扣能量；头顶被堵的链接不安全）。复活回链接的实机检查见后续客户端验证。
+
+## R35：灵光球
+
+476 JUnit（`SpiritLightOrbTest` 数量与吸附半径）、190 GameTest（新增：人形不吸，精灵形态只吸 2.5 格内的灵光球并朝向玩家）。

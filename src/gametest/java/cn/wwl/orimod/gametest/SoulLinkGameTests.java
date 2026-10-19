@@ -41,6 +41,22 @@ public final class SoulLinkGameTests {
             h.setBlock(new BlockPos(5, 3, 5), Blocks.STONE);
             h.assertFalse(SoulLink.usable(h.getLevel(), at), "Head block filled but link still safe");
         });
+        add(tests, "spirit_pulls_nearby_light_only", h -> {
+            var p = Fixtures.player(h);
+            var near = new net.minecraft.world.entity.item.ItemEntity(h.getLevel(), p.getX() + 2, p.getY(), p.getZ(),
+                    new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.SPIRIT_LIGHT.get()));
+            var far = new net.minecraft.world.entity.item.ItemEntity(h.getLevel(), p.getX(), p.getY(), p.getZ() + 3.5,
+                    new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.SPIRIT_LIGHT.get()));
+            near.setNoPickUpDelay(); far.setNoPickUpDelay(); near.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); far.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            h.getLevel().addFreshEntity(near); h.getLevel().addFreshEntity(far);
+            try {
+                h.assertValueEqual(cn.wwl.orimod.progression.SpiritProgression.pullLight(p), 0, "Human form pulled light");
+                SpiritForm.toggle(p);
+                h.assertValueEqual(cn.wwl.orimod.progression.SpiritProgression.pullLight(p), 1, "Spirit pulled count");
+                h.assertTrue(near.getDeltaMovement().x < -.3, "Near orb not pulled toward the player");
+                h.assertTrue(far.getDeltaMovement().lengthSqr() < 1e-6, "Orb beyond 2.5 blocks pulled without Gathering");
+            } finally { near.discard(); far.discard(); }
+        });
         return tests;
     }
 

@@ -115,10 +115,36 @@ public final class SpiritProgression {
         return count == 0;
     }
 
+    /** R35: Spirit Light orbs dropped by an enemy with this maximum health (1–8; 20 health gives 2). */
+    public static int lightFor(float maxHealth) {
+        return Float.isFinite(maxHealth) ? Math.clamp(Math.round(maxHealth / 10), 1, 8) : 1;
+    }
+
+    /** R35: radius in which Spirit Light flies to the player: spirit form always pulls nearby orbs, Gathering reaches further. */
+    public static double magnetRadius(boolean spirit, boolean gathering) { return gathering ? 4 : spirit ? 2.5 : 0; }
+
+    /** Pull loose Spirit Light orbs toward the player, as orbs fly to Ori. */
+    public static int pullLight(ServerPlayer player) {
+        double radius = magnetRadius(SpiritData.isSpirit(player), Shard.GATHERING.equipped(player));
+        if (radius <= 0) return 0;
+        int pulled = 0;
+        for (var item : player.level().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(radius),
+                entity -> entity.getItem().is(OriItems.SPIRIT_LIGHT) && !entity.hasPickUpDelay() && player.distanceToSqr(entity) <= radius * radius)) {
+            var toward = player.position().add(0, .5, 0).subtract(item.position());
+            if (toward.lengthSqr() > .1) { item.setDeltaMovement(toward.normalize().scale(.35)); item.hurtMarked = true; pulled++; }
+        }
+        return pulled;
+    }
+
     public static void drops(LivingDropsEvent event) {
         if (event.getEntity() instanceof Enemy && event.getSource().getEntity() instanceof ServerPlayer player && SpiritData.isAwakened(player)) {
-            event.getDrops().add(new ItemEntity(player.level(), event.getEntity().getX(), event.getEntity().getY() + .4,
-                    event.getEntity().getZ(), new ItemStack(OriItems.SPIRIT_LIGHT.get(), 2)));
+            // R35: Ori-style burst of single orbs, more for tougher enemies (a zombie still gives 2).
+            var victim = event.getEntity(); var random = victim.getRandom();
+            for (int i = lightFor(victim.getMaxHealth()); i > 0; i--) {
+                var orb = new ItemEntity(player.level(), victim.getX(), victim.getY() + .4, victim.getZ(), new ItemStack(OriItems.SPIRIT_LIGHT.get()));
+                orb.setDeltaMovement((random.nextDouble() - .5) * .3, .25 + random.nextDouble() * .15, (random.nextDouble() - .5) * .3);
+                event.getDrops().add(orb);
+            }
         }
     }
 
@@ -155,14 +181,8 @@ public final class SpiritProgression {
             float energy = energy(player);
             if (now - s.lastSpent >= 40) energy = Math.min(maxEnergy(player), energy + (Shard.RECOVERY.equipped(player) ? 1.5f : 1));
             if (Float.compare(player.getData(SpiritData.ENERGY), energy) != 0) player.setData(SpiritData.ENERGY, energy);
-            if (Shard.GATHERING.equipped(player)) {
-                for (var item : player.level().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4),
-                        entity -> entity.getItem().is(OriItems.SPIRIT_LIGHT) && !entity.hasPickUpDelay() && player.distanceToSqr(entity) <= 16)) {
-                    var toward = player.position().add(0, .5, 0).subtract(item.position());
-                    if (toward.lengthSqr() > .1) item.setDeltaMovement(toward.normalize().scale(.3));
-                }
-            }
         }
+        if (now % 2 == 0) pullLight(player);
         if (s.pendingHeal) {
             if (!Shard.RESILIENCE.equipped(player)) s.pendingHeal = false;
             else if (now - s.lastHurt >= 80) {
