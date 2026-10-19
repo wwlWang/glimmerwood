@@ -152,3 +152,5 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R27：100 次混合移动与效果往返
 
 431 项 JUnit（新增一次性移动标签落地结束的规则测试）、183 项 GameTest 通过。云端客户端 `scripts/verify-movement-endurance.py move12-r27-v006`：100 次混合动作与取消全部通过（种子 20261019；跳 14、冲刺 13、滑翔 18、抓钩 25 次其中到达 6、Bash 6 次另取消 9、蹬墙 5、下砸 4）；修复前 `move12-r27-v005` 13 次标签残留失败保留。v001–v004 为场地搭建与低帧输入过期的夹具问题。`scripts/verify-fx-endurance.py perf02-r27-v001`：10 轮效果往返，活跃效果/循环音每轮回 0，粒子回 0，GC 后堆 622–625 MB，预热后斜率 −0.10 MB/轮。两脚本需开发客户端（`runDevtoolsClient`）与任一开发世界；移动脚本会在 (1000,200,1000) 建场地，效果脚本复用该场地。
+
+发行 JAR（R27，`scripts/build-release.sh`）：两次 `clean jar`（不用 Gradle 构建缓存、各自重新编译）SHA-256 一致 `4e0651a269a897c252a06e97d685bf6c1b0f574550dd39882d66058eea977b16`；提交 `b0f397d` 与只改构建脚本的 `976041e` 构建出相同字节。JAR 含 `orimod_shaderpack/spirit_glow.zip`（含 LICENSE、LICENSE-APACHE、README）与 `THIRD_PARTY.md`，不含开发工具类。云端产物在 `/workspace/oriMod/release/`（不入库）。
