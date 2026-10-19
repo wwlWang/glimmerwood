@@ -255,5 +255,7 @@
   "title.orimod.escape_failed": "Swallowed by the gloom",
   "subtitle.orimod.escape_failed": "Wake the altar again to retry",
   "message.orimod.victory.first": "Victory! +%s Spirit Light, a Life Cell and an Energy Cell",
-  "message.orimod.victory.again": "Victory! +%s Spirit Light"
+  "message.orimod.victory.again": "Victory! +%s Spirit Light",
+  "ability.orimod.climb": "Climb",
+  "ability.orimod.climb.description": "While sliding on a wall, keep pushing forward into it to climb up. Jump still kicks off the wall."
 }

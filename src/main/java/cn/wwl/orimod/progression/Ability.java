@@ -12,7 +12,9 @@ public enum Ability {
     /** R39: Light Burst (WotW). */
     LIGHT_BURST(128, 40, BASH),
     /** R52: Spirit Smash (WotW hammer); the Spirit Hammer only answers once this is learned. */
-    SMASH(256, 40, BOW);
+    SMASH(256, 40, BOW),
+    /** R55: Climb (BF): push into a wall while sliding to climb it. */
+    CLIMB(512, 30, DASH);
 
     public final int bit, cost;
     public final Ability prerequisite;

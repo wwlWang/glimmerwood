@@ -266,3 +266,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R54：首领逃亡段落与胜利演出
 
 514 JUnit（`EscapeSequenceTest`：前沿匀速扩张且慢于疾跑；需要露天加距离才算逃出；在前沿内算被追上）、215 GameTest（新增 `parity.gloom_heart_escape_then_victory_reward`：开始逃亡后有会话；第一次胜利标为首通、会话结束、多 1 枚生命格；第二次胜利不再给灵格）。
+
+## R55：攀爬 Climb
+
+516 JUnit（`ClimbRulesTest`：需要能力和前进输入，爬升速度低于跳跃，前置冲刺）、216 GameTest。

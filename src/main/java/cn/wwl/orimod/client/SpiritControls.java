@@ -112,7 +112,9 @@ public final class SpiritControls {
             } else if (state.mode == WALL_SLIDE && !player.onGround() && !input.shiftKeyDown) {
                 var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
                 if (SpiritMovement.touchingWall(player, direction, -1) != null) {
-                    player.setDeltaMovement(MovementRules.wallSlideVelocity(player.getDeltaMovement()));
+                    // R55: pushing into the wall climbs it once Climb is learned; otherwise slide down slowly.
+                    boolean climb = MovementRules.climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), input.forwardImpulse);
+                    player.setDeltaMovement(climb ? MovementRules.climbVelocity(player.getDeltaMovement()) : MovementRules.wallSlideVelocity(player.getDeltaMovement()));
                     player.fallDistance = 0;
                 }
             }

@@ -255,5 +255,7 @@
   "title.orimod.escape_failed": "被腐光吞没",
   "subtitle.orimod.escape_failed": "再次唤醒祭坛即可重试",
   "message.orimod.victory.first": "胜利！获得 %s 灵光、一枚生命格和一枚能量格",
-  "message.orimod.victory.again": "胜利！获得 %s 灵光"
+  "message.orimod.victory.again": "胜利！获得 %s 灵光",
+  "ability.orimod.climb": "攀爬",
+  "ability.orimod.climb.description": "贴墙下滑时继续朝墙按前进键即可向上爬；按跳跃仍是蹬墙跳。"
 }

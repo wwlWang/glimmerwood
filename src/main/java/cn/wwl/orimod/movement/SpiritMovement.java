@@ -146,7 +146,8 @@ public final class SpiritMovement {
             if (s.activeTicks-- <= 0 || player.horizontalCollision || s.crouching) cancel(player, s);
             return;
         }
-        if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && player.getDeltaMovement().y < 0) {
+        boolean climb = s.mode == WALL_SLIDE && climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), s.forward);
+        if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && (player.getDeltaMovement().y < 0 || climb)) {
             // A short renewable lease prevents a missed release from leaving the client attached to a wall.
             signal(player, s, WALL_SLIDE, 3, Vec3.ZERO);
             player.fallDistance = 0;

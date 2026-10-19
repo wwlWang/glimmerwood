@@ -65,6 +65,11 @@ public final class MovementRules {
         return new Vec3(horizontalVelocity.x, Math.min(0, currentY), horizontalVelocity.z);
     }
 
+    /** R55 Climb: upward speed while pushing into a wall with the ability learned. */
+    public static final double CLIMB_SPEED = .14;
+    public static boolean climbing(boolean unlocked, float forward) { return unlocked && forward > .1f; }
+    public static Vec3 climbVelocity(Vec3 velocity) { return new Vec3(velocity.x, CLIMB_SPEED, velocity.z); }
+
     public static Vec3 wallSlideVelocity(Vec3 velocity) {
         return new Vec3(velocity.x, Math.max(velocity.y, WALL_SLIDE_SPEED), velocity.z);
     }
