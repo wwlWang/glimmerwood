@@ -1,6 +1,6 @@
 # 当前工作状态
 
-2026-10-19 09:00（UTC+8）云端 R29：验收表逐行重数为 17 通过、56 部分验证、6 未测（PLAY04、FX02、AUDIO02、PERF03、PERF05、REL05）。此前摘要按累计差值更新，多记 3 项未测；新增 `scripts/check-acceptance-counts.py` 校验表行与摘要一致。
+2026-10-19 09:00（UTC+8）云端 R29：验收表逐行重数为 17 通过、56 部分验证、6 未测（PLAY04、FX02、AUDIO02、PERF03、PERF05、REL05）。此前摘要按累计差值更新，多记 3 项未测；新增 `scripts/check-acceptance-counts.py` 校验表行与摘要一致。PLAY04：在开发世界副本运行原版交互脚本，两种形态 × 两种视角的挖掘、放置、开箱、交易全部通过（`play04-r29-v001`）。
 
 2026-10-19 08:40–08:45（UTC+8）云端 R28（SAVE04）：用 Mojang 原版 1.21.1 服务端（SHA-1 `59353fb4…`）建种子 20261019 的世界并放置箱子、告示牌、方块标记，复制一份后用 NeoForge 21.1.248 安装器装服务端、只放发行 JAR 打开。原有内容全部保留，三类遗迹在未探索区块可定位；GemRender/Flywheel 只是客户端依赖，服务端无需安装。单人范围见 ADR-001。随后（08:45–09:05）REL01：portablemc 建 NeoForge 干净客户端实例，按新写的 README 安装步骤验证缺依赖提示、进入原版存档副本、装 Iris 后自动启用 Spirit Glow，截图 `shots/r28-clean-*.png`。
 
