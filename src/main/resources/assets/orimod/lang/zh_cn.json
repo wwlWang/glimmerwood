@@ -203,5 +203,13 @@
   "message.orimod.soul_link.challenge": "挑战中不能建立灵魂链接",
   "message.orimod.soul_link.unstable": "需站在稳固地面上才能建立灵魂链接",
   "message.orimod.soul_link.cooldown": "灵魂链接正在恢复",
-  "message.orimod.soul_link.energy": "能量不足，灵魂链接需要 25"
+  "message.orimod.soul_link.energy": "能量不足，灵魂链接需要 25",
+  "item.orimod.life_cell": "生命格",
+  "item.orimod.energy_cell": "能量格",
+  "tooltip.orimod.life_cell": "使用后永久增加一颗心（最多 10 个）",
+  "tooltip.orimod.energy_cell": "使用后永久增加 10 点灵能（最多 10 个）",
+  "message.orimod.cell_absorbed.life": "已吸收生命格（%s/%s）",
+  "message.orimod.cell_absorbed.energy": "已吸收能量格（%s/%s）",
+  "message.orimod.cell_full": "这类灵格已达上限",
+  "message.orimod.cell_dormant": "唤醒灵核之前，灵格不会响应"
 }

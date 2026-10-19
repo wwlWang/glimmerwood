@@ -203,5 +203,13 @@
   "message.orimod.soul_link.challenge": "Soul Link is unavailable during a trial",
   "message.orimod.soul_link.unstable": "Stand on solid ground to create a Soul Link",
   "message.orimod.soul_link.cooldown": "Soul Link is recovering",
-  "message.orimod.soul_link.energy": "Not enough energy for a Soul Link (25)"
+  "message.orimod.soul_link.energy": "Not enough energy for a Soul Link (25)",
+  "item.orimod.life_cell": "Life Cell",
+  "item.orimod.energy_cell": "Energy Cell",
+  "tooltip.orimod.life_cell": "Use to gain one heart permanently (max 10)",
+  "tooltip.orimod.energy_cell": "Use to gain 10 spirit energy permanently (max 10)",
+  "message.orimod.cell_absorbed.life": "Life Cell absorbed (%s/%s)",
+  "message.orimod.cell_absorbed.energy": "Energy Cell absorbed (%s/%s)",
+  "message.orimod.cell_full": "You cannot hold more cells of this kind",
+  "message.orimod.cell_dormant": "The cell stays dormant until you awaken the Spirit Core"
 }

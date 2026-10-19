@@ -184,6 +184,7 @@ public final class SpiritChallenge {
     private static void complete(ServerPlayer player, ChallengeSession s) {
         int ticks = (int)(player.level().getGameTime() - s.started);
         boolean first = SpiritProgression.reward(player, "clear/" + s.key(), 30, 3);
+        if (first) cn.wwl.orimod.progression.SpiritCells.grantFirstClear(player); // R36: cells are found in ruins
         var progress = player.getData(SpiritData.PROGRESS);
         var records = new HashMap<>(progress.rewards());
         int best = records.getOrDefault("best/" + s.key(), Integer.MAX_VALUE);

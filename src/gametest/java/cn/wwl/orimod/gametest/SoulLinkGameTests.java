@@ -57,6 +57,24 @@ public final class SoulLinkGameTests {
                 h.assertTrue(far.getDeltaMovement().lengthSqr() < 1e-6, "Orb beyond 2.5 blocks pulled without Gathering");
             } finally { near.discard(); far.discard(); }
         });
+        add(tests, "life_and_energy_cells_raise_limits_and_cap", h -> {
+            var p = Fixtures.player(h);
+            float energyBefore = cn.wwl.orimod.progression.SpiritProgression.maxEnergy(p);
+            h.assertTrue(cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.LIFE), "Life cell refused");
+            Fixtures.near(h, p.getMaxHealth(), 22, "Max health after one life cell");
+            h.assertTrue(cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.ENERGY), "Energy cell refused");
+            Fixtures.near(h, cn.wwl.orimod.progression.SpiritProgression.maxEnergy(p), energyBefore + 10, "Max energy after one energy cell");
+            for (int i = 1; i < cn.wwl.orimod.progression.SpiritCells.MAX; i++) cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.LIFE);
+            h.assertFalse(cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.LIFE), "Life cell beyond the cap");
+            Fixtures.near(h, p.getMaxHealth(), 40, "Capped max health");
+            cn.wwl.orimod.progression.SpiritCells.apply(p); cn.wwl.orimod.progression.SpiritCells.apply(p);
+            Fixtures.near(h, p.getMaxHealth(), 40, "Re-applying stacked the modifier");
+        });
+        add(tests, "dormant_cell_without_awakening", h -> {
+            var p = Fixtures.player(h); p.setData(SpiritData.AWAKENED, false);
+            h.assertFalse(cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.LIFE), "Unawakened player absorbed a cell");
+            Fixtures.near(h, p.getMaxHealth(), 20, "Max health changed");
+        });
         return tests;
     }
 

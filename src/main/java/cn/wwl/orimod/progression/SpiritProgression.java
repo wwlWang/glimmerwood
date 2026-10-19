@@ -23,7 +23,8 @@ public final class SpiritProgression {
     public static int slots(Player player) { return Ability.GRAPPLE.unlocked(player) ? 3 : Ability.BASH.unlocked(player) ? 2 : 1; }
     public static int capacityCost(SpiritProgress p) { return 30 + 15 * p.capacityLevel(); }
     public static float maxEnergy(Player player) {
-        return 100 + 25 * player.getData(SpiritData.PROGRESS).capacityLevel() + (Shard.CAPACITY.equipped(player) ? 25 : 0);
+        return 100 + 25 * player.getData(SpiritData.PROGRESS).capacityLevel() + (Shard.CAPACITY.equipped(player) ? 25 : 0)
+                + SpiritCells.ENERGY_PER_CELL * SpiritCells.count(player, SpiritCells.Kind.ENERGY);
     }
     public static float energy(Player player) { return Math.clamp(player.getData(SpiritData.ENERGY), 0, maxEnergy(player)); }
     public static boolean spendEnergy(ServerPlayer player, float amount) {

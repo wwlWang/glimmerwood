@@ -188,3 +188,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R35：灵光球
 
 476 JUnit（`SpiritLightOrbTest` 数量与吸附半径）、190 GameTest（新增：人形不吸，精灵形态只吸 2.5 格内的灵光球并朝向玩家）。
+
+## R36：生命格与能量格
+
+477 JUnit（`SpiritCellsTest` 存档键与上限）、192 GameTest（新增：生命格 +2 最大生命、能量格 +10 上限、第 11 个被拒、重复重算不叠加；未唤醒拒绝）。
