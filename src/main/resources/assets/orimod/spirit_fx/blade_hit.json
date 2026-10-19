@@ -3,23 +3,33 @@
   "kind": "blade_hit",
   "layers": [
     {
-      "particle": "orimod:spirit_spark",
-      "share": 0.5,
-      "speed": 0.05,
+      "color": "#e8fbff",
+      "length": 0.5,
+      "lifetime": 8,
+      "outward": 0.12,
+      "particle": "orimod:spirit_mote",
+      "radius": 1.0,
+      "shape": "arc",
+      "share": 0.6,
+      "size": 0.32,
+      "speed": 0.005,
       "spread": [
-        0.1,
-        0.1,
-        0.1
+        0.03,
+        0.03,
+        0.03
       ]
     },
     {
-      "particle": "minecraft:crit",
-      "share": 0.5,
-      "speed": 0.03,
+      "color": "#ffffff",
+      "lifetime": 6,
+      "particle": "orimod:spirit_spark",
+      "share": 0.4,
+      "size": 0.22,
+      "speed": 0.08,
       "spread": [
-        0.12,
-        0.12,
-        0.12
+        0.15,
+        0.15,
+        0.15
       ]
     }
   ]

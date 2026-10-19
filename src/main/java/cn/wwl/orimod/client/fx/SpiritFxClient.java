@@ -15,8 +15,10 @@ public final class SpiritFxClient {
     private SpiritFxClient() {}
 
     /** Particle for a definition layer; an unknown or non-simple particle id falls back to the end rod glow. */
-    static ParticleOptions particle(String id) {
-        var type = net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE.get(net.minecraft.resources.ResourceLocation.tryParse(id));
+    static ParticleOptions particle(cn.wwl.orimod.fx.SpiritFxDefinition.Layer layer, float taper) {
+        var type = net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE.get(net.minecraft.resources.ResourceLocation.tryParse(layer.particle()));
+        if (type instanceof cn.wwl.orimod.fx.SpiritParticleOptions.Type spirit)
+            return new cn.wwl.orimod.fx.SpiritParticleOptions(spirit, layer.rgb(), layer.size() * taper, layer.lifetime());
         return type instanceof net.minecraft.core.particles.SimpleParticleType simple ? simple : ParticleTypes.END_ROD;
     }
 
@@ -106,15 +108,49 @@ public final class SpiritFxClient {
         var definition = SpiritFxResources.get(kind);
         if (!kind.persistent()) received++;
         LAST.put(kind.name(), java.util.Map.of("essential", split.essential(), "decorative", split.decorative(), "quality", visuals.quality().name(), "advanced", visuals.advancedParticles()));
-        for (int i = 0; i < split.total(); i++) {
+        var sourceEntity = level.getEntity(source);
+        // Facing for arcs and motion for trails: the source's own look and velocity (fallbacks for markers).
+        net.minecraft.world.phys.Vec3 look = sourceEntity == null ? new net.minecraft.world.phys.Vec3(0, 0, 1) : sourceEntity.getLookAngle();
+        net.minecraft.world.phys.Vec3 motion = sourceEntity == null ? net.minecraft.world.phys.Vec3.ZERO : sourceEntity.getDeltaMovement();
+        if (motion.lengthSqr() < 1e-4) motion = look;
+        var dir = motion.normalize();
+        double phase = kind.persistent() ? level.getGameTime() * .35 : RANDOM.nextDouble() * Math.PI * 2;
+        double yaw = Math.atan2(look.z, look.x);
+        int total = split.total();
+        for (int i = 0; i < total; i++) {
+            var slot = definition.slot(i, total);
+            var layer = slot.layer();
+            double k = slot.fraction(), x = px, y = py, z = pz, vx = 0, vy = 0, vz = 0;
+            float taper = 1;
+            switch (layer.shape()) {
+                case "ring" -> {
+                    double a = phase + Math.PI * 2 * slot.j() / slot.n(), cx = Math.cos(a), cz = Math.sin(a);
+                    x += cx * layer.radius(); z += cz * layer.radius();
+                    vx = cx * layer.outward(); vz = cz * layer.outward();
+                }
+                case "arc" -> {
+                    double a = yaw + Math.toRadians(-70 + 140 * k), cx = Math.cos(a), cz = Math.sin(a);
+                    x += cx * layer.radius(); z += cz * layer.radius(); y += (k - .5) * layer.length();
+                    vx = -cz * layer.outward(); vz = cx * layer.outward();     // tangential sweep
+                    taper = (float) (.6 + .4 * Math.sin(Math.PI * k));
+                }
+                case "line" -> {
+                    x -= dir.x * layer.length() * k; y -= dir.y * layer.length() * k; z -= dir.z * layer.length() * k;
+                    vx = -dir.x * layer.outward(); vy = -dir.y * layer.outward(); vz = -dir.z * layer.outward();
+                    taper = (float) (1 - .65 * k);
+                }
+                case "column" -> {
+                    double a = phase + Math.PI * 2 * slot.j() * .618;
+                    x += Math.cos(a) * layer.radius(); z += Math.sin(a) * layer.radius(); y += layer.length() * k;
+                    vy = layer.outward();
+                }
+                default -> {}
+            }
             // Same distribution as ServerLevel.sendParticles: gaussian offset and speed, per definition layer.
-            var layer = definition.layerFor(i, split.total());
-            double x = px + RANDOM.nextGaussian() * layer.spreadX();
-            double y = py + RANDOM.nextGaussian() * layer.spreadY();
-            double z = pz + RANDOM.nextGaussian() * layer.spreadZ();
-            double vx = RANDOM.nextGaussian() * layer.speed(), vy = RANDOM.nextGaussian() * layer.speed(), vz = RANDOM.nextGaussian() * layer.speed();
+            x += RANDOM.nextGaussian() * layer.spreadX(); y += RANDOM.nextGaussian() * layer.spreadY(); z += RANDOM.nextGaussian() * layer.spreadZ();
+            vx += RANDOM.nextGaussian() * layer.speed(); vy += RANDOM.nextGaussian() * layer.speed(); vz += RANDOM.nextGaussian() * layer.speed();
             boolean essential = i < split.essential();
-            try { level.addParticle(particle(layer.particle()), essential, x, y, z, vx, vy, vz); }
+            try { level.addParticle(particle(layer, taper), essential, x, y, z, vx, vy, vz); }
             catch (Throwable ignored) { return; }
         }
         if (kind == SpiritFxKind.STOMP_IMPACT && mc.player != null && source == mc.player.getId()) {

@@ -73,4 +73,30 @@ class SpiritFxDefinitionTest {
         var format = valid(); format.addProperty("format", 2);
         assertThrows(IllegalArgumentException.class, () -> SpiritFxDefinition.parse(SpiritFxKind.DASH, format));
     }
+
+    @Test void shapeFieldsParseWithDefaults() {
+        var json = valid(); var l = json.getAsJsonArray("layers").get(1).getAsJsonObject();
+        l.addProperty("shape", "ring"); l.addProperty("radius", 0.5); l.addProperty("color", "#ffd27a"); l.addProperty("size", 0.4); l.addProperty("lifetime", 6);
+        var d = SpiritFxDefinition.parse(SpiritFxKind.DASH, json);
+        assertEquals("burst", d.layers().get(0).shape());
+        var ring = d.layers().get(1);
+        assertEquals("ring", ring.shape()); assertEquals(0xFFD27A, ring.rgb()); assertEquals(0.4f, ring.size(), 1e-6); assertEquals(6, ring.lifetime());
+    }
+
+    @Test void badShapeFieldsAreRejected() {
+        for (var bad : new String[][] {{"shape", "spiral"}, {"color", "#FFD27A"}, {"color", "red"}}) {
+            var json = valid(); json.getAsJsonArray("layers").get(0).getAsJsonObject().addProperty(bad[0], bad[1]);
+            assertThrows(IllegalArgumentException.class, () -> SpiritFxDefinition.parse(SpiritFxKind.DASH, json), bad[0] + "=" + bad[1]);
+        }
+        var big = valid(); big.getAsJsonArray("layers").get(0).getAsJsonObject().addProperty("radius", 9);
+        assertThrows(IllegalArgumentException.class, () -> SpiritFxDefinition.parse(SpiritFxKind.DASH, big));
+    }
+
+    @Test void firstLayerAlwaysGetsTheFirstParticle() {
+        // share 0.25 of a 1-particle budget would round to 0; the must-show particle still lands in layer 1
+        var d = SpiritFxDefinition.parse(SpiritFxKind.DASH, valid());
+        assertEquals("minecraft:cloud", d.layerFor(0, 1).particle());
+        var slot = d.slot(3, 8);
+        assertEquals(1, slot.j()); assertEquals(6, slot.n());
+    }
 }

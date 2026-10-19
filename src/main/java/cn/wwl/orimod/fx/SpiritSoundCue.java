@@ -25,6 +25,7 @@ public record SpiritSoundCue(String sound, float volume, float pitch, boolean lo
         TABLE.put(SpiritFxKind.FORM_SWITCH, new SpiritSoundCue("minecraft:block.beacon.activate", .4f, 1.8f, false));
         TABLE.put(SpiritFxKind.GLIDE, new SpiritSoundCue("minecraft:item.elytra.flying", .2f, 1.3f, true));
         TABLE.put(SpiritFxKind.GRAPPLE_TETHER, null);
+        TABLE.put(SpiritFxKind.BASH_AIM, new SpiritSoundCue("minecraft:block.beacon.ambient", .25f, 1.6f, true));
     }
 
     /** @return the cue, or {@code null} for a silent effect. */

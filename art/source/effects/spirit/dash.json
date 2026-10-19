@@ -1,28 +1,37 @@
 {
   "format": 1,
   "kind": "dash",
-  "notes": "冲刺：一团灵光微粒加少量向外的闪点。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "冲刺：身后渐细的光带 + 闪点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.7,
+      "share": 0.6,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.05,
+        0.05,
+        0.05
       ],
-      "speed": 0.03,
-      "notes": "微光团"
+      "speed": 0.005,
+      "shape": "line",
+      "length": 1.8,
+      "outward": 0.02,
+      "color": "#d8f6ff",
+      "size": 0.42,
+      "lifetime": 10,
+      "notes": "光带"
     },
     {
       "particle": "orimod:spirit_spark",
-      "share": 0.3,
+      "share": 0.4,
       "spread": [
-        0.2,
-        0.2,
-        0.2
+        0.25,
+        0.25,
+        0.25
       ],
       "speed": 0.06,
+      "color": "#ffffff",
+      "size": 0.22,
+      "lifetime": 6,
       "notes": "闪点"
     }
   ]

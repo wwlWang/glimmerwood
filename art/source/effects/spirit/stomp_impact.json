@@ -1,29 +1,59 @@
 {
   "format": 1,
   "kind": "stomp_impact",
-  "notes": "下砸落地：贴地扩散的灵光环加少量尘雾。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "下砸：地面冲击环向外扩散 + 外环闪点 + 中心光柱。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
       "share": 0.6,
       "spread": [
-        1.5,
-        0.06,
-        1.5
+        0.02,
+        0.02,
+        0.02
       ],
-      "speed": 0.02,
-      "notes": "地面光环"
+      "speed": 0.005,
+      "shape": "ring",
+      "radius": 0.4,
+      "outward": 0.35,
+      "color": "#bfeaff",
+      "size": 0.45,
+      "lifetime": 12,
+      "notes": "冲击环"
     },
     {
-      "particle": "minecraft:cloud",
-      "share": 0.4,
+      "particle": "orimod:spirit_spark",
+      "share": 0.25,
       "spread": [
-        1.2,
-        0.05,
-        1.2
+        0.02,
+        0.02,
+        0.02
       ],
-      "speed": 0.03,
-      "notes": "尘雾"
+      "speed": 0.01,
+      "shape": "ring",
+      "radius": 0.2,
+      "outward": 0.55,
+      "color": "#ffffff",
+      "size": 0.25,
+      "lifetime": 7,
+      "notes": "外环闪点"
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.15,
+      "spread": [
+        0.05,
+        0.05,
+        0.05
+      ],
+      "speed": 0.01,
+      "shape": "column",
+      "radius": 0.3,
+      "length": 0.6,
+      "outward": 0.04,
+      "color": "#e0f6ff",
+      "size": 0.35,
+      "lifetime": 14,
+      "notes": "中心光柱"
     }
   ]
 }

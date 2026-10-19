@@ -7,20 +7,22 @@ package cn.wwl.orimod.fx;
  * so the gameplay signal stays readable; the rest of {@code base} is decorative and scaled.
  */
 public enum SpiritFxKind {
-    BLADE_HIT(0, 4, 1, .12, .12, .12, .03),
+    BLADE_HIT(0, 10, 3, .12, .12, .12, .03),
     STOMP_IMPACT(1, 20, 4, 1.5, .06, 1.5, .02),
     ARROW_TRAIL(2, 1, 1, 0, 0, 0, 0),
     CHECKPOINT_REACHED(3, 12, 3, .4, .5, .4, .015),
     ROUTE_MARKER(4, 1, 1, .2, .1, .2, 0),
-    DASH(5, 8, 2, .3, .3, .3, .02),
-    DOUBLE_JUMP(6, 8, 2, .3, .05, .3, .01),
-    WALL_JUMP(7, 6, 2, .1, .4, .1, .02),
-    BASH(8, 12, 3, .3, .3, .3, .04),
-    GRAPPLE_HOOK(9, 6, 2, .15, .15, .15, .02),
-    FORM_SWITCH(10, 16, 4, .3, .8, .3, .02),
+    DASH(5, 14, 5, .3, .3, .3, .02),
+    DOUBLE_JUMP(6, 12, 4, .3, .05, .3, .01),
+    WALL_JUMP(7, 10, 3, .1, .4, .1, .02),
+    BASH(8, 18, 6, .3, .3, .3, .04),
+    GRAPPLE_HOOK(9, 10, 3, .15, .15, .15, .02),
+    FORM_SWITCH(10, 20, 6, .3, .8, .3, .02),
     /** Persistent: spawned every client tick while the server keeps the effect alive. */
-    GLIDE(11, 2, 1, .25, .1, .25, 0, true),
-    GRAPPLE_TETHER(12, 3, 1, 0, 0, 0, 0, true);
+    GLIDE(11, 3, 1, .25, .1, .25, 0, true),
+    GRAPPLE_TETHER(12, 4, 2, 0, 0, 0, 0, true),
+    /** Persistent (R32): ring around the player while Bash aims; the launch itself is {@link #BASH}. */
+    BASH_AIM(13, 4, 2, 0, 0, 0, 0, true);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

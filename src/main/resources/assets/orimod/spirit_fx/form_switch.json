@@ -3,19 +3,45 @@
   "kind": "form_switch",
   "layers": [
     {
+      "color": "#e0d4ff",
+      "length": 1.8,
+      "lifetime": 18,
+      "outward": 0.06,
       "particle": "orimod:spirit_mote",
-      "share": 0.75,
-      "speed": 0.02,
+      "radius": 0.45,
+      "shape": "column",
+      "share": 0.5,
+      "size": 0.38,
+      "speed": 0.005,
       "spread": [
-        0.3,
-        0.8,
-        0.3
+        0.05,
+        0.05,
+        0.05
       ]
     },
     {
-      "particle": "minecraft:glow",
-      "share": 0.25,
-      "speed": 0.02,
+      "color": "#c8f4ff",
+      "lifetime": 16,
+      "outward": 0.1,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.6,
+      "shape": "ring",
+      "share": 0.3,
+      "size": 0.32,
+      "speed": 0.005,
+      "spread": [
+        0.03,
+        0.03,
+        0.03
+      ]
+    },
+    {
+      "color": "#ffffff",
+      "lifetime": 8,
+      "particle": "orimod:spirit_spark",
+      "share": 0.2,
+      "size": 0.2,
+      "speed": 0.04,
       "spread": [
         0.3,
         0.8,

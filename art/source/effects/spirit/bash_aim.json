@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "kind": "bash_aim",
+  "notes": "Bash 瞄准：玩家周围旋转的金色光环（持续）。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "layers": [
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 1,
+      "spread": [
+        0.01,
+        0.01,
+        0.01
+      ],
+      "speed": 0,
+      "shape": "ring",
+      "radius": 1.1,
+      "color": "#ffd27a",
+      "size": 0.4,
+      "lifetime": 6,
+      "notes": "瞄准环"
+    }
+  ]
+}

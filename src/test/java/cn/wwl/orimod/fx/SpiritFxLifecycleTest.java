@@ -32,9 +32,9 @@ class SpiritFxLifecycleTest {
         assertEquals(kind.persistent(), cue.loop(), "only persistent effects loop: " + kind);
     }
 
-    @Test void persistentKindsAreTheTwoTrails() {
+    @Test void persistentKindsAreTheTrailsAndTheBashAimRing() {
         var persistent = java.util.Arrays.stream(SpiritFxKind.values()).filter(SpiritFxKind::persistent).toList();
-        assertEquals(List.of(SpiritFxKind.GLIDE, SpiritFxKind.GRAPPLE_TETHER), persistent);
+        assertEquals(List.of(SpiritFxKind.GLIDE, SpiritFxKind.GRAPPLE_TETHER, SpiritFxKind.BASH_AIM), persistent);
     }
 
     @Test void startStopAndHeartbeat() {

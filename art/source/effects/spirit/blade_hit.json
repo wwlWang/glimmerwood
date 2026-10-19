@@ -1,29 +1,39 @@
 {
   "format": 1,
   "kind": "blade_hit",
-  "notes": "灵光刃命中：先一半亮白闪点（必显），再一半原版暴击星保留打击感。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "灵刃：身前 140° 横扫弧光 + 命中闪点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "orimod:spirit_spark",
-      "share": 0.5,
+      "particle": "orimod:spirit_mote",
+      "share": 0.6,
       "spread": [
-        0.1,
-        0.1,
-        0.1
+        0.03,
+        0.03,
+        0.03
       ],
-      "speed": 0.05,
-      "notes": "命中闪点"
+      "speed": 0.005,
+      "shape": "arc",
+      "radius": 1.0,
+      "length": 0.5,
+      "outward": 0.12,
+      "color": "#e8fbff",
+      "size": 0.32,
+      "lifetime": 8,
+      "notes": "扫弧"
     },
     {
-      "particle": "minecraft:crit",
-      "share": 0.5,
+      "particle": "orimod:spirit_spark",
+      "share": 0.4,
       "spread": [
-        0.12,
-        0.12,
-        0.12
+        0.15,
+        0.15,
+        0.15
       ],
-      "speed": 0.03,
-      "notes": "原版暴击星"
+      "speed": 0.08,
+      "color": "#ffffff",
+      "size": 0.22,
+      "lifetime": 6,
+      "notes": "命中闪点"
     }
   ]
 }

@@ -3,8 +3,11 @@
   "kind": "arrow_trail",
   "layers": [
     {
+      "color": "#a8e6ff",
+      "lifetime": 10,
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "share": 1,
+      "size": 0.3,
       "speed": 0,
       "spread": [
         0,

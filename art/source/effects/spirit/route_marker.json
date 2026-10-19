@@ -1,17 +1,20 @@
 {
   "format": 1,
   "kind": "route_marker",
-  "notes": "挑战路线标记：单颗微光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "路线标记：一颗明亮的浮动光点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "share": 1,
       "spread": [
-        0.2,
         0.1,
-        0.2
+        0.1,
+        0.1
       ],
       "speed": 0,
+      "color": "#8fdcff",
+      "size": 0.4,
+      "lifetime": 30,
       "notes": "标记"
     }
   ]

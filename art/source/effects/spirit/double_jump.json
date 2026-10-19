@@ -1,28 +1,37 @@
 {
   "format": 1,
   "kind": "double_jump",
-  "notes": "二段跳：脚下扁平的光环。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "二段跳：脚下水平光环向外扩散 + 少量闪点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.75,
+      "share": 0.65,
       "spread": [
-        0.35,
-        0.04,
-        0.35
+        0.02,
+        0.02,
+        0.02
       ],
-      "speed": 0.015,
-      "notes": "光环"
+      "speed": 0.005,
+      "shape": "ring",
+      "radius": 0.35,
+      "outward": 0.18,
+      "color": "#c8f4ff",
+      "size": 0.38,
+      "lifetime": 12,
+      "notes": "跳环"
     },
     {
       "particle": "orimod:spirit_spark",
-      "share": 0.25,
+      "share": 0.35,
       "spread": [
-        0.25,
-        0.03,
-        0.25
+        0.2,
+        0.05,
+        0.2
       ],
-      "speed": 0.04,
+      "speed": 0.03,
+      "color": "#ffffff",
+      "size": 0.2,
+      "lifetime": 6,
       "notes": "闪点"
     }
   ]

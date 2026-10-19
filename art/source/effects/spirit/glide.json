@@ -1,18 +1,38 @@
 {
   "format": 1,
   "kind": "glide",
-  "notes": "持续：滑翔时身后缓慢飘散的微光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "滑翔：身后飘散的光丝（持续）。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "share": 0.67,
       "spread": [
         0.25,
-        0.1,
+        0.05,
         0.25
       ],
       "speed": 0.005,
-      "notes": "飘散"
+      "shape": "line",
+      "length": 1.2,
+      "outward": 0.01,
+      "color": "#d8f6ff",
+      "size": 0.3,
+      "lifetime": 18,
+      "notes": "光丝"
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.33,
+      "spread": [
+        0.4,
+        0.1,
+        0.4
+      ],
+      "speed": 0.01,
+      "color": "#ffffff",
+      "size": 0.15,
+      "lifetime": 10,
+      "notes": "细闪"
     }
   ]
 }

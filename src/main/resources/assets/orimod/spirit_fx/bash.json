@@ -3,23 +3,48 @@
   "kind": "bash",
   "layers": [
     {
+      "color": "#ffd27a",
+      "lifetime": 8,
+      "outward": 0.45,
       "particle": "orimod:spirit_spark",
-      "share": 0.5,
-      "speed": 0.08,
+      "radius": 0.3,
+      "shape": "ring",
+      "share": 0.35,
+      "size": 0.35,
+      "speed": 0.01,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.02,
+        0.02,
+        0.02
       ]
     },
     {
+      "color": "#fff0c0",
+      "length": 2.2,
+      "lifetime": 12,
+      "outward": 0.02,
       "particle": "orimod:spirit_mote",
-      "share": 0.5,
-      "speed": 0.04,
+      "shape": "line",
+      "share": 0.4,
+      "size": 0.45,
+      "speed": 0.005,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.05,
+        0.05,
+        0.05
+      ]
+    },
+    {
+      "color": "#ffe2a0",
+      "lifetime": 14,
+      "particle": "orimod:spirit_mote",
+      "share": 0.25,
+      "size": 0.3,
+      "speed": 0.05,
+      "spread": [
+        0.35,
+        0.35,
+        0.35
       ]
     }
   ]

@@ -1,17 +1,20 @@
 {
   "format": 1,
   "kind": "arrow_trail",
-  "notes": "灵光箭拖尾：每刻一颗微光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "灵箭拖尾：每 tick 一颗较大的光点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "share": 1,
       "spread": [
         0,
         0,
         0
       ],
       "speed": 0,
+      "color": "#a8e6ff",
+      "size": 0.3,
+      "lifetime": 10,
       "notes": "拖尾"
     }
   ]

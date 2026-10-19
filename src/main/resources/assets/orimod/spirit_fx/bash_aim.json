@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "kind": "bash_aim",
+  "layers": [
+    {
+      "color": "#ffd27a",
+      "lifetime": 6,
+      "particle": "orimod:spirit_mote",
+      "radius": 1.1,
+      "shape": "ring",
+      "share": 1,
+      "size": 0.4,
+      "speed": 0,
+      "spread": [
+        0.01,
+        0.01,
+        0.01
+      ]
+    }
+  ]
+}

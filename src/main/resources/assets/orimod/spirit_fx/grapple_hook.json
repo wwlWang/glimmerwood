@@ -3,23 +3,31 @@
   "kind": "grapple_hook",
   "layers": [
     {
+      "color": "#9fffe0",
+      "lifetime": 7,
       "particle": "orimod:spirit_spark",
-      "share": 0.6,
-      "speed": 0.04,
+      "share": 0.5,
+      "size": 0.3,
+      "speed": 0.1,
       "spread": [
-        0.15,
-        0.15,
-        0.15
+        0.1,
+        0.1,
+        0.1
       ]
     },
     {
+      "color": "#b8fff0",
+      "length": 1.5,
+      "lifetime": 10,
       "particle": "orimod:spirit_mote",
-      "share": 0.4,
-      "speed": 0.02,
+      "shape": "line",
+      "share": 0.5,
+      "size": 0.35,
+      "speed": 0.005,
       "spread": [
-        0.15,
-        0.15,
-        0.15
+        0.04,
+        0.04,
+        0.04
       ]
     }
   ]

@@ -1,29 +1,41 @@
 {
   "format": 1,
   "kind": "checkpoint_reached",
-  "notes": "挑战检查点：上升的微光加原版末地烛。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "检查点：金色上升光柱 + 光环。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.7,
+      "share": 0.5,
       "spread": [
-        0.4,
-        0.5,
-        0.4
+        0.05,
+        0.05,
+        0.05
       ],
-      "speed": 0.015,
-      "notes": "微光"
+      "speed": 0.005,
+      "shape": "column",
+      "radius": 0.5,
+      "length": 1.6,
+      "outward": 0.03,
+      "color": "#ffe9a0",
+      "size": 0.35,
+      "lifetime": 24,
+      "notes": "光柱"
     },
     {
-      "particle": "minecraft:end_rod",
-      "share": 0.3,
+      "particle": "orimod:spirit_mote",
+      "share": 0.5,
       "spread": [
-        0.4,
-        0.5,
-        0.4
+        0.03,
+        0.03,
+        0.03
       ],
-      "speed": 0.015,
-      "notes": "末地烛"
+      "speed": 0.005,
+      "shape": "ring",
+      "radius": 0.7,
+      "color": "#fff4c8",
+      "size": 0.3,
+      "lifetime": 20,
+      "notes": "光环"
     }
   ]
 }

@@ -3,13 +3,32 @@
   "kind": "glide",
   "layers": [
     {
+      "color": "#d8f6ff",
+      "length": 1.2,
+      "lifetime": 18,
+      "outward": 0.01,
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "shape": "line",
+      "share": 0.67,
+      "size": 0.3,
       "speed": 0.005,
       "spread": [
         0.25,
-        0.1,
+        0.05,
         0.25
+      ]
+    },
+    {
+      "color": "#ffffff",
+      "lifetime": 10,
+      "particle": "orimod:spirit_spark",
+      "share": 0.33,
+      "size": 0.15,
+      "speed": 0.01,
+      "spread": [
+        0.4,
+        0.1,
+        0.4
       ]
     }
   ]

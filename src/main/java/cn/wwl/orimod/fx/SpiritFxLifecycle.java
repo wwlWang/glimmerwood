@@ -29,6 +29,7 @@ public final class SpiritFxLifecycle {
         var s = player.getData(SpiritData.MOVEMENT);
         if (s.mode == MoveMode.GLIDE) set.add(SpiritFxKind.GLIDE);
         if (s.grapple != null) set.add(SpiritFxKind.GRAPPLE_TETHER);
+        if (s.bash != null) set.add(SpiritFxKind.BASH_AIM);
         return set;
     }
 

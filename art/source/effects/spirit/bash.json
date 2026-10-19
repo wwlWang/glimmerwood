@@ -1,29 +1,55 @@
 {
   "format": 1,
   "kind": "bash",
-  "notes": "Bash：弹射瞬间的闪点爆发。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "Bash 释放：金色爆发环 + 发射方向光带 + 余晖。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_spark",
-      "share": 0.5,
+      "share": 0.35,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.02,
+        0.02,
+        0.02
       ],
-      "speed": 0.08,
-      "notes": "爆发"
+      "speed": 0.01,
+      "shape": "ring",
+      "radius": 0.3,
+      "outward": 0.45,
+      "color": "#ffd27a",
+      "size": 0.35,
+      "lifetime": 8,
+      "notes": "释放环"
     },
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.5,
+      "share": 0.4,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.05,
+        0.05,
+        0.05
       ],
-      "speed": 0.04,
-      "notes": "余光"
+      "speed": 0.005,
+      "shape": "line",
+      "length": 2.2,
+      "outward": 0.02,
+      "color": "#fff0c0",
+      "size": 0.45,
+      "lifetime": 12,
+      "notes": "发射光带"
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.25,
+      "spread": [
+        0.35,
+        0.35,
+        0.35
+      ],
+      "speed": 0.05,
+      "color": "#ffe2a0",
+      "size": 0.3,
+      "lifetime": 14,
+      "notes": "余晖"
     }
   ]
 }

@@ -1,28 +1,38 @@
 {
   "format": 1,
   "kind": "wall_jump",
-  "notes": "蹬墙跳：沿墙竖直的光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
+  "notes": "蹬墙跳：竖直光柱 + 闪点。 R32 外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
       "particle": "orimod:spirit_mote",
-      "share": 0.7,
+      "share": 0.6,
       "spread": [
-        0.08,
-        0.4,
-        0.08
+        0.04,
+        0.04,
+        0.04
       ],
-      "speed": 0.02,
-      "notes": "竖条"
+      "speed": 0.005,
+      "shape": "column",
+      "radius": 0.15,
+      "length": 1.4,
+      "outward": 0.02,
+      "color": "#c8f4ff",
+      "size": 0.34,
+      "lifetime": 12,
+      "notes": "竖柱"
     },
     {
       "particle": "orimod:spirit_spark",
-      "share": 0.3,
+      "share": 0.4,
       "spread": [
-        0.06,
+        0.1,
         0.3,
-        0.06
+        0.1
       ],
-      "speed": 0.05,
+      "speed": 0.07,
+      "color": "#ffffff",
+      "size": 0.2,
+      "lifetime": 6,
       "notes": "闪点"
     }
   ]

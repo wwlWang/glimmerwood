@@ -3,23 +3,32 @@
   "kind": "dash",
   "layers": [
     {
+      "color": "#d8f6ff",
+      "length": 1.8,
+      "lifetime": 10,
+      "outward": 0.02,
       "particle": "orimod:spirit_mote",
-      "share": 0.7,
-      "speed": 0.03,
+      "shape": "line",
+      "share": 0.6,
+      "size": 0.42,
+      "speed": 0.005,
       "spread": [
-        0.3,
-        0.3,
-        0.3
+        0.05,
+        0.05,
+        0.05
       ]
     },
     {
+      "color": "#ffffff",
+      "lifetime": 6,
       "particle": "orimod:spirit_spark",
-      "share": 0.3,
+      "share": 0.4,
+      "size": 0.22,
       "speed": 0.06,
       "spread": [
-        0.2,
-        0.2,
-        0.2
+        0.25,
+        0.25,
+        0.25
       ]
     }
   ]

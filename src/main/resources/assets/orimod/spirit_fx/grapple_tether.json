@@ -3,13 +3,18 @@
   "kind": "grapple_tether",
   "layers": [
     {
+      "color": "#9fffe0",
+      "length": 0.8,
+      "lifetime": 8,
       "particle": "orimod:spirit_mote",
-      "share": 1.0,
+      "shape": "line",
+      "share": 1,
+      "size": 0.3,
       "speed": 0,
       "spread": [
-        0,
-        0,
-        0
+        0.03,
+        0.03,
+        0.03
       ]
     }
   ]
