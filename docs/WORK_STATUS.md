@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-20 00:33（UTC+8）发布包重建（R95，60713ab967）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-60713ab967.jar`，sha256 `9b3affa3eff70b1617af9aac78cfd514ccd077589351285df6739702d08c4649`；同目录有 `gemrender-0.1.17.jar`。
+
 2026-10-20 00:35（UTC+8）云端 ori-r95（姿态覆盖：跑 / 游 / 滑翔+鞘翅 / 手持物）：用户「弄完一起看」，一个 jar 覆盖四项。参考：WotW 游泳冲刺、Kuro 羽毛滑翔、Luma Pools、E3 2019 预告（仅截剪影对照，`shots/r95-ref-*.png`，不打包）。详见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md#r95--pose-overrides-run--swim--glide--elytra--held-items)。
 - **新姿态层：** `SpiritPoseLayer` / `SpiritPoses` 用模型系角度写绝对局部旋转。GemRender 会把 override 平均，所以对被覆盖骨骼把下层（基础、跑、落地跑、空中、overlay）蒙版按 1−占比缩小。
 - **关键修正：** glb 节点链把世界矩阵缩放约 0.08，JOML `getNormalizedRotation` 给出非单位且错误的四元数，导致姿态轴错（前臂弯曲变成扭转）。现先归一化列（`SpiritPoseLayerTest`）。修后游戏内混合结果与目标一致（`-Dorimod.debugPose=true` 时 poseError=0），持火把手高 0.36→0.68 m。
