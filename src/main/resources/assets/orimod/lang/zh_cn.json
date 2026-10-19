@@ -213,5 +213,12 @@
   "message.orimod.cell_full": "这类灵格已达上限",
   "message.orimod.cell_dormant": "唤醒灵核之前，灵格不会响应",
   "ability.orimod.launch": "灵跃",
-  "ability.orimod.launch.description": "潜行 + 跳跃：沿视线飞出。地面上按住潜行直到听到提示音即蓄满；空中每次腾空可用一次。灵跃会恢复二段跳与冲刺。"
+  "ability.orimod.launch.description": "潜行 + 跳跃：沿视线飞出。地面上按住潜行直到听到提示音即蓄满；空中每次腾空可用一次。灵跃会恢复二段跳与冲刺。",
+  "key.orimod.light_burst": "光爆",
+  "entity.orimod.light_burst": "光爆",
+  "ability.orimod.light_burst": "光爆",
+  "ability.orimod.light_burst.description": "扔出一颗光球（15 能量）。飞行中可被猛击借力；撞到东西、被猛击或两秒后爆炸，伤害附近敌对生物，不破坏方块。",
+  "message.orimod.light_burst.not_spirit": "光爆需要精灵形态",
+  "message.orimod.light_burst.locked": "请先在能力面板解锁光爆",
+  "message.orimod.light_burst.energy": "能量不足，光爆需要 15"
 }

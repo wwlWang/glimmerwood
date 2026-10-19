@@ -62,6 +62,8 @@ public final class SpiritTargets {
                 || entity.level() != player.level() || entity.getType().is(BASH_IMMUNE)
                 || entity.getBbWidth() > MAX_BASH_WIDTH || entity.getBbHeight() > MAX_BASH_HEIGHT) return false;
         if (entity instanceof FishingHook) return false;
+        // R39: a flying Light Burst is a Bash anchor for everyone, including its thrower.
+        if (entity instanceof cn.wwl.orimod.combat.LightBurst) return true;
         if (entity instanceof Projectile projectile) {
             Entity owner = projectile.getOwner();
             // Foreign lodged arrows intentionally remain anchors, with the same per-target cooldown.

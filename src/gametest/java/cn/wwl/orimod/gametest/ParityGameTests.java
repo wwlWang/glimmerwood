@@ -51,6 +51,26 @@ public final class ParityGameTests {
                 h.assertValueEqual(s.acceptedLaunches, 1, "Second air Launch in one airtime");
             } finally { SpiritMovement.cancel(p, s); }
         });
+        add(tests, "light_burst_throw_rules_and_blast", h -> {
+            var p = spirit(h, 63); p.setData(SpiritData.ENERGY, 100f);
+            h.assertTrue(cn.wwl.orimod.combat.LightBurst.toss(p) == null, "Light Burst thrown while locked");
+            p.setData(SpiritData.ABILITIES, 255);
+            var burst = cn.wwl.orimod.combat.LightBurst.toss(p);
+            h.assertTrue(burst != null, "Unlocked Light Burst refused");
+            Fixtures.near(h, p.getData(SpiritData.ENERGY), 100 - cn.wwl.orimod.combat.LightBurst.COST, "Energy after Light Burst");
+            h.assertTrue(cn.wwl.orimod.combat.LightBurst.toss(p) == null, "Light Burst ignored the cooldown");
+            h.assertTrue(cn.wwl.orimod.movement.SpiritTargets.eligible(p, burst), "Own Light Burst is not a Bash anchor");
+            var zombie = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 7.5)); zombie.setNoAi(true);
+            var pig = h.spawn(net.minecraft.world.entity.EntityType.PIG, new Vec3(6.5, 2, 7.5)); pig.setNoAi(true);
+            try {
+                burst.setPos(h.absoluteVec(new Vec3(5.5, 2.5, 7)));
+                h.assertValueEqual(burst.detonate(), 1, "Blast should hit exactly the zombie");
+                Fixtures.near(h, zombie.getMaxHealth() - zombie.getHealth(), cn.wwl.orimod.combat.LightBurst.DAMAGE, "Blast damage");
+                Fixtures.near(h, pig.getMaxHealth() - pig.getHealth(), 0, "Blast hurt a passive mob");
+                h.assertTrue(burst.isRemoved(), "Burst survived its blast");
+                h.assertValueEqual(burst.detonate(), 0, "Burst exploded twice");
+            } finally { zombie.discard(); pig.discard(); if (!burst.isRemoved()) burst.discard(); }
+        });
         return tests;
     }
 

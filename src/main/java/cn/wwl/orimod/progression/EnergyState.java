@@ -6,6 +6,8 @@ public final class EnergyState {
     public long soulLinkReadyAt;
     /** R37: game time when the companion may fire the next Spirit Flame. */
     public long flameReadyAt;
+    /** R39: next Light Burst throw. */
+    public long burstReadyAt;
     public long lastSpent, lastHurt, healReadyAt;
     public boolean pendingHeal;
 }

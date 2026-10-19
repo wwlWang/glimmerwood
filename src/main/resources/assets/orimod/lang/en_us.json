@@ -213,5 +213,12 @@
   "message.orimod.cell_full": "You cannot hold more cells of this kind",
   "message.orimod.cell_dormant": "The cell stays dormant until you awaken the Spirit Core",
   "ability.orimod.launch": "Launch",
-  "ability.orimod.launch.description": "Crouch + jump: fly along your view. On the ground hold crouch until the chime to charge it; in the air you get one Launch per airtime. A Launch refreshes double jump and dash."
+  "ability.orimod.launch.description": "Crouch + jump: fly along your view. On the ground hold crouch until the chime to charge it; in the air you get one Launch per airtime. A Launch refreshes double jump and dash.",
+  "key.orimod.light_burst": "Light Burst",
+  "entity.orimod.light_burst": "Light Burst",
+  "ability.orimod.light_burst": "Light Burst",
+  "ability.orimod.light_burst.description": "Throw an orb of light (15 energy). It can be Bashed while it flies and explodes on impact, on Bash or after two seconds, hurting nearby hostiles without breaking blocks.",
+  "message.orimod.light_burst.not_spirit": "Light Burst needs Spirit Form",
+  "message.orimod.light_burst.locked": "Unlock Light Burst in the ability panel first",
+  "message.orimod.light_burst.energy": "Not enough energy for Light Burst (15)"
 }

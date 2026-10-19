@@ -13,6 +13,9 @@ public final class OriEntities {
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, OriMod.MOD_ID);
     public static final Supplier<EntityType<PracticeTarget>> PRACTICE_TARGET = TYPES.register("practice_target", () -> EntityType.Builder
             .of(PracticeTarget::new, MobCategory.MISC).sized(.9f, 1.4f).clientTrackingRange(8).build("orimod:practice_target"));
+    /** R39: thrown Light Burst orb. */
+    public static final Supplier<EntityType<cn.wwl.orimod.combat.LightBurst>> LIGHT_BURST = TYPES.register("light_burst", () -> EntityType.Builder
+            .<cn.wwl.orimod.combat.LightBurst>of(cn.wwl.orimod.combat.LightBurst::new, MobCategory.MISC).sized(.35f, .35f).clientTrackingRange(8).updateInterval(2).build("orimod:light_burst"));
     public static void register(IEventBus bus) { TYPES.register(bus); bus.addListener(OriEntities::attributes); }
     private static void attributes(EntityAttributeCreationEvent event) { event.put(PRACTICE_TARGET.get(), PracticeTarget.attributes().build()); }
     private OriEntities() {}

@@ -202,3 +202,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R38：灵跃 Launch / Charge Jump
 
 492 JUnit（`LaunchRulesTest` 方向抬升、速度、门槛；协议编号 16；一次性标签含 LAUNCH）、197 GameTest（`ParityGameTests`：无技能或未蓄满不触发、蓄满地面灵跃速度与上升、空中一次并恢复二段跳/冲刺）。
+
+## R39：光爆 Light Burst
+
+494 JUnit（`LightBurstTest` 拒绝原因；技能定义含 light_burst）、199 GameTest（新增：未解锁不能扔、扣 15 能量、冷却、自己的光爆可猛击、爆炸只伤僵尸 6 点不伤猪、只爆一次）。
