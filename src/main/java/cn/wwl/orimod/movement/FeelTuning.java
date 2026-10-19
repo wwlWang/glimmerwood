@@ -56,6 +56,30 @@ public final class FeelTuning {
     public static final float SQUASH_STIFFNESS = 260, SQUASH_DAMPING = 14;
     public static final float EAR_STIFFNESS = 120, EAR_DAMPING = 9;
     public static final float EAR_TURN = .0016f, EAR_FALL = .55f, EAR_MAX = .6f;
+    // ---- R92 secondary motion: multi-segment ears (3), feelers (3) and tail (5), see SpringChain ---------------
+    /** Per-segment spring stiffness (1/s^2) / damping (1/s) / forcing gain, root to tip. Softer toward the tip = more lag. */
+    public static final float[] EAR_CHAIN_K = {150, 105, 70}, EAR_CHAIN_C = {10, 8, 6.5f}, EAR_CHAIN_G = {16, 14, 11};
+    public static final float[] FEELER_CHAIN_K = {190, 130, 85}, FEELER_CHAIN_C = {11, 9, 7}, FEELER_CHAIN_G = {14, 13, 11};
+    public static final float[] TAIL_CHAIN_K = {120, 95, 75, 58, 44}, TAIL_CHAIN_C = {9, 8, 7, 6, 5.5f}, TAIL_CHAIN_G = {9, 9, 8.5f, 8, 7.5f};
+    public static final float EAR_CHAIN_LIMIT = .55f, FEELER_CHAIN_LIMIT = .5f, TAIL_CHAIN_LIMIT = .42f;
+    /** Forcing normalisers: one "unit" of force is this much body motion (m/s^2, m/s, rad/s). */
+    public static final float SEC_ACCEL_UNIT = 22, SEC_VERTICAL_ACCEL_UNIT = 28, SEC_FALL_UNIT = 14, SEC_TURN_UNIT = 7, SEC_FORCE_MAX = 1.6f;
+    /** Airflow drag: ears and tail stream back with forward speed (units per m/s / 6.4). */
+    public static final float SEC_DRAG = .55f;
+    /** Idle travelling sway amplitude (force units) and rate (rad/s); tail also swings with the stride. */
+    public static final float SEC_IDLE_SWAY = .18f, SEC_IDLE_RATE = 2.1f, SEC_TAIL_GAIT_SWAY = .45f;
+    /** Landing flop and take-off flick (spring velocity impulse, rad/s, scaled by impact). */
+    public static final float SEC_LAND_KICK = 3.2f, SEC_JUMP_KICK = 1.6f;
+    /** Ori silhouette: the large ears rest swept up and back into a V (rad, base/mid/tip) instead of hanging flat. */
+    public static final float[] EAR_REST_LIFT = {.62f, .18f, -.08f};
+    public static final float EAR_REST_SPREAD = .16f;
+    /** Tail rest curve about the pitch axis (rad, base to tip): droop at the root, curl up toward the tip. */
+    public static final float[] TAIL_REST_LIFT = {-.38f, -.05f, .14f, .2f, .22f};
+    /** Feelers rest swept back over the head (rad about pitch, negative = back), base to tip. */
+    public static final float[] FEELER_REST_PITCH = {-.5f, -.18f, -.08f};
+    /** Ori's ready stance: the body dips forward a little when idle (rad). */
+    public static final float READY_LEAN = .12f;
+
     // ---- camera and FX -----------------------------------------------------------------------------------
     public static final float FOV_KICK_DASH = .1f, FOV_KICK_SPEED = .06f, FOV_RATE = 10;
     public static final float TRAIL_MIN_SPEED = 1.0f;     // m/s

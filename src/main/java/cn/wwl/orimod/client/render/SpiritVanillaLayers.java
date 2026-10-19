@@ -40,8 +40,9 @@ public final class SpiritVanillaLayers {
 
     public static Map<String, Long> diagnostics() { return Map.copyOf(CALLS); }
 
+    /** R92: Ori is a light source; the dark vanilla blob is replaced by the cool light pool in SpiritAura. */
     public static float shadowRadius(Player player) {
-        return SpiritShaders.active() ? 0 : .30f * player.getScale();
+        return 0;
     }
 
     public static PoseStack base(PoseStack initial, Player player, SpiritPlayerVisual.Frame frame) {

@@ -22,10 +22,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** Owns the weighted mesh only while a player uses the spirit form. */
 public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
-    /** R88: minimum block light on the spirit body (0-15): subtle luminescence without washing out the shading. */
-    public static final int SELF_LIGHT = 10;
+    /** Minimum block light on the spirit body (0-15). R92: full (15): Ori is a light source, white at any hour (R88 used 10, which read grey-pink at night). */
+    public static final int SELF_LIGHT = 15;
     private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "models/entity/ori.glb");
     private static final Map<UUID, Body> BODIES = new ConcurrentHashMap<>();
+    /** R92: when any spirit body last posed; while visuals are live, a spirit never falls back to the humanoid. */
+    private static volatile long lastPosedNanos = Long.MIN_VALUE / 2;
+
+    /**
+     * R92: true while the spirit body is the intended visual but this frame has no pose yet (the Flywheel visual was just
+     * recreated after a teleport or landing re-section). Drawing nothing for that frame beats flashing the vanilla humanoid.
+     */
+    public static boolean hideVanilla(Player player) {
+        return SpiritAppearance.visible(player) && System.nanoTime() - lastPosedNanos < 2_000_000_000L;
+    }
     private final VisualizationContext context;
     private final SpiritAnimation animation;
     private Body body;
@@ -64,8 +74,9 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         var gait = b.animation.gait(); result.put("gaitWalk", gait[0]); result.put("gaitRun", gait[1]); result.put("gaitSprint", gait[2]);
         result.put("baseClip", b.animation.baseClip()); result.put("overlayClip", b.animation.overlayClip());
         result.put("missingClips", b.animation.missingClips());
+        result.put("secondary", b.animation.secondary());
         result.put("aimContactError", b.animation.aimContactError());
-        result.put("sockets", b.socketsReady); result.put("shadow", !SpiritShaders.active() && !player.isInvisible());
+        result.put("sockets", b.socketsReady); result.put("shadow", false);
         result.put("layers", SpiritVanillaLayers.diagnostics());
         if (b.socketsReady) {
             result.put("poseNanos", b.poseNanos);
@@ -111,7 +122,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         private final Matrix4f leftSole = new Matrix4f(), rightSole = new Matrix4f();
         private Vec3 position = Vec3.ZERO;
         private long poseNanos;
-        private boolean socketsReady, animatedThisFrame;
+        private boolean socketsReady, animatedThisFrame, everAnimated;
         Body(VisualizationContext context, Player player, float partialTick, SpiritAnimation animation) {
             super(context, player, partialTick, GemRenderModels.handle(MODEL));
             this.context = context;
@@ -122,7 +133,10 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         @Override public void beginFrame(Context frame) {
             socketsReady = animatedThisFrame = false;
             super.beginFrame(frame);
-            if (animatedThisFrame && pose() != null) {
+            // R92: GemRender may skip re-blending on a frame (frame budget). The previous pose is still the one drawn,
+            // so keep the sockets from it; otherwise frame() returns null and the vanilla humanoid flashes over Ori.
+            if (animatedThisFrame) everAnimated = true;
+            if ((animatedThisFrame || everAnimated) && pose() != null) {
                 Vec3 at = entity.getPosition(frame.partialTick());
                 modelTransform(local, frame.partialTick());
                 world.translation((float)at.x, (float)at.y, (float)at.z).mul(local);
@@ -131,7 +145,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
                 pose().boneMatrix("grip_r", leftGrip).mulLocal(world);
                 pose().boneMatrix("sole_l", rightSole).mulLocal(world);
                 pose().boneMatrix("sole_r", leftSole).mulLocal(world);
-                position = at; poseNanos = System.nanoTime();
+                position = at; poseNanos = System.nanoTime(); lastPosedNanos = poseNanos;
                 socketsReady = true;
             }
         }

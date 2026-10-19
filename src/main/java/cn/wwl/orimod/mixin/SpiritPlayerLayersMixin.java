@@ -32,10 +32,13 @@ public abstract class SpiritPlayerLayersMixin<T extends LivingEntity, M extends 
     @Unique private MultiBufferSource orimod$buffers;
     @Unique private Player orimod$player;
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"), cancellable = true)
     private void orimod$begin(T entity, float yaw, float partial, PoseStack poses, MultiBufferSource buffers, int light, CallbackInfo ci) {
         orimod$frame = entity instanceof Player player && model instanceof PlayerModel<?> ? SpiritPlayerVisual.frame(player) : null;
-        if (orimod$frame == null) return;
+        if (orimod$frame == null) {
+            if (entity instanceof Player player && model instanceof PlayerModel<?> && SpiritPlayerVisual.hideVanilla(player)) ci.cancel();
+            return;
+        }
         orimod$player = (Player)entity;
         orimod$initial = new PoseStack(); orimod$initial.mulPose(poses.last().pose());
         orimod$buffers = buffers;

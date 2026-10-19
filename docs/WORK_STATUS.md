@@ -1,5 +1,13 @@
 # 当前工作状态
 
+2026-10-19 23:00（UTC+8）云端 ori-r92（对照官方图：灵光、耳朵/触须/尾巴物理、姿态）：用户给了三张官方截图（`shots/ref-ori-*.png`），指出动作和发光都不对，耳朵/触须/尾巴太僵。模型技术不变：GemRender glTF 蒙皮网格（`models/entity/ori.glb`，CC BY 4.0 社区模型，非游戏解包资产），骨架里本来就有 ear_*_1..3、antenna_*_1..3、tail_1..5 共 16 节，但 R74 只用一个弹簧掰 ear_1 和 tail_1/2，所以整片在动。
+- **多节物理：** 新增 `movement/SpringChain`（每节以阻尼弹簧追随上一节的绝对角度，同时受同一份惯性力，4 ms 子步，帧率无关），`client/render/SpiritSecondary` 给 10 条链（耳抬/耳摆 ×2、触须俯仰/侧摆 ×2、尾抬/尾摆）共 34 个骨骼角，输入是插值位置算出的身体加速度、转向角速度、下落速度和前进气流；起跳/二段跳和落地给冲量。一个 procedural additive 片段写入全部骨骼，替换旧的 earLag/earPitch。实测：转向时尾尖比尾根晚约 5 tick 达到峰值、摆幅更大并反向过冲（`shots/r92-after-chains.png`），落地耳朵先下甩再回弹（`r92-after-night-land-burst-*`）。
+- **剪影：** 大耳朵静止时上扬后掠成 V（EAR_REST_LIFT 0.62/0.18/−0.08，外张 0.16），触须后掠贴头（不再像兔耳），尾巴根部下垂、尾尖上卷；站立时身体略前倾（READY_LEAN 0.12）。
+- **发光：** 身体最低方块光 10→15，夜里也是纯白不再发灰发粉；SpiritAura 改为 4 层柔光（白芯→淡蓝，半径 0.4–2.7 倍身高），再在头、胸、骨盆、耳尖、触须尖、尾巴上各叠小光晕，光晕贴着剪影走；白天加强 1.35 倍以免被洗掉；脚下最近的地面画一圈冷蓝光池（随离地高度变淡，假动态光），去掉原版黑色影子。
+- **修复：** GemRender 某帧没重新混合姿势时 frame() 为空，原版人形会闪出来盖在 Ori 身上（R90/R91 截图里也有）；现在沿用上一帧姿势，可视对象刚重建时宁可空一帧也不画人形。精灵形态不再出原版疾跑碎屑和落地方块碎片（夜里是黑方块）。
+- 常量都在 FeelTuning（EAR/FEELER/TAIL_CHAIN_*、SEC_*、*_REST_*、READY_LEAN）；光晕常量在 SpiritAura（BLOOM_*、GROUND_*）。`scripts/verify-r92.py <id> --tag before|after --shots DIR` 出前后对比图，汇总 `shots/r92-compare.png`。新增 SpringChainTest 7 项。JUnit 570 / GameTest 235。
+- 局限：没有真正的屏幕空间泛光（无光影包时用加色贴片模拟），光池不照墙面；物理只在客户端视觉层，不碰撞地形（尾巴可能穿进方块）；idle/跑步关键帧本身没重做，膝盖弯曲仍是原片段；只在 Xvfb + llvmpipe 看过，带 Iris 光影包未复查。
+
 2026-10-19 22:33（UTC+8）发布包重建（R91，37f01a83e4）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-37f01a83e4.jar`，sha256 `d7af11960021033267303b563f0bdcea2fccf0cc37e6f169062919c402f5dda7`；同目录有 `gemrender-0.1.17.jar`。
 
 2026-10-19 22:30（UTC+8）云端 ori-r91（自发光与滑翔衔接）：精灵身体最低方块光 10（SpiritPlayerVisual.SELF_LIGHT），夜里也有柔和自发光；光环透明度 0.18/0.26；物品栏里的武器光线加粗 1.8 倍；修复热栏渲染武器时 “Not building!” 崩溃（每次取 buffer）；二段跳那一下按住也能接滑翔，只有地面跳/墙跳的同一按键不会变滑翔。实测 `scripts/verify-r90.py r90-v002`：潜行跳 1.18 格；持跳不滑翔、高 1.623 格；下落每 tick −0.105→−1.349 递增；空中再按出现 glide；空中基础姿势 apex；前倾范围 −0.08..0.22。JUnit 563 / GameTest 235。
