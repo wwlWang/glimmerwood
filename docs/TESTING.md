@@ -356,3 +356,8 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 
 - `OriginalTexturesTest`：每个模型只引用 orimod 贴图，文件存在且是 16×16。
 - `python3 scripts/gen-textures.py` 可重新生成全部贴图。
+
+## ori-r77：实测修正冲刺余速
+
+- `FeelTuningTest`：地面超速在 4–10 tick 内衰减到最高速。
+- 真实客户端：`scripts/verify-r76.py`，加上 record_motion 记录跑、跳、冲刺，用 `scripts/plot_motion.py` 画图。

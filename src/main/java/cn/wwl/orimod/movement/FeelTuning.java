@@ -17,6 +17,7 @@ public final class FeelTuning {
     public static final double AIR_ACCEL = .06;          // vanilla air control .02/tick
     public static final double AIR_DRAG = .012;          // no input in the air: keep momentum
     public static final double OVERSPEED_DECAY_GROUND = .035, OVERSPEED_DECAY_AIR = .008;   // dash/bash/launch carry
+    public static final double OVERSPEED_DAMP_GROUND = .15, OVERSPEED_DAMP_AIR = .02;      // R77: plus this fraction of the excess per tick
     public static final double CROUCH_SCALE = .35, USING_ITEM_SCALE = .45;
     public static final int WALL_JUMP_CONTROL_TICKS = 7; // reduced air steering right after a wall jump
     public static final double WALL_JUMP_CONTROL_SCALE = .25;
@@ -89,7 +90,8 @@ public final class FeelTuning {
         boolean input = wish.lengthSqr() > 1e-4;
         if (speed > top + 1e-6 && (!input || wish.dot(v) > 0)) {
             // Momentum carry: above the run speed we bleed slowly and keep steering along the input.
-            double decayed = Math.max(top, speed - (grounded ? OVERSPEED_DECAY_GROUND : OVERSPEED_DECAY_AIR));
+            double decayed = Math.max(top, speed - (grounded ? OVERSPEED_DECAY_GROUND : OVERSPEED_DECAY_AIR)
+                    - (speed - top) * (grounded ? OVERSPEED_DAMP_GROUND : OVERSPEED_DAMP_AIR));
             Vec3 dir = input ? approach(v.normalize(), wish, (grounded ? .35 : .12) * control, (grounded ? .35 : .12) * control).normalize() : v.normalize();
             return dir.scale(decayed);
         }

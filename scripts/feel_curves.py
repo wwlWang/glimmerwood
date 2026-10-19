@@ -26,7 +26,7 @@ def new_ground(ticks, inp, start=0.0, ground=True):
     for t in range(ticks):
         w = inp(t); top = C['TOP_SPEED']
         if abs(v) > top + 1e-9 and (w == 0 or w * v > 0):
-            v = math.copysign(max(top, abs(v) - (C['OVERSPEED_DECAY_GROUND'] if ground else C['OVERSPEED_DECAY_AIR'])), v)
+            v = math.copysign(max(top, abs(v) - (C['OVERSPEED_DECAY_GROUND'] if ground else C['OVERSPEED_DECAY_AIR']) - (abs(v) - top) * (C['OVERSPEED_DAMP_GROUND'] if ground else C['OVERSPEED_DAMP_AIR'])), v)
         elif ground: v = approach(v, w * top, C['GROUND_ACCEL'], C['GROUND_DECEL'])
         elif w == 0: v = math.copysign(max(0, abs(v) - C['AIR_DRAG']), v) if v else 0
         else: v = approach(v, w * top, C['AIR_ACCEL'], C['AIR_ACCEL'])

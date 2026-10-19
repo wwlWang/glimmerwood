@@ -113,6 +113,8 @@ public final class SpiritControls {
                     double k = cn.wwl.orimod.movement.FeelTuning.dashScale(state.activeTicks);
                     player.setDeltaMovement(dash.x * k, dash.y, dash.z * k);
                     if (state.activeTicks == 1) dashExit = new net.minecraft.world.phys.Vec3(state.velocity.x, 0, state.velocity.z);
+                    wasDash = true; // R77: the server may end the dash before the client's last tick
+
                     input.forwardImpulse = input.leftImpulse = 0;
                 }
             } else if (state.mode == WALL_SLIDE && !player.onGround() && !input.shiftKeyDown) {
@@ -138,7 +140,7 @@ public final class SpiritControls {
     // ---- R73 game feel: explicit ground/air curves and vertical shaping (constants in FeelTuning) ----
     private static net.minecraft.world.phys.Vec3 feelH = net.minecraft.world.phys.Vec3.ZERO, dashExit;
     private static float feelFriction = .91f;
-    private static boolean feelControlled, prevJumpHeld;
+    private static boolean feelControlled, prevJumpHeld, wasDash;
     private static long wallJumpAt = -100;
     private static int feelAction, feelPrediction;
 
@@ -159,6 +161,8 @@ public final class SpiritControls {
         float div = raw ? 1 : feelFriction;
         var observed = new net.minecraft.world.phys.Vec3(d.x / div, 0, d.z / div);
         var h = feelControlled && observed.distanceToSqr(feelH) < 1e-4 ? feelH : observed;
+        if (wasDash && dashExit == null) dashExit = player.getDeltaMovement();
+        wasDash = false;
         if (dashExit != null) {
             var flat = new net.minecraft.world.phys.Vec3(dashExit.x, 0, dashExit.z);
             if (flat.lengthSqr() > 1e-6) h = flat.normalize().scale(cn.wwl.orimod.movement.FeelTuning.DASH_EXIT_SPEED);

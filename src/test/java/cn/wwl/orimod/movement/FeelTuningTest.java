@@ -113,4 +113,11 @@ class FeelTuningTest {
         assertEquals(1, trailMotes(9, .5, true, 0) > 0 ? 1 : 0);
         assertEquals(1, trailMotes(9, 1, false, 0)); assertEquals(0, trailMotes(9, 1, false, 1));
     }
+
+    @Test void groundOverspeedBleedsProportionallySoDashCarryIsShort() {
+        var v = new net.minecraft.world.phys.Vec3(1.1, 0, 0); int ticks = 0;
+        while (v.length() > TOP_SPEED + .01 && ticks < 40) { v = horizontal(v, new net.minecraft.world.phys.Vec3(1, 0, 0), true, 1, 1); ticks++; }
+        assertTrue(ticks <= 10, "dash-speed carry lasted " + ticks + " ticks");
+        assertTrue(ticks >= 4, "carry vanished too fast: " + ticks);
+    }
 }

@@ -107,3 +107,19 @@ R73 之后的模拟结果见下表（`feel-metrics.json`）：
 | 呼吸 | 无 | 3.2 s 周期，上半身 ±0.03 rad |
 
 弹簧以 8 ms 子步积分，30 FPS 和 144 FPS 的结果误差小于 0.01（JUnit `springIsFrameRateIndependent`）。
+
+## 4. 真实客户端实测（R77，`scripts/plot_motion.py` → `shots/r76-client-motion.png`）
+
+用 devtools 的 `record_motion` 记录每个 tick 的客户端位置：
+- 起跑 0 → 2.2 → 4.4 → 6.4 m/s，3 tick 到全速；松开后 6.4 → 2.8 → 0，2 tick 停下。
+- 跳跃：按住 12 tick 跳到 1.647 格，轻点只有 1.001 格，可变跳高生效。
+- 冲刺：峰值 22.4 m/s，后面按缓出曲线减速。
+
+**实测发现的问题**：服务端在第 4 tick 就结束了冲刺，客户端没走到“最后一 tick”，所以 dashExit 没有设上。结果冲完以 16.8 m/s 每 tick 只减 0.7，像在冰面上滑了约 0.75 秒。
+
+**R77 的修正**：
+- 只要上一 tick 还在冲刺，就按 DASH_EXIT_SPEED（9.2 m/s）接入奔跑。
+- 地面上超出最高速的部分，每 tick 再按比例衰减 15%（OVERSPEED_DAMP_GROUND）。
+- JUnit 确认冲刺余速在 4–10 tick 内回到最高速。
+
+另外，拖尾光点缩小到 0.17–0.24。

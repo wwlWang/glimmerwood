@@ -55,7 +55,7 @@ public final class MotionFeel {
             // Soft trail: motes spread along last tick's path, so the light reads as continuous at 20 TPS.
             for (int i = 0; i < n; i++) {
                 double t = (i + r.nextDouble()) / Math.max(1, n);
-                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? 0xE8FBFF : 0x9FE8FF, .26f + r.nextFloat() * .1f, 12 + r.nextInt(6)), true,
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? 0xE8FBFF : 0x9FE8FF, .17f + r.nextFloat() * .07f, 10 + r.nextInt(5)), true,
                         p.getX() - dx * t + (r.nextDouble() - .5) * .15, p.getY() + .45 - dy * t + (r.nextDouble() - .5) * .15, p.getZ() - dz * t + (r.nextDouble() - .5) * .15,
                         -dx * .05, .01, -dz * .05);
             }
