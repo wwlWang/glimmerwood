@@ -6,7 +6,9 @@ import net.minecraft.world.entity.player.Player;
 
 public enum Shard {
     CAPACITY(1, Ability.DASH), RECOVERY(2, Ability.DASH), GATHERING(4, null),
-    RESILIENCE(8, Ability.BASH), AIR_CONTROL(16, Ability.GLIDE);
+    RESILIENCE(8, Ability.BASH), AIR_CONTROL(16, Ability.GLIDE),
+    /** R40: a third air jump (Ori triple jump). */
+    TRIPLE_JUMP(32, Ability.BASH);
 
     public static final int COST = 20;
     public final int bit;

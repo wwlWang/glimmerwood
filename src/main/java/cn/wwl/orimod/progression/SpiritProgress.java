@@ -22,7 +22,7 @@ public record SpiritProgress(int version, int light, int ownedShards, int equipp
     public SpiritProgress {
         version = Math.max(VERSION, version);
         light = Math.clamp(light, 0, LIGHT_LIMIT);
-        ownedShards &= 31;
+        ownedShards &= 63; // R40: six shards (bit 32 = Triple Jump)
         equippedShards &= ownedShards;
         claimedWeapons &= 3;
         capacityLevel = Math.clamp(capacityLevel, 0, 3);

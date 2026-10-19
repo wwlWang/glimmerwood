@@ -12,6 +12,11 @@ public final class MovementRules {
     public static final int GLIDE_LEASE_TICKS = 40;
     /** R38 Launch: charge needed on the ground (crouch held), and speeds of the charged ground and the one air Launch. */
     public static final int LAUNCH_CHARGE_TICKS = 10;
+    /** R40: updraft lift while gliding: added per tick, and the rising speed cap. */
+    public static final double UPDRAFT_ACCEL = .09, UPDRAFT_MAX = .5;
+    /** R40: with the Triple Jump shard, air jumps are spent only after the double and the triple jump. */
+    public static boolean airJumpsSpent(boolean doubleSpent, boolean tripleShard, boolean tripleSpent) { return doubleSpent && (!tripleShard || tripleSpent); }
+    public static double updraftVelocity(double vy) { return Math.min(UPDRAFT_MAX, Math.max(vy, GLIDE_FALL_SPEED) + UPDRAFT_ACCEL); }
     public static final double LAUNCH_GROUND_SPEED = 1.6, LAUNCH_AIR_SPEED = 1.3, LAUNCH_MIN_UP = .55;
     private MovementRules() {}
 

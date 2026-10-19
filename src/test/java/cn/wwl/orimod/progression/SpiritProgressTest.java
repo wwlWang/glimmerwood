@@ -44,7 +44,7 @@ class SpiritProgressTest {
         assertEquals(expected, SpiritProgress.EMPTY.withCapacity(input).capacityLevel());
     }
 
-    @Test void unknownShardBitsAreDiscarded() { assertEquals(31, SpiritProgress.EMPTY.withOwned(255).ownedShards()); }
+    @Test void unknownShardBitsAreDiscarded() { assertEquals(63, SpiritProgress.EMPTY.withOwned(255).ownedShards()); }
     @Test void unownedShardsCannotRemainEquipped() {
         assertEquals(4, SpiritProgress.EMPTY.withOwned(5).withEquipped(6).equippedShards());
     }

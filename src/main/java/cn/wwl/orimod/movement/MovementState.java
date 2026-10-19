@@ -16,6 +16,8 @@ public final class MovementState {
     /** R38: crouch-held ground ticks toward a charged Launch; the one air Launch. */
     public int launchCharge, acceptedLaunches;
     public boolean airLaunchSpent = true;
+    /** R40: the Triple Jump shard's extra air jump. */
+    public boolean tripleJumpSpent;
     public float pitch;
     public BashSession bash;
     public int targetId = -1, acceptedBashes, cancelledBashes;

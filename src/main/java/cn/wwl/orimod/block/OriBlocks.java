@@ -15,6 +15,9 @@ public final class OriBlocks {
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AMETHYST));
     public static final DeferredBlock<Block> GRAPPLE_FLOWER = BLOCKS.registerSimpleBlock("grapple_flower", BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AZALEA_LEAVES));
+    /** R40: glowing updraft vent that lifts gliding players. */
+    public static final DeferredBlock<UpdraftBlock> UPDRAFT = BLOCKS.register("updraft", () -> new UpdraftBlock(BlockBehaviour.Properties.of()
+            .strength(1.5f).noOcclusion().lightLevel(state -> 8).sound(SoundType.AMETHYST)));
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);
@@ -26,6 +29,7 @@ public final class OriBlocks {
     public static void register(IEventBus bus) {
         OriItems.ITEMS.registerSimpleBlockItem(BASH_ANCHOR);
         OriItems.ITEMS.registerSimpleBlockItem(GRAPPLE_FLOWER);
+        OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
         BLOCKS.register(bus);
     }
 }

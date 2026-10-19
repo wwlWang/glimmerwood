@@ -95,8 +95,11 @@ public final class SpiritControls {
                 if ((flags & MovementInputPayload.JUMP) == 0 || input.shiftKeyDown || player.onGround() || player.horizontalCollision) state.activeTicks = 0;
                 else {
                     var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
-                    player.setDeltaMovement(MovementRules.glideVelocity(player.getDeltaMovement(), direction,
-                            cn.wwl.orimod.progression.Shard.AIR_CONTROL.equipped(player)));
+                    var glide = MovementRules.glideVelocity(player.getDeltaMovement(), direction,
+                            cn.wwl.orimod.progression.Shard.AIR_CONTROL.equipped(player));
+                    // R40: an updraft vent below lifts the glide.
+                    if (cn.wwl.orimod.block.UpdraftBlock.lifting(player.level(), player)) glide = new net.minecraft.world.phys.Vec3(glide.x, MovementRules.updraftVelocity(glide.y), glide.z);
+                    player.setDeltaMovement(glide);
                     player.fallDistance = 0;
                     input.forwardImpulse = input.leftImpulse = 0;
                 }

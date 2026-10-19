@@ -13,7 +13,7 @@ class ProgressionDefinitionsTest {
         assertEquals(cost, ability.cost);
         assertEquals(prerequisite.equals("-") ? null : Ability.byId(prerequisite), ability.prerequisite);
     }
-    @ParameterizedTest @CsvSource({"capacity,dash", "recovery,dash", "gathering,-", "resilience,bash", "air_control,glide"})
+    @ParameterizedTest @CsvSource({"capacity,dash", "recovery,dash", "gathering,-", "resilience,bash", "air_control,glide", "triple_jump,bash"})
     void shardPrerequisite(String id, String prerequisite) {
         var shard = Shard.byId(id); assertNotNull(shard);
         assertEquals(prerequisite.equals("-") ? null : Ability.byId(prerequisite), shard.prerequisite);

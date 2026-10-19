@@ -160,8 +160,11 @@ public final class SpiritMovement {
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
         Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
         if (wall == null) wall = request.wall();
+        // R40: any refill clears the triple jump too (it is only consulted once the double jump is spent).
+        if (!s.airJumpSpent) s.tripleJumpSpent = false;
+        boolean triple = cn.wwl.orimod.progression.Shard.TRIPLE_JUMP.equipped(player);
         MoveMode mode = MovementRules.jumpMode(s.groundJumpAvailable, request.pressedAt(), s.groundedAt,
-                onGround, wall != null, now >= s.wallReadyAt, s.airJumpSpent, false);
+                onGround, wall != null, now >= s.wallReadyAt, MovementRules.airJumpsSpent(s.airJumpSpent, triple, s.tripleJumpSpent), false);
         if (mode == IDLE || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
         player.jumpFromGround();
         s.groundJumpAvailable = false; s.groundLockUntil = now + 4; s.jumpPressedAt = request.pressedAt();
@@ -172,7 +175,7 @@ public final class SpiritMovement {
             if (!surface.equals(s.lastWallRefill)) { s.airJumpSpent = s.airDashSpent = false; s.lastWallRefill = surface; }
             s.acceptedWallJumps++;
         } else {
-            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; s.airJumpSpent = true; }
+            if (mode == DOUBLE_JUMP) { player.fallDistance = 0; if (s.airJumpSpent) s.tripleJumpSpent = true; s.airJumpSpent = true; }
             s.acceptedJumps++;
         }
         player.setOnGround(false);

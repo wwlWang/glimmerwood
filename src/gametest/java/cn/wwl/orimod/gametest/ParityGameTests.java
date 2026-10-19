@@ -71,7 +71,38 @@ public final class ParityGameTests {
                 h.assertValueEqual(burst.detonate(), 0, "Burst exploded twice");
             } finally { zombie.discard(); pig.discard(); if (!burst.isRemoved()) burst.discard(); }
         });
+        add(tests, "updraft_lifts_only_with_open_column", h -> {
+            var p = spirit(h, 127);
+            h.setBlock(new net.minecraft.core.BlockPos(5, 1, 5), cn.wwl.orimod.block.OriBlocks.UPDRAFT.get());
+            p.setPos(h.absoluteVec(new Vec3(5.5, 6, 5.5)));
+            h.assertTrue(cn.wwl.orimod.block.UpdraftBlock.lifting(h.getLevel(), p), "Open column above a vent does not lift");
+            h.setBlock(new net.minecraft.core.BlockPos(5, 3, 5), net.minecraft.world.level.block.Blocks.STONE);
+            h.assertFalse(cn.wwl.orimod.block.UpdraftBlock.lifting(h.getLevel(), p), "Lift passes through a solid block");
+            h.setBlock(new net.minecraft.core.BlockPos(5, 3, 5), net.minecraft.world.level.block.Blocks.AIR);
+            p.setPos(h.absoluteVec(new Vec3(7.5, 6, 5.5)));
+            h.assertFalse(cn.wwl.orimod.block.UpdraftBlock.lifting(h.getLevel(), p), "Lift beside the vent");
+        });
+        add(tests, "triple_jump_shard_adds_one_air_jump", h -> {
+            var p = spirit(h, 127); p.setPos(h.absoluteVec(new Vec3(5.5, 5, 5.5))); p.setOnGround(false);
+            var s = p.getData(SpiritData.MOVEMENT); s.airJumpSpent = false; s.groundJumpAvailable = false;
+            try {
+                jump(p, 1, true); jump(p, 2, false);
+                jump(p, 3, true); jump(p, 4, false);
+                h.assertValueEqual(s.acceptedJumps, 1, "Without the shard only one air jump");
+                var progress = p.getData(SpiritData.PROGRESS);
+                p.setData(SpiritData.PROGRESS, progress.withOwned(progress.ownedShards() | cn.wwl.orimod.progression.Shard.TRIPLE_JUMP.bit)
+                        .withEquipped(cn.wwl.orimod.progression.Shard.TRIPLE_JUMP.bit));
+                s.airJumpSpent = false; s.wallReadyAt = Long.MAX_VALUE;
+                for (int i = 0; i < 3; i++) { jump(p, 10 + 2 * i, true); jump(p, 11 + 2 * i, false); }
+                h.assertValueEqual(s.acceptedJumps, 3, "With the shard two more air jumps (double + triple)");
+            } finally { SpiritMovement.cancel(p, s); }
+        });
         return tests;
+    }
+
+    static void jump(ServerPlayer p, int sequence, boolean jump) {
+        SpiritMovement.accept(p, new MovementInputPayload(sequence, p.level().getGameTime(),
+                MovementInputPayload.ACTIVE | (jump ? MovementInputPayload.JUMP : 0), 0, 0, 0, 0));
     }
 
     static ServerPlayer spirit(GameTestHelper h, int abilities) {

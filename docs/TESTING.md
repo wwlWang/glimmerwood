@@ -206,3 +206,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R39：光爆 Light Burst
 
 494 JUnit（`LightBurstTest` 拒绝原因；技能定义含 light_burst）、199 GameTest（新增：未解锁不能扔、扣 15 能量、冷却、自己的光爆可猛击、爆炸只伤僵尸 6 点不伤猪、只爆一次）。
+
+## R40：灵风口与三段跳碎片
+
+497 JUnit（`UpdraftRulesTest` 加速与上限、三段跳计数；碎片定义与掩码 63）、202 GameTest（新增：风口正上方抬升、隔实心方块或偏离风口不抬升；无碎片只能空中跳一次、装备后两次）。
