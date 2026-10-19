@@ -66,10 +66,11 @@ public enum RuinKind {
             BlockPos[] gloom = null;
             if (root.has("gloom_water")) { var gw = root.getAsJsonObject("gloom_water");
                 gloom = new BlockPos[]{BlockPos.containing(vector(gw.getAsJsonArray("from"))), BlockPos.containing(vector(gw.getAsJsonArray("to")))}; }
+            BlockPos mapStone = root.has("map_stone") ? BlockPos.containing(vector(root.getAsJsonArray("map_stone"))) : null;
             layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
-                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom);
+                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone);
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }
@@ -79,7 +80,7 @@ public enum RuinKind {
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
                          List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts, BlockPos bossAltar,
-                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater) {}
+                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone) {}
     /** R57: a walled side vault (shell of from..to) sealed by a keystone door. */
     public record Vault(BlockPos from, BlockPos to, List<BlockPos> door) {}
     /** R44: a Life / Energy Cell pedestal spot (template-local, standing on solid ground). */

@@ -91,6 +91,10 @@ public final class RuinPiece extends TemplateStructurePiece {
                 if (bounds.isInside(pos) && level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.WATER)) {
                     level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 2); placed++; }
             }
+        if (kind.layout().mapStone() != null) {   // R62
+            var pos = placement.block(kind.layout().mapStone());
+            if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.MAP_STONE.get().defaultBlockState(), 2); placed++; }
+        }
         // R46: updraft vents over the creek gaps, so the glide route can climb.
         for (var local : kind.layout().updrafts()) {
             var pos = placement.block(local);

@@ -36,6 +36,9 @@ public final class OriBlocks {
     /** R61: gloom water hazard (cleansed by Charge Flame, Light Burst or the Gloom Heart's defeat). */
     public static final DeferredBlock<GloomWaterBlock> GLOOM_WATER = BLOCKS.register("gloom_water", () -> new GloomWaterBlock(
             BlockBehaviour.Properties.of().strength(100).noLootTable().noOcclusion().replaceable().lightLevel(state -> 4).sound(SoundType.SLIME_BLOCK)));
+    /** R62: map stone at each ruin entrance. */
+    public static final DeferredBlock<MapStoneBlock> MAP_STONE = BLOCKS.register("map_stone", () -> new MapStoneBlock(
+            BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 8).sound(SoundType.LODESTONE)));
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);

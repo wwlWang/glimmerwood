@@ -294,3 +294,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R61：空中威胁：腐光鸦
 
 225 GameTest（新增 `parity.gloom_hawk_telegraphs_then_dives`：是 Enemy；预警 20 tick 内不俯冲；预警结束转入俯冲，速度朝向标记点下方；俯冲接触造成伤害）。
+
+## R62：地图石：遗迹勘察
+
+226 GameTest（新增 `flow.map_stone_surveys_the_cave_ruin`：地图石已放置；勘察到 2 个灵格、2 枚钥石、1 座祭坛；拿走一枚钥石后再勘察只剩 1 枚）。

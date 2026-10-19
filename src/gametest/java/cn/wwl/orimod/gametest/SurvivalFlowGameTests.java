@@ -85,6 +85,21 @@ public final class SurvivalFlowGameTests {
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });
+        add(tests, "map_stone_surveys_the_cave_ruin", h -> {
+            var placement = place(h, RuinKind.CAVE, Rotation.NONE);
+            try {
+                var stone = placement.block(RuinKind.CAVE.layout().mapStone());
+                h.assertTrue(h.getLevel().getBlockState(stone).is(cn.wwl.orimod.block.OriBlocks.MAP_STONE.get()), "Map stone missing");
+                var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+                var survey = cn.wwl.orimod.block.MapStoneBlock.survey(player, stone);
+                h.assertValueEqual(survey.cells(), 2, "Cells surveyed");
+                h.assertValueEqual(survey.keystones(), 2, "Keystones surveyed");
+                h.assertValueEqual(survey.altars(), 1, "Altar surveyed");
+                cn.wwl.orimod.block.KeystonePedestalBlock.take(player, placement.block(RuinKind.CAVE.layout().keystones().getFirst()));
+                h.assertValueEqual(cn.wwl.orimod.block.MapStoneBlock.survey(player, stone).keystones(), 1, "Survey after taking a keystone");
+            } finally { clear(h, placement, RuinKind.CAVE); }
+            h.succeed();
+        });
         add(tests, "cave_ruin_holds_the_gloom_altar", h -> {
             var placement = place(h, RuinKind.CAVE, Rotation.COUNTERCLOCKWISE_90);
             try {

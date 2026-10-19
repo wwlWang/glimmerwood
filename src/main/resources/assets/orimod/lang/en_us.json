@@ -282,5 +282,10 @@
   "message.orimod.spear.not_spirit": "The Spirit Spear needs Spirit Form",
   "message.orimod.spear.locked": "Learn Spirit Spear in the ability panel first",
   "message.orimod.spear.energy": "Not enough energy for the Spirit Spear (12)",
-  "entity.orimod.gloom_hawk": "Gloom Hawk"
+  "entity.orimod.gloom_hawk": "Gloom Hawk",
+  "block.orimod.map_stone": "Map Stone",
+  "message.orimod.map_stone.dormant": "The map stone stays dark until your spirit core awakens",
+  "message.orimod.map_stone.survey": "Map stone: %s cells and %s keystones remain here; %s. The guide now points to the next ruin.",
+  "message.orimod.map_stone.altar": "a gloom altar sleeps here",
+  "message.orimod.map_stone.no_altar": "no altar"
 }
