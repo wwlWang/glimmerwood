@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 19:11（UTC+8）发布包重建（R77，d9ee45fdba）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-d9ee45fdba.jar`，sha256 `0d9c114f957d19ef663bd7997312f8f5a9124f9a3a83043d42256352c0c21f25`。
+
 2026-10-19 19:10（UTC+8）云端 ori-r77（实测修正冲刺余速）：客户端实测：3 tick 到 6.4 m/s，2 tick 停下，按住跳 1.647 格、轻点 1.001 格。实测发现服务端提前结束冲刺时客户端没有设 dashExit，冲完以 16.8 m/s 滑约 0.75 秒；已修正（按冲刺退出速度接入奔跑，地面超速部分每 tick 再按比例衰减 15%）。拖尾光点缩小。JUnit 552 / GameTest 230。
 
 2026-10-19 19:04（UTC+8）云端 ori-r76（原创贴图）：scripts/gen-textures.py 生成 45 张原创 16×16 贴图，替换所有物品和方块模型里借用的原版贴图；精灵弓有自己的拉弓三段。OriginalTexturesTest 保证模型只引用存在的 orimod 贴图。JUnit 551 / GameTest 230。
