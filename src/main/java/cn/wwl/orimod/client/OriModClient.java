@@ -33,6 +33,7 @@ public final class OriModClient {
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) -> {
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get(), GloomSpitterRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), GloomHeartRenderer::new);
+            event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.SPIRIT_SPEAR.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SHOT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::input);

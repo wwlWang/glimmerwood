@@ -290,6 +290,23 @@ public final class ParityGameTests {
                 h.assertTrue(villager.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN), "Gloom water did not slow");
             } finally { villager.discard(); h.getLevel().setBlock(pool, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3); }
         });
+        add(tests, "spirit_spear_pierces_three", h -> {
+            var p = spirit(h, 127 | cn.wwl.orimod.progression.Ability.SPEAR.bit);
+            p.setData(SpiritData.ENERGY, 100f);
+            var zombies = new java.util.ArrayList<net.minecraft.world.entity.monster.Zombie>();
+            for (int i = 0; i < 4; i++) { var z = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 7.5 + i)); z.setNoAi(true); zombies.add(z); }
+            try {
+                var spear = cn.wwl.orimod.combat.SpiritSpear.thrown(p);
+                h.assertTrue(spear != null, "Spear not thrown");
+                h.assertTrue(cn.wwl.orimod.combat.SpiritSpear.thrown(p) == null, "Spear ignored its cooldown");
+                for (var z : zombies) spear.pierce(z);
+                h.assertTrue(!spear.pierce(zombies.getFirst()), "Spear hit the same target twice");
+                int hurt = 0; for (var z : zombies) if (z.getHealth() < z.getMaxHealth()) hurt++;
+                h.assertValueEqual(hurt, cn.wwl.orimod.combat.SpiritSpear.PIERCE, "Spear pierce count");
+                h.assertTrue(spear.isRemoved(), "Spear survived its last pierce");
+                h.assertTrue("locked".equals(cn.wwl.orimod.combat.SpiritSpear.refusal(true, false, 100, 0, 0)), "Locked refusal");
+            } finally { zombies.forEach(net.minecraft.world.entity.Entity::discard); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

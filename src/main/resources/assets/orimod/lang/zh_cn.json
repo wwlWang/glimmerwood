@@ -273,5 +273,13 @@
   "message.orimod.charge_flame.not_spirit": "蓄力灵焰需要精灵形态",
   "message.orimod.charge_flame.locked": "先在能力面板学会蓄力灵焰",
   "message.orimod.charge_flame.energy": "灵能不足，无法蓄力灵焰（10）",
-  "block.orimod.gloom_water": "腐光水"
+  "block.orimod.gloom_water": "腐光水",
+  "item.orimod.spirit_spear": "灵矛",
+  "entity.orimod.spirit_spear": "灵矛",
+  "tooltip.orimod.spear": "使用后投出可穿透 3 名敌人的光之矛（12 灵能）",
+  "ability.orimod.spear": "灵矛",
+  "ability.orimod.spear.description": "唤醒灵矛：投出高速光矛，最多穿透 3 名敌人，各造成 7 伤害（12 灵能）。",
+  "message.orimod.spear.not_spirit": "灵矛需要精灵形态",
+  "message.orimod.spear.locked": "先在能力面板学会灵矛",
+  "message.orimod.spear.energy": "灵能不足，无法投出灵矛（12）"
 }

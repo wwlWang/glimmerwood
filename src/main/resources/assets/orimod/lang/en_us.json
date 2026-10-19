@@ -273,5 +273,13 @@
   "message.orimod.charge_flame.not_spirit": "Charge Flame needs Spirit Form",
   "message.orimod.charge_flame.locked": "Unlock Charge Flame in the ability panel first",
   "message.orimod.charge_flame.energy": "Not enough energy for Charge Flame (10)",
-  "block.orimod.gloom_water": "Gloom Water"
+  "block.orimod.gloom_water": "Gloom Water",
+  "item.orimod.spirit_spear": "Spirit Spear",
+  "entity.orimod.spirit_spear": "Spirit Spear",
+  "tooltip.orimod.spear": "Use to throw a spear of light that pierces up to 3 enemies (12 energy)",
+  "ability.orimod.spear": "Spirit Spear",
+  "ability.orimod.spear.description": "Wake the Spirit Spear: throw a fast spear of light that pierces up to three enemies for 7 damage each (12 energy).",
+  "message.orimod.spear.not_spirit": "The Spirit Spear needs Spirit Form",
+  "message.orimod.spear.locked": "Learn Spirit Spear in the ability panel first",
+  "message.orimod.spear.energy": "Not enough energy for the Spirit Spear (12)"
 }

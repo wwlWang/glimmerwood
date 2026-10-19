@@ -1,0 +1,1 @@
+{"type": "minecraft:crafting_shapeless", "category": "equipment", "ingredients": [{"item": "minecraft:prismarine_shard"}, {"item": "minecraft:stick"}, {"item": "minecraft:glow_ink_sac"}, {"item": "orimod:spirit_light"}], "result": {"id": "orimod:spirit_spear", "count": 1}}

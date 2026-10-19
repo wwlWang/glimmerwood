@@ -16,6 +16,9 @@ public final class OriEntities {
     /** R39: thrown Light Burst orb. */
     public static final Supplier<EntityType<cn.wwl.orimod.combat.LightBurst>> LIGHT_BURST = TYPES.register("light_burst", () -> EntityType.Builder
             .<cn.wwl.orimod.combat.LightBurst>of(cn.wwl.orimod.combat.LightBurst::new, MobCategory.MISC).sized(.35f, .35f).clientTrackingRange(8).updateInterval(2).build("orimod:light_burst"));
+    /** R60: thrown Spirit Spear. */
+    public static final Supplier<EntityType<cn.wwl.orimod.combat.SpiritSpear>> SPIRIT_SPEAR = TYPES.register("spirit_spear", () -> EntityType.Builder
+            .<cn.wwl.orimod.combat.SpiritSpear>of(cn.wwl.orimod.combat.SpiritSpear::new, MobCategory.MISC).sized(.3f, .3f).clientTrackingRange(8).updateInterval(1).build("orimod:spirit_spear"));
     public static void register(IEventBus bus) { TYPES.register(bus); bus.addListener(OriEntities::attributes); }
     private static void attributes(EntityAttributeCreationEvent event) { event.put(PRACTICE_TARGET.get(), PracticeTarget.attributes().build()); }
     private OriEntities() {}
