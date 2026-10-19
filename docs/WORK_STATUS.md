@@ -1,5 +1,14 @@
 # 当前工作状态
 
+2026-10-19 23:10（UTC+8）云端 ori-r93（整轮动画复验）：用户要求「提交下、确认多段灵动骨骼、全部动画自行复查、对照两代原作视频」。R92 已在 origin/main（`de6212f` / `ori-r92`，后续 jar 记录提交 `c9ec2b9`）确认干净。审计笔记见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md)（JXVD 地面/跳跃/墙面、RPS WotW 动画技术、Digital Foundry）。
+- **骨骼核实：** `SpringChain` + `SpiritSecondary` 仍驱动耳 3+3、触须 3+3、尾 5，共 10 链 / **34 角**；客户端 `verify-r93` 报告 `bones=34`，转向尾尖滞后且贴满 ±0.58 限幅，落地耳尖贴满 ±0.72。
+- **加强跟随：** 尖端更软、增益/限幅/气流/落地踢更大（见 FeelTuning `*_CHAIN_*`、`SEC_*`）；idle 摆动 0.18→0.28。
+- **落地挤压 / 跑步弹跳 / 空中收腿：** `SQUASH_LAND` 7.5，挤压下限 0.68；`GAIT_BOUNCE` 0.07；`airScale(vy)` 上升拉伸、下落收紧；新增大腿/膝盖程序化 tuck（`legTuck`，落地最大约 0.59 rad）。
+- **地面松手即停：** `GROUND_DECEL = TOP_SPEED`（对照 JXVD：松手当帧速度归零）。
+- **客户端实测** `scripts/verify-r93.py r93-v002`：status ok；`land_squash_min=0.68`，`jump_squash` 0.83–1.15，截图与链图在 `/workspace/oriMod/shots/r93-*`。
+- **未做 / 延后：** 专用落地接跑剪辑、重做 walk/run 关键帧膝盖深度、墙面攀爬翻上、武器动作再抛光、Iris 真机泛光。不扒官方资产。
+- JUnit **572** / GameTest **235**。
+
 2026-10-19 23:05（UTC+8）发布包重建（R92，de6212fd45）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-de6212fd45.jar`，sha256 `f2215cb7c8e2aa7d2a6f528855ff3ddd8821e8d54462159d9d7d9165155c0d3c`；同目录有 `gemrender-0.1.17.jar`。
 
 2026-10-19 23:00（UTC+8）云端 ori-r92（对照官方图：灵光、耳朵/触须/尾巴物理、姿态）：用户给了三张官方截图（`shots/ref-ori-*.png`），指出动作和发光都不对，耳朵/触须/尾巴太僵。模型技术不变：GemRender glTF 蒙皮网格（`models/entity/ori.glb`，CC BY 4.0 社区模型，非游戏解包资产），骨架里本来就有 ear_*_1..3、antenna_*_1..3、tail_1..5 共 16 节，但 R74 只用一个弹簧掰 ear_1 和 tail_1/2，所以整片在动。

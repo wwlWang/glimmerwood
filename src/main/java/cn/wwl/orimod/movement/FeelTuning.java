@@ -13,7 +13,8 @@ public final class FeelTuning {
     // ---- horizontal ---------------------------------------------------------------------------------------
     public static final double TOP_SPEED = .32;          // 6.4 m/s (vanilla walk .216, sprint .286 terminal)
     public static final double GROUND_ACCEL = .11;       // 0 -> top in 3 ticks
-    public static final double GROUND_DECEL = .18;       // top -> 0 in 2 ticks
+    // R93: WotW sets horizontal speed to 0 the first frame input is gone (jxvd Ground Movement).
+    public static final double GROUND_DECEL = TOP_SPEED; // top -> 0 in 1 tick
     public static final double AIR_ACCEL = .06;          // vanilla air control .02/tick
     public static final double AIR_DRAG = .012;          // no input in the air: keep momentum
     public static final double OVERSPEED_DECAY_GROUND = .035, OVERSPEED_DECAY_AIR = .008;   // dash/bash/launch carry
@@ -45,31 +46,39 @@ public final class FeelTuning {
     /** R88 air posture: lean with horizontal speed, nose up while rising and diving forward while falling (rad per b/t). */
     public static final float AIR_LEAN_SPEED = .12f, AIR_LEAN_VERTICAL = .35f;
     /** R88: vertical bounce of the run (squash target swing, two per stride) and stretch with vertical speed in the air. */
-    public static final float GAIT_BOUNCE = .035f, AIR_STRETCH = .12f, AIR_STRETCH_MAX = .08f;
+    // R93: stronger run cadence + asymmetric air squash (stretch rising, tuck falling) to match WotW squash-stretch.
+    public static final float GAIT_BOUNCE = .07f, AIR_STRETCH = .2f, AIR_STRETCH_MAX = .12f;
+    public static final float AIR_TUCK = .22f, AIR_TUCK_MAX = .14f;
     /** R88: continuous rise/apex/fall blend by vertical speed (b/t) instead of hard-switched clips. */
     public static final float AIR_RISE_FROM = .02f, AIR_RISE_TO = .22f, AIR_FALL_FROM = .02f, AIR_FALL_TO = .3f;
     public static final float ROLL_PER_TURN = .0011f, ROLL_MAX = .3f;                  // rad per (deg/s * m/s / 6.4)
-    public static final float SQUASH_JUMP = 2.0f, SQUASH_LAND = 3.6f;                  // spring velocity impulses
+    public static final float SQUASH_JUMP = 2.6f, SQUASH_LAND = 7.5f;                  // spring velocity impulses (R93 stronger land)
+    public static final float SQUASH_MIN = .68f, SQUASH_MAX = 1.32f;
     public static final float BREATH_PERIOD = 3.2f, BREATH_AMPLITUDE = .03f;
     /** Damped springs: stiffness (1/s^2) and damping (1/s); damping below 2*sqrt(stiffness) overshoots. */
     public static final float POSE_STIFFNESS = 180, POSE_DAMPING = 20;
-    public static final float SQUASH_STIFFNESS = 260, SQUASH_DAMPING = 14;
+    public static final float SQUASH_STIFFNESS = 240, SQUASH_DAMPING = 11;
     public static final float EAR_STIFFNESS = 120, EAR_DAMPING = 9;
     public static final float EAR_TURN = .0016f, EAR_FALL = .55f, EAR_MAX = .6f;
     // ---- R92 secondary motion: multi-segment ears (3), feelers (3) and tail (5), see SpringChain ---------------
     /** Per-segment spring stiffness (1/s^2) / damping (1/s) / forcing gain, root to tip. Softer toward the tip = more lag. */
-    public static final float[] EAR_CHAIN_K = {150, 105, 70}, EAR_CHAIN_C = {10, 8, 6.5f}, EAR_CHAIN_G = {16, 14, 11};
-    public static final float[] FEELER_CHAIN_K = {190, 130, 85}, FEELER_CHAIN_C = {11, 9, 7}, FEELER_CHAIN_G = {14, 13, 11};
-    public static final float[] TAIL_CHAIN_K = {120, 95, 75, 58, 44}, TAIL_CHAIN_C = {9, 8, 7, 6, 5.5f}, TAIL_CHAIN_G = {9, 9, 8.5f, 8, 7.5f};
-    public static final float EAR_CHAIN_LIMIT = .55f, FEELER_CHAIN_LIMIT = .5f, TAIL_CHAIN_LIMIT = .42f;
+    // R93: softer tips, higher gain/limits/kicks so follow-through reads on camera (playtest still called ears/tail stiff).
+    public static final float[] EAR_CHAIN_K = {130, 85, 48}, EAR_CHAIN_C = {9, 7, 5.2f}, EAR_CHAIN_G = {18, 17, 15};
+    public static final float[] FEELER_CHAIN_K = {170, 110, 68}, FEELER_CHAIN_C = {10, 8, 6}, FEELER_CHAIN_G = {16, 15, 13};
+    public static final float[] TAIL_CHAIN_K = {100, 78, 58, 42, 30}, TAIL_CHAIN_C = {8, 7, 6, 5, 4.2f}, TAIL_CHAIN_G = {11, 11, 10.5f, 10, 9.5f};
+    public static final float EAR_CHAIN_LIMIT = .72f, FEELER_CHAIN_LIMIT = .62f, TAIL_CHAIN_LIMIT = .58f;
     /** Forcing normalisers: one "unit" of force is this much body motion (m/s^2, m/s, rad/s). */
-    public static final float SEC_ACCEL_UNIT = 22, SEC_VERTICAL_ACCEL_UNIT = 28, SEC_FALL_UNIT = 14, SEC_TURN_UNIT = 7, SEC_FORCE_MAX = 1.6f;
+    public static final float SEC_ACCEL_UNIT = 20, SEC_VERTICAL_ACCEL_UNIT = 26, SEC_FALL_UNIT = 12, SEC_TURN_UNIT = 6, SEC_FORCE_MAX = 2.0f;
     /** Airflow drag: ears and tail stream back with forward speed (units per m/s / 6.4). */
-    public static final float SEC_DRAG = .55f;
+    public static final float SEC_DRAG = .9f;
     /** Idle travelling sway amplitude (force units) and rate (rad/s); tail also swings with the stride. */
-    public static final float SEC_IDLE_SWAY = .18f, SEC_IDLE_RATE = 2.1f, SEC_TAIL_GAIT_SWAY = .45f;
+    public static final float SEC_IDLE_SWAY = .28f, SEC_IDLE_RATE = 2.1f, SEC_TAIL_GAIT_SWAY = .75f;
     /** Landing flop and take-off flick (spring velocity impulse, rad/s, scaled by impact). */
-    public static final float SEC_LAND_KICK = 3.2f, SEC_JUMP_KICK = 1.6f;
+    public static final float SEC_LAND_KICK = 4.8f, SEC_JUMP_KICK = 2.4f;
+    /** R93: procedural thigh/knee tuck (rad). Fall tucks knees; land kicks a crouch; rise slightly straightens. */
+    public static final float LEG_TUCK_FALL = .7f, LEG_TUCK_MAX = .55f, LEG_STRETCH = .25f, LEG_STRETCH_MAX = .18f;
+    public static final float LEG_LAND_KICK = 3.5f, LEG_THIGH_SHARE = .55f;
+    public static final float LEG_STIFFNESS = 220, LEG_DAMPING = 16;
     /** Ori silhouette: the large ears rest swept up and back into a V (rad, base/mid/tip) instead of hanging flat. */
     public static final float[] EAR_REST_LIFT = {.62f, .18f, -.08f};
     public static final float EAR_REST_SPREAD = .16f;
@@ -200,6 +209,15 @@ public final class FeelTuning {
     /** R88: body pitch target in the air (positive = forward): speed lean plus nose-up rise / forward dive. */
     public static float airLean(float speedMps, float vy) {
         return Math.max(-LEAN_MAX, Math.min(LEAN_MAX, speedMps / 6.4f * AIR_LEAN_SPEED - vy * AIR_LEAN_VERTICAL));
+    }
+
+    /**
+     * R93: Y-scale target for the squash spring from vertical speed in blocks/tick.
+     * Rising stretches above 1; falling tucks below 1 (Ori leaps long then pulls the legs in).
+     */
+    public static float airScale(float vy) {
+        if (vy >= 0) return 1 + Math.min(AIR_STRETCH_MAX, vy * AIR_STRETCH);
+        return 1 - Math.min(AIR_TUCK_MAX, -vy * AIR_TUCK);
     }
 
     /** Metres per locomotion cycle for the blended gait, so feet keep pace at every speed. */

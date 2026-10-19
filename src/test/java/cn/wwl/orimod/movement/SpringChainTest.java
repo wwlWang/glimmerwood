@@ -50,11 +50,25 @@ class SpringChainTest {
         var chain = new SpringChain(FeelTuning.EAR_CHAIN_K, FeelTuning.EAR_CHAIN_C, FeelTuning.EAR_CHAIN_G, FeelTuning.EAR_CHAIN_LIMIT, .9f);
         float max = 0;
         for (int i = 0; i < 600; i++) { chain.step(0, FeelTuning.SEC_IDLE_SWAY, FeelTuning.SEC_IDLE_RATE, 1 / 60f); max = Math.max(max, Math.abs(chain.tip())); }
-        assertTrue(max > .01f && max < .3f, "gentle idle sway: " + max);
+        assertTrue(max > .01f && max < .5f, "gentle idle sway: " + max);
     }
 
     @Test void rejectsMismatchedSegments() {
         assertThrows(IllegalArgumentException.class, () -> new SpringChain(new float[] {1, 2}, new float[] {1}, new float[] {1, 1}, 1, 0));
+    }
+
+    @Test void tipOvershootIsVisible() {
+        var chain = new SpringChain(FeelTuning.EAR_CHAIN_K, FeelTuning.EAR_CHAIN_C, FeelTuning.EAR_CHAIN_G, FeelTuning.EAR_CHAIN_LIMIT, .9f);
+        chain.kick(FeelTuning.SEC_LAND_KICK);
+        float tipPeak = 0, rootPeak = 0; int tipAt = -1, rootAt = -1;
+        for (int i = 0; i < 90; i++) {
+            chain.step(0, 0, 0, 1 / 60f);
+            float root = Math.abs(chain.angle(0)), tip = Math.abs(chain.angle(2));
+            if (root > rootPeak) { rootPeak = root; rootAt = i; }
+            if (tip > tipPeak) { tipPeak = tip; tipAt = i; }
+        }
+        assertTrue(tipAt > rootAt, "ear tip lags root after land kick");
+        assertTrue(tipPeak > .2f, "land flop too weak: " + tipPeak);
     }
 
     @Test void restPoseTables() {

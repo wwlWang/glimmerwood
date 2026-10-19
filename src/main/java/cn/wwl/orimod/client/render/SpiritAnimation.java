@@ -377,12 +377,13 @@ final class SpiritAnimation {
         if (player.onGround() && !mode.equals("dash")) pitchTarget += cn.wwl.orimod.movement.FeelTuning.READY_LEAN * Math.max(0, 1 - smoothSpeed / 2.5f);
         if (busy) pitchTarget = rollTarget = 0;
         leanPitch.step(pitchTarget, dt); leanRoll.step(rollTarget, dt);
-        // R88: run bounce (two per stride) on the ground, stretch with vertical speed in the air.
+        // R88/R93: run bounce on the ground; air stretches while rising and tucks while falling (WotW squash-stretch).
         float squashTarget = player.onGround()
                 ? 1 + cn.wwl.orimod.movement.FeelTuning.GAIT_BOUNCE * (gaitRun + gaitSprint) * locoWeight * Mth.cos(locoPhase * Mth.TWO_PI * 2)
-                : 1 + Math.min(cn.wwl.orimod.movement.FeelTuning.AIR_STRETCH_MAX, Math.abs((float) v.y) * cn.wwl.orimod.movement.FeelTuning.AIR_STRETCH);
+                : cn.wwl.orimod.movement.FeelTuning.airScale((float) v.y);
         if (busy) squashTarget = 1;
-        squash.step(squashTarget, dt); squash.value = Math.clamp(squash.value, .75f, 1.25f);
+        squash.step(squashTarget, dt);
+        squash.value = Math.clamp(squash.value, cn.wwl.orimod.movement.FeelTuning.SQUASH_MIN, cn.wwl.orimod.movement.FeelTuning.SQUASH_MAX);
     }
 
     private void hold(GemRenderGltfModel model, AnimationBlend blend, float now, boolean left) {

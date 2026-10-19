@@ -18,7 +18,8 @@ class FeelTuningTest {
         assertTrue(ticksTo(Vec3.ZERO, X, true, 1) <= 3, "accel ticks " + ticksTo(Vec3.ZERO, X, true, 1));
         Vec3 v = X.scale(TOP_SPEED); int t = 0;
         while (v.length() > 1e-6 && t < 20) { v = horizontal(v, Vec3.ZERO, true, 1, 1); t++; }
-        assertTrue(t <= 2, "stop ticks " + t);
+        // R93: WotW-style instant stop (one tick).
+        assertTrue(t <= 1, "stop ticks " + t);
     }
 
     @Test void reversingBrakesAtDecelRate() {
@@ -175,6 +176,14 @@ class FeelTuningTest {
             prevRise = w[0]; prevFall = w[2];
         }
         assertEquals(1, airWeights(.4f)[0], 1e-6); assertEquals(1, airWeights(0)[1], 1e-6); assertEquals(1, airWeights(-.5f)[2], 1e-6);
+    }
+
+    @Test void airScaleStretchesRisingAndTucksFalling() {
+        assertTrue(airScale(.4f) > 1.05f);
+        assertTrue(airScale(-.6f) < .95f);
+        assertTrue(airScale(0) == 1f);
+        assertTrue(airScale(10) <= 1 + AIR_STRETCH_MAX + 1e-6);
+        assertTrue(airScale(-10) >= 1 - AIR_TUCK_MAX - 1e-6);
     }
 
     @Test void airLeanNosesUpRisingAndDivesFalling() {

@@ -26,6 +26,8 @@ import java.util.Map;
  * <p>
  * Also carries the Ori silhouette rest offsets: the big ears swept up and back into a V instead of hanging flat.
  * All of it is one procedural additive clip whose drivers read this frame's angles.
+ * <p>R93 also drives thigh/knee tuck from fall speed and landing so the silhouette pulls the legs in mid-air
+ * and crouches on impact (WotW squash-stretch), instead of only scaling the whole mesh.
  */
 final class SpiritSecondary {
     private record Channel(String name, SpringChain chain, String[] bones, Vector3f axis, float sign) {}
@@ -35,6 +37,8 @@ final class SpiritSecondary {
     private Vec3 lastVelocity;
     private final Vector3f smoothVelocity = new Vector3f(), smoothAccel = new Vector3f();
     private float lastYaw = Float.NaN, smoothTurn, lastForce;
+    private final cn.wwl.orimod.movement.FeelTuning.Spring legTuck = new cn.wwl.orimod.movement.FeelTuning.Spring(0,
+            cn.wwl.orimod.movement.FeelTuning.LEG_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.LEG_DAMPING);
     private GltfAnimation clip;
     private float[] values = new float[0];
 
@@ -65,12 +69,12 @@ final class SpiritSecondary {
         var c = new Channel(name, chain, bones, axis, sign); channels.add(c); return c;
     }
 
-    /** Builds the additive clip for this model: one driver per bone per channel, plus the ear rest pose. */
+    /** Builds the additive clip for this model: one driver per bone per channel, plus the ear rest pose and leg tuck. */
     void bind(NodeTable table, Matrix4f[] palette) {
         var drivers = new ArrayList<PoseDriver>();
         int count = 0;
         for (Channel c : channels) count += c.bones.length;
-        values = new float[count + REST];
+        values = new float[count + REST + LEG];
         int index = 0;
         for (Channel c : channels) for (String bone : c.bones) {
             if (table.slotOfName(bone) < 0) { index++; continue; }
@@ -97,6 +101,10 @@ final class SpiritSecondary {
                 if (table.slotOfName(side + (i + 1)) >= 0) drivers.add(driver(table, palette, side + (i + 1), new Vector3f(1, 0, 0), count + 10 + i));
             values[count + 10 + i] = FeelTuning.FEELER_REST_PITCH[i];
         }
+        // R93: thigh + knee pitch for air tuck / land crouch (positive = fold forward).
+        String[] legs = {"thigh_l", "thigh_r", "knee_l", "knee_r"};
+        for (int i = 0; i < legs.length; i++)
+            if (table.slotOfName(legs[i]) >= 0) drivers.add(driver(table, palette, legs[i], new Vector3f(1, 0, 0), count + REST + i));
         clip = GltfAnimation.procedural("ori_secondary", drivers.toArray(PoseDriver[]::new));
     }
 
@@ -118,12 +126,15 @@ final class SpiritSecondary {
 
     /** Rest-pose slots after the chain angles: ear lift x3, ear spread x2, tail curl x5, feeler sweep x3. */
     private static final int REST = 13;
+    /** R93: thigh_l/r + knee_l/r tuck angles (dynamic, written every publish). */
+    private static final int LEG = 4;
 
     GltfAnimation clip() { return clip; }
 
     void reset() {
         for (Channel c : channels) c.chain.reset();
         lastVelocity = null; lastYaw = Float.NaN; smoothVelocity.zero(); smoothAccel.zero(); smoothTurn = 0;
+        legTuck.reset(0);
         publish();
     }
 
@@ -132,11 +143,13 @@ final class SpiritSecondary {
         float k = FeelTuning.SEC_LAND_KICK * Math.min(1.5f, .35f + impact);
         earLiftL.chain.kick(-k); earLiftR.chain.kick(-k); tailLift.chain.kick(k * .6f);
         feelPitchL.chain.kick(k * .5f); feelPitchR.chain.kick(k * .5f);
+        legTuck.kick(FeelTuning.LEG_LAND_KICK * Math.min(1.5f, .35f + impact));
     }
 
     void jump() {
         float k = FeelTuning.SEC_JUMP_KICK;
         earLiftL.chain.kick(-k); earLiftR.chain.kick(-k); tailLift.chain.kick(-k * .8f);
+        legTuck.kick(-FeelTuning.LEG_LAND_KICK * .35f);
     }
 
     /**
@@ -188,6 +201,15 @@ final class SpiritSecondary {
         tailLift.chain.step(tailUp, sway * .6f, rate * .8f, dt);
         float stride = grounded ? FeelTuning.SEC_TAIL_GAIT_SWAY * gaitWeight * Mth.sin(gaitPhase * Mth.TWO_PI) : 0;
         tailYaw.chain.step(-tw * 1.1f + ra * .7f + stride, sway * 1.4f, rate * .6f, dt);
+        // R93: pull the knees in while falling, straighten a little while rising; grounded eases back to 0 (land kick handles impact).
+        float legTarget = 0;
+        if (!grounded) {
+            if (smoothVelocity.y < 0)
+                legTarget = Math.min(FeelTuning.LEG_TUCK_MAX, -smoothVelocity.y / FeelTuning.SEC_FALL_UNIT * FeelTuning.LEG_TUCK_FALL);
+            else
+                legTarget = -Math.min(FeelTuning.LEG_STRETCH_MAX, smoothVelocity.y / FeelTuning.SEC_FALL_UNIT * FeelTuning.LEG_STRETCH);
+        }
+        legTuck.step(legTarget, dt);
         lastForce = earLift;
         publish();
     }
@@ -198,6 +220,14 @@ final class SpiritSecondary {
             if (index < values.length) values[index] = c.sign * c.chain.angle(i);
             index++;
         }
+        if (values.length >= index + REST + LEG) {
+            float tuck = legTuck.value, thigh = tuck * FeelTuning.LEG_THIGH_SHARE;
+            // slots: thigh_l, thigh_r, knee_l, knee_r
+            values[index + REST] = thigh;
+            values[index + REST + 1] = thigh;
+            values[index + REST + 2] = tuck;
+            values[index + REST + 3] = tuck;
+        }
     }
 
     Map<String, Object> diagnostics() {
@@ -205,7 +235,8 @@ final class SpiritSecondary {
         out.put("ear_lift", earLiftL.chain.angles()); out.put("ear_swing", earSwingL.chain.angles());
         out.put("feeler_pitch", feelPitchL.chain.angles()); out.put("feeler_roll", feelRollL.chain.angles());
         out.put("tail_lift", tailLift.chain.angles()); out.put("tail_yaw", tailYaw.chain.angles());
-        out.put("bones", values.length - REST); out.put("earForce", lastForce);
+        out.put("bones", values.length - REST - LEG); out.put("earForce", lastForce);
+        out.put("legTuck", legTuck.value);
         return out;
     }
 }
