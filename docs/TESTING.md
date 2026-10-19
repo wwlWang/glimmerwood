@@ -334,3 +334,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R71：R66–R70 客户端验证与文档整理
 
 真实客户端：`scripts/verify-r70.py` 结果 status ok（齐射命中 2/3、地图碎片、腐光翼母预警俯冲 4 次、二阶段召来 2 只鸦）；`scripts/check-acceptance-counts.py` 计数一致。
+
+## R72：手感审计
+
+无代码改动。
