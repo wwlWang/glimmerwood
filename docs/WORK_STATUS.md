@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 23:40（UTC+8）发布包重建（R94，c031f1bb96）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-c031f1bb96.jar`，sha256 `fbd3936193f4aae06d92ba9dc980b3ba28677d8d8feeb3b3182111d9b5d72a6c`；同目录有 `gemrender-0.1.17.jar`。
+
 2026-10-19 23:37（UTC+8）云端 ori-r94（R93 延后的动画项一次做完）：用户「修，修啊，别一直问口牙！弄完一起看」。详见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md#r94--deferred-items-done)。
 - **落地接跑：** 落地时仍在跑（>2.2 m/s）不再播整身 land 片段；跑步底层直接接上，下半身叠一层 0.26 s 渐隐的落地缓冲，身体前扑、挤压/收腿/耳朵冲量减弱。原地落地仍是 land_light/heavy。
 - **步态膝盖深度：** 从 ori.glb 的 walk/run 每相位采样大腿/膝/踝弯曲，再按步态放大叠加（走 0.22、跑 0.38、疾跑 +0.18，最多 +0.5 rad），和原步伐同相。
