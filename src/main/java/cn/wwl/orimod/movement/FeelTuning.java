@@ -136,4 +136,50 @@ public final class FeelTuning {
         int n = speedMps > 8 ? 3 : speedMps > 4 ? 2 : 1;
         return Math.max(1, (int) Math.round(n * particleScale));
     }
+
+    // ---- R80 gait blend --------------------------------------------------------------------------------------------
+    public static final float GAIT_RUN_FROM = 1.4f, GAIT_RUN_TO = 3.4f, GAIT_SPRINT_FROM = 6.6f, GAIT_SPRINT_TO = 9f;   // m/s
+    public static final float STRIDE_WALK = .8f, STRIDE_RUN = 2.0f, STRIDE_SPRINT = 2.6f, SPRINT_LEAN = .08f;           // metres per cycle, rad
+
+    public static float smoothstep(float a, float b, float x) { float t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+    /** Weights {walk, run, sprint} summing to 1; sprint is the run clip played with a longer stride and extra lean. */
+    public static float[] gaitWeights(float speed) {
+        float run = smoothstep(GAIT_RUN_FROM, GAIT_RUN_TO, speed), sprint = run * smoothstep(GAIT_SPRINT_FROM, GAIT_SPRINT_TO, speed);
+        return new float[] {1 - run, run - sprint, sprint};
+    }
+
+    /** Metres per locomotion cycle for the blended gait, so feet keep pace at every speed. */
+    public static float stride(float speed) {
+        float[] w = gaitWeights(speed);
+        return w[0] * STRIDE_WALK + w[1] * STRIDE_RUN + w[2] * STRIDE_SPRINT;
+    }
+
+    public static float approach(float value, float target, float step) {
+        return value < target ? Math.min(target, value + step) : Math.max(target, value - step);
+    }
+
+    // ---- R79 third-person camera follow ------------------------------------------------------------------------------
+    public static final double CAMERA_LAG_RATE = 11, CAMERA_LAG_MAX = .55;              // 1/s exponential follow, blocks
+    public static final double CAMERA_LAG_VERTICAL = .6;                                // vertical lag share (softer jumps)
+    public static final double CAMERA_LEAD_SECONDS = .16, CAMERA_LEAD_MAX = .9, CAMERA_LEAD_RATE = 3.5;
+
+    /** Exponential smoothing factor for a frame of {@code dt} seconds at {@code rate} per second (frame-rate independent). */
+    public static double follow(double rate, double dt) { return 1 - Math.exp(-rate * Math.max(0, dt)); }
+
+    /** Lead target in blocks from a horizontal velocity in blocks per second, clamped. */
+    public static Vec3 leadTarget(Vec3 velocityPerSecond) {
+        var flat = new Vec3(velocityPerSecond.x, 0, velocityPerSecond.z).scale(CAMERA_LEAD_SECONDS);
+        return flat.length() > CAMERA_LEAD_MAX ? flat.normalize().scale(CAMERA_LEAD_MAX) : flat;
+    }
+
+    // ---- R81 trail tone: white core fading to cool spirit blue (Ori's light is white-blue, never warm) ------------
+    public static final int TRAIL_CORE = 0xF2F8FF, TRAIL_TAIL = 0x8EC8FF;
+
+    /** Colour of mote {@code i} of {@code n} along the trail: the head is white, the tail cooler blue. */
+    public static int trailColor(int i, int n) {
+        float t = n <= 1 ? 0 : (float) i / (n - 1);
+        int r = (int) (0xF2 + (0x8E - 0xF2) * t), g = (int) (0xF8 + (0xC8 - 0xF8) * t);
+        return r << 16 | g << 8 | 0xFF;
+    }
 }

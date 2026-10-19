@@ -365,3 +365,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r78：冲刺、滑翔、Bash 客户端预测
 
 - `scripts/verify-r81.py`：从 record_motion 里取客户端和服务端各自进入动作的第一个 tick。
+
+## ori-r79：第三人称镜头跟随
+
+- `FeelTuningTest`：镜头跟随与帧率无关，前瞻有上限。

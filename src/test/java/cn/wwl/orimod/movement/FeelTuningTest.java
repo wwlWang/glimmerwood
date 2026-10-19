@@ -120,4 +120,34 @@ class FeelTuningTest {
         assertTrue(ticks <= 10, "dash-speed carry lasted " + ticks + " ticks");
         assertTrue(ticks >= 4, "carry vanished too fast: " + ticks);
     }
+
+    @Test void gaitWeightsBlendSmoothlyAndSumToOne() {
+        float prevRun = -1;
+        for (float v = 0; v <= 8; v += .1f) {
+            float[] w = gaitWeights(v);
+            assertEquals(1, w[0] + w[1] + w[2], 1e-5);
+            float run = w[1] + w[2];
+            assertTrue(run >= prevRun - 1e-6, "run weight must not drop with speed"); prevRun = run;
+        }
+        assertEquals(1, gaitWeights(.5f)[0], 1e-6);
+        float[] mid = gaitWeights(2.4f); assertTrue(mid[0] > .2f && mid[1] > .2f, "true blend at mid speed");
+        assertTrue(gaitWeights(9f)[2] > .99f); assertTrue(gaitWeights(6.4f)[1] > .99f, "top run speed is the run gait");
+        for (float v = 0; v < 8; v += .05f) assertTrue(Math.abs(stride(v + .05f) - stride(v)) < .08f, "stride jumps at " + v);
+    }
+
+    @Test void cameraFollowIsFrameRateIndependentAndLeadIsClamped() {
+        double a = 0, b = 0;
+        for (int i = 0; i < 30; i++) a += (1 - a) * follow(CAMERA_LAG_RATE, 1 / 30.0);
+        for (int i = 0; i < 144; i++) b += (1 - b) * follow(CAMERA_LAG_RATE, 1 / 144.0);
+        assertEquals(a, b, 1e-6);
+        assertEquals(CAMERA_LEAD_MAX, leadTarget(new net.minecraft.world.phys.Vec3(40, 5, 0)).length(), 1e-6);
+        assertEquals(0, leadTarget(new net.minecraft.world.phys.Vec3(0, 9, 0)).length(), 1e-9);
+        assertEquals(4 * CAMERA_LEAD_SECONDS, leadTarget(new net.minecraft.world.phys.Vec3(4, 0, 0)).length(), 1e-6);
+    }
+
+    @Test void trailIsWhiteAtTheHeadAndCoolBlueAtTheTail() {
+        int head = trailColor(0, 3), tail = trailColor(2, 3);
+        assertEquals(TRAIL_CORE, head); assertEquals(TRAIL_TAIL, tail);
+        for (int c : new int[] {head, trailColor(1, 3), tail}) assertTrue((c & 255) >= (c >> 16 & 255), "never warm: " + Integer.toHexString(c));
+    }
 }

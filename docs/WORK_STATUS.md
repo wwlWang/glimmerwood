@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 19:24（UTC+8）云端 ori-r79（第三人称镜头跟随）：新增 SpiritCameraMixin：第三人称镜头指数跟随（速率 11/s，最大 0.55 格，纵向只取 60%），并按水平速度前瞻（×0.16 s，最大 0.9 格）；被方块挡住时取消偏移。常量在 FeelTuning（本轮也加入 R80/R81 的常量），JUnit 555。
+
 2026-10-19 19:24（UTC+8）云端 ori-r78（冲刺、滑翔、Bash 客户端预测）：SpiritActionPrediction 在本地立即开始冲刺、滑翔和 Bash 瞄准，判断门槛与服务端一致；服务端确认后不会重启动作；服务端看到按键之前发出的 IDLE 被忽略；未确认的预测按短租约自然结束。实测客户端比服务端早：冲刺 3 tick，滑翔 1 tick，Bash 2 tick。
 
 2026-10-19 19:11（UTC+8）发布包重建（R77，d9ee45fdba）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-d9ee45fdba.jar`，sha256 `0d9c114f957d19ef663bd7997312f8f5a9124f9a3a83043d42256352c0c21f25`。
