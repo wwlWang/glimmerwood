@@ -58,6 +58,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         var result = new java.util.LinkedHashMap<String, Object>();
         result.put("visible", true); result.put("base", b.animation.selected()); result.put("overlay", b.animation.overlay());
         result.put("clipTime", b.animation.clipTime()); result.put("speed", b.animation.speed());
+        result.put("leanPitch", b.animation.leanPitch()); result.put("leanRoll", b.animation.leanRoll()); result.put("squash", b.animation.squash());
         result.put("baseClip", b.animation.baseClip()); result.put("overlayClip", b.animation.overlayClip());
         result.put("missingClips", b.animation.missingClips());
         result.put("aimContactError", b.animation.aimContactError());
@@ -133,9 +134,12 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         }
 
         private void modelTransform(Matrix4f target, float partial) {
-            float yaw = Mth.rotLerp(partial, entity.yBodyRotO, entity.yBodyRot);
+            float yaw = animation.facing(Mth.rotLerp(partial, entity.yBodyRotO, entity.yBodyRot));
             if (entity.isSleeping() && entity.getBedOrientation() != null) yaw = entity.getBedOrientation().toYRot();
             target.rotationY(-yaw * Mth.DEG_TO_RAD).scale(entity.getScale());
+            // R74: lean into acceleration and turns about the hips, squash-stretch on jump/land (volume kept).
+            float s = animation.squash(), w = 1 / (float) Math.sqrt(s);
+            target.translate(0, .45f, 0).rotateX(animation.leanPitch()).rotateZ(animation.leanRoll()).translate(0, -.45f, 0).scale(w, s, w);
             if (entity.isAutoSpinAttack()) {
                 // The swim pose is already horizontal along +Z. Roll about its torso,
                 // at vanilla's 75 degrees per tick, including every fitted attachment.

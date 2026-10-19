@@ -75,4 +75,27 @@ class FeelTuningTest {
         assertTrue(dashScale(1) < dashScale(3));
         assertTrue(DASH_EXIT_SPEED > TOP_SPEED);
     }
+
+    @Test void squashSpringOvershootsThenSettles() {
+        var s = new Spring(1, SQUASH_STIFFNESS, SQUASH_DAMPING);
+        s.kick(-SQUASH_LAND);
+        float min = 1, max = 1;
+        for (int i = 0; i < 60; i++) { s.step(1, 1 / 60f); min = Math.min(min, s.value); max = Math.max(max, s.value); }
+        assertTrue(min < .9f, "no squash " + min);
+        assertTrue(max > 1.001f, "no overshoot");
+        for (int i = 0; i < 120; i++) s.step(1, 1 / 60f);
+        assertEquals(1, s.value, .01);
+    }
+
+    @Test void springIsFrameRateIndependent() {
+        var a = new Spring(0, POSE_STIFFNESS, POSE_DAMPING); var b = new Spring(0, POSE_STIFFNESS, POSE_DAMPING);
+        for (int i = 0; i < 30; i++) a.step(.2f, 1 / 30f);
+        for (int i = 0; i < 144; i++) b.step(.2f, 1 / 144f);
+        assertEquals(a.value, b.value, .01);
+    }
+
+    @Test void facingTurnsTheShortWay() {
+        assertTrue(approachAngle(170, -170, FACING_RATE, .05f) > 170);
+        assertEquals(90, approachAngle(0, 90, 1000, 1), 1e-3);
+    }
 }

@@ -31,6 +31,45 @@ public final class FeelTuning {
     public static final double[] DASH_PROFILE = {1.0, 1.0, .92, .78, .62};
     public static final double DASH_EXIT_SPEED = .46;    // carried into the run, decays to TOP_SPEED
 
+    // ---- animation and pose (client/render/SpiritAnimation, SpiritPlayerVisual) ------------------------------
+    public static final float ANIM_CROSSFADE = .2f, ANIM_CROSSFADE_FAST = .09f;   // seconds (4 / ~2 ticks)
+    public static final float FACING_RATE = 16;           // 1/s: model turns toward its velocity
+    public static final float FACING_MIN_SPEED = 1.2f;    // m/s
+    public static final float LEAN_SPEED = .1f, LEAN_ACCEL = .018f, LEAN_MAX = .3f;     // rad, rad per m/s^2
+    public static final float ROLL_PER_TURN = .0011f, ROLL_MAX = .3f;                  // rad per (deg/s * m/s / 6.4)
+    public static final float SQUASH_JUMP = 2.0f, SQUASH_LAND = 3.6f;                  // spring velocity impulses
+    public static final float BREATH_PERIOD = 3.2f, BREATH_AMPLITUDE = .03f;
+    /** Damped springs: stiffness (1/s^2) and damping (1/s); damping below 2*sqrt(stiffness) overshoots. */
+    public static final float POSE_STIFFNESS = 180, POSE_DAMPING = 20;
+    public static final float SQUASH_STIFFNESS = 260, SQUASH_DAMPING = 14;
+    public static final float EAR_STIFFNESS = 120, EAR_DAMPING = 9;
+    public static final float EAR_TURN = .0016f, EAR_FALL = .55f, EAR_MAX = .6f;
+    // ---- camera and FX -----------------------------------------------------------------------------------
+    public static final float FOV_KICK_DASH = .1f, FOV_KICK_SPEED = .06f, FOV_RATE = 10;
+    public static final float TRAIL_MIN_SPEED = 1.0f;     // m/s
+    public static final int FOOTSTEP_SPACING_TICKS = 5;
+
+    /** A damped spring value: {@code x'' = k (target - x) - c x'} integrated semi-implicitly. */
+    public static final class Spring {
+        public float value, velocity;
+        private final float stiffness, damping;
+        public Spring(float value, float stiffness, float damping) { this.value = value; this.stiffness = stiffness; this.damping = damping; }
+        public float step(float target, float dt) {
+            // Sub-step so low frame rates stay stable.
+            int n = Math.max(1, (int) Math.ceil(dt / .008f)); float h = dt / n;
+            for (int i = 0; i < n; i++) { velocity += (stiffness * (target - value) - damping * velocity) * h; value += velocity * h; }
+            return value;
+        }
+        public void kick(float impulse) { velocity += impulse; }
+        public void reset(float v) { value = v; velocity = 0; }
+    }
+
+    /** Frame-rate independent exponential approach for angles in degrees. */
+    public static float approachAngle(float current, float target, float rate, float dt) {
+        float diff = net.minecraft.util.Mth.wrapDegrees(target - current);
+        return current + diff * (1 - (float) Math.exp(-rate * dt));
+    }
+
     private FeelTuning() {}
 
     /** Move {@code current} toward {@code target} by at most accel (speeding up) or decel (braking/reversing). */

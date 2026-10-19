@@ -23,7 +23,15 @@ final class SpiritAnimation {
     private Crossfade base;
     private BlendMask arms, rightArm, leftArm, upperBody, belowArms, belowRight, belowLeft, belowUpper, headMask;
     private AdditiveReference rest;
-    private GltfAnimation lookYaw, lookPitch, aimYaw, aimPitch, earLag;
+    private GltfAnimation lookYaw, lookPitch, aimYaw, aimPitch, earLag, earPitch;
+    // R74 procedural feel: facing, body lean, squash-stretch, ear/tail springs, breathing.
+    private final cn.wwl.orimod.movement.FeelTuning.Spring leanPitch = new cn.wwl.orimod.movement.FeelTuning.Spring(0, cn.wwl.orimod.movement.FeelTuning.POSE_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.POSE_DAMPING);
+    private final cn.wwl.orimod.movement.FeelTuning.Spring leanRoll = new cn.wwl.orimod.movement.FeelTuning.Spring(0, cn.wwl.orimod.movement.FeelTuning.POSE_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.POSE_DAMPING);
+    private final cn.wwl.orimod.movement.FeelTuning.Spring squash = new cn.wwl.orimod.movement.FeelTuning.Spring(1, cn.wwl.orimod.movement.FeelTuning.SQUASH_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.SQUASH_DAMPING);
+    private final cn.wwl.orimod.movement.FeelTuning.Spring earYaw = new cn.wwl.orimod.movement.FeelTuning.Spring(0, cn.wwl.orimod.movement.FeelTuning.EAR_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.EAR_DAMPING);
+    private final cn.wwl.orimod.movement.FeelTuning.Spring earFall = new cn.wwl.orimod.movement.FeelTuning.Spring(0, cn.wwl.orimod.movement.FeelTuning.EAR_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.EAR_DAMPING);
+    private float facing = Float.NaN, smoothSpeed, lastSpeedForAccel;
+    private boolean freeFacing;
     private SpiritArmPose armPose;
     private ItemStack posedItem = ItemStack.EMPTY;
     private UseAnim posedUse = UseAnim.NONE;
@@ -44,6 +52,11 @@ final class SpiritAnimation {
     String selected() { return selected; }
     String overlay() { return overlay; }
     float clipTime() { return clipTime; }
+    /** R74: model yaw (degrees): follows the velocity while running, else the vanilla body yaw. */
+    float facing(float vanillaYaw) { return freeFacing && Float.isFinite(facing) ? facing : vanillaYaw; }
+    float leanPitch() { return leanPitch.value; }
+    float leanRoll() { return leanRoll.value; }
+    float squash() { return squash.value; }
     float speed() { return speed; }
     String baseClip() { return baseClipName; }
     String overlayClip() { return overlayClipName; }
@@ -77,15 +90,16 @@ final class SpiritAnimation {
         }
         previousYaw = yaw;
         String mode = movement.mode.id();
+        feel(at, yaw, angular, dt, mode, discontinuity);
         boolean newPrediction = movement.predictedJumpCount != lastPrediction;
         boolean newAction = movement.actionId != lastMoveId;
         if (newPrediction || newAction) {
             String action = newPrediction ? movement.lastAction.id() : mode;
             switch (action) {
-                case "double_jump" -> trigger("double_jump", now, .5f);
+                case "double_jump" -> { if (trigger("double_jump", now, .5f)) squash.kick(cn.wwl.orimod.movement.FeelTuning.SQUASH_JUMP * .8f); }
                 case "wall_jump" -> trigger(movement.left < 0 ? "wall_jump_r" : "wall_jump_l", now, .4f);
                 case "bash_launch" -> trigger("bash_launch", now, .4f);
-                case "jump" -> trigger("jump_start", now, .15f);
+                case "jump" -> { if (trigger("jump_start", now, .15f)) squash.kick(cn.wwl.orimod.movement.FeelTuning.SQUASH_JUMP); }
             }
         }
         if (!mode.equals(previousMode)) {
@@ -95,7 +109,7 @@ final class SpiritAnimation {
         }
         if (player.hurtTime > lastHurt) { lastHurtAt = now; shotUntil = -100; }
         if (player.onGround() && !grounded && !player.isInWater()) {
-            trigger(lastVertical < -.6f ? "land_heavy" : "land_light", now, lastVertical < -.6f ? .5f : .3f);
+            if (trigger(lastVertical < -.6f ? "land_heavy" : "land_light", now, lastVertical < -.6f ? .5f : .3f)) squash.kick(-cn.wwl.orimod.movement.FeelTuning.SQUASH_LAND * Math.min(1.6f, .4f + Math.abs(lastVertical)));
         }
         boolean moving = speed > .22f;
         // A single interpolation spike must not reset a slow walk to a run and back.
@@ -147,7 +161,8 @@ final class SpiritAnimation {
         if (!next.equals(selected)) {
             float duration = nextClip.duration();
             float playSpeed = !nextClip.name().equals(next) ? 1 : next.equals("start") ? duration / .12f : next.equals("jump_start") ? duration / .15f : 1;
-            base.play(nextClip, clock, next.equals("double_jump") ? .045f : .11f, FadeCurve.SMOOTH, 0, playSpeed, loops(nextClip.name()));
+            float fade = next.equals("double_jump") || next.equals("jump_start") || next.equals("dash_start") ? cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE_FAST : cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE;
+            base.play(nextClip, clock, fade, FadeCurve.SMOOTH, 0, playSpeed, loops(nextClip.name()));
             selected = next; selectedClock = clock; selectedPlaySpeed = playSpeed;
         }
         float elapsedClip = (clock - selectedClock) * selectedPlaySpeed;
@@ -239,7 +254,7 @@ final class SpiritAnimation {
         if (holdRight) hold(model, blend, now, false);
         if (overlay.isEmpty()) overlay = holdLeft && holdRight ? "hold_both" : holdLeft ? "hold_left" : holdRight ? "hold" : "";
         if (!next.equals("death") && !next.equals("sleep") && !next.equals("double_jump")) {
-            float headYaw = Math.clamp(Mth.wrapDegrees(Mth.rotLerp(partial, player.yHeadRotO, player.yHeadRot) - yaw), -45, 45);
+            float headYaw = Math.clamp(Mth.wrapDegrees(Mth.rotLerp(partial, player.yHeadRotO, player.yHeadRot) - facing(yaw)), -45, 45);
             boolean aiming = overlay.startsWith("bow_");
             float pitch = Math.clamp(player.getViewXRot(partial), aiming ? -85 : -40, aiming ? 85 : 45);
             // Undo the clip's torso twist before aiming, then restore it. Otherwise
@@ -264,7 +279,11 @@ final class SpiritAnimation {
                 blend.additive(lookYaw, -headYaw * (1 - aimWeight) * Mth.DEG_TO_RAD, 1, headMask, rest);
                 blend.additive(lookPitch, Math.clamp(pitch, -40, 45) * (1 - aimWeight) * Mth.DEG_TO_RAD, 1, headMask, rest);
             }
-            blend.additive(earLag, lag, 1, BlendMask.ALL, rest);
+            blend.additive(earLag, lag + earYaw.value, 1, BlendMask.ALL, rest);
+            blend.additive(earPitch, earFall.value, 1, BlendMask.ALL, rest);
+            float breath = Mth.sin(now * Mth.TWO_PI / cn.wwl.orimod.movement.FeelTuning.BREATH_PERIOD) * cn.wwl.orimod.movement.FeelTuning.BREATH_AMPLITUDE
+                    * Math.max(0, 1 - speed / 3f) * (player.onGround() ? 1 : 0);
+            if (!aiming) blend.additive(aimPitch, breath, 1, upperBody, rest);
             if (aiming) armPose.bow(blend, pitch * aimWeight, headYaw * aimWeight);
             else if (itemPoseWeight > 0) armPose.itemUse(blend, player, posedItem, posedUse, posedLeft,
                     itemPoseWeight * itemPoseWeight * (3 - 2 * itemPoseWeight),
@@ -275,6 +294,34 @@ final class SpiritAnimation {
         lastMoveId = movement.actionId; lastPrediction = movement.predictedJumpCount; lastHurt = player.hurtTime; previousMode = mode;
     }
 
+    /** R74: per-frame springs for facing, lean, squash and ears (constants in FeelTuning). */
+    private void feel(Vec3 at, float bodyYaw, float angular, float dt, String mode, boolean discontinuity) {
+        Vec3 v = player.getDeltaMovement();
+        if (discontinuity || !Float.isFinite(facing)) {
+            facing = bodyYaw; leanPitch.reset(0); leanRoll.reset(0); squash.reset(1); earYaw.reset(0); earFall.reset(0);
+            smoothSpeed = lastSpeedForAccel = speed; return;
+        }
+        if (dt <= 0) return;
+        boolean busy = player.isUsingItem() || !player.getData(SpiritData.COMBAT_VIEW).mode().equals("idle") || mode.equals("bash_aim")
+                || mode.equals("wall_slide") || player.isSleeping() || player.isPassenger() || player.isVisuallySwimming() || player.isFallFlying();
+        freeFacing = !busy;
+        double hx = v.x, hz = v.z;
+        float targetYaw = speed > cn.wwl.orimod.movement.FeelTuning.FACING_MIN_SPEED && hx * hx + hz * hz > 1e-4
+                ? (float) (Mth.atan2(hz, hx) * Mth.RAD_TO_DEG) - 90 : bodyYaw;
+        facing = busy ? bodyYaw : cn.wwl.orimod.movement.FeelTuning.approachAngle(facing, targetYaw, cn.wwl.orimod.movement.FeelTuning.FACING_RATE, dt);
+        smoothSpeed = Mth.lerp(1 - (float) Math.exp(-dt * 10), smoothSpeed, speed);
+        float accel = (smoothSpeed - lastSpeedForAccel) / dt; lastSpeedForAccel = smoothSpeed;
+        float max = cn.wwl.orimod.movement.FeelTuning.LEAN_MAX;
+        float pitchTarget = player.onGround() || mode.equals("dash") ? Math.clamp(smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.LEAN_SPEED + accel * cn.wwl.orimod.movement.FeelTuning.LEAN_ACCEL, -max, max) : 0;
+        float rollTarget = Math.clamp(-angular * smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.ROLL_PER_TURN, -cn.wwl.orimod.movement.FeelTuning.ROLL_MAX, cn.wwl.orimod.movement.FeelTuning.ROLL_MAX);
+        if (busy) pitchTarget = rollTarget = 0;
+        leanPitch.step(pitchTarget, dt); leanRoll.step(rollTarget, dt);
+        squash.step(1, dt); squash.value = Math.clamp(squash.value, .75f, 1.25f);
+        float em = cn.wwl.orimod.movement.FeelTuning.EAR_MAX;
+        earYaw.step(Math.clamp(-angular * cn.wwl.orimod.movement.FeelTuning.EAR_TURN, -em, em), dt);
+        earFall.step(Math.clamp((float) -v.y * cn.wwl.orimod.movement.FeelTuning.EAR_FALL, -em, em), dt);
+    }
+
     private void hold(GemRenderGltfModel model, AnimationBlend blend, float now, boolean left) {
         GltfAnimation clip = SpiritClips.get(model, handed("hold", left));
         blend.override(clip, clip.loop(now), 1, left ? leftArm : rightArm);
@@ -282,9 +329,10 @@ final class SpiritAnimation {
 
     private static String handed(String name, boolean left) { return left ? name + "_left" : name; }
 
-    private void trigger(String action, float now, float length) {
-        if (shot.equals(action) && now - shotAt < .22f) return; // Prediction acknowledgement is the same visual event.
+    private boolean trigger(String action, float now, float length) {
+        if (shot.equals(action) && now - shotAt < .22f) return false; // Prediction acknowledgement is the same visual event.
         shot = action; shotAt = now; shotUntil = now + length;
+        return true;
     }
 
     private void reset(GemRenderGltfModel model, float now, float partial) {
@@ -306,6 +354,9 @@ final class SpiritAnimation {
         lookPitch = GltfAnimation.procedural("ori_look_pitch", angle(table, palette, "head", new Vector3f(1,0,0), 1));
         aimYaw = GltfAnimation.procedural("ori_aim_yaw", angle(table, palette, "spine", new Vector3f(0,1,0), 1));
         aimPitch = GltfAnimation.procedural("ori_aim_pitch", angle(table, palette, "spine", new Vector3f(1,0,0), 1));
+        earPitch = GltfAnimation.procedural("ori_ear_flow",
+                angle(table,palette,"ear_l_1",new Vector3f(1,0,0),1), angle(table,palette,"ear_r_1",new Vector3f(1,0,0),1),
+                angle(table,palette,"tail_1",new Vector3f(1,0,0),-.5f), angle(table,palette,"tail_2",new Vector3f(1,0,0),-.35f));
         earLag = GltfAnimation.procedural("ori_ear_inertia",
                 angle(table,palette,"ear_l_1",new Vector3f(0,1,0),1), angle(table,palette,"ear_r_1",new Vector3f(0,1,0),1),
                 angle(table,palette,"tail_1",new Vector3f(0,1,0),.6f), angle(table,palette,"tail_2",new Vector3f(0,1,0),.4f));
