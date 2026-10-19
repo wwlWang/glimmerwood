@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 19:04（UTC+8）云端 ori-r76（原创贴图）：scripts/gen-textures.py 生成 45 张原创 16×16 贴图，替换所有物品和方块模型里借用的原版贴图；精灵弓有自己的拉弓三段。OriginalTexturesTest 保证模型只引用存在的 orimod 贴图。JUnit 551 / GameTest 230。
+
 2026-10-19 18:59（UTC+8）云端 ori-r75（镜头与运动特效）：新增 client/fx/MotionFeel：冲刺 FOV +10%，高速奔跑时 FOV 逐渐放大最多 +6%，平滑过渡并受原版“视场角效果”设置约束；超过 1 m/s 持续出柔光拖尾；地面每 5 tick 一次脚步光点；冲刺时留下光点身形残影。镜头滞后和前瞻暂缓。JUnit 550 / GameTest 230。
 
 2026-10-19 18:57（UTC+8）云端 ori-r74（动画手感）：交叉淡变 0.11→0.2 s；身体朝向跟随速度；起跑前倾、转弯侧倾；起跳拉伸、落地挤压（弹簧）；耳朵和尾巴改为二阶弹簧；叠加呼吸。常量都在 FeelTuning，响应曲线见 shots/feel-anim.png。JUnit 548 / GameTest 230。

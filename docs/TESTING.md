@@ -351,3 +351,8 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r75：镜头与运动特效
 
 - `FeelTuningTest`：FOV 冲击随速度渐增、冲刺时最大；拖尾数量受画质设置约束。
+
+## ori-r76：原创贴图
+
+- `OriginalTexturesTest`：每个模型只引用 orimod 贴图，文件存在且是 16×16。
+- `python3 scripts/gen-textures.py` 可重新生成全部贴图。
