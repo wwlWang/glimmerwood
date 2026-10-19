@@ -330,3 +330,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R70：第二首领：腐光翼母（空中）
 
 537 JUnit（新增 `GloomMatriarchRulesTest` 4 项）；230 GameTest（新增 `parity.gloom_matriarch_dives_stuns_feathers_and_enrages`：俯冲有预警且对准标记、眩晕时受双倍伤害、眩晕结束后回到待机、羽刃 5 枚、半血进入二阶段并召来两只鸦；`flow.forest_ruin_holds_the_storm_altar`：旋转 90° 后祭坛仍在、只能召唤一只、首次击败奖励只发一次）。
+
+## R71：R66–R70 客户端验证与文档整理
+
+真实客户端：`scripts/verify-r70.py` 结果 status ok（齐射命中 2/3、地图碎片、腐光翼母预警俯冲 4 次、二阶段召来 2 只鸦）；`scripts/check-acceptance-counts.py` 计数一致。
