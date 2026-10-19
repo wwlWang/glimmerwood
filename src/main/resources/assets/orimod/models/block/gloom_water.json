@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "minecraft:block/crying_obsidian",
-    "top": "minecraft:block/crying_obsidian",
-    "side": "minecraft:block/purple_concrete_powder"
+    "particle": "orimod:block/gloom_water",
+    "top": "orimod:block/gloom_water",
+    "side": "orimod:block/gloom_water_side"
   },
   "elements": [
     {

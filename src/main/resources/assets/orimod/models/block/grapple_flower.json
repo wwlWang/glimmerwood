@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "core": "minecraft:block/verdant_froglight_top",
-    "accent": "minecraft:block/moss_block",
-    "particle": "minecraft:block/verdant_froglight_top"
+    "core": "orimod:block/grapple_flower_core",
+    "accent": "orimod:block/grapple_flower_accent",
+    "particle": "orimod:block/grapple_flower_core"
   },
   "elements": [
     {

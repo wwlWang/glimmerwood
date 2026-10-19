@@ -1,1 +1,6 @@
-{"parent": "minecraft:block/cube_all", "textures": {"all": "minecraft:block/suspicious_sand_0"}}
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "orimod:block/spirit_sand"
+  }
+}

@@ -1,10 +1,10 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "minecraft:block/chiseled_quartz_block",
-    "base": "minecraft:block/chiseled_quartz_block",
-    "top": "minecraft:block/chiseled_quartz_block_top",
-    "gem": "minecraft:block/gold_block"
+    "particle": "orimod:block/pedestal_base",
+    "base": "orimod:block/pedestal_base",
+    "top": "orimod:block/pedestal_top",
+    "gem": "orimod:block/gem_keystone"
   },
   "elements": [
     {

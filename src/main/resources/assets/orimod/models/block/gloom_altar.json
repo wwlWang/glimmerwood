@@ -1,1 +1,8 @@
-{"parent": "minecraft:block/cube_bottom_top", "textures": {"top": "minecraft:block/crying_obsidian", "bottom": "minecraft:block/polished_deepslate", "side": "minecraft:block/chiseled_polished_blackstone"}}
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "orimod:block/gloom_altar_top",
+    "side": "orimod:block/gloom_altar_side",
+    "bottom": "orimod:block/shrine_bottom"
+  }
+}

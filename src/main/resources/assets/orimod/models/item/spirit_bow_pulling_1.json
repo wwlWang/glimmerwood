@@ -1,0 +1,6 @@
+{
+  "parent": "orimod:item/spirit_bow",
+  "textures": {
+    "layer0": "orimod:item/spirit_bow_pulling_1"
+  }
+}

@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "minecraft:block/chiseled_quartz_block",
-    "base": "minecraft:block/chiseled_quartz_block",
-    "top": "minecraft:block/chiseled_quartz_block_top"
+    "particle": "orimod:block/pedestal_base",
+    "base": "orimod:block/pedestal_base",
+    "top": "orimod:block/pedestal_top"
   },
   "elements": [
     {

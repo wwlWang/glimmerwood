@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "core": "minecraft:block/sea_lantern",
-    "accent": "minecraft:block/blue_ice",
-    "particle": "minecraft:block/sea_lantern"
+    "core": "orimod:block/bash_anchor_core",
+    "accent": "orimod:block/bash_anchor_accent",
+    "particle": "orimod:block/bash_anchor_core"
   },
   "elements": [
     {

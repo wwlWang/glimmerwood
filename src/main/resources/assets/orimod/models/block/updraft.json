@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "top": "minecraft:block/sea_lantern",
-    "side": "minecraft:block/prismarine_bricks",
-    "particle": "minecraft:block/sea_lantern"
+    "top": "orimod:block/updraft_top",
+    "side": "orimod:block/updraft_side",
+    "particle": "orimod:block/updraft_top"
   },
   "elements": [
     {
