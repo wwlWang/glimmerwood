@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # REL01: build the release jar twice from a clean tree, require identical sha256, and publish it with
-# SHA256SUMS. The jar bundles Spirit Glow (orimod_shaderpack/spirit_glow.zip) with its MIT/Apache notices.
+# SHA256SUMS (both builds bypass the Gradle build cache, so each recompiles). The jar bundles Spirit Glow (orimod_shaderpack/spirit_glow.zip) with its MIT/Apache notices.
 # Usage: scripts/build-release.sh [output-dir]   (default ../release next to the repo)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -8,7 +8,7 @@ out="${1:-$(cd .. && pwd)/release}"
 [ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "working tree has tracked changes; commit first" >&2; exit 1; }
 commit=$(git rev-parse --short=10 HEAD)
 version=$(sed -n 's/^mod_version=//p' gradle.properties)
-build() { ./gradlew --no-daemon --console=plain -q clean jar >/dev/null; ls build/libs/*.jar | grep -v -- '-sources\|-javadoc' | head -1; }
+build() { ./gradlew --no-daemon --no-build-cache --console=plain -q clean jar >/dev/null; ls build/libs/*.jar | grep -v -- '-sources\|-javadoc' | head -1; }
 first=$(build); a=$(sha256sum "$first" | cut -d' ' -f1); cp "$first" /tmp/orimod-release-first.jar
 second=$(build); b=$(sha256sum "$second" | cut -d' ' -f1)
 [ "$a" = "$b" ] || { echo "not reproducible: $a vs $b" >&2; exit 1; }
