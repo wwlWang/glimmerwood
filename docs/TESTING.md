@@ -369,3 +369,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r79：第三人称镜头跟随
 
 - `FeelTuningTest`：镜头跟随与帧率无关，前瞻有上限。
+
+## ori-r80：走、跑、疾跑权重混合
+
+- `FeelTuningTest`：权重和为 1，随速度单调变化，步幅连续。

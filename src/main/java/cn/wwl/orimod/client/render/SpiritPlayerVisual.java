@@ -59,6 +59,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         result.put("visible", true); result.put("base", b.animation.selected()); result.put("overlay", b.animation.overlay());
         result.put("clipTime", b.animation.clipTime()); result.put("speed", b.animation.speed());
         result.put("leanPitch", b.animation.leanPitch()); result.put("leanRoll", b.animation.leanRoll()); result.put("squash", b.animation.squash());
+        var gait = b.animation.gait(); result.put("gaitWalk", gait[0]); result.put("gaitRun", gait[1]); result.put("gaitSprint", gait[2]);
         result.put("baseClip", b.animation.baseClip()); result.put("overlayClip", b.animation.overlayClip());
         result.put("missingClips", b.animation.missingClips());
         result.put("aimContactError", b.animation.aimContactError());

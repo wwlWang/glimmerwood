@@ -41,6 +41,8 @@ final class SpiritAnimation {
     private float previousYaw, lag, speed, lastVertical, lastMovingAt = -100;
     private int lastMoveId, lastPrediction, lastHurt;
     private boolean grounded, wasMoving, wasBow, bowLeft, runningGait;
+    private float locoWeight, locoPhase, gaitWalk = 1, gaitRun, gaitSprint;
+    float[] gait() { return new float[] {gaitWalk * locoWeight, gaitRun * locoWeight, gaitSprint * locoWeight}; }
     private float bowReleasedAt = -100, selectedPlaySpeed = 1;
     private Vec3 position;
     private String previousMode = "idle", selected = "", shot = "", overlay = "";
@@ -146,13 +148,13 @@ final class SpiritAnimation {
             special = false;
             if (now - createdAt < .6f) next = "transform_in";
             else if (player.isCrouching()) next = "crouch";
-            else if (moving) next = runningGait ? "run" : "walk";
+            else if (moving) next = "walk";   // R80: one locomotion base; run/sprint are weighted on top (gait blend)
             else next = now - lastMovingAt > 9 ? "alert" : "idle";
         }
         GltfAnimation nextClip = SpiritClips.get(model, next);
         baseClipName = nextClip.name();
         float rate = nextClip.name().equals(next) ? switch (next) {
-            case "walk" -> speed * nextClip.duration() / .8f;
+            case "walk" -> speed * nextClip.duration() / cn.wwl.orimod.movement.FeelTuning.stride(speed);
             case "run" -> speed * nextClip.duration() / 2f;
             case "climb" -> Math.clamp((float)Math.abs(player.getDeltaMovement().y) * 10, .2f, 2);
             default -> 1;
@@ -244,6 +246,18 @@ final class SpiritAnimation {
         if (mask != upperBody) below = leftCovered && rightCovered ? belowArms : leftCovered ? belowLeft : rightCovered ? belowRight : null;
         if (below == null) base.write(clock, blend);
         else base.write(clock, blend, 1, below);
+        // R80: walk/run/sprint blend by speed. The run clip follows the walk's phase, weighted by speed and by how much
+        // of the base is locomotion right now (fades with the base crossfade).
+        var gait = cn.wwl.orimod.movement.FeelTuning.gaitWeights(speed);
+        locoWeight = cn.wwl.orimod.movement.FeelTuning.approach(locoWeight, selected.equals("walk") ? 1 : 0, dt / cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE);
+        gaitWalk = gait[0]; gaitRun = gait[1]; gaitSprint = gait[2];
+        float runWeight = (gaitRun + gaitSprint) * locoWeight;
+        if (runWeight > .002f) {
+            GltfAnimation walkClip = SpiritClips.get(model, "walk"), runClip = SpiritClips.get(model, "run");
+            float phase = walkClip.duration() > 0 ? walkClip.loop((clock - selectedClock) * selectedPlaySpeed) / walkClip.duration() : 0;
+            if (selected.equals("walk")) { locoPhase = phase; }
+            blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, below == null ? BlendMask.ALL : below);
+        }
         if (mask != null) {
             GltfAnimation action = SpiritClips.get(model, overlay);
             overlayClipName = action.name();
@@ -312,7 +326,7 @@ final class SpiritAnimation {
         smoothSpeed = Mth.lerp(1 - (float) Math.exp(-dt * 10), smoothSpeed, speed);
         float accel = (smoothSpeed - lastSpeedForAccel) / dt; lastSpeedForAccel = smoothSpeed;
         float max = cn.wwl.orimod.movement.FeelTuning.LEAN_MAX;
-        float pitchTarget = player.onGround() || mode.equals("dash") ? Math.clamp(smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.LEAN_SPEED + accel * cn.wwl.orimod.movement.FeelTuning.LEAN_ACCEL, -max, max) : 0;
+        float pitchTarget = player.onGround() || mode.equals("dash") ? Math.clamp(smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.LEAN_SPEED + gaitSprint * cn.wwl.orimod.movement.FeelTuning.SPRINT_LEAN + accel * cn.wwl.orimod.movement.FeelTuning.LEAN_ACCEL, -max, max) : 0;
         float rollTarget = Math.clamp(-angular * smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.ROLL_PER_TURN, -cn.wwl.orimod.movement.FeelTuning.ROLL_MAX, cn.wwl.orimod.movement.FeelTuning.ROLL_MAX);
         if (busy) pitchTarget = rollTarget = 0;
         leanPitch.step(pitchTarget, dt); leanRoll.step(rollTarget, dt);
