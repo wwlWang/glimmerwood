@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 23:05（UTC+8）发布包重建（R92，de6212fd45）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-de6212fd45.jar`，sha256 `f2215cb7c8e2aa7d2a6f528855ff3ddd8821e8d54462159d9d7d9165155c0d3c`；同目录有 `gemrender-0.1.17.jar`。
+
 2026-10-19 23:00（UTC+8）云端 ori-r92（对照官方图：灵光、耳朵/触须/尾巴物理、姿态）：用户给了三张官方截图（`shots/ref-ori-*.png`），指出动作和发光都不对，耳朵/触须/尾巴太僵。模型技术不变：GemRender glTF 蒙皮网格（`models/entity/ori.glb`，CC BY 4.0 社区模型，非游戏解包资产），骨架里本来就有 ear_*_1..3、antenna_*_1..3、tail_1..5 共 16 节，但 R74 只用一个弹簧掰 ear_1 和 tail_1/2，所以整片在动。
 - **多节物理：** 新增 `movement/SpringChain`（每节以阻尼弹簧追随上一节的绝对角度，同时受同一份惯性力，4 ms 子步，帧率无关），`client/render/SpiritSecondary` 给 10 条链（耳抬/耳摆 ×2、触须俯仰/侧摆 ×2、尾抬/尾摆）共 34 个骨骼角，输入是插值位置算出的身体加速度、转向角速度、下落速度和前进气流；起跳/二段跳和落地给冲量。一个 procedural additive 片段写入全部骨骼，替换旧的 earLag/earPitch。实测：转向时尾尖比尾根晚约 5 tick 达到峰值、摆幅更大并反向过冲（`shots/r92-after-chains.png`），落地耳朵先下甩再回弹（`r92-after-night-land-burst-*`）。
 - **剪影：** 大耳朵静止时上扬后掠成 V（EAR_REST_LIFT 0.62/0.18/−0.08，外张 0.16），触须后掠贴头（不再像兔耳），尾巴根部下垂、尾尖上卷；站立时身体略前倾（READY_LEAN 0.12）。
