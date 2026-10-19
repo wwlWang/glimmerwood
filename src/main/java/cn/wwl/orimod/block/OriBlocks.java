@@ -36,6 +36,10 @@ public final class OriBlocks {
     /** R61: gloom water hazard (cleansed by Charge Flame, Light Burst or the Gloom Heart's defeat). */
     public static final DeferredBlock<GloomWaterBlock> GLOOM_WATER = BLOCKS.register("gloom_water", () -> new GloomWaterBlock(
             BlockBehaviour.Properties.of().strength(100).noLootTable().noOcclusion().replaceable().lightLevel(state -> 4).sound(SoundType.SLIME_BLOCK)));
+    /** R64: burrowable spirit sand, placed only in ruins. */
+    public static final DeferredBlock<SpiritSandBlock> SPIRIT_SAND = BLOCKS.register("spirit_sand", () -> new SpiritSandBlock(
+            BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().noOcclusion().dynamicShape().sound(SoundType.SAND)
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false).lightLevel(state -> 3)));
     /** R62: map stone at each ruin entrance. */
     public static final DeferredBlock<MapStoneBlock> MAP_STONE = BLOCKS.register("map_stone", () -> new MapStoneBlock(
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 8).sound(SoundType.LODESTONE)));

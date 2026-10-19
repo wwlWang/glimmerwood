@@ -156,6 +156,17 @@ public final class SpiritControls {
     private static long waterDashReadyAt;
 
     /** R56: Water Dash and faster swimming (client displacement; the server validates and plays the FX). */
+    private static boolean burrowing;
+    /** R64: steer through spirit sand along the look direction; pop out with a boost. */
+    private static void burrowTick(Minecraft mc) {
+        var player = mc.player;
+        if (player == null || !cn.wwl.orimod.block.SpiritSandBlock.canBurrow(player)) { burrowing = false; return; }
+        boolean in = cn.wwl.orimod.block.SpiritSandBlock.inside(player);
+        if (in) player.setDeltaMovement(cn.wwl.orimod.block.SpiritSandBlock.burrowVelocity(player.getLookAngle()));
+        else if (burrowing) player.setDeltaMovement(cn.wwl.orimod.block.SpiritSandBlock.exitVelocity(player.getLookAngle()));
+        burrowing = in;
+    }
+
     private static void waterTick(Minecraft mc) {
         var player = mc.player;
         if (player == null || mc.screen != null || !cn.wwl.orimod.movement.WaterMovement.active(player)) { waterDashHeld = DASH.isDown(); return; }
@@ -224,6 +235,7 @@ public final class SpiritControls {
         }
         while (DASH.consumeClick()) { /* Edge detection uses the held state; menus never queue a dash. */ }
         waterTick(mc);
+        burrowTick(mc);
         while (BASH.consumeClick()) { }
         while (PANEL.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive()) mc.setScreen(new SpiritScreen(!SpiritData.isAwakened(mc.player)));

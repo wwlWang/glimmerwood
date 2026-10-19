@@ -287,5 +287,6 @@
   "message.orimod.map_stone.dormant": "The map stone stays dark until your spirit core awakens",
   "message.orimod.map_stone.survey": "Map stone: %s cells and %s keystones remain here; %s. The guide now points to the next ruin.",
   "message.orimod.map_stone.altar": "a gloom altar sleeps here",
-  "message.orimod.map_stone.no_altar": "no altar"
+  "message.orimod.map_stone.no_altar": "no altar",
+  "block.orimod.spirit_sand": "Spirit Sand"
 }

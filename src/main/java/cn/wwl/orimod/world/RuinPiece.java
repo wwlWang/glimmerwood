@@ -91,6 +91,16 @@ public final class RuinPiece extends TemplateStructurePiece {
                 if (bounds.isInside(pos) && level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.WATER)) {
                     level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 2); placed++; }
             }
+        if (kind.layout().spiritSand() != null) {   // R64: burrow tunnel through the solid wall, plus a lit pocket at its end
+            var a = kind.layout().spiritSand()[0]; var b = kind.layout().spiritSand()[1];
+            for (int x = a.getX(); x <= b.getX() + 2; x++) for (int y = a.getY(); y <= b.getY(); y++) for (int z = a.getZ(); z <= b.getZ(); z++) {
+                var pos = placement.block(new BlockPos(x, y, z));
+                if (!bounds.isInside(pos)) continue;
+                level.setBlock(pos, x <= b.getX() ? cn.wwl.orimod.block.OriBlocks.SPIRIT_SAND.get().defaultBlockState()
+                        : (y == a.getY() && z == a.getZ() ? net.minecraft.world.level.block.Blocks.SEA_LANTERN.defaultBlockState() : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()), 2);
+                placed++;
+            }
+        }
         if (kind.layout().mapStone() != null) {   // R62
             var pos = placement.block(kind.layout().mapStone());
             if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.MAP_STONE.get().defaultBlockState(), 2); placed++; }

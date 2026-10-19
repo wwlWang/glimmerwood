@@ -302,3 +302,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R63：Spirit Trials 幽灵回放
 
 528 JUnit（新增 `ChallengeGhostTest` 3 项：采样步长与上限、回放索引与结束、只有更快才替换；新 FX 类型带来的参数化用例）；227 GameTest（`flow.fresh_*_world_to_all_ruins` 断言每处遗迹通关后都留下幽灵轨迹）。
+
+## R64：沙中穿行（安全版 Burrow）
+
+228 GameTest（新增 `flow.spirit_sand_lets_only_burrowers_through`：灵沙和尽头小洞已放置；没有技能的玩家被挡住；灵体形态且会水中冲刺的玩家碰撞为空；僵尸被挡住；灵沙不可破坏；穿行速度和出沙弹出符合常量）。

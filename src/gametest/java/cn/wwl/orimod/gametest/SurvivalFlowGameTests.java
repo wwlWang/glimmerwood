@@ -85,6 +85,29 @@ public final class SurvivalFlowGameTests {
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });
+        add(tests, "spirit_sand_lets_only_burrowers_through", h -> {
+            var placement = place(h, RuinKind.CAVE, Rotation.NONE);
+            try {
+                var sand = placement.block(RuinKind.CAVE.layout().spiritSand()[0]);
+                var state = h.getLevel().getBlockState(sand);
+                h.assertTrue(state.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_SAND.get()), "Spirit sand missing");
+                var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+                player.setData(cn.wwl.orimod.spirit.SpiritData.ABILITIES, 0);
+                h.assertFalse(state.getCollisionShape(h.getLevel(), sand, net.minecraft.world.phys.shapes.CollisionContext.of(player)).isEmpty(), "Sand open without Water Dash");
+                player.setData(cn.wwl.orimod.spirit.SpiritData.ABILITIES, cn.wwl.orimod.progression.Ability.DASH.bit | cn.wwl.orimod.progression.Ability.WATER_DASH.bit);
+                player.setData(cn.wwl.orimod.spirit.SpiritData.AWAKENED, true); player.setData(cn.wwl.orimod.spirit.SpiritData.FORM, true);
+                h.assertTrue(state.getCollisionShape(h.getLevel(), sand, net.minecraft.world.phys.shapes.CollisionContext.of(player)).isEmpty(), "Burrower blocked");
+                var zombie = net.minecraft.world.entity.EntityType.ZOMBIE.create(h.getLevel());
+                h.assertFalse(state.getCollisionShape(h.getLevel(), sand, net.minecraft.world.phys.shapes.CollisionContext.of(zombie)).isEmpty(), "Mob passes spirit sand");
+                h.assertTrue(state.getDestroySpeed(h.getLevel(), sand) < 0, "Spirit sand breakable");
+                var v = cn.wwl.orimod.block.SpiritSandBlock.burrowVelocity(new net.minecraft.world.phys.Vec3(2, 0, 0));
+                h.assertTrue(Math.abs(v.x - cn.wwl.orimod.block.SpiritSandBlock.SPEED) < 1e-9, "Burrow speed");
+                h.assertTrue(cn.wwl.orimod.block.SpiritSandBlock.exitVelocity(new net.minecraft.world.phys.Vec3(1, 0, 0)).y >= .35, "Exit pop");
+                var pocket = placement.block(new net.minecraft.core.BlockPos(18, 3, 13));
+                h.assertTrue(h.getLevel().getBlockState(pocket).isAir(), "Pocket not carved");
+            } finally { clear(h, placement, RuinKind.CAVE); }
+            h.succeed();
+        });
         add(tests, "map_stone_surveys_the_cave_ruin", h -> {
             var placement = place(h, RuinKind.CAVE, Rotation.NONE);
             try {

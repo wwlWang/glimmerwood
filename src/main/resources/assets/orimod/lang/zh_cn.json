@@ -287,5 +287,6 @@
   "message.orimod.map_stone.dormant": "唤醒灵核之前，地图石不会亮起",
   "message.orimod.map_stone.survey": "地图石：此处还有 %s 个灵格、%s 枚钥石；%s。指引已指向下一处遗迹。",
   "message.orimod.map_stone.altar": "这里沉睡着一座腐光祭坛",
-  "message.orimod.map_stone.no_altar": "没有祭坛"
+  "message.orimod.map_stone.no_altar": "没有祭坛",
+  "block.orimod.spirit_sand": "灵沙"
 }
