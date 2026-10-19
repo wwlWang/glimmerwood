@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "kind": "double_jump",
+  "notes": "二段跳脚下的气环。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "layers": [
+    {
+      "particle": "minecraft:cloud",
+      "share": 1.0,
+      "spread": [
+        0.3,
+        0.05,
+        0.3
+      ],
+      "speed": 0.01,
+      "notes": "单层"
+    }
+  ]
+}

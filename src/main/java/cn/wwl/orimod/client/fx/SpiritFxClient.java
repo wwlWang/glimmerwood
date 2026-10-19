@@ -14,15 +14,10 @@ public final class SpiritFxClient {
     private static final RandomSource RANDOM = RandomSource.create();
     private SpiritFxClient() {}
 
-    static ParticleOptions particle(SpiritFxKind kind) {
-        return switch (kind) {
-            case BLADE_HIT -> ParticleTypes.CRIT;
-            case DASH, DOUBLE_JUMP, WALL_JUMP -> ParticleTypes.CLOUD;
-            case BASH -> ParticleTypes.FIREWORK;
-            case GRAPPLE_HOOK, GRAPPLE_TETHER -> ParticleTypes.ELECTRIC_SPARK;
-            case FORM_SWITCH -> ParticleTypes.GLOW;
-            default -> ParticleTypes.END_ROD;
-        };
+    /** Particle for a definition layer; an unknown or non-simple particle id falls back to the end rod glow. */
+    static ParticleOptions particle(String id) {
+        var type = net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE.get(net.minecraft.resources.ResourceLocation.tryParse(id));
+        return type instanceof net.minecraft.core.particles.SimpleParticleType simple ? simple : ParticleTypes.END_ROD;
     }
 
     private static final java.util.Map<String, Object> LAST = new java.util.concurrent.ConcurrentHashMap<>();
@@ -96,23 +91,30 @@ public final class SpiritFxClient {
         if (loop != null) { loop.end(); Minecraft.getInstance().getSoundManager().stop(loop); }
     }
 
+    /** Development preview: one burst of {@code kind} at a position, through the same settings and definitions. */
+    public static void preview(SpiritFxKind kind, double x, double y, double z) {
+        var mc = Minecraft.getInstance();
+        burst(kind, x, y, z, mc.player == null ? -1 : mc.player.getId());
+    }
+
     private static void burst(SpiritFxKind kind, double px, double py, double pz, int source) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
         if (level == null) return;
         var visuals = OriClientConfig.visuals();
         var split = FxBudget.of(kind, visuals.quality(), visuals.advancedParticles());
-        var options = particle(kind);
+        var definition = SpiritFxResources.get(kind);
         if (!kind.persistent()) received++;
         LAST.put(kind.name(), java.util.Map.of("essential", split.essential(), "decorative", split.decorative(), "quality", visuals.quality().name(), "advanced", visuals.advancedParticles()));
         for (int i = 0; i < split.total(); i++) {
-            // Same distribution as ServerLevel.sendParticles: gaussian offset and speed.
-            double x = px + RANDOM.nextGaussian() * kind.spreadX();
-            double y = py + RANDOM.nextGaussian() * kind.spreadY();
-            double z = pz + RANDOM.nextGaussian() * kind.spreadZ();
-            double vx = RANDOM.nextGaussian() * kind.speed(), vy = RANDOM.nextGaussian() * kind.speed(), vz = RANDOM.nextGaussian() * kind.speed();
+            // Same distribution as ServerLevel.sendParticles: gaussian offset and speed, per definition layer.
+            var layer = definition.layerFor(i, split.total());
+            double x = px + RANDOM.nextGaussian() * layer.spreadX();
+            double y = py + RANDOM.nextGaussian() * layer.spreadY();
+            double z = pz + RANDOM.nextGaussian() * layer.spreadZ();
+            double vx = RANDOM.nextGaussian() * layer.speed(), vy = RANDOM.nextGaussian() * layer.speed(), vz = RANDOM.nextGaussian() * layer.speed();
             boolean essential = i < split.essential();
-            try { level.addParticle(options, essential, x, y, z, vx, vy, vz); }
+            try { level.addParticle(particle(layer.particle()), essential, x, y, z, vx, vy, vz); }
             catch (Throwable ignored) { return; }
         }
         if (kind == SpiritFxKind.STOMP_IMPACT && mc.player != null && source == mc.player.getId()) {

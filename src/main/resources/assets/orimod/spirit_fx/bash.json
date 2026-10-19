@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "bash",
+  "layers": [
+    {
+      "particle": "minecraft:firework",
+      "share": 1.0,
+      "speed": 0.04,
+      "spread": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    }
+  ]
+}

@@ -564,6 +564,13 @@ public final class DevelopmentBridge {
                         action.get("x").getAsInt(), action.get("y").getAsInt(), action.get("z").getAsInt()));
             }
             case "stop_preview_effect" -> SpiritMotePreview.stop();
+            case "spirit_fx_burst" -> {
+                // FX02: play a spirit effect burst locally (same budget and definitions as server-sent bursts).
+                var kind = cn.wwl.orimod.fx.SpiritFxKind.valueOf(action.get("kind").getAsString());
+                cn.wwl.orimod.client.fx.SpiritFxClient.preview(kind, action.get("x").getAsDouble(), action.get("y").getAsDouble(), action.get("z").getAsDouble());
+                return Map.of("kind", kind.name(), "definition", cn.wwl.orimod.client.fx.SpiritFxResources.get(kind).toString());
+            }
+            case "spirit_fx_state" -> { return cn.wwl.orimod.client.fx.SpiritFxResources.diagnostics(); }
             case "settings" -> {
                 if (action.has("autoJump")) mc.options.autoJump().set(action.get("autoJump").getAsBoolean());
                 if (action.has("mainArm")) mc.options.mainHand().set(net.minecraft.world.entity.HumanoidArm.valueOf(action.get("mainArm").getAsString()));

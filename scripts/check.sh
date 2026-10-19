@@ -18,4 +18,5 @@ if [ "$devtools" = 1 ]; then
   python3 scripts/sync-dependencies.py
   ./gradlew compileDevtoolsJava --console=plain "$@"
 fi
+python3 scripts/export-spirit-fx.py --check
 python3 scripts/test-summary.py

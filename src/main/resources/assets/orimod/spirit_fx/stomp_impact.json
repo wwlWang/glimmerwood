@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "stomp_impact",
+  "layers": [
+    {
+      "particle": "minecraft:end_rod",
+      "share": 1.0,
+      "speed": 0.02,
+      "spread": [
+        1.5,
+        0.06,
+        1.5
+      ]
+    }
+  ]
+}

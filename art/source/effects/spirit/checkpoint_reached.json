@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "kind": "checkpoint_reached",
+  "notes": "挑战检查点。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "layers": [
+    {
+      "particle": "minecraft:end_rod",
+      "share": 1.0,
+      "spread": [
+        0.4,
+        0.5,
+        0.4
+      ],
+      "speed": 0.015,
+      "notes": "单层"
+    }
+  ]
+}

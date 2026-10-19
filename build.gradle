@@ -180,6 +180,8 @@ tasks.named('test') {
     dependsOn zipSpiritGlow
     systemProperty 'orimod.spiritGlowZip', zipSpiritGlow.get().archiveFile.get().asFile.absolutePath
     systemProperty 'orimod.spiritGlowSource', file('shaderpacks/spirit-glow').absolutePath
+    systemProperty 'orimod.projectDir', projectDir.absolutePath   // FX02: effect sources vs exported definitions
+    inputs.dir 'art/source/effects/spirit'
     inputs.dir 'shaderpacks/spirit-glow'
 }
 

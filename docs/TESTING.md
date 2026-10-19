@@ -166,3 +166,5 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R30：长时间会话
 
 `perf03-r30-seg1/seg2`：见验收表 PERF03。脚本时长为活动时间（单调时钟），盒子挂起期间不计。
+
+FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的导出定义与源一致、首版与 R18 外观一致、分层分配、损坏定义拒绝）、183 GameTest；`check.sh` 末尾运行 `export-spirit-fx.py --check`。

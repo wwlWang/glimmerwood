@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "dash",
+  "layers": [
+    {
+      "particle": "minecraft:cloud",
+      "share": 1.0,
+      "speed": 0.02,
+      "spread": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "glide",
+  "layers": [
+    {
+      "particle": "minecraft:end_rod",
+      "share": 1.0,
+      "speed": 0,
+      "spread": [
+        0.25,
+        0.1,
+        0.25
+      ]
+    }
+  ]
+}

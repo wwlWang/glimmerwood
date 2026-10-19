@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "grapple_tether",
+  "layers": [
+    {
+      "particle": "minecraft:electric_spark",
+      "share": 1.0,
+      "speed": 0,
+      "spread": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

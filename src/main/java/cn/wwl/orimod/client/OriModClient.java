@@ -16,6 +16,7 @@ public final class OriModClient {
         modEventBus.addListener(OriModClient::configLoaded);
         modEventBus.addListener(OriModClient::configReloaded);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);
+        modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritFxResources::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::camera);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritFxClient::tick);

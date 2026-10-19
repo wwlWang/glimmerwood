@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "kind": "glide",
+  "notes": "持续：滑翔时身后的微光。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "layers": [
+    {
+      "particle": "minecraft:end_rod",
+      "share": 1.0,
+      "spread": [
+        0.25,
+        0.1,
+        0.25
+      ],
+      "speed": 0,
+      "notes": "单层"
+    }
+  ]
+}

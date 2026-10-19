@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "arrow_trail",
+  "layers": [
+    {
+      "particle": "minecraft:end_rod",
+      "share": 1.0,
+      "speed": 0,
+      "spread": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

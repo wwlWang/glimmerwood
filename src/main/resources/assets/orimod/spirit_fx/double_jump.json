@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "double_jump",
+  "layers": [
+    {
+      "particle": "minecraft:cloud",
+      "share": 1.0,
+      "speed": 0.01,
+      "spread": [
+        0.3,
+        0.05,
+        0.3
+      ]
+    }
+  ]
+}

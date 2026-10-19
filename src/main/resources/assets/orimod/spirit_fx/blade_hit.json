@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "kind": "blade_hit",
+  "layers": [
+    {
+      "particle": "minecraft:crit",
+      "share": 1.0,
+      "speed": 0.03,
+      "spread": [
+        0.12,
+        0.12,
+        0.12
+      ]
+    }
+  ]
+}
