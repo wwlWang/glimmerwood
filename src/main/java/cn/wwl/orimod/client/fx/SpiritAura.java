@@ -17,7 +17,7 @@ import org.joml.Vector3f;
 public final class SpiritAura {
     public static final int BODY = 0xBFE4FF, BODY_CORE = 0xEAF6FF, COMPANION = 0xF2F8FF, COMPANION_HALO = 0x9EC8FF;
     /** Peak alphas: wide body halo, inner body glow, companion core / halo / outer. */
-    public static final float BODY_HALO_ALPHA = .13f, BODY_INNER_ALPHA = .2f, COMPANION_CORE_ALPHA = .95f,
+    public static final float BODY_HALO_ALPHA = .18f, BODY_INNER_ALPHA = .26f, COMPANION_CORE_ALPHA = .95f,
             COMPANION_HALO_ALPHA = .3f, COMPANION_OUTER_ALPHA = .09f;
     private SpiritAura() {}
 

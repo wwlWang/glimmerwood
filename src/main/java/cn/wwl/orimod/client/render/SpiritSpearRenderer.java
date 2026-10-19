@@ -20,12 +20,10 @@ public final class SpiritSpearRenderer extends EntityRenderer<SpiritSpear> {
         var pose = poses.last();
         var tip = new Vector3f(dir).mul(.55f).add(0, .15f, 0);
         var tail = new Vector3f(dir).mul(-1.1f).add(0, .15f, 0);
-        var streak = buffers.getBuffer(SpiritEnergy.streak());
         float pulse = .9f + .1f * (float) Math.sin(SpiritEnergy.time() * 18);
-        SpiritEnergy.beam(streak, pose, tail, tip, .34f, side, SpiritWeaponRenderer.MID, .35f * pulse);
-        SpiritEnergy.beam(streak, pose, tail, tip, .12f, side, SpiritWeaponRenderer.CORE, .95f);
-        var glow = buffers.getBuffer(SpiritEnergy.glow());
-        SpiritEnergy.orb(glow, pose, new Vector3f(dir).mul(.4f).add(0, .15f, 0), .28f, SpiritWeaponRenderer.MID, .5f * pulse);
+        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .34f, side, SpiritWeaponRenderer.MID, .35f * pulse);
+        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .12f, side, SpiritWeaponRenderer.CORE, .95f);
+        SpiritEnergy.orb(buffers.getBuffer(SpiritEnergy.glow()), pose, new Vector3f(dir).mul(.4f).add(0, .15f, 0), .28f, SpiritWeaponRenderer.MID, .5f * pulse);
         super.render(spear, yaw, partial, poses, buffers, light);
     }
 

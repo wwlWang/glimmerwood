@@ -171,7 +171,7 @@ public final class SpiritMovement {
                 onGround, wall != null, now >= s.wallReadyAt, MovementRules.airJumpsSpent(s.airJumpSpent, triple, s.tripleJumpSpent), false);
         if (mode == IDLE || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
         player.jumpFromGround();
-        s.jumpPerformedAt = now;
+        if (mode != DOUBLE_JUMP) s.jumpPerformedAt = now; // R88: a held ground/wall jump never glides; an air jump may
         s.groundJumpAvailable = false; s.groundLockUntil = now + 4; s.jumpPressedAt = request.pressedAt();
         if (mode == WALL_JUMP) {
             player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));

@@ -46,7 +46,7 @@ public final class SpiritJumpPrediction {
         if (mode == IDLE) return false;
         Vec3 previous = player.getDeltaMovement();
         player.jumpFromGround();
-        state.jumpPerformedAt = now;
+        if (mode != DOUBLE_JUMP) state.jumpPerformedAt = now;
         state.groundJumpAvailable = false; state.groundLockUntil = now + 4;
         if (mode == WALL_JUMP) {
             player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));

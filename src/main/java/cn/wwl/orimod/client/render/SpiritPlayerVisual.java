@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** Owns the weighted mesh only while a player uses the spirit form. */
 public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
+    /** R88: minimum block light on the spirit body (0-15): subtle luminescence without washing out the shading. */
+    public static final int SELF_LIGHT = 10;
     private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "models/entity/ori.glb");
     private static final Map<UUID, Body> BODIES = new ConcurrentHashMap<>();
     private final VisualizationContext context;
@@ -154,6 +156,13 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
             target.translation(getVisualPosition(partial)).mul(local);
             // Keep the pose available to visible equipment and glowing outlines.
             if (entity.isInvisible()) target.scale(0);
+        }
+
+        /** R88: a spirit is faintly self-lit: never darker than {@link #SELF_LIGHT} block light, so it glows softly at night. */
+        @Override protected int computePackedLight(float partialTick) {
+            int packed = super.computePackedLight(partialTick);
+            return net.minecraft.client.renderer.LightTexture.pack(Math.max(net.minecraft.client.renderer.LightTexture.block(packed), SELF_LIGHT),
+                    net.minecraft.client.renderer.LightTexture.sky(packed));
         }
 
         @Override protected boolean blend(float partialTick, AnimationBlend blend) {
