@@ -298,7 +298,7 @@ public final class SpiritMovement {
         if (session == null) return;
         if (!session.target.valid(player) || now >= session.expiresAt) { cancel(player, s); return; }
         Vec3 direction = Vec3.directionFromRotation(s.pitch, s.yaw);
-        session.release(direction);
+        session.release(direction, player);
         s.targetCooldowns.put(session.target.key(), now + BashSession.TARGET_COOLDOWN_TICKS);
         s.bash = null;
         s.airJumpSpent = s.airDashSpent = false;

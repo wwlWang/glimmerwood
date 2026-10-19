@@ -1,5 +1,6 @@
 package cn.wwl.orimod.gametest;
 
+import cn.wwl.orimod.movement.BashSession;
 import cn.wwl.orimod.movement.SpiritMovement;
 import cn.wwl.orimod.movement.SpiritTargets;
 import cn.wwl.orimod.network.MovementInputPayload;
@@ -121,6 +122,31 @@ public final class BashGameTests {
                 Fixtures.near(h, target.getDeltaMovement().z, -.8, "Target recoil");
                 press(player, 3, true);
                 h.assertTrue(state.bash == null, "Same target bypassed cooldown");
+            } finally { SpiritMovement.cancel(player, state); target.discard(); }
+        });
+        add(tests, "in_flight_enemy_arrow_is_redirected_and_owned", h -> {
+            var player = player(h); var target = (Projectile)spawn(h, EntityType.ARROW);
+            var skeleton = EntityType.SKELETON.create(h.getLevel());
+            target.setOwner(skeleton); target.setDeltaMovement(new Vec3(0, 0, -.5)); target.setNoGravity(true);
+            var state = player.getData(SpiritData.MOVEMENT);
+            try {
+                press(player, 1, true);
+                h.assertTrue(state.bash != null, "Arrow Bash failed to enter aim");
+                press(player, 2, false);
+                h.assertValueEqual(state.acceptedBashes, 1, "Bash launch count");
+                h.assertTrue(target.getOwner() == player, "Redirected arrow still owned by its shooter");
+                Fixtures.near(h, target.getDeltaMovement().z, -BashSession.REDIRECT_MIN_SPEED, "Redirected speed");
+            } finally { SpiritMovement.cancel(player, state); target.discard(); }
+        });
+        add(tests, "lodged_arrow_is_not_reowned", h -> {
+            var player = player(h); var target = (Projectile)spawn(h, EntityType.ARROW);
+            var skeleton = EntityType.SKELETON.create(h.getLevel());
+            target.setOwner(skeleton); target.setDeltaMovement(Vec3.ZERO); target.setNoGravity(true);
+            var state = player.getData(SpiritData.MOVEMENT);
+            try {
+                press(player, 1, true); press(player, 2, false);
+                h.assertValueEqual(state.acceptedBashes, 1, "Bash launch count");
+                h.assertTrue(target.getOwner() == skeleton, "Stationary anchor arrow changed owner");
             } finally { SpiritMovement.cancel(player, state); target.discard(); }
         });
         return tests;

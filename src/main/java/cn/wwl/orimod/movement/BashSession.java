@@ -42,10 +42,44 @@ public final class BashSession {
         player.fallDistance = playerFallDistance;
     }
 
-    public void release(Vec3 launchDirection) {
+    /** Minimum speed of a redirected projectile; faster ones keep a bit more than their own speed (R33). */
+    public static final double REDIRECT_MIN_SPEED = 1.6, REDIRECT_GAIN = 1.2;
+
+    /** @return the speed a projectile caught at {@code originalSpeed} leaves a Bash with. */
+    public static double redirectSpeed(double originalSpeed) {
+        return Math.min(4, Math.max(REDIRECT_MIN_SPEED, originalSpeed * REDIRECT_GAIN));
+    }
+
+    /** @return whether the target was a projectile still in flight when caught (lodged arrows stay plain anchors). */
+    public boolean inFlightProjectile() {
+        return target.entity() instanceof net.minecraft.world.entity.projectile.Projectile && targetVelocity.lengthSqr() > 0.01;
+    }
+
+    public void release(Vec3 launchDirection) { release(launchDirection, null); }
+
+    /**
+     * Ends the hold. On a launch the target is pushed opposite the player's launch, as in Ori; an in-flight
+     * projectile (R33) is instead fired back that way at {@link #redirectSpeed} and now belongs to the
+     * player, so it can hurt its original shooter and cannot hit the player who redirected it.
+     */
+    public void release(Vec3 launchDirection, ServerPlayer redirector) {
         Entity entity = target.entity();
         if (entity == null) return;
         FROZEN.remove(entity.getUUID(), this);
+        if (!entity.isRemoved() && launchDirection != null && redirector != null && inFlightProjectile()) {
+            var projectile = (net.minecraft.world.entity.projectile.Projectile) entity;
+            Vec3 velocity = launchDirection.normalize().scale(-redirectSpeed(targetVelocity.length()));
+            projectile.setOwner(redirector);
+            projectile.setDeltaMovement(velocity);
+            double horizontal = velocity.horizontalDistance();
+            projectile.setYRot((float) (net.minecraft.util.Mth.atan2(velocity.x, velocity.z) * (180 / Math.PI)));
+            projectile.setXRot((float) (net.minecraft.util.Mth.atan2(velocity.y, horizontal) * (180 / Math.PI)));
+            projectile.yRotO = projectile.getYRot(); projectile.xRotO = projectile.getXRot();
+            entity.fallDistance = 0;
+            entity.hurtMarked = true;
+            redirected++;
+            return;
+        }
         if (!entity.isRemoved()) {
             entity.setDeltaMovement(launchDirection == null ? targetVelocity : launchDirection.scale(-0.8));
             entity.fallDistance = launchDirection == null ? targetFallDistance : 0;
@@ -72,6 +106,8 @@ public final class BashSession {
         if (event.getEntity() instanceof ServerPlayer player) SpiritMovement.cancel(player, player.getData(SpiritData.MOVEMENT));
     }
 
+    /** Projectiles fired back by Bash since server start (diagnostics). */
+    public static int redirected;
     public static int frozenCount() { return FROZEN.size(); }
     public static void releaseAll() {
         for (var session : java.util.List.copyOf(FROZEN.values())) session.release(null);
