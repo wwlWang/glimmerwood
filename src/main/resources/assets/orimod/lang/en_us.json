@@ -243,5 +243,8 @@
   "block.orimod.gloom_altar": "Gloom Altar",
   "message.orimod.altar_dormant": "The altar ignores you until your spirit core awakens",
   "message.orimod.altar_awake": "The Gloom Heart is already awake",
-  "message.orimod.altar_woke": "The Gloom Heart wakes! Bash its orbs back at it"
+  "message.orimod.altar_woke": "The Gloom Heart wakes! Bash its orbs back at it",
+  "ability.orimod.smash": "Spirit Smash",
+  "ability.orimod.smash.description": "Wake the Spirit Hammer: hold use to wind up, release to smash the ground ahead for heavy damage and knock flying enemies down (8 energy).",
+  "message.orimod.hammer_locked": "Learn Spirit Smash in the ability panel first"
 }

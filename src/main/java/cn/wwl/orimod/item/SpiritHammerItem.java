@@ -38,8 +38,9 @@ public final class SpiritHammerItem extends Item {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if (!SpiritData.isSpirit(player)) {
-            if (!level.isClientSide) player.displayClientMessage(Component.translatable("message.orimod.hammer_spirit"), true);
+        String refusal = refusal(SpiritData.isSpirit(player), cn.wwl.orimod.progression.Ability.SMASH.unlocked(player));
+        if (refusal != null) {
+            if (!level.isClientSide) player.displayClientMessage(Component.translatable(refusal), true);
             return InteractionResultHolder.fail(stack);
         }
         player.startUsingItem(hand);
@@ -49,12 +50,17 @@ public final class SpiritHammerItem extends Item {
     @Override public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         if (!(entity instanceof ServerPlayer player)) return;
         int held = getUseDuration(stack, entity) - timeLeft;
-        if (held < WIND_UP_TICKS) return;
+        if (held < WIND_UP_TICKS || refusal(SpiritData.isSpirit(player), cn.wwl.orimod.progression.Ability.SMASH.unlocked(player)) != null) return;
         if (!SpiritProgression.spendEnergy(player, COST)) {
             player.displayClientMessage(Component.translatable("message.orimod.hammer_energy"), true); return;
         }
         smash(player);
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
+    }
+
+    /** Pure rule: why the hammer will not wind up, or null. */
+    public static String refusal(boolean spirit, boolean unlocked) {
+        return !spirit ? "message.orimod.hammer_spirit" : !unlocked ? "message.orimod.hammer_locked" : null;
     }
 
     /** Where the blow lands: {@link #REACH} blocks ahead along the horizontal look direction, at the feet. */

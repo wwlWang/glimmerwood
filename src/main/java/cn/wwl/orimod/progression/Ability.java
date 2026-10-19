@@ -10,7 +10,9 @@ public enum Ability {
     /** R38: Launch (WotW) / Charge Jump (BF). */
     LAUNCH(64, 40, STOMP),
     /** R39: Light Burst (WotW). */
-    LIGHT_BURST(128, 40, BASH);
+    LIGHT_BURST(128, 40, BASH),
+    /** R52: Spirit Smash (WotW hammer); the Spirit Hammer only answers once this is learned. */
+    SMASH(256, 40, BOW);
 
     public final int bit, cost;
     public final Ability prerequisite;

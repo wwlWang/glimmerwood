@@ -243,5 +243,8 @@
   "block.orimod.gloom_altar": "腐光祭坛",
   "message.orimod.altar_dormant": "唤醒灵核之前，祭坛不会回应",
   "message.orimod.altar_awake": "腐光之心已经醒来",
-  "message.orimod.altar_woke": "腐光之心苏醒了！用 Bash 把它的光球打回去"
+  "message.orimod.altar_woke": "腐光之心苏醒了！用 Bash 把它的光球打回去",
+  "ability.orimod.smash": "灵锤重砸",
+  "ability.orimod.smash.description": "唤醒灵锤：按住使用键蓄力，松开重砸前方地面，造成高额伤害并把空中敌人砸落（8 灵能）。",
+  "message.orimod.hammer_locked": "先在能力面板学会灵锤重砸"
 }

@@ -13,6 +13,12 @@ class SpiritHammerTest {
         var west = SpiritHammerItem.impactPoint(Vec3.ZERO, 90);
         assertEquals(-SpiritHammerItem.REACH, west.x, 1e-9);
     }
+    @Test void needsSpiritFormAndTheSmashAbility() {
+        assertEquals("message.orimod.hammer_spirit", SpiritHammerItem.refusal(false, true));
+        assertEquals("message.orimod.hammer_locked", SpiritHammerItem.refusal(true, false));
+        assertNull(SpiritHammerItem.refusal(true, true));
+        assertEquals(cn.wwl.orimod.progression.Ability.BOW, cn.wwl.orimod.progression.Ability.SMASH.prerequisite);
+    }
     @Test void heavyTuning() {
         assertTrue(SpiritHammerItem.WIND_UP_TICKS >= 10 && SpiritHammerItem.COOLDOWN_TICKS >= 20);
         assertTrue(SpiritHammerItem.DAMAGE >= 8);

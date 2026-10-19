@@ -254,3 +254,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R51：真实客户端验证灵锤与首领
 
 真实客户端 `verify-boss.py r50-boss2`：状态 passed；灵锤 16→2.16；Bash 尝试 3 次，第 3 次 aimed=True、目标为球 id 217，首领 112→102.32；二阶段召唤 2 只喷吐者。证据在 `evidence/r50-boss2`（不提交）。
+
+## R52：灵锤重砸纳入能力树
+
+511 JUnit（`SpiritHammerTest.needsSpiritFormAndTheSmashAbility`）、214 GameTest（能力面板相关的生成用例自动包含新能力）。
