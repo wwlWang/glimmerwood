@@ -44,6 +44,17 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
         if (state.predictedJumps.isEmpty() || airJumpSpent) state.airJumpSpent = airJumpSpent;
         if (state.predictedJumps.isEmpty() || airDashSpent) state.airDashSpent = airDashSpent;
         if (!SpiritData.isSpirit(player) || !state.active) return;
+        // R78: reconcile a locally predicted Dash / Glide / Bash aim. A confirmation never restarts the running action
+        // (that would stretch the dash by the round trip); an unrelated IDLE that was sent before the server saw the
+        // press must not cut the prediction short.
+        long now = player.level().getGameTime();
+        if (state.predictedMode != IDLE && now <= state.predictedUntil) {
+            if (mode == state.predictedMode) {
+                state.predictedMode = IDLE; state.confirmedPredictions++;
+                if (mode == DASH) { state.lastAction = DASH; return; }
+            } else if (mode == IDLE || mode == WALL_SLIDE && state.predictedMode == DASH) return;
+            else state.predictedMode = IDLE;
+        }
         if (mode == BASH_AIM && state.mode != BASH_AIM) {
             state.suspendedVelocity = player.getDeltaMovement();
             state.suspendedFallDistance = player.fallDistance;

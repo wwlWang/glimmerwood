@@ -361,3 +361,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 
 - `FeelTuningTest`：地面超速在 4–10 tick 内衰减到最高速。
 - 真实客户端：`scripts/verify-r76.py`，加上 record_motion 记录跑、跳、冲刺，用 `scripts/plot_motion.py` 画图。
+
+## ori-r78：冲刺、滑翔、Bash 客户端预测
+
+- `scripts/verify-r81.py`：从 record_motion 里取客户端和服务端各自进入动作的第一个 tick。

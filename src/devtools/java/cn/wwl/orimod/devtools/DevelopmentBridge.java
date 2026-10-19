@@ -807,6 +807,7 @@ public final class DevelopmentBridge {
                 Map.entry("jumpPressedAt", movement.jumpPressedAt),
                 Map.entry("pendingJumps", movement.jumps.size()), Map.entry("pendingPredictions", movement.predictedJumps.size()),
                 Map.entry("predictedJumps", movement.predictedJumpCount), Map.entry("predictionMismatches", movement.jumpPredictionMismatches),
+                Map.entry("predictedActions", movement.predictedActions), Map.entry("confirmedPredictions", movement.confirmedPredictions), Map.entry("unconfirmedPredictions", movement.unconfirmedPredictions),
                 Map.entry("predictionRejections", movement.jumpPredictionRejections),
                 Map.entry("groundedAt", movement.groundedAt), Map.entry("groundJumpAvailable", movement.groundJumpAvailable),
                 Map.entry("lastWallRefill", movement.lastWallRefill),

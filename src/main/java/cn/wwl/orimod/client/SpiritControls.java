@@ -68,6 +68,7 @@ public final class SpiritControls {
                 | (input.shiftKeyDown ? MovementInputPayload.CROUCH : 0);
         int sequence = ++inputSequence;
         if (SpiritJumpPrediction.apply(player, state, sequence, flags, input.forwardImpulse, input.leftImpulse)) flags |= MovementInputPayload.PREDICTED_JUMP;
+        else if (SpiritMovement.canMove(player)) SpiritActionPrediction.apply(player, state, flags, input.forwardImpulse, input.leftImpulse);
         PacketDistributor.sendToServer(new MovementInputPayload(sequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
         sentActive = active;
         if (SpiritMovement.canMove(player)) input.jumping = false;

@@ -33,6 +33,10 @@ public final class MovementState {
     public final java.util.ArrayDeque<JumpRequest> jumps = new java.util.ArrayDeque<>();
     public final java.util.Map<Integer, MoveMode> predictedJumps = new java.util.LinkedHashMap<>();
     public int predictedJumpCount, jumpPredictionMismatches, jumpPredictionRejections;
+    /** R78 (client): a locally started Dash / Glide / Bash aim awaiting the server's confirmation. */
+    public MoveMode predictedMode = MoveMode.IDLE;
+    public long predictedUntil;
+    public int predictedActions, confirmedPredictions, unconfirmedPredictions;
     public record JumpRequest(int sequence, long pressedAt, long expiresAt, Vec3 position,
                               Vec3 velocity, float fallDistance, net.minecraft.core.Direction wall, boolean predicted) {}
 }
