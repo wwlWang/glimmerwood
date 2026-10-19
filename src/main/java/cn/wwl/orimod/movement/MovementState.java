@@ -14,7 +14,9 @@ public final class MovementState {
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes, relocations;
     public boolean bashHeld;
     /** R38: crouch-held ground ticks toward a charged Launch; the one air Launch. */
-    public int launchCharge, acceptedLaunches;
+    public int launchCharge, acceptedLaunches, launchHitCount;
+    public long launchHitUntil;
+    public final java.util.Set<Integer> launchHits = new java.util.HashSet<>();
     public boolean airLaunchSpent = true;
     /** R40: the Triple Jump shard's extra air jump. */
     public boolean tripleJumpSpent;

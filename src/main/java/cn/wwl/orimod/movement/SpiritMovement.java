@@ -126,6 +126,7 @@ public final class SpiritMovement {
             else s.bash.hold(player);
             return;
         }
+        if (now < s.launchHitUntil) launchContact(player, s);
         if (AirMovement.tickOwned(player, s, now, grounded)) return;
         // R38: charge a ground Launch while crouching still on the ground; a short chime marks the full charge.
         if (grounded && s.crouching && s.mode == IDLE && cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player)) {
@@ -200,6 +201,23 @@ public final class SpiritMovement {
                 ++s.actionId, request.sequence(), JUMP_REJECT, 0, request.velocity(), s.airJumpSpent, s.airDashSpent, -1, Vec3.ZERO));
     }
 
+    /** R47: enemies touched during a Launch take {@link MovementRules#LAUNCH_DAMAGE} once and are knocked along. */
+    public static int launchContact(ServerPlayer player, MovementState s) {
+        int hits = 0;
+        var box = player.getBoundingBox().inflate(.6);
+        for (var target : player.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box,
+                e -> e != player && e instanceof net.minecraft.world.entity.monster.Enemy && e.isAlive())) {
+            if (!cn.wwl.orimod.combat.CombatTargets.canHit(player, target) || !s.launchHits.add(target.getId())) continue;
+            if (target.hurt(player.damageSources().playerAttack(player), LAUNCH_DAMAGE)) {
+                var push = player.getDeltaMovement().normalize().scale(.6);
+                target.push(push.x, .25, push.z); target.hurtMarked = true;
+                hits++; s.launchHitCount++;
+            }
+        }
+        if (hits > 0) player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1, 1.3f);
+        return hits;
+    }
+
     static boolean tryLaunch(ServerPlayer player, MovementState s, long now) {
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
         if (s.bash != null || s.grapple != null || s.mode.blocksJump() || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
@@ -212,6 +230,7 @@ public final class SpiritMovement {
         s.groundJumpAvailable = false;
         s.groundLockUntil = now + 4;
         s.acceptedLaunches++;
+        s.launchHitUntil = now + LAUNCH_HIT_TICKS; s.launchHits.clear();
         player.setDeltaMovement(velocity);
         player.hurtMarked = true;
         player.fallDistance = 0;

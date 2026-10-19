@@ -12,6 +12,9 @@ public final class MovementRules {
     public static final int GLIDE_LEASE_TICKS = 40;
     /** R38 Launch: charge needed on the ground (crouch held), and speeds of the charged ground and the one air Launch. */
     public static final int LAUNCH_CHARGE_TICKS = 10;
+    /** R47: Launch contact damage (WotW deals 5 on contact) for this many ticks after take-off, once per target. */
+    public static final int LAUNCH_HIT_TICKS = 10;
+    public static final float LAUNCH_DAMAGE = 5;
     /** R40: updraft lift while gliding: added per tick, and the rising speed cap. */
     public static final double UPDRAFT_ACCEL = .09, UPDRAFT_MAX = .5;
     /** R40: with the Triple Jump shard, air jumps are spent only after the double and the triple jump. */

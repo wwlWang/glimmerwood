@@ -142,6 +142,21 @@ public final class ParityGameTests {
                 shot.discard();
             } finally { spitter.discard(); }
         });
+        add(tests, "launch_contact_hits_enemies_once", h -> {
+            var p = spirit(h, 127);
+            var s = p.getData(SpiritData.MOVEMENT);
+            var zombie = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 6.2)); zombie.setNoAi(true);
+            var villager = h.spawn(net.minecraft.world.entity.EntityType.VILLAGER, new Vec3(6.2, 2, 5.5)); villager.setNoAi(true);
+            try {
+                p.setDeltaMovement(0, 1, .8); s.launchHits.clear();
+                float hp = zombie.getHealth();
+                h.assertValueEqual(cn.wwl.orimod.movement.SpiritMovement.launchContact(p, s), 1, "Launch contact hits");
+                h.assertTrue(hp - zombie.getHealth() > MovementRules.LAUNCH_DAMAGE - .5f, "Launch contact damage " + (hp - zombie.getHealth()));   // zombie armour 2
+                h.assertTrue(villager.getHealth() == villager.getMaxHealth(), "Launch hurt a villager");
+                zombie.invulnerableTime = 0;
+                h.assertValueEqual(cn.wwl.orimod.movement.SpiritMovement.launchContact(p, s), 0, "Same Launch hit twice");
+            } finally { zombie.discard(); villager.discard(); }
+        });
         return tests;
     }
 

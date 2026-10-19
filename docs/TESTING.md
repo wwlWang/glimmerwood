@@ -234,3 +234,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R46：遗迹滑翔路线加灵风口
 
 206 GameTest（新增 `flow.glide_ruins_lift_over_their_gaps`：两处遗迹旋转 180° 放置，每个灵风口都存在，且上方 6 格处有抬升效果）。
+
+## R47：灵跃接触伤害
+
+504 JUnit、207 GameTest（新增 `parity.launch_contact_hits_enemies_once`：僵尸受约 5 点伤害（有护甲减免），村民不受伤，同一次灵跃不会重复命中）。
