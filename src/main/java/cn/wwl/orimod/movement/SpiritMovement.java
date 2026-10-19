@@ -105,7 +105,11 @@ public final class SpiritMovement {
             s.groundJumpAvailable = true;
             s.groundedAt = now;
             s.lastWallRefill = "";
-            if (refilled && s.mode != DASH && s.mode != STOMP && s.bash == null && s.grapple == null) signal(player, s, IDLE, 0, Vec3.ZERO);
+            // MOVE12 (R27): a ground jump, a wall jump refilled on a new wall, a bash launch, grapple end or stomp
+            // landing can reach the ground without a refill; the one-shot label must still end, or the server keeps
+            // reporting e.g. wall_jump / grapple_end on the ground.
+            if ((refilled || s.mode.isImpulse()) && s.mode != DASH && s.mode != STOMP && s.bash == null && s.grapple == null)
+                signal(player, s, IDLE, 0, Vec3.ZERO);
         }
         if (!s.active || now - s.lastInput > 4 || !canMove(player)) {
             s.active = false;

@@ -21,6 +21,12 @@ public enum MoveMode {
         throw new DecoderException("Unknown Ori movement mode: " + id);
     }
 
+    /** One-shot labels: the mode only names the last impulse or completion and must end when the player lands. */
+    public boolean isImpulse() {
+        return this == JUMP || this == DOUBLE_JUMP || this == WALL_JUMP
+                || this == BASH_LAUNCH || this == GRAPPLE_END || this == STOMP_LAND || this == RESUME;
+    }
+
     public boolean blocksJump() {
         return this == DASH || this == BASH_AIM || this == GRAPPLE || this == STOMP;
     }

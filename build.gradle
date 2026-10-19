@@ -201,6 +201,11 @@ tasks.register('verifyPreparedDependencies') {
 }
 tasks.named('compileJava') { dependsOn 'verifyPreparedDependencies' }
 tasks.named('jar') { from 'THIRD_PARTY.md' }
+// REL01 (R27): byte-identical release jars from the same commit (scripts/build-release.sh checks two builds).
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
 
 tasks.register('prepareDevtoolsEnvironment') {
     group = 'development'

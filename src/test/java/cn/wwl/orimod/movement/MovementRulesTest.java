@@ -104,4 +104,12 @@ class MovementRulesTest {
     void stompAcceleratesToItsTerminalSpeed(double currentY, double expectedY) {
         assertEquals(expectedY, MovementRules.stompVelocity(currentY).y, .000001);
     }
+
+    @org.junit.jupiter.api.Test void oneShotLabelsEndOnLanding() {
+        var impulses = java.util.EnumSet.noneOf(MoveMode.class);
+        for (var mode : MoveMode.values()) if (mode.isImpulse()) impulses.add(mode);
+        org.junit.jupiter.api.Assertions.assertEquals(java.util.EnumSet.of(MoveMode.JUMP, MoveMode.DOUBLE_JUMP, MoveMode.WALL_JUMP,
+                MoveMode.BASH_LAUNCH, MoveMode.GRAPPLE_END, MoveMode.STOMP_LAND, MoveMode.RESUME), impulses);
+        for (var mode : impulses) org.junit.jupiter.api.Assertions.assertFalse(mode.blocksJump(), mode.name());
+    }
 }

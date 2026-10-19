@@ -532,6 +532,19 @@ public final class DevelopmentBridge {
                 cn.wwl.orimod.config.OriClientConfig.SPEC.save();
                 return Map.of("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
             }
+            case "perf_sample" -> {
+                // PERF02: live effect, particle and heap counters; gc=true collects first so samples compare retained memory.
+                if (action.has("gc") && action.get("gc").getAsBoolean()) { System.gc(); System.gc(); }
+                var runtime = Runtime.getRuntime();
+                var values = new LinkedHashMap<String, Object>();
+                values.put("heapUsedMb", (runtime.totalMemory() - runtime.freeMemory()) / 1048576.0);
+                values.put("heapMaxMb", runtime.maxMemory() / 1048576.0);
+                values.put("particles", mc.particleEngine.countParticles());
+                values.put("entities", mc.level == null ? 0 : mc.level.getEntityCount());
+                values.put("fxLifecycle", cn.wwl.orimod.client.fx.SpiritFxClient.lifecycle());
+                values.put("tick", ticks);
+                return values;
+            }
             case "render_diagnostics" -> {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()));
