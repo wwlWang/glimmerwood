@@ -158,3 +158,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 ## R28：原版存档副本与干净实例
 
 无代码改动，自动检查沿用 R27（431 JUnit / 183 GameTest）。`save04-r28-server-v001`：原版 1.21.1 服务端建世界并做标记 → NeoForge 21.1.248 服务端 + 发行 JAR 打开副本，标记全部保留，三类遗迹可定位。`rel01-r28-clean-client-v001`：portablemc 5.0.6 新建干净客户端（Xvfb + llvmpipe），A 只装 OriMod → 缺依赖界面；B/C 加 GemRender → 进入原版副本；D 加 Sodium + Iris → Spirit Glow 自动启用。
+
+## R29：验收计数、两视角交互、并发卡顿
+
+431 JUnit / 183 GameTest 通过（开发接口改动）。`scripts/check-acceptance-counts.py` 校验验收表 79 行与摘要计数。`play04-r29-v001`：原版交互脚本在开发世界副本 `orimod_dev_play04_r29` 运行，4 组全部断言通过。`perf05-r29-v001`：空场地 vs 技能并发各 40 秒帧时间与服务端刻耗时，见验收表。
