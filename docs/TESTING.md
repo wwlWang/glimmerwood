@@ -390,3 +390,8 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r84：落地伤害与 GemRender 结论
 
 - `ContentGameTests.spirit_form_cancels_fall_damage`：精灵形态取消摔落，人类形态不取消。
+
+## ori-r85：跳跃曲线
+
+- `FeelTuningTest.heldJumpGoesHigherThanTappedAndFallsAreCapped` 按新曲线更新阈值。
+- `scripts/feel_curves.py` 输出更新后的 feel-metrics。
