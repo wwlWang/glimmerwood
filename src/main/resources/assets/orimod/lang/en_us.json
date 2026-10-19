@@ -246,5 +246,14 @@
   "message.orimod.altar_woke": "The Gloom Heart wakes! Bash its orbs back at it",
   "ability.orimod.smash": "Spirit Smash",
   "ability.orimod.smash.description": "Wake the Spirit Hammer: hold use to wind up, release to smash the ground ahead for heavy damage and knock flying enemies down (8 energy).",
-  "message.orimod.hammer_locked": "Learn Spirit Smash in the ability panel first"
+  "message.orimod.hammer_locked": "Learn Spirit Smash in the ability panel first",
+  "bossbar.orimod.escape": "Escape the corruption!",
+  "title.orimod.escape": "Escape!",
+  "subtitle.orimod.escape": "The corruption is breaking loose - get out under the open sky",
+  "title.orimod.victory": "Gloom Purified",
+  "subtitle.orimod.victory": "The cave altar is at peace",
+  "title.orimod.escape_failed": "Swallowed by the gloom",
+  "subtitle.orimod.escape_failed": "Wake the altar again to retry",
+  "message.orimod.victory.first": "Victory! +%s Spirit Light, a Life Cell and an Energy Cell",
+  "message.orimod.victory.again": "Victory! +%s Spirit Light"
 }

@@ -208,13 +208,19 @@ public final class GloomHeart extends Monster {
         startAttack(nextAttack(cycle++, phase()), target);
     }
 
+    /** Players who must escape when the Heart dies: everyone alive within {@link #ARENA} blocks. */
+    public java.util.List<ServerPlayer> escapees(ServerLevel server) {
+        return server.players().stream().filter(p -> p.isAlive() && !p.isSpectator() && p.distanceToSqr(this) <= ARENA * ARENA).toList();
+    }
+
     @Override public void die(DamageSource source) {
         super.die(source);
         if (level() instanceof ServerLevel server) {
             cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
-            for (var item : new net.minecraft.world.item.ItemStack[]{new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.LIFE_CELL.get()),
-                    new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.ENERGY_CELL.get())})
-                spawnAtLocation(item);
+            // R54: the corruption breaks loose; the reward waits outside (EscapeSequence).
+            bar.removeAllPlayers();
+            var origin = Vec3.atBottomCenterOf(home()).add(0, 1, 0);
+            for (var player : escapees(server)) cn.wwl.orimod.world.EscapeSequence.start(player, origin);
         }
     }
 }

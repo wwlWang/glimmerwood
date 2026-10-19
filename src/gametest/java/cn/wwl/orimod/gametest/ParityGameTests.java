@@ -226,6 +226,22 @@ public final class ParityGameTests {
                 h.assertTrue(heart.slamTarget() != null && heart.slamTarget().distanceTo(p.position()) < .01, "Slam not marked at the player");
             } finally { heart.discard(); }
         });
+        add(tests, "gloom_heart_escape_then_victory_reward", h -> {
+            var p = spirit(h, 127);
+            var heart = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), new Vec3(5.5, 5, 10.5)); heart.setNoAi(true);
+            heart.setHome(h.absolutePos(new net.minecraft.core.BlockPos(5, 1, 10)));
+            try {
+                // FakePlayers are not in the level's player list, so start the escape the way die() does for real players.
+                cn.wwl.orimod.world.EscapeSequence.start(p, Vec3.atBottomCenterOf(heart.home()).add(0, 1, 0));
+                h.assertTrue(cn.wwl.orimod.world.EscapeSequence.session(p) != null, "Escape did not start");
+                int life = cn.wwl.orimod.item.OriItems.LIFE_CELL.get() == null ? 0 : p.getInventory().countItem(cn.wwl.orimod.item.OriItems.LIFE_CELL.get());
+                h.assertTrue(cn.wwl.orimod.world.EscapeSequence.victory(p), "First victory not marked first");
+                h.assertTrue(cn.wwl.orimod.world.EscapeSequence.session(p) == null, "Escape still running after victory");
+                h.assertValueEqual(p.getInventory().countItem(cn.wwl.orimod.item.OriItems.LIFE_CELL.get()), life + 1, "First-clear Life Cell");
+                h.assertTrue(!cn.wwl.orimod.world.EscapeSequence.victory(p), "Second victory marked first");
+                h.assertValueEqual(p.getInventory().countItem(cn.wwl.orimod.item.OriItems.LIFE_CELL.get()), life + 1, "Cells granted twice");
+            } finally { heart.discard(); cn.wwl.orimod.world.EscapeSequence.stop(p); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

@@ -262,3 +262,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R53：首领与喷吐者远距离可读性
 
 511 JUnit（`GloomTelegraphTest` 改为核心尺寸 0.45–0.8）、214 GameTest。
+
+## R54：首领逃亡段落与胜利演出
+
+514 JUnit（`EscapeSequenceTest`：前沿匀速扩张且慢于疾跑；需要露天加距离才算逃出；在前沿内算被追上）、215 GameTest（新增 `parity.gloom_heart_escape_then_victory_reward`：开始逃亡后有会话；第一次胜利标为首通、会话结束、多 1 枚生命格；第二次胜利不再给灵格）。

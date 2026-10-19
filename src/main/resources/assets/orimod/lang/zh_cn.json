@@ -246,5 +246,14 @@
   "message.orimod.altar_woke": "腐光之心苏醒了！用 Bash 把它的光球打回去",
   "ability.orimod.smash": "灵锤重砸",
   "ability.orimod.smash.description": "唤醒灵锤：按住使用键蓄力，松开重砸前方地面，造成高额伤害并把空中敌人砸落（8 灵能）。",
-  "message.orimod.hammer_locked": "先在能力面板学会灵锤重砸"
+  "message.orimod.hammer_locked": "先在能力面板学会灵锤重砸",
+  "bossbar.orimod.escape": "逃离腐光！",
+  "title.orimod.escape": "快逃！",
+  "subtitle.orimod.escape": "腐光正在决堤——逃到露天的地方",
+  "title.orimod.victory": "腐光已净化",
+  "subtitle.orimod.victory": "洞穴祭坛重归宁静",
+  "title.orimod.escape_failed": "被腐光吞没",
+  "subtitle.orimod.escape_failed": "再次唤醒祭坛即可重试",
+  "message.orimod.victory.first": "胜利！获得 %s 灵光、一枚生命格和一枚能量格",
+  "message.orimod.victory.again": "胜利！获得 %s 灵光"
 }

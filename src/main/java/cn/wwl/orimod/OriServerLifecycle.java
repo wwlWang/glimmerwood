@@ -16,6 +16,7 @@ public final class OriServerLifecycle {
     public static void stopping(ServerStoppingEvent event) {
         try {
             RuinLocator.stopAll();
+            cn.wwl.orimod.world.EscapeSequence.stopAll();
             SpiritChallenge.stopAll(event.getServer());
             for (var player : event.getServer().getPlayerList().getPlayers()) {
                 SpiritCombat.cancel(player, "shutdown");
