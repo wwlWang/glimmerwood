@@ -13,6 +13,9 @@ public final class MovementState {
     public Vec3 velocity = Vec3.ZERO, previousPosition;
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes, relocations;
     public boolean bashHeld;
+    /** R38: crouch-held ground ticks toward a charged Launch; the one air Launch. */
+    public int launchCharge, acceptedLaunches;
+    public boolean airLaunchSpent = true;
     public float pitch;
     public BashSession bash;
     public int targetId = -1, acceptedBashes, cancelledBashes;

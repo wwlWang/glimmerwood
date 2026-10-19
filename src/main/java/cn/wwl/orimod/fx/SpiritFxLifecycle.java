@@ -77,7 +77,7 @@ public final class SpiritFxLifecycle {
             case DOUBLE_JUMP -> SpiritFxKind.DOUBLE_JUMP;
             case WALL_JUMP -> SpiritFxKind.WALL_JUMP;
             case DASH -> SpiritFxKind.DASH;
-            case BASH_LAUNCH -> SpiritFxKind.BASH;
+            case BASH_LAUNCH, LAUNCH -> SpiritFxKind.BASH;
             case GRAPPLE -> SpiritFxKind.GRAPPLE_HOOK;
             default -> null;
         };

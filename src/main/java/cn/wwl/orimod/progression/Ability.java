@@ -6,7 +6,9 @@ import net.minecraft.world.entity.player.Player;
 
 public enum Ability {
     DASH(1, 20, null), BASH(2, 30, DASH), GLIDE(4, 30, BASH),
-    GRAPPLE(8, 40, GLIDE), STOMP(16, 40, GRAPPLE), BOW(32, 30, DASH);
+    GRAPPLE(8, 40, GLIDE), STOMP(16, 40, GRAPPLE), BOW(32, 30, DASH),
+    /** R38: Launch (WotW) / Charge Jump (BF). */
+    LAUNCH(64, 40, STOMP);
 
     public final int bit, cost;
     public final Ability prerequisite;

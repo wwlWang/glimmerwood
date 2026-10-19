@@ -54,11 +54,11 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
         state.targetId = targetId;
         state.targetPosition = targetPosition;
         if (mode != IDLE && mode != JUMP_REJECT && mode != RELOCATE) state.lastAction = mode;
-        if (!alreadyApplied && (mode == DOUBLE_JUMP || mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END)) player.fallDistance = 0;
+        if (!alreadyApplied && (mode == DOUBLE_JUMP || mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END || mode == LAUNCH)) player.fallDistance = 0;
         if (!alreadyApplied && (mode == JUMP || mode == DOUBLE_JUMP)) {
             player.setDeltaMovement(player.getDeltaMovement().x, velocity.y, player.getDeltaMovement().z);
             player.setOnGround(false);
-        } else if (!alreadyApplied && (mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END || mode == RESUME)) {
+        } else if (!alreadyApplied && (mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END || mode == RESUME || mode == LAUNCH)) {
             if (mode == RESUME) player.fallDistance = state.suspendedFallDistance;
             player.setDeltaMovement(velocity);
             player.setOnGround(false);

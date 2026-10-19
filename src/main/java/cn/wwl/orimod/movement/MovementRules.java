@@ -10,7 +10,24 @@ public final class MovementRules {
     public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = -2.4;
     // Input release, collision and invalid player states still cancel locally without waiting.
     public static final int GLIDE_LEASE_TICKS = 40;
+    /** R38 Launch: charge needed on the ground (crouch held), and speeds of the charged ground and the one air Launch. */
+    public static final int LAUNCH_CHARGE_TICKS = 10;
+    public static final double LAUNCH_GROUND_SPEED = 1.6, LAUNCH_AIR_SPEED = 1.3, LAUNCH_MIN_UP = .55;
     private MovementRules() {}
+
+    /** Launch direction: the view, lifted so a Launch always rises at least {@link #LAUNCH_MIN_UP}. */
+    public static Vec3 launchVelocity(float yaw, float pitch, boolean grounded) {
+        Vec3 view = Vec3.directionFromRotation(pitch, yaw);
+        Vec3 dir = view.y >= LAUNCH_MIN_UP ? view : new Vec3(view.x, 0, view.z).normalize().scale(Math.sqrt(1 - LAUNCH_MIN_UP * LAUNCH_MIN_UP)).add(0, LAUNCH_MIN_UP, 0);
+        if (!Double.isFinite(dir.x) || new Vec3(view.x, 0, view.z).lengthSqr() < 1e-6 && view.y < LAUNCH_MIN_UP) dir = new Vec3(0, 1, 0);
+        return dir.normalize().scale(grounded ? LAUNCH_GROUND_SPEED : LAUNCH_AIR_SPEED);
+    }
+
+    /** Ground Launch needs a full charge; the air Launch is once per airtime. */
+    public static boolean launchAllowed(boolean unlocked, boolean grounded, int chargeTicks, boolean airLaunchSpent) {
+        if (!unlocked) return false;
+        return grounded ? chargeTicks >= LAUNCH_CHARGE_TICKS : !airLaunchSpent;
+    }
 
     public static MoveMode jumpMode(boolean groundCharge, long pressedAt, long groundedAt,
                                     boolean grounded, boolean wall, boolean wallReady,

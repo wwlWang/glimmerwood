@@ -7,7 +7,7 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProgressionDefinitionsTest {
-    @ParameterizedTest @CsvSource({"dash,20,-", "bash,30,dash", "glide,30,bash", "grapple,40,glide", "stomp,40,grapple", "bow,30,dash"})
+    @ParameterizedTest @CsvSource({"dash,20,-", "bash,30,dash", "glide,30,bash", "grapple,40,glide", "stomp,40,grapple", "bow,30,dash", "launch,40,stomp"})
     void abilityCostAndPrerequisite(String id, int cost, String prerequisite) {
         var ability = Ability.byId(id); assertNotNull(ability);
         assertEquals(cost, ability.cost);

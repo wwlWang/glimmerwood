@@ -211,5 +211,7 @@
   "message.orimod.cell_absorbed.life": "已吸收生命格（%s/%s）",
   "message.orimod.cell_absorbed.energy": "已吸收能量格（%s/%s）",
   "message.orimod.cell_full": "这类灵格已达上限",
-  "message.orimod.cell_dormant": "唤醒灵核之前，灵格不会响应"
+  "message.orimod.cell_dormant": "唤醒灵核之前，灵格不会响应",
+  "ability.orimod.launch": "灵跃",
+  "ability.orimod.launch.description": "潜行 + 跳跃：沿视线飞出。地面上按住潜行直到听到提示音即蓄满；空中每次腾空可用一次。灵跃会恢复二段跳与冲刺。"
 }

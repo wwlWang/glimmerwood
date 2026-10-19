@@ -17,7 +17,7 @@
 | 抓钩（Grapple） | WotW | ✅ | 抓钩花方块 | — | — | — |
 | 滑翔（Feather/Glide） | BF Kuro 羽毛、WotW 滑翔 | ✅ | 滑翔（含空中控制碎片） | 上升气流方块缺失（见环境） | — | — |
 | 下砸（Stomp） | BF | ✅ | 下砸 + 冲击 | — | — | — |
-| Charge Jump / Launch | BF 蓄力跳、WotW Launch | ❌ | 无 | 蹲下蓄力后按跳跃沿视线弹射，空中可连发一次；耗能量 | 4 | 2 |
+| Charge Jump / Launch | BF 蓄力跳、WotW Launch | ✅ R38 | 潜行+跳跃：地面蓄力 1.6、空中一次 1.3 并恢复空中技能 | 蹲下蓄力后按跳跃沿视线弹射，空中可连发一次；耗能量 | 4 | 2 |
 | Burrow（沙中穿行） | WotW | ❌ | 无 | 在沙/沙砾/泥土标签方块内"潜行"穿行，会大幅改动碰撞，风险高 | 2 | 5 |
 | Water Dash / 游泳 | WotW / BF 水底呼吸 | ❌ | 原版游泳 | 水中冲刺 = 水中冲刺速度加成；BF "Clean Water" 无限氧 | 3 | 2 |
 | Light Burst（光爆，可 Bash 的光球） | WotW | ❌ | 无 | 扔出光球，飞行中可作为 Bash 锚点，落地爆炸 | 4 | 3 |

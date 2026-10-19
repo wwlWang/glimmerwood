@@ -211,5 +211,7 @@
   "message.orimod.cell_absorbed.life": "Life Cell absorbed (%s/%s)",
   "message.orimod.cell_absorbed.energy": "Energy Cell absorbed (%s/%s)",
   "message.orimod.cell_full": "You cannot hold more cells of this kind",
-  "message.orimod.cell_dormant": "The cell stays dormant until you awaken the Spirit Core"
+  "message.orimod.cell_dormant": "The cell stays dormant until you awaken the Spirit Core",
+  "ability.orimod.launch": "Launch",
+  "ability.orimod.launch.description": "Crouch + jump: fly along your view. On the ground hold crouch until the chime to charge it; in the air you get one Launch per airtime. A Launch refreshes double jump and dash."
 }

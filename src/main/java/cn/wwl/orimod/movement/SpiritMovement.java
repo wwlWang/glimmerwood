@@ -21,7 +21,7 @@ public final class SpiritMovement {
     private SpiritMovement() {}
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("3");
+        var registrar = event.registrar("4"); // R38: LAUNCH mode
         registrar.playToServer(MovementInputPayload.TYPE, MovementInputPayload.CODEC, (input, context) -> {
             if (context.player() instanceof ServerPlayer player) accept(player, input);
         });
@@ -49,7 +49,9 @@ public final class SpiritMovement {
         s.crouching = input.has(MovementInputPayload.CROUCH);
         boolean jump = input.has(MovementInputPayload.JUMP), dash = input.has(MovementInputPayload.DASH), bash = input.has(MovementInputPayload.BASH);
         if (s.active) {
-            if (jump && !s.jumpHeld) {
+            if (jump && !s.jumpHeld && s.crouching && tryLaunch(player, s, now)) {
+                // R38: crouch + jump is Launch (charged on the ground), never an ordinary jump.
+            } else if (jump && !s.jumpHeld) {
                 // Bound compensation to two ticks; packet delivery cannot consume the intended 100 ms window.
                 s.jumpPressedAt = Math.clamp(input.gameTick(), now - 2, now);
                 // A queued packet must survive until the next player tick. Coyote time
@@ -105,6 +107,7 @@ public final class SpiritMovement {
             s.groundJumpAvailable = true;
             s.groundedAt = now;
             s.lastWallRefill = "";
+            s.airLaunchSpent = false;
             // MOVE12 (R27): a ground jump, a wall jump refilled on a new wall, a bash launch, grapple end or stomp
             // landing can reach the ground without a refill; the one-shot label must still end, or the server keeps
             // reporting e.g. wall_jump / grapple_end on the ground.
@@ -124,6 +127,11 @@ public final class SpiritMovement {
             return;
         }
         if (AirMovement.tickOwned(player, s, now, grounded)) return;
+        // R38: charge a ground Launch while crouching still on the ground; a short chime marks the full charge.
+        if (grounded && s.crouching && s.mode == IDLE && cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player)) {
+            if (++s.launchCharge == LAUNCH_CHARGE_TICKS)
+                player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, .8f, 1.6f);
+        } else s.launchCharge = 0;
         Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
         s.wallDirection = wall == null ? -1 : wall.ordinal();
         while (!s.jumps.isEmpty()) {
@@ -187,6 +195,25 @@ public final class SpiritMovement {
         player.fallDistance = Math.max(player.fallDistance, request.fallDistance());
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
                 ++s.actionId, request.sequence(), JUMP_REJECT, 0, request.velocity(), s.airJumpSpent, s.airDashSpent, -1, Vec3.ZERO));
+    }
+
+    static boolean tryLaunch(ServerPlayer player, MovementState s, long now) {
+        boolean onGround = grounded(player) && now >= s.groundLockUntil;
+        if (s.bash != null || s.grapple != null || s.mode.blocksJump() || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
+        if (!launchAllowed(cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player), onGround, s.launchCharge, s.airLaunchSpent)) return false;
+        Vec3 velocity = launchVelocity(s.yaw, s.pitch, onGround);
+        if (!onGround) s.airLaunchSpent = true;
+        // Like Bash, a Launch refreshes the other air moves (WotW).
+        s.airJumpSpent = s.airDashSpent = false;
+        s.launchCharge = 0;
+        s.groundJumpAvailable = false;
+        s.groundLockUntil = now + 4;
+        s.acceptedLaunches++;
+        player.setDeltaMovement(velocity);
+        player.hurtMarked = true;
+        player.fallDistance = 0;
+        signal(player, s, LAUNCH, 0, velocity);
+        return true;
     }
 
     private static void tryDash(ServerPlayer player, MovementState s, long now) {
