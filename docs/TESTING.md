@@ -318,3 +318,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R67：灵弧齐射（Spirit Arc 变体）
 
 533 JUnit（新增 `ArcVolleyTest`：只有潜行、蓄满且能量足够才触发；三个方向都是单位向量，左右对称，夹角 9°）。
+
+## R68：地图碎片
+
+`flow.map_stone_surveys_the_cave_ruin` 新增：地图石激活两次只给 1 片碎片；使用后碎片被消耗，灵光 +5。

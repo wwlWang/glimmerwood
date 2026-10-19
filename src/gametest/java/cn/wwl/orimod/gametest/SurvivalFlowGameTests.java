@@ -121,6 +121,17 @@ public final class SurvivalFlowGameTests {
                 h.assertValueEqual(survey.altars(), 1, "Altar surveyed");
                 cn.wwl.orimod.block.KeystonePedestalBlock.take(player, placement.block(RuinKind.CAVE.layout().keystones().getFirst()));
                 h.assertValueEqual(cn.wwl.orimod.block.MapStoneBlock.survey(player, stone).keystones(), 1, "Survey after taking a keystone");
+                // R68: first activation hands out a map fragment; reading it consumes it for light.
+                player.setData(cn.wwl.orimod.spirit.SpiritData.AWAKENED, true);
+                player.getInventory().clearContent();
+                cn.wwl.orimod.block.MapStoneBlock.activate(player, stone);
+                cn.wwl.orimod.block.MapStoneBlock.activate(player, stone);
+                h.assertValueEqual(player.getInventory().countItem(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get()), 1, "Map fragments from a stone");
+                int lightBefore = player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).light();
+                var slot = player.getInventory().findSlotMatchingItem(new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get()));
+                h.assertTrue(cn.wwl.orimod.item.MapFragmentItem.read(player, player.getInventory().getItem(slot)), "Fragment not read");
+                h.assertValueEqual(player.getInventory().countItem(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get()), 0, "Fragment not consumed");
+                h.assertValueEqual(player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).light() - lightBefore, cn.wwl.orimod.item.MapFragmentItem.LIGHT, "Fragment light");
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });

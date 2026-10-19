@@ -94,4 +94,10 @@ public final class GloomHawk extends Monster {
         } else step();
         if (getDeltaMovement().horizontalDistanceSqr() > 1e-4) setYRot((float) Math.toDegrees(Math.atan2(-getDeltaMovement().x, getDeltaMovement().z)));
     }
+
+    /** R68: every hawk carries a map fragment. */
+    @Override protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        spawnAtLocation(new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get()));
+    }
 }

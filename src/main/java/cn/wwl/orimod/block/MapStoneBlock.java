@@ -46,8 +46,11 @@ public final class MapStoneBlock extends Block {
     public static Survey activate(ServerPlayer player, BlockPos pos) {
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.map_stone.dormant"), true); return null; }
         var survey = survey(player, pos);
-        if (cn.wwl.orimod.progression.SpiritProgression.reward(player, key(player.level(), pos), FIRST_LIGHT, 0))
+        if (cn.wwl.orimod.progression.SpiritProgression.reward(player, key(player.level(), pos), FIRST_LIGHT, 0)) {
             player.level().playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1, .8f);
+            var fragment = new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get());   // R68
+            if (!player.getInventory().add(fragment)) player.drop(fragment, false);
+        }
         player.level().playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1, 1.2f);
         cn.wwl.orimod.fx.SpiritFx.emit((net.minecraft.server.level.ServerLevel) player.level(), cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, null);
         player.displayClientMessage(Component.translatable("message.orimod.map_stone.survey", survey.cells(), survey.keystones(),

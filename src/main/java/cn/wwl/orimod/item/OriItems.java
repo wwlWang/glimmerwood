@@ -19,6 +19,7 @@ public final class OriItems {
     public static final DeferredItem<SpiritHammerItem> SPIRIT_HAMMER = ITEMS.register("spirit_hammer", () ->
             new SpiritHammerItem(new Item.Properties().stacksTo(1)));
     /** R57: keystones open keystone doors in ruins. */
+    public static final DeferredItem<MapFragmentItem> MAP_FRAGMENT = ITEMS.register("map_fragment", () -> new MapFragmentItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<Item> KEYSTONE = ITEMS.register("keystone", () -> new Item(new Item.Properties().stacksTo(16)));
     /** R60: Spirit Spear. */
     public static final DeferredItem<SpiritSpearItem> SPIRIT_SPEAR = ITEMS.register("spirit_spear", () -> new SpiritSpearItem(new Item.Properties().stacksTo(1)));
