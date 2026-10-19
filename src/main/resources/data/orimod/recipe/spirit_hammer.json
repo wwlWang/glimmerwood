@@ -1,0 +1,1 @@
+{"type": "minecraft:crafting_shapeless", "category": "equipment", "ingredients": [{"item": "minecraft:iron_block"}, {"item": "minecraft:glow_ink_sac"}, {"item": "minecraft:amethyst_shard"}, {"item": "orimod:spirit_light"}], "result": {"id": "orimod:spirit_hammer", "count": 1}}

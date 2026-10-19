@@ -15,5 +15,8 @@ public final class OriItems {
     public static final DeferredItem<SpiritBladeItem> SPIRIT_BLADE = ITEMS.register("spirit_blade", () -> new SpiritBladeItem(new Item.Properties()));
     public static final DeferredItem<SpiritBowItem> SPIRIT_BOW = ITEMS.register("spirit_bow", () ->
             new SpiritBowItem(new Item.Properties().durability(384)));
+    /** R49: Spirit Smash heavy weapon. */
+    public static final DeferredItem<SpiritHammerItem> SPIRIT_HAMMER = ITEMS.register("spirit_hammer", () ->
+            new SpiritHammerItem(new Item.Properties().stacksTo(1)));
     private OriItems() {}
 }

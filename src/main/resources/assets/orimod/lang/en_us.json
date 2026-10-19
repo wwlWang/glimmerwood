@@ -234,5 +234,9 @@
   "block.orimod.energy_cell_pedestal": "Energy Cell Pedestal",
   "message.orimod.cell_site.found.life": "Found a Life Cell",
   "message.orimod.cell_site.found.energy": "Found an Energy Cell",
-  "message.orimod.cell_site.taken": "You already took this cell"
+  "message.orimod.cell_site.taken": "You already took this cell",
+  "item.orimod.spirit_hammer": "Spirit Hammer",
+  "tooltip.orimod.hammer": "Hold use to wind up, release to Smash the ground ahead; knocks flying enemies down",
+  "message.orimod.hammer_spirit": "The Spirit Hammer only answers in spirit form",
+  "message.orimod.hammer_energy": "Not enough spirit energy to Smash"
 }

@@ -31,7 +31,7 @@
 | Spirit Arc（灵弓） | WotW | ✅ | 灵弓 | — | — | — |
 | Spirit Flame（自动锁敌火焰） | BF | ✅ R37 | 同伴自动发射，光束效果 | 由 Sein 式同伴球自动对最近敌人发射，耗少量能量或冷却 | 5 | 3 |
 | Charge Flame（蓄力范围爆） | BF | ❌ | 无 | 蓄力后周围范围伤害 + 击退；可与 Light Burst 合并 | 3 | 2 |
-| Spirit Smash / Hammer | WotW | ❌ | 无 | 重武器：慢、高伤、可击落空中敌人 | 3 | 3 |
+| Spirit Smash / Hammer | WotW | ✅ R49 | 灵锤：蓄力 12 tick，前方范围 10 伤害，空中敌人砸落 | 重武器：慢、高伤、可击落空中敌人 | 3 | 3 |
 | Spirit Spear | WotW | ❌ | 无 | 投掷穿透；可复用三叉戟类实体 | 2 | 3 |
 | Spirit Star / Sentry / Flash 等 | WotW | ❌ | 无 | 后续可选 | 1 | 3 |
 | 敌人掉落灵光并吸附 | BF/WotW | ✅ R35/R43 | 按敌人生命掉 1–8 颗散开的灵光球；精灵形态 2.5 格默认吸附，采集碎片 4 格 | 灵光球呼吸光晕 + 吸附拖尾 ✅ R43 | 4 | 1 |

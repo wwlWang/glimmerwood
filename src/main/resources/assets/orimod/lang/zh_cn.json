@@ -234,5 +234,9 @@
   "block.orimod.energy_cell_pedestal": "能量格祭台",
   "message.orimod.cell_site.found.life": "找到一枚生命格",
   "message.orimod.cell_site.found.energy": "找到一枚能量格",
-  "message.orimod.cell_site.taken": "你已取走这里的灵格"
+  "message.orimod.cell_site.taken": "你已取走这里的灵格",
+  "item.orimod.spirit_hammer": "灵锤",
+  "tooltip.orimod.hammer": "按住使用蓄力，松开重砸前方地面；可把空中的敌人砸落",
+  "message.orimod.hammer_spirit": "灵锤只在精灵形态下响应",
+  "message.orimod.hammer_energy": "灵能不足，无法重砸"
 }

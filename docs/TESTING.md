@@ -242,3 +242,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R48：腐光喷吐者外观与攻击预警
 
 505 JUnit（`GloomTelegraphTest`：核心尺寸随蓄力单调变大，不超过 0.55）、208 GameTest（新增 `parity.gloom_spitter_telegraphs_before_spitting`：攻击后进入 14 tick 蓄力，重复攻击不重置，第 14 tick 才吐出归属喷吐者的球）。
+
+## R49：灵锤 Spirit Smash
+
+507 JUnit（`SpiritHammerTest`：落点沿朝向、蓄力和冷却下限、伤害）、209 GameTest（新增 `parity.spirit_smash_hits_ahead_and_downs_flyers`：前方地面目标和空中目标都受伤，空中目标被砸落，地面目标被掀起，身后的目标不受伤）。

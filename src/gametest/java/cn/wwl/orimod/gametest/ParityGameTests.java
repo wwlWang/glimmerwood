@@ -158,6 +158,21 @@ public final class ParityGameTests {
                 shot.discard();
             } finally { spitter.discard(); }
         });
+        add(tests, "spirit_smash_hits_ahead_and_downs_flyers", h -> {
+            var p = spirit(h, 127); p.setYRot(0);
+            var ground = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 7.7)); ground.setNoAi(true); ground.setOnGround(true);
+            var flyer = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(6.3, 3.5, 7.7)); flyer.setNoAi(true); flyer.setNoGravity(true); flyer.setOnGround(false);
+            var behind = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 2.5)); behind.setNoAi(true);
+            try {
+                float g = ground.getHealth(), f = flyer.getHealth(), b = behind.getHealth();
+                int hits = cn.wwl.orimod.item.SpiritHammerItem.smash(p);
+                h.assertValueEqual(hits, 2, "Smash hits");
+                h.assertTrue(g - ground.getHealth() > 8, "Ground target damage " + (g - ground.getHealth()));
+                h.assertTrue(f - flyer.getHealth() > 8 && flyer.getDeltaMovement().y < -1, "Flyer not slammed down: " + flyer.getDeltaMovement());
+                h.assertTrue(ground.getDeltaMovement().y > 0, "Ground target not bounced");
+                h.assertTrue(behind.getHealth() == b, "Smash hit behind the player");
+            } finally { ground.discard(); flyer.discard(); behind.discard(); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);
