@@ -1,18 +1,29 @@
 {
   "format": 1,
   "kind": "grapple_hook",
-  "notes": "抓钩命中花朵。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "抓钩命中花朵：闪点为主。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:electric_spark",
-      "share": 1.0,
+      "particle": "orimod:spirit_spark",
+      "share": 0.6,
+      "spread": [
+        0.15,
+        0.15,
+        0.15
+      ],
+      "speed": 0.04,
+      "notes": "命中"
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.4,
       "spread": [
         0.15,
         0.15,
         0.15
       ],
       "speed": 0.02,
-      "notes": "单层"
+      "notes": "余光"
     }
   ]
 }

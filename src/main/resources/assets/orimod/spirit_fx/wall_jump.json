@@ -3,13 +3,23 @@
   "kind": "wall_jump",
   "layers": [
     {
-      "particle": "minecraft:cloud",
-      "share": 1.0,
+      "particle": "orimod:spirit_mote",
+      "share": 0.7,
       "speed": 0.02,
       "spread": [
-        0.1,
+        0.08,
         0.4,
-        0.1
+        0.08
+      ]
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.3,
+      "speed": 0.05,
+      "spread": [
+        0.06,
+        0.3,
+        0.06
       ]
     }
   ]

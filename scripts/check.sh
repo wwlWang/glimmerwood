@@ -19,4 +19,5 @@ if [ "$devtools" = 1 ]; then
   ./gradlew compileDevtoolsJava --console=plain "$@"
 fi
 python3 scripts/export-spirit-fx.py --check
+python3 scripts/make-spirit-particles.py --check
 python3 scripts/test-summary.py

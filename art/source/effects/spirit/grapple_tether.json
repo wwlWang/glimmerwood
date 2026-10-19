@@ -1,10 +1,10 @@
 {
   "format": 1,
   "kind": "grapple_tether",
-  "notes": "持续：牵引绳。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "持续：牵引绳上的微光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:electric_spark",
+      "particle": "orimod:spirit_mote",
       "share": 1.0,
       "spread": [
         0,
@@ -12,7 +12,7 @@
         0
       ],
       "speed": 0,
-      "notes": "单层"
+      "notes": "绳"
     }
   ]
 }

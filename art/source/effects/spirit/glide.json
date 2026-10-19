@@ -1,18 +1,18 @@
 {
   "format": 1,
   "kind": "glide",
-  "notes": "持续：滑翔时身后的微光。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "持续：滑翔时身后缓慢飘散的微光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:end_rod",
+      "particle": "orimod:spirit_mote",
       "share": 1.0,
       "spread": [
         0.25,
         0.1,
         0.25
       ],
-      "speed": 0,
-      "notes": "单层"
+      "speed": 0.005,
+      "notes": "飘散"
     }
   ]
 }

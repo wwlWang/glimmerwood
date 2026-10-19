@@ -3,8 +3,18 @@
   "kind": "blade_hit",
   "layers": [
     {
+      "particle": "orimod:spirit_spark",
+      "share": 0.5,
+      "speed": 0.05,
+      "spread": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
       "particle": "minecraft:crit",
-      "share": 1.0,
+      "share": 0.5,
       "speed": 0.03,
       "spread": [
         0.12,

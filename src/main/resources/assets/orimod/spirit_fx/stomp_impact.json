@@ -3,13 +3,23 @@
   "kind": "stomp_impact",
   "layers": [
     {
-      "particle": "minecraft:end_rod",
-      "share": 1.0,
+      "particle": "orimod:spirit_mote",
+      "share": 0.6,
       "speed": 0.02,
       "spread": [
         1.5,
         0.06,
         1.5
+      ]
+    },
+    {
+      "particle": "minecraft:cloud",
+      "share": 0.4,
+      "speed": 0.03,
+      "spread": [
+        1.2,
+        0.05,
+        1.2
       ]
     }
   ]

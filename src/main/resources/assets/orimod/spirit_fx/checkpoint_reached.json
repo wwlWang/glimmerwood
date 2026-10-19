@@ -3,8 +3,18 @@
   "kind": "checkpoint_reached",
   "layers": [
     {
+      "particle": "orimod:spirit_mote",
+      "share": 0.7,
+      "speed": 0.015,
+      "spread": [
+        0.4,
+        0.5,
+        0.4
+      ]
+    },
+    {
       "particle": "minecraft:end_rod",
-      "share": 1.0,
+      "share": 0.3,
       "speed": 0.015,
       "spread": [
         0.4,

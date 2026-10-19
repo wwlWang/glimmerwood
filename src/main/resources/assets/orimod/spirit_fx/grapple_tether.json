@@ -3,7 +3,7 @@
   "kind": "grapple_tether",
   "layers": [
     {
-      "particle": "minecraft:electric_spark",
+      "particle": "orimod:spirit_mote",
       "share": 1.0,
       "speed": 0,
       "spread": [

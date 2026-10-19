@@ -3,8 +3,18 @@
   "kind": "grapple_hook",
   "layers": [
     {
-      "particle": "minecraft:electric_spark",
-      "share": 1.0,
+      "particle": "orimod:spirit_spark",
+      "share": 0.6,
+      "speed": 0.04,
+      "spread": [
+        0.15,
+        0.15,
+        0.15
+      ]
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.4,
       "speed": 0.02,
       "spread": [
         0.15,

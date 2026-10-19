@@ -3,9 +3,9 @@
   "kind": "glide",
   "layers": [
     {
-      "particle": "minecraft:end_rod",
+      "particle": "orimod:spirit_mote",
       "share": 1.0,
-      "speed": 0,
+      "speed": 0.005,
       "spread": [
         0.25,
         0.1,

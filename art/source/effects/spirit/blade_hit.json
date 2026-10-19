@@ -1,18 +1,29 @@
 {
   "format": 1,
   "kind": "blade_hit",
-  "notes": "灵光刃命中点的火花。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "灵光刃命中：先一半亮白闪点（必显），再一半原版暴击星保留打击感。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
+      "particle": "orimod:spirit_spark",
+      "share": 0.5,
+      "spread": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "speed": 0.05,
+      "notes": "命中闪点"
+    },
+    {
       "particle": "minecraft:crit",
-      "share": 1.0,
+      "share": 0.5,
       "spread": [
         0.12,
         0.12,
         0.12
       ],
       "speed": 0.03,
-      "notes": "单层"
+      "notes": "原版暴击星"
     }
   ]
 }

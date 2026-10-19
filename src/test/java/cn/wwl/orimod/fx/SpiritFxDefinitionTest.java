@@ -29,11 +29,25 @@ class SpiritFxDefinitionTest {
         assertEquals(source, runtime, "re-export art/source/effects/spirit with scripts/export-spirit-fx.py");
     }
 
+    private static final java.util.Set<String> VANILLA = java.util.Set.of("minecraft:crit", "minecraft:cloud", "minecraft:end_rod", "minecraft:glow",
+            "minecraft:firework", "minecraft:electric_spark");
+
     @ParameterizedTest @EnumSource(SpiritFxKind.class)
-    void firstExportKeepsTheR18Look(SpiritFxKind kind) throws Exception {
-        // R30 moves the table into data unchanged; later visual passes update this expectation per kind.
+    void formalLooksUseSpiritLightFirstAndKnownParticles(SpiritFxKind kind) throws Exception {
+        // R30 step 2: every effect leads with the mod's own spirit light (essential particles land in layer 1),
+        // and every particle is either a vanilla simple particle or one this mod ships sprites for.
         var runtime = SpiritFxDefinition.parse(kind, read("src/main/resources/assets/orimod/spirit_fx/" + SpiritFxDefinition.fileName(kind) + ".json"));
-        assertEquals(SpiritFxDefinition.fallback(kind), runtime);
+        assertTrue(runtime.layers().get(0).particle().startsWith("orimod:spirit_"), kind + " layer 1");
+        for (var layer : runtime.layers()) {
+            String id = layer.particle();
+            if (id.startsWith("orimod:")) {
+                String name = id.substring(7);
+                var sprites = read("src/main/resources/assets/orimod/particles/" + name + ".json").getAsJsonArray("textures");
+                assertFalse(sprites.isEmpty());
+                for (var sprite : sprites) assertTrue(Files.exists(Path.of(System.getProperty("orimod.projectDir", "."))
+                        .resolve("src/main/resources/assets/orimod/textures/particle/" + sprite.getAsString().substring(7) + ".png")), sprite.toString());
+            } else assertTrue(VANILLA.contains(id), id);
+        }
     }
 
     private static JsonObject valid() {

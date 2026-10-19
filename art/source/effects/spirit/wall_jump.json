@@ -1,18 +1,29 @@
 {
   "format": 1,
   "kind": "wall_jump",
-  "notes": "蹬墙点的气流。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "蹬墙跳：沿墙竖直的光。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:cloud",
-      "share": 1.0,
+      "particle": "orimod:spirit_mote",
+      "share": 0.7,
       "spread": [
-        0.1,
+        0.08,
         0.4,
-        0.1
+        0.08
       ],
       "speed": 0.02,
-      "notes": "单层"
+      "notes": "竖条"
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.3,
+      "spread": [
+        0.06,
+        0.3,
+        0.06
+      ],
+      "speed": 0.05,
+      "notes": "闪点"
     }
   ]
 }

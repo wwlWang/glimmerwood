@@ -1,18 +1,29 @@
 {
   "format": 1,
   "kind": "form_switch",
-  "notes": "变身光柱。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "变身：上升光柱，保留原版发光鱿鱼光点做点缀。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:glow",
-      "share": 1.0,
+      "particle": "orimod:spirit_mote",
+      "share": 0.75,
       "spread": [
         0.3,
         0.8,
         0.3
       ],
       "speed": 0.02,
-      "notes": "单层"
+      "notes": "光柱"
+    },
+    {
+      "particle": "minecraft:glow",
+      "share": 0.25,
+      "spread": [
+        0.3,
+        0.8,
+        0.3
+      ],
+      "speed": 0.02,
+      "notes": "点缀"
     }
   ]
 }

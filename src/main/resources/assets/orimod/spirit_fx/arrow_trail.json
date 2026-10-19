@@ -3,7 +3,7 @@
   "kind": "arrow_trail",
   "layers": [
     {
-      "particle": "minecraft:end_rod",
+      "particle": "orimod:spirit_mote",
       "share": 1.0,
       "speed": 0,
       "spread": [

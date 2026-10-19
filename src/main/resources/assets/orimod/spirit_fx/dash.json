@@ -3,13 +3,23 @@
   "kind": "dash",
   "layers": [
     {
-      "particle": "minecraft:cloud",
-      "share": 1.0,
-      "speed": 0.02,
+      "particle": "orimod:spirit_mote",
+      "share": 0.7,
+      "speed": 0.03,
       "spread": [
         0.3,
         0.3,
         0.3
+      ]
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.3,
+      "speed": 0.06,
+      "spread": [
+        0.2,
+        0.2,
+        0.2
       ]
     }
   ]

@@ -1,18 +1,29 @@
 {
   "format": 1,
   "kind": "bash",
-  "notes": "Bash 弹射。R30 初版与 R18 内置表等价；数量预算仍由 FxBudget / SpiritFxKind 决定。",
+  "notes": "Bash：弹射瞬间的闪点爆发。R30 第二步正式外观；数量预算仍由 FxBudget 决定，必显粒子落在第一层。",
   "layers": [
     {
-      "particle": "minecraft:firework",
-      "share": 1.0,
+      "particle": "orimod:spirit_spark",
+      "share": 0.5,
+      "spread": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "speed": 0.08,
+      "notes": "爆发"
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.5,
       "spread": [
         0.3,
         0.3,
         0.3
       ],
       "speed": 0.04,
-      "notes": "单层"
+      "notes": "余光"
     }
   ]
 }
