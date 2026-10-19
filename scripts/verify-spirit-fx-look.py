@@ -16,7 +16,7 @@ try:
     c.action('reload_resources'); c.ticks(200); state = c.action('spirit_fx_state'); c.records['reloaded'] = state
     assert state['loaded'] == 13 and not state['problems'] and state['reloads'] >= 2, state
     c.command('gamemode spectator'); c.command(f'fill {X-6} {Y-1} {Z-2} {X+6} {Y-1} {Z+10} minecraft:deepslate_tiles')
-    c.command('time set 13000'); c.command(f'tp @s {X+.5} {Y+1.2} {Z-1.5} 0 15'); c.action('settings', hideGui=True); c.ticks(20)
+    c.command('time set 13000'); c.command(f'tp @s {X+.5} {Y+.4} {Z+.2} 0 18'); c.action('settings', hideGui=True); c.ticks(20)
     shots = []
     for kind in KINDS:
         for i in range(6):
@@ -26,7 +26,7 @@ try:
         inputs = sum((['-i', str(s)] for s in shots), [])
         cols, rows = 5, 3
         lay = '|'.join(f'{"+".join(["w0"] * (i % cols)) or "0"}_{"+".join(["h0"] * (i // cols)) or "0"}' for i in range(len(shots)))
-        scale = ''.join(f'[{i}:v]scale=384:-1[v{i}];' for i in range(len(shots)))
+        scale = ''.join(f'[{i}:v]crop=iw*0.5:ih*0.5,scale=384:-1[v{i}];' for i in range(len(shots)))
         subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', *inputs, '-filter_complex',
                         scale + ''.join(f'[v{i}]' for i in range(len(shots))) + f'xstack=inputs={len(shots)}:layout={lay}:fill=black',
                         '-frames:v', '1', args.sheet], check=True)
