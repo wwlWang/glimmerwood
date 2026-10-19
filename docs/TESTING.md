@@ -278,3 +278,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R57：钥石与钥石门
 
 219 GameTest（新增 `flow.cave_ruin_keystone_vault_opens_with_two_keystones`：洞穴遗迹顺时针 90° 放置，两个钥石台脚下实心、各只能取一次；门由 4 块组成；密室内有灵格祭台；第一枚钥石后 4 块门都显示 1/2，第二枚后门全部消失，钥石被消耗）。
+
+## R58：真实客户端验证 R52–R57
+
+真实客户端 `verify-r57.py r57-check`（passed）与 `r57-climb2`（攀爬 y205→209.8）。证据在 `evidence/`（不提交）。
