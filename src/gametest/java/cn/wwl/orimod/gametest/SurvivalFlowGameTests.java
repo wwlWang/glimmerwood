@@ -56,6 +56,7 @@ public final class SurvivalFlowGameTests {
         add(tests, "fresh_easy_world_to_all_ruins", h -> flow(h, Difficulty.EASY));
         add(tests, "fresh_peaceful_world_to_all_ruins", h -> flow(h, Difficulty.PEACEFUL));
         add(tests, "ruins_hold_claimable_cell_pedestals", SurvivalFlowGameTests::cellPedestals);
+        add(tests, "glide_ruins_lift_over_their_gaps", SurvivalFlowGameTests::updrafts);
         return tests;
     }
 
@@ -232,6 +233,23 @@ public final class SurvivalFlowGameTests {
                     h.assertTrue(player.getInventory().countItem(item) == 1, kind.id + " cell item missing");
                     h.assertTrue(!pedestal.claim(player, pos) && player.getInventory().countItem(item) == 1, kind.id + " cell given twice");
                     h.assertTrue(pedestal.claim(cn.wwl.orimod.gametest.Fixtures.player(h), pos), kind.id + " second player got nothing");
+                }
+            } finally { clear(h, placement, kind); }
+        }
+        h.succeed();
+    }
+
+    /** R46: the glide ruins carry updraft vents with open sky, and a glider above them is lifted. */
+    private static void updrafts(GameTestHelper h) {
+        for (var kind : new RuinKind[]{RuinKind.FOREST, RuinKind.CREEK}) {
+            var placement = place(h, kind, Rotation.CLOCKWISE_180);
+            try {
+                h.assertTrue(kind.layout().updrafts().size() >= 4, kind.id + " has too few updrafts");
+                for (var local : kind.layout().updrafts()) {
+                    var pos = placement.block(local);
+                    h.assertTrue(h.getLevel().getBlockState(pos).is(cn.wwl.orimod.block.OriBlocks.UPDRAFT.get()), kind.id + " updraft missing at " + pos);
+                    var probe = new net.minecraft.world.entity.item.ItemEntity(h.getLevel(), pos.getX() + .5, pos.getY() + 6, pos.getZ() + .5, ItemStack.EMPTY);
+                    h.assertTrue(cn.wwl.orimod.block.UpdraftBlock.lifting(h.getLevel(), probe), kind.id + " updraft blocked above " + pos);
                 }
             } finally { clear(h, placement, kind); }
         }

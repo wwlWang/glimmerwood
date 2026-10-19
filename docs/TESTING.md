@@ -230,3 +230,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R45：真实客户端验证 Bash 反弹投射物
 
 真实客户端 `verify-gloom-bash.py r45-gloom-bash2`：aimed=True，目标 id 等于球 id，释放后球速 (0, 0, 1.568)，喷吐者 12→9，状态 passed；证据在 `evidence/r45-gloom-bash2`（不提交）。
+
+## R46：遗迹滑翔路线加灵风口
+
+206 GameTest（新增 `flow.glide_ruins_lift_over_their_gaps`：两处遗迹旋转 180° 放置，每个灵风口都存在，且上方 6 格处有抬升效果）。

@@ -59,6 +59,11 @@ public final class RuinPiece extends TemplateStructurePiece {
             level.setBlock(pos, block.get().defaultBlockState(), 2);
             placed++;
         }
+        // R46: updraft vents over the creek gaps, so the glide route can climb.
+        for (var local : kind.layout().updrafts()) {
+            var pos = placement.block(local);
+            if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.UPDRAFT.get().defaultBlockState(), 2); placed++; }
+        }
         return placed;
     }
     @Override protected void handleDataMarker(String marker, BlockPos pos, ServerLevelAccessor level, RandomSource random, BoundingBox bounds) {}
