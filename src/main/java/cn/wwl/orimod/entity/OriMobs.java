@@ -17,13 +17,13 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class OriMobs {
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, OriMod.MOD_ID);
     public static final Supplier<EntityType<GloomSpitter>> GLOOM_SPITTER = TYPES.register("gloom_spitter", () -> EntityType.Builder
-            .of(GloomSpitter::new, MobCategory.MONSTER).sized(.8f, .9f).clientTrackingRange(8).build("orimod:gloom_spitter"));
+            .of(GloomSpitter::new, MobCategory.MONSTER).sized(1f, 1.1f).clientTrackingRange(8).build("orimod:gloom_spitter"));
     public static final Supplier<EntityType<GloomShot>> GLOOM_SHOT = TYPES.register("gloom_shot", () -> EntityType.Builder
             .<GloomShot>of(GloomShot::new, MobCategory.MISC).sized(.3f, .3f).clientTrackingRange(8).updateInterval(2).build("orimod:gloom_shot"));
 
     /** R50: first original boss. */
     public static final Supplier<EntityType<GloomHeart>> GLOOM_HEART = TYPES.register("gloom_heart", () -> EntityType.Builder
-            .of(GloomHeart::new, MobCategory.MONSTER).sized(1.6f, 1.6f).fireImmune().clientTrackingRange(10).build("orimod:gloom_heart"));
+            .of(GloomHeart::new, MobCategory.MONSTER).sized(2.4f, 2.4f).fireImmune().clientTrackingRange(10).build("orimod:gloom_heart"));
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);

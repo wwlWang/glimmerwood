@@ -258,3 +258,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R52：灵锤重砸纳入能力树
 
 511 JUnit（`SpiritHammerTest.needsSpiritFormAndTheSmashAbility`）、214 GameTest（能力面板相关的生成用例自动包含新能力）。
+
+## R53：首领与喷吐者远距离可读性
+
+511 JUnit（`GloomTelegraphTest` 改为核心尺寸 0.45–0.8）、214 GameTest。
