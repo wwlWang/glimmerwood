@@ -24,7 +24,16 @@ Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopba
 
 锁定的 GemRender 和 Flywheel 编译接口保存在 `libs/`，由 LFS 管理。构建前校验 `dependencies/prepared.json`，缺失或损坏时明确失败。其余开发画面依赖按 `dependencies/lock.json` 从上游下载，不上传到本仓库。
 
-产物为 `build/libs/orimod-0.1.0-SNAPSHOT.jar`。当前客户端至少需要 GemRender 0.1.17 和其内置的 Flywheel 1.0.6；仅复制 OriMod JAR 还不是完整安装包。干净游戏实例安装仍待验收。
+产物为 `build/libs/orimod-0.1.0-SNAPSHOT.jar`；可重现的发行 JAR 用 `scripts/build-release.sh` 生成（两次构建哈希一致，附 SHA256SUMS）。
+
+### 安装到游戏实例
+
+1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.248。
+2. 放入 `mods/`：OriMod JAR、GemRender 0.1.17（内置 Flywheel 1.0.6，二者缺一时 NeoForge 启动界面会列出缺少的模组）。
+3. 推荐：Sodium 0.6.13 与 Iris 1.8.12。装有 Iris 且未选择其他光影时，首次启动自动装入并启用自带的 Spirit Glow 光影；已选其他光影则保留，可在 OriMod 设置中切换。
+4. 可直接打开已有原版存档；遗迹在新探索的区块生成。
+
+R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；Windows 官方启动器与真实 GPU 仍待本机确认。
 
 ## 开发与检查
 
