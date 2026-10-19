@@ -235,7 +235,7 @@
   "message.orimod.cell_site.found.life": "Found a Life Cell",
   "message.orimod.cell_site.found.energy": "Found an Energy Cell",
   "message.orimod.cell_site.taken": "You already took this cell",
-  "item.orimod.spirit_hammer": "Spirit Hammer",
+  "item.orimod.spirit_hammer": "Spirit Smash",
   "tooltip.orimod.hammer": "Hold use to wind up, release to Smash the ground ahead; knocks flying enemies down",
   "message.orimod.hammer_spirit": "The Spirit Hammer only answers in spirit form",
   "message.orimod.hammer_energy": "Not enough spirit energy to Smash",
@@ -311,5 +311,8 @@
   "commands.orimod.god.on": "OriMod god mode on",
   "commands.orimod.god.off": "OriMod god mode off",
   "commands.orimod.spawned": "Spawned %s",
-  "commands.orimod.status": "%s: awakened=%s spirit=%s abilities=%s light=%s energy=%s life cells=%s energy cells=%s"
+  "commands.orimod.status": "%s: awakened=%s spirit=%s abilities=%s light=%s energy=%s life cells=%s energy cells=%s",
+  "tooltip.orimod.hammer.flavor": "Condensed spirit light; it grows heavier the longer you hold it",
+  "tooltip.orimod.spear.flavor": "A drawn-out beam of light, gone as soon as it flies",
+  "tooltip.orimod.blade.flavor": "An edge of condensed light, weightless and keen"
 }

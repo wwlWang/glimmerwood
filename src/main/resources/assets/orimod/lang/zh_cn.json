@@ -235,7 +235,7 @@
   "message.orimod.cell_site.found.life": "找到一枚生命格",
   "message.orimod.cell_site.found.energy": "找到一枚能量格",
   "message.orimod.cell_site.taken": "你已取走这里的灵格",
-  "item.orimod.spirit_hammer": "灵锤",
+  "item.orimod.spirit_hammer": "灵击之锤",
   "tooltip.orimod.hammer": "按住使用蓄力，松开重砸前方地面；可把空中的敌人砸落",
   "message.orimod.hammer_spirit": "灵锤只在精灵形态下响应",
   "message.orimod.hammer_energy": "灵能不足，无法重砸",
@@ -311,5 +311,8 @@
   "commands.orimod.god.on": "OriMod 无敌模式：开",
   "commands.orimod.god.off": "OriMod 无敌模式：关",
   "commands.orimod.spawned": "已生成 %s",
-  "commands.orimod.status": "%s：已觉醒=%s 精灵形态=%s 能力=%s 灵光=%s 能量=%s 生命格=%s 能量格=%s"
+  "commands.orimod.status": "%s：已觉醒=%s 精灵形态=%s 能力=%s 灵光=%s 能量=%s 生命格=%s 能量格=%s",
+  "tooltip.orimod.hammer.flavor": "凝聚成形的灵光，握得越久越沉",
+  "tooltip.orimod.spear.flavor": "一束被拉长的光，掷出即逝",
+  "tooltip.orimod.blade.flavor": "灵光凝成的刃，轻而锋利"
 }

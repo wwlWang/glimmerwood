@@ -92,8 +92,8 @@ public final class SpiritFxClient {
             var at = companion(player, level.getGameTime());
             var prev = companion(player, level.getGameTime() - 1);
             try {
-                level.addParticle(companionOrb, true, at.x, at.y, at.z, 0, 0, 0);
-                level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x9EC8FF, .14f, 10), false,
+                // R88: the orb itself is drawn smoothly by SpiritAura; particles only leave a sparse soft trail.
+                if ((level.getGameTime() + player.getId()) % 2 == 0) level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x9EC8FF, .14f, 10), false,
                         (at.x + prev.x) * .5, (at.y + prev.y) * .5, (at.z + prev.z) * .5, 0, .01, 0);
             } catch (Throwable ignored) { return; }
         }

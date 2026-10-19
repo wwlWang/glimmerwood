@@ -92,7 +92,7 @@ public final class SpiritHammerItem extends Item {
     }
 
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        lines.add(Component.translatable("tooltip.orimod.hammer").withStyle(net.minecraft.ChatFormatting.AQUA));
-        lines.add(Component.translatable("tooltip.orimod.spirit_required").withStyle(net.minecraft.ChatFormatting.GRAY));
+        SpiritTooltips.add(lines, "tooltip.orimod.hammer.flavor", "tooltip.orimod.hammer", "tooltip.orimod.spirit_required");
     }
+    @Override public Component getName(ItemStack stack) { return SpiritTooltips.name(super.getName(stack)); }
 }

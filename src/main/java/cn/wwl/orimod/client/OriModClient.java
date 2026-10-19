@@ -25,6 +25,7 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.MotionFeel::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.MotionFeel::fov);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritFxClient::loggingOut);
+        modEventBus.addListener(cn.wwl.orimod.client.render.SpiritWeaponRenderer::register);
         modEventBus.addListener(SpiritControls::registerKeys);
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
@@ -37,7 +38,7 @@ public final class OriModClient {
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), GloomHeartRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK.get(), GloomHawkRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH.get(), GloomMatriarchRenderer::new);
-            event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.SPIRIT_SPEAR.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+            event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.SPIRIT_SPEAR.get(), cn.wwl.orimod.client.render.SpiritSpearRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SHOT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::input);
@@ -48,6 +49,7 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tickTarget);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::renderWorld);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritAura::render);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritAppearance::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritGlow::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritHands::emptyArm);
