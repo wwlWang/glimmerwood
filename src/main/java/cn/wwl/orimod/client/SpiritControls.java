@@ -27,6 +27,8 @@ public final class SpiritControls {
     public static final KeyMapping PANEL = new KeyMapping("key.orimod.panel", GLFW.GLFW_KEY_G, "key.categories.orimod");
     public static final KeyMapping SOUL_LINK = new KeyMapping("key.orimod.soul_link", GLFW.GLFW_KEY_B, "key.categories.orimod");
     public static final KeyMapping LIGHT_BURST = new KeyMapping("key.orimod.light_burst", GLFW.GLFW_KEY_Z, "key.categories.orimod");
+    /** R59: hold to charge the flame, release to burst. */
+    public static final KeyMapping CHARGE_FLAME = new KeyMapping("key.orimod.charge_flame", GLFW.GLFW_KEY_X, "key.categories.orimod");
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
     private static CameraType spiritCamera = CameraType.THIRD_PERSON_BACK;
     private static boolean wasSpirit;
@@ -37,7 +39,7 @@ public final class SpiritControls {
     private static int inputSequence;
     private SpiritControls() {}
 
-    public static void registerKeys(RegisterKeyMappingsEvent event) { event.register(TOGGLE); event.register(DASH); event.register(BASH); event.register(PANEL); event.register(SOUL_LINK); event.register(LIGHT_BURST); }
+    public static void registerKeys(RegisterKeyMappingsEvent event) { event.register(TOGGLE); event.register(DASH); event.register(BASH); event.register(PANEL); event.register(SOUL_LINK); event.register(LIGHT_BURST); event.register(CHARGE_FLAME); }
 
     public static void movement(MovementInputUpdateEvent event) {
         var mc = Minecraft.getInstance();
@@ -126,6 +128,30 @@ public final class SpiritControls {
         }
     }
 
+    private static int chargeFlameHeld;
+
+    /** R59: count the hold of the Charge Flame key; a charged release sends the burst, charging shows gathering sparks. */
+    private static void chargeFlameTick(Minecraft mc) {
+        while (CHARGE_FLAME.consumeClick()) { }
+        var player = mc.player;
+        boolean down = CHARGE_FLAME.isDown() && player != null && mc.screen == null && mc.isWindowActive();
+        if (down) {
+            chargeFlameHeld++;
+            if (player != null && chargeFlameHeld <= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS && chargeFlameHeld % 2 == 0) {
+                double a = chargeFlameHeld * .7;
+                try {
+                    player.level().addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_SPARK.get(),
+                            chargeFlameHeld >= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS ? 0xFFE080 : 0xFF9A40, .35f, 8), true,
+                            player.getX() + Math.cos(a) * 1.6, player.getY() + .8, player.getZ() + Math.sin(a) * 1.6, -Math.cos(a) * .2, 0, -Math.sin(a) * .2);
+                } catch (Throwable ignored) { }
+            }
+            return;
+        }
+        if (chargeFlameHeld >= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS && player != null)
+            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("charge_flame", ""));
+        chargeFlameHeld = 0;
+    }
+
     private static boolean waterDashHeld;
     private static long waterDashReadyAt;
 
@@ -202,6 +228,7 @@ public final class SpiritControls {
         while (PANEL.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive()) mc.setScreen(new SpiritScreen(!SpiritData.isAwakened(mc.player)));
         }
+        chargeFlameTick(mc);
         while (LIGHT_BURST.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive())
                 PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("light_burst", ""));

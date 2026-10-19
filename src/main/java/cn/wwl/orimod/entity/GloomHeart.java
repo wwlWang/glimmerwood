@@ -217,6 +217,7 @@ public final class GloomHeart extends Monster {
         super.die(source);
         if (level() instanceof ServerLevel server) {
             cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
+            cn.wwl.orimod.block.GloomWaterBlock.cleanse(server, home(), (int) ARENA);   // R61
             // R54: the corruption breaks loose; the reward waits outside (EscapeSequence).
             bar.removeAllPlayers();
             var origin = Vec3.atBottomCenterOf(home()).add(0, 1, 0);

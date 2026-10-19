@@ -33,6 +33,9 @@ public final class OriBlocks {
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 3 + 6 * state.getValue(KeystoneDoorBlock.FILLED)).sound(SoundType.TUFF)));
     public static final DeferredBlock<KeystonePedestalBlock> KEYSTONE_PEDESTAL = BLOCKS.register("keystone_pedestal", () -> new KeystonePedestalBlock(
             BlockBehaviour.Properties.of().strength(3, 12).noOcclusion().lightLevel(state -> state.getValue(KeystonePedestalBlock.FULL) ? 10 : 2).sound(SoundType.AMETHYST)));
+    /** R61: gloom water hazard (cleansed by Charge Flame, Light Burst or the Gloom Heart's defeat). */
+    public static final DeferredBlock<GloomWaterBlock> GLOOM_WATER = BLOCKS.register("gloom_water", () -> new GloomWaterBlock(
+            BlockBehaviour.Properties.of().strength(100).noLootTable().noOcclusion().replaceable().lightLevel(state -> 4).sound(SoundType.SLIME_BLOCK)));
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);

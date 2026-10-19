@@ -262,6 +262,34 @@ public final class ParityGameTests {
                 h.getLevel().setBlock(pos.above(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
         });
+        add(tests, "charge_flame_bursts_and_cleanses_gloom_water", h -> {
+            var p = spirit(h, 127 | cn.wwl.orimod.progression.Ability.CHARGE_FLAME.bit | cn.wwl.orimod.progression.Ability.LIGHT_BURST.bit);
+            p.setData(SpiritData.ENERGY, 100f);
+            var near = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(7.5, 2, 5.5)); near.setNoAi(true);
+            var far = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new Vec3(5.5, 2, 11.5)); far.setNoAi(true);
+            var pool = h.absolutePos(new net.minecraft.core.BlockPos(3, 2, 5));
+            h.getLevel().setBlock(pool, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 3);
+            try {
+                float n = near.getHealth(), f = far.getHealth();
+                h.assertValueEqual(cn.wwl.orimod.combat.ChargeFlame.release(p), 1, "Charge Flame hits");
+                h.assertTrue(n - near.getHealth() > 6 && far.getHealth() == f, "Charge Flame damage near/far");
+                h.assertTrue(h.getLevel().getBlockState(pool).is(net.minecraft.world.level.block.Blocks.WATER), "Gloom water not cleansed");
+                h.assertValueEqual(cn.wwl.orimod.combat.ChargeFlame.release(p), -1, "Charge Flame ignored its cooldown");
+                h.assertTrue(cn.wwl.orimod.combat.ChargeFlame.refusal(true, false, 100, 0, 0).equals("locked"), "Locked refusal");
+            } finally { near.discard(); far.discard(); h.getLevel().setBlock(pool, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3); }
+        });
+        add(tests, "gloom_water_hurts_and_slows", h -> {
+            var pool = h.absolutePos(new net.minecraft.core.BlockPos(5, 2, 5));
+            h.getLevel().setBlock(pool, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 3);
+            var villager = h.spawn(net.minecraft.world.entity.EntityType.VILLAGER, new Vec3(5.5, 2, 5.5)); villager.setNoAi(true);
+            try {
+                float hp = villager.getHealth();
+                for (int i = 0; i < cn.wwl.orimod.block.GloomWaterBlock.HURT_INTERVAL; i++)
+                    h.getLevel().getBlockState(pool).entityInside(h.getLevel(), pool, villager);
+                h.assertTrue(villager.getHealth() < hp, "Gloom water did not hurt");
+                h.assertTrue(villager.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN), "Gloom water did not slow");
+            } finally { villager.discard(); h.getLevel().setBlock(pool, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

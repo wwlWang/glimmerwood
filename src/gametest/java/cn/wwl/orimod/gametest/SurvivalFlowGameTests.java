@@ -282,6 +282,12 @@ public final class SurvivalFlowGameTests {
             var placement = place(h, kind, Rotation.CLOCKWISE_180);
             try {
                 h.assertTrue(kind.layout().updrafts().size() >= 4, kind.id + " has too few updrafts");
+                if (kind.layout().gloomWater() != null) {
+                    int gloom = 0;
+                    for (var local : BlockPos.betweenClosed(kind.layout().gloomWater()[0], kind.layout().gloomWater()[1]))
+                        if (h.getLevel().getBlockState(placement.block(local)).is(cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get())) gloom++;
+                    h.assertTrue(gloom >= 20, kind.id + " gloom water under the glide route: " + gloom);
+                }
                 for (var local : kind.layout().updrafts()) {
                     var pos = placement.block(local);
                     h.assertTrue(h.getLevel().getBlockState(pos).is(cn.wwl.orimod.block.OriBlocks.UPDRAFT.get()), kind.id + " updraft missing at " + pos);

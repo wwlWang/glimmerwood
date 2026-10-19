@@ -83,6 +83,14 @@ public final class RuinPiece extends TemplateStructurePiece {
             var pos = placement.block(kind.layout().bossAltar());
             if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_ALTAR.get().defaultBlockState(), 2); placed++; }
         }
+        // R61: the creek under the glide route is corrupted (water only; cleansed by Charge Flame / Light Burst).
+        var gloom = kind.layout().gloomWater();
+        if (gloom != null)
+            for (var local : BlockPos.betweenClosed(gloom[0], gloom[1])) {
+                var pos = placement.block(local);
+                if (bounds.isInside(pos) && level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.WATER)) {
+                    level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 2); placed++; }
+            }
         // R46: updraft vents over the creek gaps, so the glide route can climb.
         for (var local : kind.layout().updrafts()) {
             var pos = placement.block(local);

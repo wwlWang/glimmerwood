@@ -16,7 +16,11 @@ public enum Ability {
     /** R55: Climb (BF): push into a wall while sliding to climb it. */
     CLIMB(512, 30, DASH),
     /** R56: Water Dash (WotW) + clean breath (BF). */
-    WATER_DASH(1024, 30, DASH);
+    WATER_DASH(1024, 30, DASH),
+    /** R59: Charge Flame (BF). */
+    CHARGE_FLAME(2048, 30, LIGHT_BURST),
+    /** R60: Spirit Spear (WotW). */
+    SPEAR(4096, 40, BOW);
 
     public final int bit, cost;
     public final Ability prerequisite;

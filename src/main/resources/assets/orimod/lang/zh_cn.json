@@ -266,5 +266,12 @@
   "message.orimod.keystone.need": "这扇门需要钥石（%s/%s）",
   "message.orimod.keystone.inserted": "已嵌入钥石（%s/%s）",
   "message.orimod.keystone.opened": "钥石门打开了",
-  "message.orimod.keystone.found": "找到一枚钥石"
+  "message.orimod.keystone.found": "找到一枚钥石",
+  "key.orimod.charge_flame": "蓄力灵焰（按住）",
+  "ability.orimod.charge_flame": "蓄力灵焰",
+  "ability.orimod.charge_flame.description": "按住 X 聚集灵焰，松开在身边爆发：3.5 格内 8 伤害（10 灵能），并净化腐光水。",
+  "message.orimod.charge_flame.not_spirit": "蓄力灵焰需要精灵形态",
+  "message.orimod.charge_flame.locked": "先在能力面板学会蓄力灵焰",
+  "message.orimod.charge_flame.energy": "灵能不足，无法蓄力灵焰（10）",
+  "block.orimod.gloom_water": "腐光水"
 }

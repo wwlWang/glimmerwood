@@ -266,5 +266,12 @@
   "message.orimod.keystone.need": "This door needs keystones (%s/%s)",
   "message.orimod.keystone.inserted": "Keystone set (%s/%s)",
   "message.orimod.keystone.opened": "The keystone door opens",
-  "message.orimod.keystone.found": "Found a keystone"
+  "message.orimod.keystone.found": "Found a keystone",
+  "key.orimod.charge_flame": "Charge Flame (hold)",
+  "ability.orimod.charge_flame": "Charge Flame",
+  "ability.orimod.charge_flame.description": "Hold X to gather flame, release to burst it around you: 8 damage within 3.5 blocks (10 energy). Cleanses gloom water.",
+  "message.orimod.charge_flame.not_spirit": "Charge Flame needs Spirit Form",
+  "message.orimod.charge_flame.locked": "Unlock Charge Flame in the ability panel first",
+  "message.orimod.charge_flame.energy": "Not enough energy for Charge Flame (10)",
+  "block.orimod.gloom_water": "Gloom Water"
 }

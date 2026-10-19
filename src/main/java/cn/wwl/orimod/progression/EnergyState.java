@@ -7,7 +7,7 @@ public final class EnergyState {
     /** R37: game time when the companion may fire the next Spirit Flame. */
     public long flameReadyAt;
     /** R39: next Light Burst throw. */
-    public long burstReadyAt, waterDashReadyAt;
+    public long burstReadyAt, waterDashReadyAt, chargeFlameReadyAt, spearReadyAt;
     /** R41: next Spirit Well refill. */
     public long wellReadyAt;
     public long lastSpent, lastHurt, healReadyAt;

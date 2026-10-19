@@ -62,7 +62,9 @@ public final class ProgressionGameTests {
         for (var ability : Ability.values()) {
             add(tests, "buy_" + ability.id() + "_once", h -> {
                 var p = Fixtures.player(h);
-                p.setData(SpiritData.ABILITIES, 63 & ~ability.bit);
+                // Every other ability owned, so later prerequisites (e.g. Light Burst for Charge Flame) are met.
+                int all = 0; for (var other : Ability.values()) all |= other.bit;
+                p.setData(SpiritData.ABILITIES, all & ~ability.bit);
                 p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withLight(500));
                 SpiritProgression.request(p, "ability", ability.id());
                 SpiritProgression.request(p, "ability", ability.id());
