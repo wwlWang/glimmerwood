@@ -94,12 +94,17 @@ public final class SpiritFxClient {
     }
 
     /** Development preview: one burst of {@code kind} at a position, through the same settings and definitions. */
-    public static void preview(SpiritFxKind kind, double x, double y, double z) {
+    public static void preview(SpiritFxKind kind, double x, double y, double z) { preview(kind, x, y, z, null, null); }
+
+    /** Preview with explicit facing/motion (for look sheets shot from a fixed camera); null uses the player's. */
+    public static void preview(SpiritFxKind kind, double x, double y, double z, net.minecraft.world.phys.Vec3 look, net.minecraft.world.phys.Vec3 motion) {
         var mc = Minecraft.getInstance();
-        burst(kind, x, y, z, mc.player == null ? -1 : mc.player.getId());
+        burst(kind, x, y, z, mc.player == null ? -1 : mc.player.getId(), look, motion);
     }
 
-    private static void burst(SpiritFxKind kind, double px, double py, double pz, int source) {
+    private static void burst(SpiritFxKind kind, double px, double py, double pz, int source) { burst(kind, px, py, pz, source, null, null); }
+
+    private static void burst(SpiritFxKind kind, double px, double py, double pz, int source, net.minecraft.world.phys.Vec3 lookOverride, net.minecraft.world.phys.Vec3 motionOverride) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
         if (level == null) return;
@@ -112,6 +117,8 @@ public final class SpiritFxClient {
         // Facing for arcs and motion for trails: the source's own look and velocity (fallbacks for markers).
         net.minecraft.world.phys.Vec3 look = sourceEntity == null ? new net.minecraft.world.phys.Vec3(0, 0, 1) : sourceEntity.getLookAngle();
         net.minecraft.world.phys.Vec3 motion = sourceEntity == null ? net.minecraft.world.phys.Vec3.ZERO : sourceEntity.getDeltaMovement();
+        if (lookOverride != null) look = lookOverride;
+        if (motionOverride != null) motion = motionOverride;
         if (motion.lengthSqr() < 1e-4) motion = look;
         var dir = motion.normalize();
         double phase = kind.persistent() ? level.getGameTime() * .35 : RANDOM.nextDouble() * Math.PI * 2;

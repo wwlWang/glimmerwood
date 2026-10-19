@@ -567,7 +567,8 @@ public final class DevelopmentBridge {
             case "spirit_fx_burst" -> {
                 // FX02: play a spirit effect burst locally (same budget and definitions as server-sent bursts).
                 var kind = cn.wwl.orimod.fx.SpiritFxKind.valueOf(action.get("kind").getAsString());
-                cn.wwl.orimod.client.fx.SpiritFxClient.preview(kind, action.get("x").getAsDouble(), action.get("y").getAsDouble(), action.get("z").getAsDouble());
+                cn.wwl.orimod.client.fx.SpiritFxClient.preview(kind, action.get("x").getAsDouble(), action.get("y").getAsDouble(), action.get("z").getAsDouble(),
+                        vec(action, "look"), vec(action, "motion"));
                 return Map.of("kind", kind.name(), "definition", cn.wwl.orimod.client.fx.SpiritFxResources.get(kind).toString());
             }
             case "spirit_fx_state" -> { return cn.wwl.orimod.client.fx.SpiritFxResources.diagnostics(); }
@@ -840,5 +841,13 @@ public final class DevelopmentBridge {
                 "gameTime", player.level().getGameTime(), "experienceLevel", player.experienceLevel,
                 "inventory", player.getInventory().items.stream().filter(stack -> !stack.isEmpty()).map(stack -> Map.of(
                         "item", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), "count", stack.getCount())).toList());
+    }
+
+    private static net.minecraft.world.phys.Vec3 vec(com.google.gson.JsonObject action, String key) {
+        if (!action.has(key)) return null;
+        var a = action.getAsJsonArray(key);
+        var v = new net.minecraft.world.phys.Vec3(a.get(0).getAsDouble(), a.get(1).getAsDouble(), a.get(2).getAsDouble());
+        require(Double.isFinite(v.lengthSqr()) && v.lengthSqr() > 1e-6, "Invalid " + key);
+        return v.normalize();
     }
 }
