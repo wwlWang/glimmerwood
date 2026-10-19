@@ -27,7 +27,13 @@ public final class SpiritJumpPrediction {
             state.airJumpSpent = state.airDashSpent = false;
             state.groundJumpAvailable = true; state.groundedAt = now; state.lastWallRefill = "";
         }
-        if (!edge || (flags & MovementInputPayload.CROUCH) != 0 || state.predictedJumps.size() >= 4) return false;
+        boolean crouch = (flags & MovementInputPayload.CROUCH) != 0;
+        // R88: mirror the server's Launch charge so a sneaking press is only withheld when Launch will take it.
+        state.launchCharge = grounded && crouch ? state.launchCharge + 1 : 0;
+        if (edge) state.jumpEdgeAt = now;
+        if (!edge || state.predictedJumps.size() >= 4) return false;
+        if (crouch && cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player)
+                && (grounded ? state.launchCharge > MovementRules.LAUNCH_CHARGE_TICKS : true)) return false;
         var combat = player.getData(SpiritData.COMBAT_VIEW);
         // During combat, wait for the existing server cancellation rules instead of predicting
         // an action whose weapon state may still be in transit.
@@ -40,6 +46,7 @@ public final class SpiritJumpPrediction {
         if (mode == IDLE) return false;
         Vec3 previous = player.getDeltaMovement();
         player.jumpFromGround();
+        state.jumpPerformedAt = now;
         state.groundJumpAvailable = false; state.groundLockUntil = now + 4;
         if (mode == WALL_JUMP) {
             player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));

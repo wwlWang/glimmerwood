@@ -37,7 +37,9 @@ def vertical_new(vy, held, released):
     if released and vy > C['JUMP_CUT_MIN']: return vy * C['JUMP_CUT']
     if abs(vy) < C['APEX_SPEED'] and held: s = C['APEX_GRAVITY_SCALE']
     elif vy > 0: s = C['RISE_GRAVITY_SCALE'] if held else 1
-    else: s = C['FALL_GRAVITY_SCALE']
+    else:
+        k = max(0, min(1, -vy / C.get('FALL_RAMP_SPEED', 1e-9)))
+        s = C.get('FALL_GRAVITY_START', C['FALL_GRAVITY_SCALE']) + (C['FALL_GRAVITY_SCALE'] - C.get('FALL_GRAVITY_START', C['FALL_GRAVITY_SCALE'])) * k
     adj = vy + G * (1 - s)
     return adj if vy < C['MAX_FALL'] - .05 else max(adj, C['MAX_FALL'] / .98 + G)
 

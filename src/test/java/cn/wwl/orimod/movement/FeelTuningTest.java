@@ -47,7 +47,8 @@ class FeelTuningTest {
         // effective gravity = vy - (vertical(vy) - GRAVITY)
         assertEquals(GRAVITY * RISE_GRAVITY_SCALE, .3 - (vertical(.3, true, false) - GRAVITY), 1e-9);
         assertEquals(GRAVITY * APEX_GRAVITY_SCALE, .02 - (vertical(.02, true, false) - GRAVITY), 1e-9);
-        assertEquals(GRAVITY * FALL_GRAVITY_SCALE, -.3 - (vertical(-.3, true, false) - GRAVITY), 1e-9);
+        assertEquals(GRAVITY * fallGravityScale(-.3), -.3 - (vertical(-.3, true, false) - GRAVITY), 1e-9);
+        assertEquals(GRAVITY * FALL_GRAVITY_SCALE, -.9 - (vertical(-.9, true, false) - GRAVITY), 1e-9);
         assertEquals(GRAVITY, .3 - (vertical(.3, false, false) - GRAVITY), 1e-9);
     }
 
@@ -57,6 +58,19 @@ class FeelTuningTest {
         double vy = -1;
         for (int i = 0; i < 80; i++) vy = (vertical(vy, false, false) - GRAVITY) * .98;
         assertTrue(vy >= MAX_FALL - 1e-6, "terminal " + vy);
+    }
+
+    /** R88: a fall from the apex visibly accelerates: every tick adds more speed than the one before, up to the cap. */
+    @Test void fallAccelerates() {
+        double vy = -.001, prevStep = 0;
+        for (int t = 0; t < 6; t++) {
+            double next = (vertical(vy, false, false) - GRAVITY) * .98, step = vy - next;
+            assertTrue(step > GRAVITY * 1.15, "tick " + t + " gains only " + step);
+            assertTrue(step >= prevStep - 1e-9, "tick " + t + " gravity shrank");
+            prevStep = step; vy = next;
+        }
+        assertTrue(vy < -.55, "6 ticks into the fall only " + vy);
+        assertTrue(apex(true) > 1.5 && apex(true) < 1.8, "held " + apex(true));
     }
 
     static double apex(boolean hold) {
@@ -149,5 +163,39 @@ class FeelTuningTest {
         int head = trailColor(0, 3), tail = trailColor(2, 3);
         assertEquals(TRAIL_CORE, head); assertEquals(TRAIL_TAIL, tail);
         for (int c : new int[] {head, trailColor(1, 3), tail}) assertTrue((c & 255) >= (c >> 16 & 255), "never warm: " + Integer.toHexString(c));
+    }
+
+    /** R88: airborne pose weights are continuous, sum to 1, and go rise -> apex -> fall as the jump turns over. */
+    @Test void airWeightsBlendSmoothly() {
+        float prevRise = 2, prevFall = -1;
+        for (float vy = .5f; vy >= -.6f; vy -= .01f) {
+            float[] w = airWeights(vy);
+            assertEquals(1, w[0] + w[1] + w[2], 1e-5);
+            assertTrue(w[0] <= prevRise + 1e-6 && w[2] >= prevFall - 1e-6, "not monotonic at " + vy);
+            prevRise = w[0]; prevFall = w[2];
+        }
+        assertEquals(1, airWeights(.4f)[0], 1e-6); assertEquals(1, airWeights(0)[1], 1e-6); assertEquals(1, airWeights(-.5f)[2], 1e-6);
+    }
+
+    @Test void airLeanNosesUpRisingAndDivesFalling() {
+        assertTrue(airLean(0, .4f) < 0);
+        assertTrue(airLean(0, -.6f) > 0);
+        assertTrue(airLean(6.4f, 0) > airLean(0, 0));
+        assertTrue(Math.abs(airLean(20, -3)) <= LEAN_MAX + 1e-6);
+    }
+
+    /** R88: holding the jump that started a jump never glides; a fresh press in the air does. */
+    @Test void glideNeedsAFreshAirbornePress() {
+        assertFalse(MovementRules.glideArmed(100, 100));      // press and jump on the same tick
+        assertFalse(MovementRules.glideArmed(100, 104));      // buffered jump performed later
+        assertTrue(MovementRules.glideArmed(110, 100));       // re-pressed after the jump
+    }
+
+    /** R88: sneaking only diverts a jump into Launch when Launch would fire. */
+    @Test void sneakJumpIsAJumpUnlessLaunchIsReady() {
+        assertFalse(MovementRules.crouchLaunches(true, false, true, 99, false));               // Launch not learned
+        assertFalse(MovementRules.crouchLaunches(true, true, true, 3, false));                 // not charged
+        assertTrue(MovementRules.crouchLaunches(true, true, true, MovementRules.LAUNCH_CHARGE_TICKS, false));
+        assertFalse(MovementRules.crouchLaunches(false, true, true, 99, false));
     }
 }

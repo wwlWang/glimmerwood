@@ -167,8 +167,11 @@ public final class SpiritChallenge {
         }
         var checkpoint = s.kind.layout().checkpoints().get(s.checkpoint);
         Vec3 destination = s.placement.point(checkpoint.position());
-        if (!checkpoint.action().equals("blade") && player.onGround() && player.position().distanceToSqr(destination) <= 3.24
-                && Math.abs(player.getY() - destination.y) < .35 && actionCount(player, checkpoint.action()) - s.baseline >= checkpoint.count()) {
+        if (!checkpoint.action().equals("blade") && landed(player, destination)) {
+            // R88: the playtest could never clear a pad: landing only counted with the exact suggested action count
+            // (e.g. a double jump onto the wall-jump pad was ignored) and with a strict onGround/height window.
+            // Landing on the pad now always clears it; the action is the route hint shown on the action bar.
+            if (actionCount(player, checkpoint.action()) - s.baseline < checkpoint.count()) s.improvised++;
             cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, destination.x, destination.y + .5, destination.z, player);
             s.checkpoint++;
             if (s.checkpoint >= s.kind.layout().checkpoints().size()) { complete(player, s); return; }
@@ -189,6 +192,19 @@ public final class SpiritChallenge {
             if (!(target instanceof PracticeTarget crystal) || !s.id.equals(crystal.session) || target.position().distanceToSqr(targetPoint) > 4)
                 finish(player, "target", true);
         }
+    }
+
+    /** R88: radius for clearing a checkpoint pad (horizontal, blocks) and the vertical window around its top face. */
+    public static final double PAD_RADIUS = 1.6, PAD_BELOW = .5, PAD_ABOVE = .75;
+
+    /** Standing on (or settling onto) the checkpoint pad: near it horizontally, at its height, and supported from below. */
+    public static boolean landed(ServerPlayer player, Vec3 pad) {
+        double dx = player.getX() - pad.x, dz = player.getZ() - pad.z, dy = player.getY() - pad.y;
+        if (dx * dx + dz * dz > PAD_RADIUS * PAD_RADIUS || dy < -PAD_BELOW || dy > PAD_ABOVE) return false;
+        if (player.onGround()) return true;
+        // The server's onGround comes from the client's last movement packet (and a jump clears it for a tick);
+        // a body resting within .1 of a surface counts as landed too.
+        return player.getDeltaMovement().y <= .05 && !player.level().noCollision(player, player.getBoundingBox().move(0, -.1, 0));
     }
 
     private static void complete(ServerPlayer player, ChallengeSession s) {

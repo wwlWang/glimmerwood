@@ -28,9 +28,14 @@ public final class ParityGameTests {
             try {
                 crouchJump(p, 1, true); crouchJump(p, 2, false);
                 h.assertValueEqual(s.acceptedLaunches, 0, "Launch without the ability");
+                // R88: without a ready Launch, a sneaking press is an ordinary jump (was swallowed).
+                h.assertValueEqual(s.acceptedJumps, 1, "Sneak jump without Launch");
+                regrounded(p, s);
                 p.setData(SpiritData.ABILITIES, 127); s.launchCharge = 3;
                 crouchJump(p, 3, true); crouchJump(p, 4, false);
                 h.assertValueEqual(s.acceptedLaunches, 0, "Uncharged ground Launch");
+                h.assertValueEqual(s.acceptedJumps, 2, "Sneak jump before Launch is charged");
+                regrounded(p, s);
                 s.launchCharge = MovementRules.LAUNCH_CHARGE_TICKS;
                 crouchJump(p, 5, true);
                 h.assertValueEqual(s.acceptedLaunches, 1, "Charged ground Launch");
@@ -387,6 +392,11 @@ public final class ParityGameTests {
     static ServerPlayer spirit(GameTestHelper h, int abilities) {
         var p = Fixtures.player(h); SpiritForm.toggle(p); p.setData(SpiritData.ABILITIES, abilities);
         return p;
+    }
+
+    /** Back on the ground after a test jump, without waiting out the post-jump ground lock. */
+    static void regrounded(ServerPlayer p, cn.wwl.orimod.movement.MovementState s) {
+        SpiritMovement.cancel(p, s); s.groundLockUntil = 0; p.setDeltaMovement(Vec3.ZERO); p.setOnGround(true);
     }
 
     static void crouchJump(ServerPlayer p, int sequence, boolean jump) {

@@ -109,6 +109,46 @@ public final class SurvivalFlowGameTests {
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });
+        // R88 playtest: "挑战落地完全不检测" - landing on a pad must clear it, even when the server's onGround lags and
+        // the player reached it with a different move than the suggested one; hovering above it must not.
+        add(tests, "challenge_pad_landing_clears_checkpoint", h -> {
+            var placement = place(h, RuinKind.FOREST, Rotation.NONE);
+            var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+            try {
+                player.setData(SpiritData.AWAKENED, true);
+                if (!SpiritData.isSpirit(player)) cn.wwl.orimod.spirit.SpiritForm.toggle(player);
+                player.setData(SpiritData.ABILITIES, 63);
+                var kind = RuinKind.FOREST;
+                var shrine = placement.block(kind.layout().shrine());
+                var safe = placement.point(kind.layout().safe());
+                player.setPos(safe);
+                SpiritChallenge.request(player, shrine, true);
+                var session = SpiritChallenge.session(player);
+                h.assertTrue(session != null, "forest challenge did not start: spirit=" + SpiritData.isSpirit(player)
+                        + " abilities=" + player.getData(SpiritData.ABILITIES) + "/" + kind.abilities + " shrine=" + h.getLevel().getBlockState(shrine)
+                        + " dist=" + player.position().distanceTo(net.minecraft.world.phys.Vec3.atCenterOf(shrine)));
+                var pad = placement.point(kind.layout().checkpoints().get(0).position());
+                // Hovering 1.5 blocks over the pad: not a landing.
+                player.setPos(pad.add(0, 1.5, 0)); player.setOnGround(false); player.setDeltaMovement(0, -.3, 0);
+                SpiritChallenge.tick(new PlayerTickEvent.Post(player));
+                h.assertValueEqual(session.checkpoint, 0, "checkpoint cleared in mid-air");
+                // Resting on the pad edge with onGround not yet reported and no wall jump made (e.g. double-jumped up).
+                player.setPos(pad.add(.25, 0, .2)); player.setOnGround(false); player.setDeltaMovement(0, 0, 0);
+                SpiritChallenge.tick(new PlayerTickEvent.Post(player));
+                h.assertValueEqual(session.checkpoint, 1, "landing on the first pad did not clear it");
+                // Second pad, reported onGround, slightly sunk into a partial-height surface.
+                var pad2 = placement.point(kind.layout().checkpoints().get(1).position());
+                player.setPos(pad2.add(-.4, -.2, .3)); player.setOnGround(true);
+                SpiritChallenge.tick(new PlayerTickEvent.Post(player));
+                h.assertValueEqual(session.checkpoint, 2, "landing on the second pad did not clear it");
+                var pad3 = placement.point(kind.layout().checkpoints().get(2).position());
+                player.setPos(pad3); player.setOnGround(true);
+                SpiritChallenge.tick(new PlayerTickEvent.Post(player));
+                h.assertTrue(SpiritChallenge.session(player) == null, "landing on the last pad did not complete the trial");
+                h.assertTrue(player.getData(SpiritData.PROGRESS).rewards().keySet().stream().anyMatch(k -> k.startsWith("clear/")), "clear not recorded");
+            } finally { SpiritChallenge.finish(player, "exit", false); clear(h, placement, RuinKind.FOREST); }
+            h.succeed();
+        });
         add(tests, "forest_ruin_holds_the_storm_altar", h -> {
             var placement = place(h, RuinKind.FOREST, Rotation.CLOCKWISE_90);
             try {

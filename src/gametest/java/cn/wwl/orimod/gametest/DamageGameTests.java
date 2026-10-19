@@ -91,7 +91,7 @@ public final class DamageGameTests {
                         AirMovement.beginGrapple(p, s, new SpiritTargets.Target(null, flower, Vec3.atCenterOf(flower), true), s.lastInput);
                     }
                     case "stomp" -> AirMovement.beginStomp(p, s, s.lastInput);
-                    case "glide" -> { s.jumpHeld = true; s.observedDy = -.1; AirMovement.glide(p, s, s.lastInput, false, false); }
+                    case "glide" -> { s.jumpHeld = true; s.observedDy = -.1; s.jumpEdgeAt = s.jumpPerformedAt + 1; AirMovement.glide(p, s, s.lastInput, false, false); }
                 }
                 boolean combat = action.equals("blade") || action.equals("bow");
                 h.assertValueEqual(combat ? p.getData(SpiritData.COMBAT).mode : s.mode.id(), action, "Action fixture failed");

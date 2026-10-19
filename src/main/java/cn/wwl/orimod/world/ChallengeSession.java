@@ -13,6 +13,8 @@ public final class ChallengeSession {
     public final ResourceKey<Level> dimension;
     public final long started;
     public int checkpoint, baseline;
+    /** R88: pads cleared without the suggested action (diagnostics only; the landing still counts). */
+    public int improvised;
     public UUID target;
     /** R63: this run's ruin-local trace, and the best run's trace replayed as a ghost. */
     public final java.util.ArrayList<net.minecraft.world.phys.Vec3> trace = new java.util.ArrayList<>();

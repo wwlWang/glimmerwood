@@ -13,6 +13,8 @@ public final class MovementState {
     public Vec3 velocity = Vec3.ZERO, previousPosition;
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes, relocations;
     public boolean bashHeld;
+    /** R88: last jump-press edge and last performed jump; glide only arms on a press made after the last jump. */
+    public long jumpEdgeAt = -100, jumpPerformedAt = -100;
     /** R38: crouch-held ground ticks toward a charged Launch; the one air Launch. */
     public int launchCharge, acceptedLaunches, launchHitCount;
     public long launchHitUntil;

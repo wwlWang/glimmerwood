@@ -116,7 +116,7 @@ public final class FxLifecycleGameTests {
     /** Real glide entry: airborne spirit with glide, jump held, falling. */
     private static void glide(ServerPlayer p) {
         var s = p.getData(SpiritData.MOVEMENT);
-        s.jumpHeld = true; s.observedDy = -.1;
+        s.jumpHeld = true; s.observedDy = -.1; s.jumpEdgeAt = s.jumpPerformedAt + 1; // R88: a fresh airborne press
         AirMovement.glide(p, s, s.lastInput, false, false);
         if (s.mode != cn.wwl.orimod.movement.MoveMode.GLIDE) throw new IllegalStateException("glide fixture failed");
     }

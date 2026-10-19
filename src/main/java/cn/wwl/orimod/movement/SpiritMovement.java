@@ -52,6 +52,7 @@ public final class SpiritMovement {
             if (jump && !s.jumpHeld && s.crouching && tryLaunch(player, s, now)) {
                 // R38: crouch + jump is Launch (charged on the ground), never an ordinary jump.
             } else if (jump && !s.jumpHeld) {
+                s.jumpEdgeAt = now; // R88: glide needs a fresh airborne press, not the hold that started the jump
                 // Bound compensation to two ticks; packet delivery cannot consume the intended 100 ms window.
                 s.jumpPressedAt = Math.clamp(input.gameTick(), now - 2, now);
                 // A queued packet must survive until the next player tick. Coyote time
@@ -158,7 +159,8 @@ public final class SpiritMovement {
     }
 
     private static boolean tryJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request, long now) {
-        if (s.crouching || s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
+        // R88: sneaking no longer blocks jumping (Ori can jump from a crouch); only a ready Launch takes the press.
+        if (s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
         Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
         if (wall == null) wall = request.wall();
@@ -169,6 +171,7 @@ public final class SpiritMovement {
                 onGround, wall != null, now >= s.wallReadyAt, MovementRules.airJumpsSpent(s.airJumpSpent, triple, s.tripleJumpSpent), false);
         if (mode == IDLE || !cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return false;
         player.jumpFromGround();
+        s.jumpPerformedAt = now;
         s.groundJumpAvailable = false; s.groundLockUntil = now + 4; s.jumpPressedAt = request.pressedAt();
         if (mode == WALL_JUMP) {
             player.setDeltaMovement(MovementRules.wallJumpVelocity(Vec3.atLowerCornerOf(wall.getNormal()), player.getDeltaMovement().y));

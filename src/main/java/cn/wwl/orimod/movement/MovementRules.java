@@ -32,6 +32,14 @@ public final class MovementRules {
     }
 
     /** Ground Launch needs a full charge; the air Launch is once per airtime. */
+    /** R88: holding the press that started a jump never turns into a glide, so the fall keeps its gravity; re-press to glide. */
+    public static boolean glideArmed(long jumpEdgeAt, long jumpPerformedAt) { return jumpEdgeAt > jumpPerformedAt; }
+
+    /** R88: crouch + jump becomes Launch only when Launch would actually fire; otherwise it is an ordinary jump. */
+    public static boolean crouchLaunches(boolean crouching, boolean unlocked, boolean grounded, int chargeTicks, boolean airLaunchSpent) {
+        return crouching && launchAllowed(unlocked, grounded, chargeTicks, airLaunchSpent);
+    }
+
     public static boolean launchAllowed(boolean unlocked, boolean grounded, int chargeTicks, boolean airLaunchSpent) {
         if (!unlocked) return false;
         return grounded ? chargeTicks >= LAUNCH_CHARGE_TICKS : !airLaunchSpent;

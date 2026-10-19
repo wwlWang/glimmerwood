@@ -23,10 +23,13 @@ public final class FeelTuning {
     public static final double WALL_JUMP_CONTROL_SCALE = .25;
     // ---- vertical ----------------------------------------------------------------------------------------
     public static final double GRAVITY = .08;            // vanilla
-    // R85: softer takeoff (rise gravity near/above vanilla so climb decelerates sooner), less apex hang, snappier fall.
-    public static final double RISE_GRAVITY_SCALE = .9;  // jump held while rising (was .72 — too floaty / snappy)
-    public static final double APEX_SPEED = .08, APEX_GRAVITY_SCALE = .8;  // was .45 hang
-    public static final double FALL_GRAVITY_SCALE = 1.9, MAX_FALL = -1.55; // was 1.35 / -1.4
+    // R88: playtest said the fall had "no acceleration": the R85 curve itself accelerated, but holding jump turned
+    // every fall into a constant-speed glide (fixed in MovementRules.glideArmed). The fall now also ramps its gravity
+    // from 1.25x at the apex to 1.85x by 0.6 b/t down, so the speed-up is visible instead of an instant snap.
+    public static final double RISE_GRAVITY_SCALE = .8;  // jump held while rising (R85 .9, R73 .72)
+    public static final double APEX_SPEED = .07, APEX_GRAVITY_SCALE = .6;  // short hang at the top (R85 .08/.8)
+    public static final double FALL_GRAVITY_START = 1.25, FALL_GRAVITY_SCALE = 1.85, FALL_RAMP_SPEED = .6;
+    public static final double MAX_FALL = -1.4;          // 28 m/s terminal (R85 -1.55)
     public static final double JUMP_CUT = .4, JUMP_CUT_MIN = .1;
     // ---- dash ---------------------------------------------------------------------------------------------
     /** Dash speed multiplier by tick (DASH_TICKS long): a burst, then ease out instead of a hard stop. */
@@ -37,7 +40,14 @@ public final class FeelTuning {
     public static final float ANIM_CROSSFADE = .2f, ANIM_CROSSFADE_FAST = .09f;   // seconds (4 / ~2 ticks)
     public static final float FACING_RATE = 16;           // 1/s: model turns toward its velocity
     public static final float FACING_MIN_SPEED = 1.2f;    // m/s
-    public static final float LEAN_SPEED = .1f, LEAN_ACCEL = .018f, LEAN_MAX = .3f;     // rad, rad per m/s^2
+    // R88: Ori runs low and leaned; R74's ~6 degrees at top speed read as an upright vanilla jog.
+    public static final float LEAN_SPEED = .2f, LEAN_ACCEL = .018f, LEAN_MAX = .38f;    // rad, rad per m/s^2
+    /** R88 air posture: lean with horizontal speed, nose up while rising and diving forward while falling (rad per b/t). */
+    public static final float AIR_LEAN_SPEED = .12f, AIR_LEAN_VERTICAL = .35f;
+    /** R88: vertical bounce of the run (squash target swing, two per stride) and stretch with vertical speed in the air. */
+    public static final float GAIT_BOUNCE = .035f, AIR_STRETCH = .12f, AIR_STRETCH_MAX = .08f;
+    /** R88: continuous rise/apex/fall blend by vertical speed (b/t) instead of hard-switched clips. */
+    public static final float AIR_RISE_FROM = .02f, AIR_RISE_TO = .22f, AIR_FALL_FROM = .02f, AIR_FALL_TO = .3f;
     public static final float ROLL_PER_TURN = .0011f, ROLL_MAX = .3f;                  // rad per (deg/s * m/s / 6.4)
     public static final float SQUASH_JUMP = 2.0f, SQUASH_LAND = 3.6f;                  // spring velocity impulses
     public static final float BREATH_PERIOD = 3.2f, BREATH_AMPLITUDE = .03f;
@@ -110,11 +120,17 @@ public final class FeelTuning {
         double scale;
         if (Math.abs(vy) < APEX_SPEED && jumpHeld) scale = APEX_GRAVITY_SCALE;
         else if (vy > 0) scale = jumpHeld ? RISE_GRAVITY_SCALE : 1;
-        else scale = FALL_GRAVITY_SCALE;
+        else scale = fallGravityScale(vy);
         // Vanilla subtracts GRAVITY next; pre-compensate so the effective gravity is GRAVITY * scale.
         double adjusted = vy + GRAVITY * (1 - scale);
         // Terminal fall speed; faster external motion (Stomp etc.) is left alone.
         return vy < MAX_FALL - .05 ? adjusted : Math.max(adjusted, MAX_FALL / .98 + GRAVITY);
+    }
+
+    /** R88: falling gravity grows with fall speed: {@link #FALL_GRAVITY_START} at the apex to {@link #FALL_GRAVITY_SCALE}. */
+    public static double fallGravityScale(double vy) {
+        double k = Math.max(0, Math.min(1, -vy / FALL_RAMP_SPEED));
+        return FALL_GRAVITY_START + (FALL_GRAVITY_SCALE - FALL_GRAVITY_START) * k;
     }
 
     /** Dash speed for a dash with {@code ticksLeft} of DASH_TICKS remaining. */
@@ -141,7 +157,7 @@ public final class FeelTuning {
 
     // ---- R80 gait blend --------------------------------------------------------------------------------------------
     public static final float GAIT_RUN_FROM = 1.4f, GAIT_RUN_TO = 3.4f, GAIT_SPRINT_FROM = 6.6f, GAIT_SPRINT_TO = 9f;   // m/s
-    public static final float STRIDE_WALK = .8f, STRIDE_RUN = 2.0f, STRIDE_SPRINT = 2.6f, SPRINT_LEAN = .03f;           // metres per cycle, rad
+    public static final float STRIDE_WALK = .8f, STRIDE_RUN = 2.0f, STRIDE_SPRINT = 2.6f, SPRINT_LEAN = .06f;           // metres per cycle, rad
 
     public static float smoothstep(float a, float b, float x) { float t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 
@@ -149,6 +165,17 @@ public final class FeelTuning {
     public static float[] gaitWeights(float speed) {
         float run = smoothstep(GAIT_RUN_FROM, GAIT_RUN_TO, speed), sprint = run * smoothstep(GAIT_SPRINT_FROM, GAIT_SPRINT_TO, speed);
         return new float[] {1 - run, run - sprint, sprint};
+    }
+
+    /** R88: weights {rise, apex, fall} for a vertical speed in blocks per tick; they sum to 1 and change smoothly. */
+    public static float[] airWeights(float vy) {
+        float rise = smoothstep(AIR_RISE_FROM, AIR_RISE_TO, vy), fall = smoothstep(AIR_FALL_FROM, AIR_FALL_TO, -vy);
+        return new float[] {rise, 1 - rise - fall, fall};
+    }
+
+    /** R88: body pitch target in the air (positive = forward): speed lean plus nose-up rise / forward dive. */
+    public static float airLean(float speedMps, float vy) {
+        return Math.max(-LEAN_MAX, Math.min(LEAN_MAX, speedMps / 6.4f * AIR_LEAN_SPEED - vy * AIR_LEAN_VERTICAL));
     }
 
     /** Metres per locomotion cycle for the blended gait, so feet keep pace at every speed. */
