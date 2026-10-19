@@ -26,6 +26,9 @@ public final class SpiritChallenge {
     private static final Map<UUID, ChallengeSession> SESSIONS = new HashMap<>();
     private SpiritChallenge() {}
     public static ChallengeSession session(ServerPlayer player) { return SESSIONS.get(player.getUUID()); }
+    /** R63: best-run traces per player and trial, server memory only. */
+    private static final Map<String, java.util.List<Vec3>> GHOSTS = new HashMap<>();
+    public static java.util.List<Vec3> ghost(ServerPlayer player, String key) { return GHOSTS.get(player.getUUID() + "|" + key); }
     public static int sessionCount() { return SESSIONS.size(); }
 
     public static void stopAll(net.minecraft.server.MinecraftServer server) {
@@ -34,9 +37,9 @@ public final class SpiritChallenge {
             if (player != null) finish(player, "exit", true);
             else discardTarget(server, entry.getValue());
         }
-        SESSIONS.clear();
+        SESSIONS.clear(); GHOSTS.clear();
     }
-    public static void discardAll() { SESSIONS.clear(); }
+    public static void discardAll() { SESSIONS.clear(); GHOSTS.clear(); }
 
     public static void offer(ServerPlayer player, BlockPos shrine, RuinKind kind) {
         if (!player.isAlive() || player.distanceToSqr(Vec3.atCenterOf(shrine)) > 36) return;
@@ -105,6 +108,7 @@ public final class SpiritChallenge {
         s.baseline = actionCount(player, s.kind.layout().checkpoints().getFirst().action());
         player.setData(SpiritData.CHALLENGE_RECOVERY, new ChallengeRecovery(s.dimension.location().toString(),
                 BlockPos.containing(s.placement.point(s.kind.layout().safe()))));
+        s.ghost = ghost(player, s.key());
         SESSIONS.put(player.getUUID(), s);
         player.setData(SpiritData.CHALLENGE_ACTIVE, true);
         returnSafely(player, player.serverLevel(), s.placement.point(s.kind.layout().safe()));
@@ -156,6 +160,12 @@ public final class SpiritChallenge {
         if (relative.x < -2 || relative.z < -2 || relative.x > size.getX() + 2 || relative.z > size.getZ() + 2
                 || relative.y < 1 || player.isInWaterOrBubble()) { finish(player, "fall", true); return; }
         if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.kind, s.placement)) { finish(player, "damaged", true); return; }
+        if (ChallengeGhost.shouldRecord(elapsed, s.trace.size())) s.trace.add(relative);
+        var ghostAt = ChallengeGhost.at(s.ghost, elapsed);
+        if (ghostAt != null && elapsed % ChallengeGhost.STEP == 0) {
+            var g = s.placement.point(ghostAt);
+            cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.RACE_GHOST, g.x, g.y, g.z, null);
+        }
         var checkpoint = s.kind.layout().checkpoints().get(s.checkpoint);
         Vec3 destination = s.placement.point(checkpoint.position());
         if (!checkpoint.action().equals("blade") && player.onGround() && player.position().distanceToSqr(destination) <= 3.24
@@ -189,6 +199,7 @@ public final class SpiritChallenge {
         var progress = player.getData(SpiritData.PROGRESS);
         var records = new HashMap<>(progress.rewards());
         int best = records.getOrDefault("best/" + s.key(), Integer.MAX_VALUE);
+        if (ChallengeGhost.replaces(best, s.ghost != null, ticks)) GHOSTS.put(player.getUUID() + "|" + s.key(), java.util.List.copyOf(s.trace));
         records.put("best/" + s.key(), Math.min(best, Math.max(1, ticks)));
         player.setData(SpiritData.PROGRESS, progress.withRewards(records));
         cleanup(player, s);

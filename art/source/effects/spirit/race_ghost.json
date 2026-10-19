@@ -1,0 +1,25 @@
+{
+    "format": 1,
+    "kind": "race_ghost",
+    "layers": [
+        {
+            "color": "#e8e0ff",
+            "lifetime": 10,
+            "particle": "orimod:spirit_mote",
+            "radius": 0.18,
+            "length": 1.6,
+            "outward": 0,
+            "shape": "column",
+            "share": 1,
+            "size": 0.38,
+            "speed": 0,
+            "spread": [
+                0.02,
+                0.02,
+                0.02
+            ],
+            "notes": "幽灵光柱"
+        }
+    ],
+    "notes": "Spirit Trials 幽灵：最佳一次挑战的轨迹回放，淡紫白色光柱（R63）。"
+}

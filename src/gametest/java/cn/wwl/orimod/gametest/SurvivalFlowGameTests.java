@@ -168,6 +168,8 @@ public final class SurvivalFlowGameTests {
                 before = light(player);
                 complete(h, player, kind, placement);
                 h.assertValueEqual(light(player) - before, 30, kind.id + " first clear reward");
+                var ghost = SpiritChallenge.ghost(player, cn.wwl.orimod.world.ChallengeSession.key(h.getLevel().dimension(), shrine));
+                h.assertTrue(ghost != null && ghost.size() >= 2, kind.id + " best run left no ghost");
                 clear(h, placement, kind);
             }
             buy(h, player, Ability.BOW, difficulty, earned);

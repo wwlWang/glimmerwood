@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "kind": "race_ghost",
+  "layers": [
+    {
+      "color": "#e8e0ff",
+      "length": 1.6,
+      "lifetime": 10,
+      "outward": 0,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.18,
+      "shape": "column",
+      "share": 1,
+      "size": 0.38,
+      "speed": 0,
+      "spread": [
+        0.02,
+        0.02,
+        0.02
+      ]
+    }
+  ]
+}

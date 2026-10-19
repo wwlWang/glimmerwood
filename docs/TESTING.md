@@ -298,3 +298,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R62：地图石：遗迹勘察
 
 226 GameTest（新增 `flow.map_stone_surveys_the_cave_ruin`：地图石已放置；勘察到 2 个灵格、2 枚钥石、1 座祭坛；拿走一枚钥石后再勘察只剩 1 枚）。
+
+## R63：Spirit Trials 幽灵回放
+
+528 JUnit（新增 `ChallengeGhostTest` 3 项：采样步长与上限、回放索引与结束、只有更快才替换；新 FX 类型带来的参数化用例）；227 GameTest（`flow.fresh_*_world_to_all_ruins` 断言每处遗迹通关后都留下幽灵轨迹）。

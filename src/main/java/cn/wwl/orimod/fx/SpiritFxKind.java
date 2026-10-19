@@ -24,7 +24,9 @@ public enum SpiritFxKind {
     /** Persistent (R32): ring around the player while Bash aims; the launch itself is {@link #BASH}. */
     BASH_AIM(13, 4, 2, 0, 0, 0, 0, true),
     /** One-shot (R37): companion Spirit Flame, a beam from the companion to the struck enemy. */
-    SPIRIT_FLAME(14, 10, 4, 0, 0, 0, 0);
+    SPIRIT_FLAME(14, 10, 4, 0, 0, 0, 0),
+    /** One-shot (R63): Spirit Trials ghost of the best run, a pale column every other tick. */
+    RACE_GHOST(15, 4, 2, .08, .05, .08, 0);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

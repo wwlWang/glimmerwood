@@ -35,7 +35,7 @@ class SpiritFxPayloadTest {
 
     @Test void channelVersionBumpedForPhase() { assertEquals("4", SpiritFxPayload.VERSION); }
 
-    @ParameterizedTest @ValueSource(ints = {-1, 15, 99})
+    @ParameterizedTest @ValueSource(ints = {-1, 16, 99})
     void unknownKindRejected(int id) {
         assertRejected(buffer -> { buffer.writeVarInt(id); buffer.writeByte(0); body(buffer); });
     }

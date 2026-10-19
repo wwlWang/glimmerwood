@@ -14,6 +14,9 @@ public final class ChallengeSession {
     public final long started;
     public int checkpoint, baseline;
     public UUID target;
+    /** R63: this run's ruin-local trace, and the best run's trace replayed as a ghost. */
+    public final java.util.ArrayList<net.minecraft.world.phys.Vec3> trace = new java.util.ArrayList<>();
+    public java.util.List<net.minecraft.world.phys.Vec3> ghost;
     public ChallengeSession(RuinKind kind, BlockPos shrine, RuinPlacement placement, ResourceKey<Level> dimension, long started) {
         this.kind = kind; this.shrine = shrine.immutable(); this.placement = placement; this.origin = placement.origin();
         this.dimension = dimension; this.started = started;
