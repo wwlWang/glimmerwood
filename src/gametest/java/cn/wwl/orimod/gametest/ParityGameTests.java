@@ -142,6 +142,22 @@ public final class ParityGameTests {
                 shot.discard();
             } finally { spitter.discard(); }
         });
+        add(tests, "gloom_spitter_telegraphs_before_spitting", h -> {
+            var p = spirit(h, 127);
+            var spitter = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get(), new Vec3(5.5, 2, 9.5)); spitter.setNoAi(true);
+            try {
+                spitter.performRangedAttack(p, 1);
+                h.assertValueEqual(spitter.charge(), cn.wwl.orimod.entity.GloomSpitter.CHARGE_TICKS, "Charge after attack");
+                spitter.performRangedAttack(p, 1);
+                h.assertValueEqual(spitter.charge(), cn.wwl.orimod.entity.GloomSpitter.CHARGE_TICKS, "A second attack restarted the charge");
+                cn.wwl.orimod.entity.GloomShot shot = null;
+                for (int i = 1; i < cn.wwl.orimod.entity.GloomSpitter.CHARGE_TICKS; i++) h.assertTrue(spitter.tickCharge() == null, "Orb left early at tick " + i);
+                shot = spitter.tickCharge();
+                h.assertTrue(shot != null && shot.getOwner() == spitter, "Orb did not leave after the telegraph");
+                h.assertValueEqual(spitter.charge(), 0, "Charge after spit");
+                shot.discard();
+            } finally { spitter.discard(); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

@@ -20,6 +20,11 @@ import net.minecraft.sounds.SoundEvents;
  */
 public final class GloomSpitter extends Monster implements RangedAttackMob {
     public static final int ATTACK_INTERVAL = 50;
+    /** R48: telegraph - the spitter swells and glows for this many ticks before the orb leaves. */
+    public static final int CHARGE_TICKS = 14;
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> CHARGE =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(GloomSpitter.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
+    private LivingEntity chargeTarget;
 
     public GloomSpitter(EntityType<? extends GloomSpitter> type, Level level) { super(type, level); xpReward = 5; }
 
@@ -37,12 +42,33 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
+    @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder); builder.define(CHARGE, 0);
+    }
+    /** Ticks left before the charged orb leaves (0 when idle). */
+    public int charge() { return entityData.get(CHARGE); }
+
+    /** Advance the telegraph; the orb leaves when it runs out. @return the shot, if one left this tick. */
+    public GloomShot tickCharge() {
+        int left = charge();
+        if (left <= 0) return null;
+        entityData.set(CHARGE, left - 1);
+        if (left > 1) return null;
+        var target = chargeTarget; chargeTarget = null;
+        return target != null && target.isAlive() && target.level() == level() ? spit(target) : null;
+    }
+
     @Override public void tick() {
         super.tick();
+        if (!level().isClientSide) tickCharge();
         if (level().isClientSide) cn.wwl.orimod.client.fx.GloomLook.body(this);
     }
 
-    @Override public void performRangedAttack(LivingEntity target, float power) { spit(target); }
+    @Override public void performRangedAttack(LivingEntity target, float power) {
+        if (charge() > 0) return;
+        chargeTarget = target; entityData.set(CHARGE, CHARGE_TICKS);
+        playSound(SoundEvents.AMETHYST_BLOCK_RESONATE, 1, .6f);
+    }
 
     public GloomShot spit(LivingEntity target) {
         var shot = new GloomShot(OriMobs.GLOOM_SHOT.get(), level());

@@ -238,3 +238,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R47：灵跃接触伤害
 
 504 JUnit、207 GameTest（新增 `parity.launch_contact_hits_enemies_once`：僵尸受约 5 点伤害（有护甲减免），村民不受伤，同一次灵跃不会重复命中）。
+
+## R48：腐光喷吐者外观与攻击预警
+
+505 JUnit（`GloomTelegraphTest`：核心尺寸随蓄力单调变大，不超过 0.55）、208 GameTest（新增 `parity.gloom_spitter_telegraphs_before_spitting`：攻击后进入 14 tick 蓄力，重复攻击不重置，第 14 tick 才吐出归属喷吐者的球）。
