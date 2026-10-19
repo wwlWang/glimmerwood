@@ -1,5 +1,7 @@
 # 当前工作状态
 
+2026-10-19 21:47（UTC+8）发布包重建（R87，0bdb7c99a3）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-0bdb7c99a3.jar`，sha256 `80d76f9c20079d06e3d4aa54c7894b59db50d00b4a61c9e8fcd1087e986c6b8b`；同目录有 `gemrender-0.1.17.jar`。
+
 2026-10-19 21:46（UTC+8）云端 ori-r87（奔跑与攻击动画）：走跑混合只作用在下半身；锤/矛不再用原版 SPEAR 手臂姿势；疾跑前倾减小。
 
 2026-10-19 21:46（UTC+8）云端 ori-r86（拖尾与同伴光）：拖尾更密更连续（2/4/5），冷白蓝；同伴光去掉暖金色；特效回退不再用原版 crit/cloud；冲刺/命中 spark 减弱。
