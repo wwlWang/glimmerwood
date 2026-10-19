@@ -218,3 +218,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R42：原创射弹敌人：腐光喷吐者
 
 501 JUnit（`GloomSpitterTest`：球速、伤害、射击间隔，生成数据只在主世界）、204 GameTest（新增 `gloom_spitter_spits_bashable_orbs`：喷吐者是 Enemy；吐出的球归属喷吐者、朝向玩家、可 Bash；未反弹时伤害记在喷吐者名下；反弹后命中喷吐者伤害 3 并记在玩家名下）。
+
+## R43：灵光球发光拖尾
+
+504 JUnit（`LightOrbGlowTest`：静止不拖尾，飞行拖尾不超过 3，光晕尺寸范围）、204 GameTest。
