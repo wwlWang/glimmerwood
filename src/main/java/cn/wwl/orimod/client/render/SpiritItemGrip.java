@@ -15,6 +15,10 @@ final class SpiritItemGrip {
 
     static void local(ItemStack item, Vector3f point, Vector3f axis) {
         point.set(0, -.16f, 0); axis.set(0,1,0);
+        // R88: condensed-light hammer and spear (SpiritWeaponRenderer) are held low on the shaft, like a handheld tool;
+        // the hammer's SPEAR use animation must not pick the trident's flipped built-in grip below.
+        if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)) { point.set(-.2f, -.2f, 0); axis.set(1,1,0); return; }
+        if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)) { point.set(-.12f, -.12f, 0); axis.set(1,1,0); return; }
         if (item.getItem() instanceof DiggerItem || item.getItem() instanceof SwordItem) {
             point.set(-.125f, -.125f, 0); axis.set(1,1,0);
         } else if (item.getUseAnimation() == UseAnim.BOW) {

@@ -41,9 +41,12 @@ final class SpiritAnimation {
     private float previousYaw, lag, speed, lastVertical, lastMovingAt = -100;
     private int lastMoveId, lastPrediction, lastHurt;
     private boolean grounded, wasMoving, wasBow, bowLeft, runningGait;
-    private float locoWeight, locoPhase, gaitWalk = 1, gaitRun, gaitSprint;
+    private float locoWeight, locoPhase, gaitWalk = 1, gaitRun, gaitSprint, airWeight;
     float[] gait() { return new float[] {gaitWalk * locoWeight, gaitRun * locoWeight, gaitSprint * locoWeight}; }
-    private float bowReleasedAt = -100, selectedPlaySpeed = 1;
+    private float bowReleasedAt = -100, selectedPlaySpeed = 1, hammerReleasedAt = -100;
+    private boolean wasHammer, hammerLeft;
+    /** R88: share of the heavy swing clip used as the hammer wind-up, and the release swing length (s). */
+    private static final float HAMMER_WINDUP = .32f, HAMMER_SWING = .32f;
     private Vec3 position;
     private String previousMode = "idle", selected = "", shot = "", overlay = "";
     private float selectedClock, clipTime;
@@ -142,8 +145,8 @@ final class SpiritAnimation {
         else if (mode.equals("glide")) next = "glide";
         else if (!player.onGround() && !player.isInWater()) {
             special = false;
-            double dy = player.getDeltaMovement().y;
-            next = dy > .07 ? "rise" : dy < -.07 ? "fall" : "apex";
+            // R88: one airborne base; rise/apex/fall are weighted by vertical speed below (no hard switches).
+            next = "apex";
         } else {
             special = false;
             if (now - createdAt < .6f) next = "transform_in";
@@ -163,7 +166,9 @@ final class SpiritAnimation {
         if (!next.equals(selected)) {
             float duration = nextClip.duration();
             float playSpeed = !nextClip.name().equals(next) ? 1 : next.equals("start") ? duration / .12f : next.equals("jump_start") ? duration / .15f : 1;
-            float fade = next.equals("double_jump") || next.equals("jump_start") || next.equals("dash_start") ? cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE_FAST : cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE;
+            boolean quick = next.equals("double_jump") || next.equals("jump_start") || next.equals("dash_start") || next.equals("apex")
+                    || next.startsWith("land_") || next.startsWith("wall_jump");
+            float fade = quick ? cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE_FAST : cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE;
             base.play(nextClip, clock, fade, FadeCurve.SMOOTH, 0, playSpeed, loops(nextClip.name()));
             selected = next; selectedClock = clock; selectedPlaySpeed = playSpeed;
         }
@@ -180,6 +185,9 @@ final class SpiritAnimation {
         UseAnim use = player.isUsingItem() ? player.getUseItem().getUseAnimation() : UseAnim.NONE;
         boolean bow = use == UseAnim.BOW;
         if (wasBow && !bow) bowReleasedAt = now;
+        boolean hammer = player.isUsingItem() && player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER);
+        if (wasHammer && !hammer) hammerReleasedAt = now;
+        wasHammer = hammer;
         if (bow) bowLeft = useLeft;
         wasBow = bow;
         boolean overlayLeft = false;
@@ -227,15 +235,27 @@ final class SpiritAnimation {
                     overlay = handed(elapsed < 1 ? "bow_charge" : "bow_hold", useLeft);
                     overlayTime = elapsed < 1 ? elapsed : elapsed - 1;
                     mask = upperBody; below = belowUpper;
-                } else if (player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) || player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)) {
-                    // Wind-up / throw: full upper-body clip so sprint gait on the legs stays intact.
-                    overlay = handed(player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER) ? "blade_3" : "use_item", useLeft);
+                } else if (player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)) {
+                    // R88: wind the hammer back (first third of the heavy swing) and hold it there, breathing,
+                    // instead of freezing on the swing's last frame; the release plays the rest of the swing.
+                    overlay = handed("blade_3", useLeft);
+                    float d = SpiritClips.get(model, overlay).duration(), k = Math.min(1, elapsed * 20f / cn.wwl.orimod.item.SpiritHammerItem.WIND_UP_TICKS);
+                    overlayTime = d * (HAMMER_WINDUP * k * k * (3 - 2 * k) + .015f * Mth.sin(now * 5) * k);
+                    hammerLeft = useLeft;
+                    mask = upperBody; below = belowUpper;
+                } else if (player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)) {
+                    overlay = handed("use_item", useLeft);
                     overlayTime = Math.min(now, SpiritClips.get(model, overlay).duration() * .95f);
                     mask = upperBody; below = belowUpper;
                 } else {
                     overlay = handed(use == UseAnim.BLOCK ? "block" : "use_item", useLeft); overlayTime = now; overlayLeft = useLeft;
                     mask = useLeft ? leftArm : rightArm; below = useLeft ? belowLeft : belowRight;
                 }
+            } else if (now - hammerReleasedAt < HAMMER_SWING) {
+                overlay = handed("blade_3", hammerLeft);
+                float d = SpiritClips.get(model, overlay).duration(), k = (now - hammerReleasedAt) / HAMMER_SWING;
+                overlayTime = d * (HAMMER_WINDUP + (1 - HAMMER_WINDUP) * (1 - (1 - k) * (1 - k)));
+                mask = upperBody; below = belowUpper;
             } else if (now - bowReleasedAt < .3f) {
                 overlay = handed("bow_release", bowLeft); overlayTime = now - bowReleasedAt;
                 mask = upperBody; below = belowUpper;
@@ -267,6 +287,15 @@ final class SpiritAnimation {
             // R87: gait always stays below the spine so blade/bow/hammer overlays keep the upper body.
             var gaitMask = below != null ? below : belowUpper;
             blend.override(runClip, runClip.loop(locoPhase * runClip.duration()), runWeight, gaitMask);
+        }
+        // R88: airborne pose scrubs between rise, apex and fall by vertical velocity, like Ori's jump arc.
+        airWeight = cn.wwl.orimod.movement.FeelTuning.approach(airWeight, selected.equals("apex") ? 1 : 0, dt / cn.wwl.orimod.movement.FeelTuning.ANIM_CROSSFADE_FAST);
+        if (airWeight > .002f) {
+            float[] air = cn.wwl.orimod.movement.FeelTuning.airWeights((float) player.getDeltaMovement().y);
+            var airMask = below != null ? below : BlendMask.ALL;
+            GltfAnimation riseClip = SpiritClips.get(model, "rise"), fallClip = SpiritClips.get(model, "fall");
+            if (air[0] > .002f) blend.override(riseClip, riseClip.loop(now), air[0] * airWeight, airMask);
+            if (air[2] > .002f) blend.override(fallClip, fallClip.loop(now), air[2] * airWeight, airMask);
         }
         if (mask != null) {
             GltfAnimation action = SpiritClips.get(model, overlay);
@@ -336,11 +365,17 @@ final class SpiritAnimation {
         smoothSpeed = Mth.lerp(1 - (float) Math.exp(-dt * 10), smoothSpeed, speed);
         float accel = (smoothSpeed - lastSpeedForAccel) / dt; lastSpeedForAccel = smoothSpeed;
         float max = cn.wwl.orimod.movement.FeelTuning.LEAN_MAX;
-        float pitchTarget = player.onGround() || mode.equals("dash") ? Math.clamp(smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.LEAN_SPEED + gaitSprint * cn.wwl.orimod.movement.FeelTuning.SPRINT_LEAN + accel * cn.wwl.orimod.movement.FeelTuning.LEAN_ACCEL, -max, max) : 0;
+        float pitchTarget = player.onGround() || mode.equals("dash") ? Math.clamp(smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.LEAN_SPEED + gaitSprint * cn.wwl.orimod.movement.FeelTuning.SPRINT_LEAN + accel * cn.wwl.orimod.movement.FeelTuning.LEAN_ACCEL, -max, max)
+                : mode.equals("glide") ? 0 : cn.wwl.orimod.movement.FeelTuning.airLean(smoothSpeed, (float) v.y);
         float rollTarget = Math.clamp(-angular * smoothSpeed / 6.4f * cn.wwl.orimod.movement.FeelTuning.ROLL_PER_TURN, -cn.wwl.orimod.movement.FeelTuning.ROLL_MAX, cn.wwl.orimod.movement.FeelTuning.ROLL_MAX);
         if (busy) pitchTarget = rollTarget = 0;
         leanPitch.step(pitchTarget, dt); leanRoll.step(rollTarget, dt);
-        squash.step(1, dt); squash.value = Math.clamp(squash.value, .75f, 1.25f);
+        // R88: run bounce (two per stride) on the ground, stretch with vertical speed in the air.
+        float squashTarget = player.onGround()
+                ? 1 + cn.wwl.orimod.movement.FeelTuning.GAIT_BOUNCE * (gaitRun + gaitSprint) * locoWeight * Mth.cos(locoPhase * Mth.TWO_PI * 2)
+                : 1 + Math.min(cn.wwl.orimod.movement.FeelTuning.AIR_STRETCH_MAX, Math.abs((float) v.y) * cn.wwl.orimod.movement.FeelTuning.AIR_STRETCH);
+        if (busy) squashTarget = 1;
+        squash.step(squashTarget, dt); squash.value = Math.clamp(squash.value, .75f, 1.25f);
         float em = cn.wwl.orimod.movement.FeelTuning.EAR_MAX;
         earYaw.step(Math.clamp(-angular * cn.wwl.orimod.movement.FeelTuning.EAR_TURN, -em, em), dt);
         earFall.step(Math.clamp((float) -v.y * cn.wwl.orimod.movement.FeelTuning.EAR_FALL, -em, em), dt);
