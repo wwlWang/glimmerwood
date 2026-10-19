@@ -338,3 +338,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R72：手感审计
 
 无代码改动。
+
+## R73：运动曲线调校
+
+545 JUnit（新增 `FeelTuningTest` 8 项：3 tick 到全速、2 tick 停下、反向按刹车速率减速、空中保留动量、超速衰减 3–6 tick、松键截断上升、各阶段重力倍率、按住比轻点高且轻点仍能上一格、最大下落速度、冲刺缓出）；230 GameTest。

@@ -108,7 +108,11 @@ public final class SpiritControls {
             } else if (state.mode == MoveMode.DASH) {
                 if (player.horizontalCollision || input.shiftKeyDown) state.activeTicks = 0;
                 else {
-                    player.setDeltaMovement(MovementRules.dashVelocity(state.velocity, player.getDeltaMovement().y));
+                    // R73: burst then ease out (FeelTuning.DASH_PROFILE); the exit speed carries into the run.
+                    var dash = MovementRules.dashVelocity(state.velocity, player.getDeltaMovement().y);
+                    double k = cn.wwl.orimod.movement.FeelTuning.dashScale(state.activeTicks);
+                    player.setDeltaMovement(dash.x * k, dash.y, dash.z * k);
+                    if (state.activeTicks == 1) dashExit = new net.minecraft.world.phys.Vec3(state.velocity.x, 0, state.velocity.z);
                     input.forwardImpulse = input.leftImpulse = 0;
                 }
             } else if (state.mode == WALL_SLIDE && !player.onGround() && !input.shiftKeyDown) {
@@ -125,7 +129,53 @@ public final class SpiritControls {
         if (state.activeTicks <= 0) {
             if (state.mode == BASH_AIM) player.setDeltaMovement(state.suspendedVelocity);
             state.mode = IDLE;
+            if (active) feel(player, state, input, (flags & MovementInputPayload.JUMP) != 0);
+            else feelControlled = false;
+        } else feelControlled = false;
+        prevJumpHeld = (flags & MovementInputPayload.JUMP) != 0;
+    }
+
+    // ---- R73 game feel: explicit ground/air curves and vertical shaping (constants in FeelTuning) ----
+    private static net.minecraft.world.phys.Vec3 feelH = net.minecraft.world.phys.Vec3.ZERO, dashExit;
+    private static float feelFriction = .91f;
+    private static boolean feelControlled, prevJumpHeld;
+    private static long wallJumpAt = -100;
+    private static int feelAction, feelPrediction;
+
+    private static void feel(net.minecraft.world.entity.player.Player player, cn.wwl.orimod.movement.MovementState state,
+                             net.minecraft.client.player.Input input, boolean jumpHeld) {
+        var d = player.getDeltaMovement();
+        long now = player.level().getGameTime();
+        // Recover the pre-friction velocity vanilla travel stored last tick, so our curve owns the motion.
+        // Anything external (collision, knockback, Bash/Launch impulses) shows up in the observed value and is kept.
+        // Impulses written straight into the velocity (server-confirmed Launch/Bash/grapple end, predicted wall jumps,
+        // knockback) were never through friction: take them as they are.
+        boolean newAction = state.actionId != feelAction, newPrediction = state.predictedJumpCount != feelPrediction;
+        boolean raw = player.hurtTime == player.hurtDuration - 1
+                || newAction && (state.mode == RESUME || state.lastAction == LAUNCH || state.lastAction == BASH_LAUNCH || state.lastAction == GRAPPLE_END
+                    || state.lastAction == WALL_JUMP && !newPrediction)
+                || newPrediction && state.lastAction == WALL_JUMP;
+        feelAction = state.actionId; feelPrediction = state.predictedJumpCount;
+        float div = raw ? 1 : feelFriction;
+        var observed = new net.minecraft.world.phys.Vec3(d.x / div, 0, d.z / div);
+        var h = feelControlled && observed.distanceToSqr(feelH) < 1e-4 ? feelH : observed;
+        if (dashExit != null) {
+            var flat = new net.minecraft.world.phys.Vec3(dashExit.x, 0, dashExit.z);
+            if (flat.lengthSqr() > 1e-6) h = flat.normalize().scale(cn.wwl.orimod.movement.FeelTuning.DASH_EXIT_SPEED);
+            dashExit = null;
         }
+        if (state.lastAction == WALL_JUMP && state.predictedJumpCount > 0 && now - state.jumpPressedAt <= 1) wallJumpAt = state.jumpPressedAt;
+        boolean grounded = player.onGround();
+        var wish = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
+        double scale = input.shiftKeyDown ? cn.wwl.orimod.movement.FeelTuning.CROUCH_SCALE : player.isUsingItem() ? cn.wwl.orimod.movement.FeelTuning.USING_ITEM_SCALE : 1;
+        double control = now - wallJumpAt < cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_TICKS ? cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_SCALE : 1;
+        h = cn.wwl.orimod.movement.FeelTuning.horizontal(h, wish, grounded, scale, control);
+        double vy = grounded && d.y <= 0 ? d.y : cn.wwl.orimod.movement.FeelTuning.vertical(d.y, jumpHeld, prevJumpHeld && !jumpHeld);
+        player.setDeltaMovement(h.x, vy, h.z);
+        input.forwardImpulse = input.leftImpulse = 0;   // vanilla moveRelative would add its own acceleration on top
+        feelH = h; feelControlled = true;
+        var below = player.level().getBlockState(player.getBlockPosBelowThatAffectsMyMovement());
+        feelFriction = grounded ? below.getFriction(player.level(), player.getBlockPosBelowThatAffectsMyMovement(), player) * .91f : .91f;
     }
 
     private static int chargeFlameHeld;
