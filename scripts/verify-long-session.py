@@ -6,6 +6,9 @@ husks, roaming into newly generated chunks, and a form toggle. Every cycle sampl
 server tick time and new ERROR lines in the client log. A rejoin pauses, saves, leaves to the title
 screen, reopens the world and requires the saved progression, abilities, form and inventory to match.
 
+Session length uses time.monotonic(), which stops while the cloud box is suspended (the game is
+frozen too), so it is active play time; 'wall' and 'gameTick' are recorded per cycle for comparison.
+
 Pass: client alive throughout, every rejoin restores state, no error spam (any single ERROR message
 repeating more than 20 times, or more than 30 ERROR lines per segment), retained heap after GC at the
 end within +400 MB of the start of the segment."""
@@ -99,7 +102,7 @@ try:
             deaths[0] += 1; c.action('respawn'); time.sleep(3); c.action('close_screen'); c.ready()
             if not c.spirit()['server']['form']: c.action('toggle_form'); c.ticks(4)
         s = c.action('perf_sample', gc=False); new, offset = log_errors(offset); errors += new
-        row = {'cycle': i, 'elapsedS': round(time.monotonic() - start), 'heapMb': round(s['heapUsedMb']), 'particles': s['particles'],
+        row = {'cycle': i, 'elapsedS': round(time.monotonic() - start), 'wall': time.strftime('%H:%M:%S'), 'gameTick': s['tick'], 'heapMb': round(s['heapUsedMb']), 'particles': s['particles'],
                'msptAvg': round(s.get('serverMsptAvg', 0), 1), 'msptMax': round(s.get('serverMsptMax', 0), 1), 'newErrors': len(new), 'hits': hits[0], 'deaths': deaths[0],
                'energy': c.action('progress_state')['server']['energy']}
         c.records['cycles'].append(row); c.save(); print(json.dumps(row), flush=True)

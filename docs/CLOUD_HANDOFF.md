@@ -10,7 +10,7 @@
 
 > 2026-10-18/19 云端已完成 R15–R29（标签 `ori-r15` … `ori-r29`），逐轮记录见 [WORK_STATUS](WORK_STATUS.md) 与 [TESTING](TESTING.md)，决定见 [DECISIONS](DECISIONS.md)。R20 自带光影 Spirit Glow，R21 为其默认 Spirit 配色，R22 加 Spirit 风格（调色、距离色雾、体积光），R23 让特效画质同时选择光影性能档，R24 检查下界/末地/雨天并修正下界配色，R25/R26 熔岩饱和与火把范围，R27 100 次混合移动（修复一次性标签残留）与效果往返内存采样；包源码在 `shaderpacks/spirit-glow/`；改光影后由 `zipSpiritGlow` 重新打包，`scripts/verify-spirit-glow.py` 复查切换。云端 llvmpipe 可以运行光影管线，但观感与性能仍需本机。
 
-首版尚未完成。79 项产品验收中，目前 17 项通过、58 项部分验证、4 项未测。R0–R13 的修复记录见 [AUDIT_FIXES](AUDIT_FIXES.md)。
+首版尚未完成。79 项产品验收中，目前 17 项通过、59 项部分验证、3 项未测。R0–R13 的修复记录见 [AUDIT_FIXES](AUDIT_FIXES.md)。
 
 ## 云端准备
 
