@@ -126,6 +126,24 @@ public final class SpiritControls {
         }
     }
 
+    private static boolean waterDashHeld;
+    private static long waterDashReadyAt;
+
+    /** R56: Water Dash and faster swimming (client displacement; the server validates and plays the FX). */
+    private static void waterTick(Minecraft mc) {
+        var player = mc.player;
+        if (player == null || mc.screen != null || !cn.wwl.orimod.movement.WaterMovement.active(player)) { waterDashHeld = DASH.isDown(); return; }
+        var look = player.getLookAngle();
+        boolean down = DASH.isDown(), now = down && !waterDashHeld;
+        waterDashHeld = down;
+        long time = player.level().getGameTime();
+        if (now && time >= waterDashReadyAt) {
+            waterDashReadyAt = time + cn.wwl.orimod.movement.WaterMovement.DASH_COOLDOWN;
+            player.setDeltaMovement(cn.wwl.orimod.movement.WaterMovement.dashVelocity(look));
+            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("water_dash", ""));
+        } else player.setDeltaMovement(cn.wwl.orimod.movement.WaterMovement.swimVelocity(player.getDeltaMovement(), look, player.input != null && player.input.forwardImpulse > 0));
+    }
+
     public static void tick(ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();
         boolean spirit = mc.player != null && SpiritData.isSpirit(mc.player);
@@ -179,6 +197,7 @@ public final class SpiritControls {
             sentActive = false;
         }
         while (DASH.consumeClick()) { /* Edge detection uses the held state; menus never queue a dash. */ }
+        waterTick(mc);
         while (BASH.consumeClick()) { }
         while (PANEL.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive()) mc.setScreen(new SpiritScreen(!SpiritData.isAwakened(mc.player)));

@@ -41,6 +41,7 @@ public final class SpiritProgression {
             case "soul_link" -> SoulLink.create(player);
             case "well_travel" -> cn.wwl.orimod.world.SpiritWell.travel(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
             case "light_burst" -> cn.wwl.orimod.combat.LightBurst.toss(player);
+            case "water_dash" -> cn.wwl.orimod.movement.WaterMovement.dash(player);
             case "locate" -> cn.wwl.orimod.world.RuinLocator.request(player);
             case "exit_challenge" -> cn.wwl.orimod.world.SpiritChallenge.finish(player, "exit", true);
             case "ability" -> {
@@ -186,6 +187,7 @@ public final class SpiritProgression {
             if (Float.compare(player.getData(SpiritData.ENERGY), energy) != 0) player.setData(SpiritData.ENERGY, energy);
         }
         if (now % 2 == 0) pullLight(player);
+        cn.wwl.orimod.movement.WaterMovement.breathe(player);
         if (s.pendingHeal) {
             if (!Shard.RESILIENCE.equipped(player)) s.pendingHeal = false;
             else if (now - s.lastHurt >= 80) {

@@ -270,3 +270,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R55：攀爬 Climb
 
 516 JUnit（`ClimbRulesTest`：需要能力和前进输入，爬升速度低于跳跃，前置冲刺）、216 GameTest。
+
+## R56：水中冲刺与净水呼吸
+
+518 JUnit（`WaterMovementTest`：冲刺沿视线方向，加速有上限）、218 GameTest（新增 `parity.water_dash_breath_and_cooldown`：水中生效、补满氧气、冷却生效、没有能力不生效）。

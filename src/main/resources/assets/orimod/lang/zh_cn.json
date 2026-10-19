@@ -257,5 +257,7 @@
   "message.orimod.victory.first": "胜利！获得 %s 灵光、一枚生命格和一枚能量格",
   "message.orimod.victory.again": "胜利！获得 %s 灵光",
   "ability.orimod.climb": "攀爬",
-  "ability.orimod.climb.description": "贴墙下滑时继续朝墙按前进键即可向上爬；按跳跃仍是蹬墙跳。"
+  "ability.orimod.climb.description": "贴墙下滑时继续朝墙按前进键即可向上爬；按跳跃仍是蹬墙跳。",
+  "ability.orimod.water_dash": "水中冲刺",
+  "ability.orimod.water_dash.description": "精灵形态下：游得更快、水下不会窒息，在水中按冲刺键沿视线方向冲出。"
 }

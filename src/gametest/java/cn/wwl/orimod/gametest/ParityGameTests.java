@@ -242,6 +242,26 @@ public final class ParityGameTests {
                 h.assertValueEqual(p.getInventory().countItem(cn.wwl.orimod.item.OriItems.LIFE_CELL.get()), life + 1, "Cells granted twice");
             } finally { heart.discard(); cn.wwl.orimod.world.EscapeSequence.stop(p); }
         });
+        add(tests, "water_dash_breath_and_cooldown", h -> {
+            var p = spirit(h, 127 | cn.wwl.orimod.progression.Ability.WATER_DASH.bit);
+            var pos = h.absolutePos(new net.minecraft.core.BlockPos(5, 2, 5));
+            h.getLevel().setBlock(pos, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+            h.getLevel().setBlock(pos.above(), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+            try {
+                p.setPos(Vec3.atBottomCenterOf(pos)); p.baseTick();   // refreshes the in-water state
+                h.assertTrue(cn.wwl.orimod.movement.WaterMovement.active(p), "Water movement not active in water");
+                p.setAirSupply(10);
+                cn.wwl.orimod.movement.WaterMovement.breathe(p);
+                h.assertValueEqual(p.getAirSupply(), p.getMaxAirSupply(), "Air not refilled");
+                h.assertTrue(cn.wwl.orimod.movement.WaterMovement.dash(p), "Water dash refused");
+                h.assertTrue(!cn.wwl.orimod.movement.WaterMovement.dash(p), "Water dash ignored its cooldown");
+                p.setData(SpiritData.ABILITIES, 127);
+                h.assertTrue(!cn.wwl.orimod.movement.WaterMovement.active(p), "Water movement without the ability");
+            } finally {
+                h.getLevel().setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                h.getLevel().setBlock(pos.above(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);
