@@ -543,6 +543,15 @@ public final class DevelopmentBridge {
                 values.put("entities", mc.level == null ? 0 : mc.level.getEntityCount());
                 values.put("fxLifecycle", cn.wwl.orimod.client.fx.SpiritFxClient.lifecycle());
                 values.put("tick", ticks);
+                // PERF05: integrated-server tick durations over the last 100 ticks (vanilla's own ring buffer).
+                var server = mc.getSingleplayerServer();
+                if (server != null) {
+                    long[] nanos = server.getTickTimesNanos();
+                    double max = 0, sum = 0;
+                    for (long n : nanos) { max = Math.max(max, n / 1e6); sum += n / 1e6; }
+                    values.put("serverMsptAvg", sum / nanos.length);
+                    values.put("serverMsptMax", max);
+                }
                 return values;
             }
             case "render_diagnostics" -> {
