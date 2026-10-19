@@ -306,3 +306,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R64：沙中穿行（安全版 Burrow）
 
 228 GameTest（新增 `flow.spirit_sand_lets_only_burrowers_through`：灵沙和尽头小洞已放置；没有技能的玩家被挡住；灵体形态且会水中冲刺的玩家碰撞为空；僵尸被挡住；灵沙不可破坏；穿行速度和出沙弹出符合常量）。
+
+## R65：R59–R64 真实客户端验证
+
+真实客户端：`scripts/verify-r64.py`（蓄力灵焰净化、灵矛穿透 3 只、腐光鸦预警后俯冲、地图石、灵沙穿行）结果 status ok。
