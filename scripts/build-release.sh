@@ -15,6 +15,10 @@ second=$(build); b=$(sha256sum "$second" | cut -d' ' -f1)
 for entry in orimod_shaderpack/spirit_glow.zip THIRD_PARTY.md META-INF/neoforge.mods.toml; do
   unzip -l "$second" "$entry" >/dev/null || { echo "missing $entry in jar" >&2; exit 1; }
 done
+# R82: NeoForge must be an open 21.1 range (any 21.1.x >= the tested build), never an exact pin.
+range=$(sed -n 's/^neo_version_range=//p' gradle.properties)
+unzip -p "$second" META-INF/neoforge.mods.toml | grep -qF "versionRange=\"$range\"" || { echo "jar mods.toml lacks NeoForge range $range" >&2; exit 1; }
+case "$range" in "["*","*")") ;; *) echo "NeoForge range $range is not open-ended" >&2; exit 1;; esac
 unzip -p "$second" orimod_shaderpack/spirit_glow.zip > /tmp/orimod-sg.zip
 for entry in LICENSE LICENSE-APACHE README.md shaders/shaders.properties; do
   unzip -l /tmp/orimod-sg.zip "$entry" >/dev/null || { echo "Spirit Glow zip lacks $entry" >&2; exit 1; }
@@ -22,5 +26,7 @@ done
 mkdir -p "$out"
 name="orimod-$version-$commit.jar"
 cp "$second" "$out/$name"
-(cd "$out" && sha256sum "$name" > "$name.sha256" && sha256sum orimod-*.jar > SHA256SUMS)
+# The locked GemRender (bundles Flywheel 1.0.6) must sit next to OriMod in mods/; ship it alongside.
+cp libs/runtime/gemrender-0.1.17.jar "$out/gemrender-0.1.17.jar"
+(cd "$out" && sha256sum "$name" > "$name.sha256" && sha256sum orimod-*.jar gemrender-0.1.17.jar > SHA256SUMS)
 echo "$out/$name $b"

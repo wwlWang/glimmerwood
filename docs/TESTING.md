@@ -377,3 +377,8 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r81：拖尾改冷色
 
 - `FeelTuningTest`：拖尾头部白、尾部冷蓝，任何位置蓝分量都不低于红分量。
+
+## ori-r82：NeoForge 版本范围放开
+
+- `ModMetadataTest`：NeoForge 范围必须是 `[neo_version,21.2)`，模板不能再写回精确版本，GemRender 和 Flywheel 仍锁定，生成的 mods.toml 是开放区间。
+- `scripts/build-release.sh`：jar 里的 mods.toml 必须带这个范围，否则构建失败。
