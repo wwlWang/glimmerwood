@@ -15,8 +15,8 @@
       "shape": "ring",
       "radius": 1.1,
       "color": "#ffd27a",
-      "size": 0.4,
-      "lifetime": 6,
+      "size": 0.42,
+      "lifetime": 14,
       "notes": "瞄准环"
     }
   ]

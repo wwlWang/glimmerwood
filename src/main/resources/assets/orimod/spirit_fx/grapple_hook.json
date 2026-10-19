@@ -4,7 +4,7 @@
   "layers": [
     {
       "color": "#9fffe0",
-      "lifetime": 7,
+      "lifetime": 11,
       "particle": "orimod:spirit_spark",
       "share": 0.5,
       "size": 0.3,
@@ -18,7 +18,7 @@
     {
       "color": "#b8fff0",
       "length": 1.5,
-      "lifetime": 10,
+      "lifetime": 16,
       "particle": "orimod:spirit_mote",
       "shape": "line",
       "share": 0.5,

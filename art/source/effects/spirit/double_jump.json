@@ -17,7 +17,7 @@
       "outward": 0.18,
       "color": "#c8f4ff",
       "size": 0.38,
-      "lifetime": 12,
+      "lifetime": 19,
       "notes": "跳环"
     },
     {
@@ -31,7 +31,7 @@
       "speed": 0.03,
       "color": "#ffffff",
       "size": 0.2,
-      "lifetime": 6,
+      "lifetime": 10,
       "notes": "闪点"
     }
   ]

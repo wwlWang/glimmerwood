@@ -4,7 +4,7 @@
   "layers": [
     {
       "color": "#8fdcff",
-      "lifetime": 30,
+      "lifetime": 48,
       "particle": "orimod:spirit_mote",
       "share": 1,
       "size": 0.4,

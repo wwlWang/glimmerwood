@@ -5,7 +5,7 @@
     {
       "color": "#ffe9a0",
       "length": 1.6,
-      "lifetime": 24,
+      "lifetime": 38,
       "outward": 0.03,
       "particle": "orimod:spirit_mote",
       "radius": 0.5,
@@ -21,7 +21,7 @@
     },
     {
       "color": "#fff4c8",
-      "lifetime": 20,
+      "lifetime": 32,
       "particle": "orimod:spirit_mote",
       "radius": 0.7,
       "shape": "ring",

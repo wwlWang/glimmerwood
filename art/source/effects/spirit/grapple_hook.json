@@ -14,7 +14,7 @@
       "speed": 0.1,
       "color": "#9fffe0",
       "size": 0.3,
-      "lifetime": 7,
+      "lifetime": 11,
       "notes": "闪点"
     },
     {
@@ -30,7 +30,7 @@
       "length": 1.5,
       "color": "#b8fff0",
       "size": 0.35,
-      "lifetime": 10,
+      "lifetime": 16,
       "notes": "短光带"
     }
   ]

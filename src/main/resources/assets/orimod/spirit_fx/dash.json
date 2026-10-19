@@ -5,7 +5,7 @@
     {
       "color": "#d8f6ff",
       "length": 1.8,
-      "lifetime": 10,
+      "lifetime": 16,
       "outward": 0.02,
       "particle": "orimod:spirit_mote",
       "shape": "line",
@@ -20,7 +20,7 @@
     },
     {
       "color": "#ffffff",
-      "lifetime": 6,
+      "lifetime": 10,
       "particle": "orimod:spirit_spark",
       "share": 0.4,
       "size": 0.22,

@@ -18,7 +18,7 @@
       "outward": 0.06,
       "color": "#e0d4ff",
       "size": 0.38,
-      "lifetime": 18,
+      "lifetime": 29,
       "notes": "光柱"
     },
     {
@@ -35,7 +35,7 @@
       "outward": 0.1,
       "color": "#c8f4ff",
       "size": 0.32,
-      "lifetime": 16,
+      "lifetime": 26,
       "notes": "光环"
     },
     {
@@ -49,7 +49,7 @@
       "speed": 0.04,
       "color": "#ffffff",
       "size": 0.2,
-      "lifetime": 8,
+      "lifetime": 13,
       "notes": "闪点"
     }
   ]

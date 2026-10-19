@@ -18,7 +18,7 @@
       "outward": 0.03,
       "color": "#ffe9a0",
       "size": 0.35,
-      "lifetime": 24,
+      "lifetime": 38,
       "notes": "光柱"
     },
     {
@@ -34,7 +34,7 @@
       "radius": 0.7,
       "color": "#fff4c8",
       "size": 0.3,
-      "lifetime": 20,
+      "lifetime": 32,
       "notes": "光环"
     }
   ]

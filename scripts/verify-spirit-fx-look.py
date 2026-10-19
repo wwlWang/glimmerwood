@@ -2,7 +2,7 @@
 Requires all 14 definitions loaded without problems (also after a resource reload). Then, at dusk over a dark
 floor with a fixed first-person spectator camera close to the effect, plays each kind the way the game emits it
 (one burst for one-shots, one burst per tick for trails/persistent effects) and screenshots it early (~2 ticks)
-and mid-animation (~7 ticks). A second pass shows selected effects around Ori in third person for scale.
+and mid-animation (~5 ticks). A second pass shows selected effects around Ori in third person for scale.
 Usage: python3 scripts/verify-spirit-fx-look.py <build_id> [--sheet out.png] [--ori out.png]"""
 import argparse
 from PIL import Image, ImageDraw, ImageFont
@@ -30,10 +30,11 @@ def play(kind, ticks, anchor=(EX, EY, EZ), moving=True):
     else:
         c.action('spirit_fx_burst', kind=kind, x=x, y=y, z=z, look=LOOK, motion=SIDE); c.ticks(ticks)
 
-def label(path, text, crop):
+def label(path, text, crop, cy=.5):
     img = Image.open(path).convert('RGB'); w, h = img.size
     cw, ch = int(w * crop), int(h * crop)
-    img = img.crop(((w - cw) // 2, (h - ch) // 2, (w + cw) // 2, (h + ch) // 2)).resize((480, 270), Image.LANCZOS)
+    top = max(0, min(h - ch, int(h * cy - ch / 2)))
+    img = img.crop(((w - cw) // 2, top, (w + cw) // 2, top + ch)).resize((480, 270), Image.LANCZOS)
     d = ImageDraw.Draw(img); d.rectangle((0, 0, 480, 36), fill=(0, 0, 0)); d.text((8, 4), text, fill=(255, 255, 255), font=FONT)
     return img
 
@@ -51,15 +52,15 @@ try:
     assert state['loaded'] == len(KINDS) and not state['problems'] and state['reloads'] >= 2, state
     c.command('gamemode spectator'); c.command(f'fill {X-6} {Y-1} {Z-2} {X+6} {Y-1} {Z+10} minecraft:deepslate_tiles')
     c.command('time set 13000'); c.action('camera', mode='FIRST_PERSON')
-    c.command(f'tp @s {X+.5} {Y} {Z} 0 12'); c.action('settings', hideGui=True); c.ticks(20)
+    c.command(f'tp @s {X+.5} {Y} {Z} 0 6'); c.action('settings', hideGui=True, fov=70); c.ticks(20)
     cells = []
     for kind in KINDS:
         play(kind, 2); c.screenshot(f'fx-{kind.lower()}-early')
-        if kind in PERSISTENT or kind == 'ARROW_TRAIL': play(kind, 5)
-        else: c.ticks(5)
+        if kind in PERSISTENT or kind == 'ARROW_TRAIL': play(kind, 3)
+        else: c.ticks(3)
         c.screenshot(f'fx-{kind.lower()}-mid')
-        cells += [label(c.out / f'fx-{kind.lower()}-early.png', kind.lower() + ' · early', .62),
-                  label(c.out / f'fx-{kind.lower()}-mid.png', kind.lower() + ' · mid', .62)]
+        cells += [label(c.out / f'fx-{kind.lower()}-early.png', kind.lower() + ' · early', .7, .42),
+                  label(c.out / f'fx-{kind.lower()}-mid.png', kind.lower() + ' · mid', .7, .42)]
         c.ticks(30)
     if args.sheet: sheet(cells, 4, args.sheet)
     # Ori in frame for scale: survival-like creative player in spirit form, third-person back camera.

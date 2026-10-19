@@ -172,3 +172,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R31：正式效果外观
 
 459 JUnit（定义测试改为：第一层为本模组灵光、所有粒子为已知原版简单粒子或本模组附带贴图）、183 GameTest；`check.sh` 校验效果导出与粒子贴图均为最新。`scripts/verify-spirit-fx-look.py fx02-r31-look-v002`：加载与重载检查、13 种效果截图拼图。
+
+## R32：效果可读性
+
+469 JUnit（新增：形状字段解析与默认值、非法形状/颜色/半径被拒、预算只有 1 颗时必显粒子仍落在第一层；编号测试扩到 0–13、持续效果为滑翔、钩索牵引、Bash 瞄准；通道版本 3）、184 GameTest。`scripts/verify-spirit-fx-look.py fx02-r32-look-v002`：14 个定义加载、资源重载后仍 14 个无错误；一次性效果只播一次（与游戏一致，不再叠 6 次），持续效果/拖尾每 tick 播放；第一人称旁观视角距效果约 3 格，分别在约 2 tick（早期）与约 5 tick（中段）截图，带名称标签合成 `shots/r32-fx-look-sheet.png`；再以创造模式 Ori 形态第三人称截 6 张合成 `shots/r32-fx-ori-scale.png`。开发配置的高级粒子临时打开后已恢复。注意 llvmpipe 约 10 FPS，客户端每帧追赶多个 tick，帧间间隔比真实帧率粗。
