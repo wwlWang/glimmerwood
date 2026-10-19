@@ -89,6 +89,55 @@ public final class FeelTuning {
     /** Ori's ready stance: the body dips forward a little when idle (rad). */
     public static final float READY_LEAN = .12f;
 
+    // ---- R94 animation polish ------------------------------------------------------------------------------
+    /** Land into run: touchdown above this speed (m/s) keeps the run going and blends a short leg absorb instead. */
+    public static final float LAND_RUN_SPEED = 2.2f, LAND_RUN_TIME = .26f, LAND_RUN_BLEND = .7f, LAND_RUN_LEAN_KICK = 2.6f;
+    /** Gait knee depth: extra share of the authored leg bend (thigh, knee, ankle) at walk / run / sprint, capped (rad). */
+    public static final float GAIT_GAIN_WALK = .22f, GAIT_GAIN_RUN = .38f, GAIT_GAIN_SPRINT = .18f, GAIT_EXTRA_MAX = .5f;
+    public static final float[] GAIT_BONE_GAIN = {.8f, 1f, .9f};   // thigh, knee, ankle
+    /** Mantle pose: forward pitch over the lip (rad), knee tuck target (rad). */
+    public static final float MANTLE_LEAN = .55f, MANTLE_TUCK = .5f;
+    /** Weapon swings: torso twist (rad) that coils during the windup and whips through the hit; hit lean kick. */
+    /** Clip share where the authored blade swings have the arm raised highest / have struck through (measured from ori.glb). */
+    public static final float SWING_RAISE_AT = .24f, SWING_STRIKE_AT = .45f;
+    public static final float SWING_TWIST = .34f, SWING_LEAN_KICK = 1.6f, SWING_EAR_FLICK = 1.8f;
+    /** Hammer: back arch while wound up (rad), breathing share, slam pitch (rad) on release. */
+    public static final float HAMMER_ARCH = .26f, HAMMER_BREATH = .18f, HAMMER_SLAM = .42f;
+    /** Spear: ready twist while held (rad), throw whip (rad). */
+    public static final float SPEAR_READY_TWIST = .14f, SPEAR_THROW_TWIST = .5f;
+
+    /**
+     * R94: remaps a swing's linear progress {@code k} (0..1) so the authored clip anticipates, snaps through the hit and
+     * eases out: the windup share of the timeline covers the clip up to its raise peak ({@link #SWING_RAISE_AT}, where
+     * blade_1..3 have the arm highest), the hit share races to {@link #SWING_STRIKE_AT}, recovery eases into the end.
+     */
+    public static float swingCurve(float k, float windup, float hitEnd) {
+        k = Math.max(0, Math.min(1, k));
+        windup = Math.max(.01f, Math.min(.9f, windup)); hitEnd = Math.max(windup + .01f, Math.min(.99f, hitEnd));
+        float r = SWING_RAISE_AT, h = SWING_STRIKE_AT;
+        if (k < windup) { float t = k / windup; return r * t * t * (3 - 2 * t); }
+        if (k < hitEnd) { float t = (k - windup) / (hitEnd - windup); return r + (h - r) * (1 - (1 - t) * (1 - t)); }
+        float t = (k - hitEnd) / (1 - hitEnd);
+        return h + (1 - h) * (1 - (1 - t) * (1 - t) * (1 - t));
+    }
+
+    /** R94: torso twist share for a swing at progress {@code k}: coil back (negative) in the windup, whip through, settle. */
+    public static float swingTwist(float k, float windup, float hitEnd) {
+        k = Math.max(0, Math.min(1, k));
+        windup = Math.max(.01f, Math.min(.9f, windup)); hitEnd = Math.max(windup + .01f, Math.min(.99f, hitEnd));
+        if (k < windup) { float t = k / windup; return -.6f * t * t * (3 - 2 * t); }
+        if (k < hitEnd) { float t = (k - windup) / (hitEnd - windup); return -.6f + 1.6f * t * t * (3 - 2 * t); }
+        float t = (k - hitEnd) / (1 - hitEnd);
+        return 1 - t * t * (3 - 2 * t);
+    }
+
+    /** R94: weight of the land-absorb layer {@code seconds} after a land into run (1 at contact, 0 at LAND_RUN_TIME). */
+    public static float landRunWeight(float seconds) {
+        if (seconds < 0 || seconds >= LAND_RUN_TIME) return 0;
+        float t = 1 - seconds / LAND_RUN_TIME;
+        return t * t;
+    }
+
     // ---- camera and FX -----------------------------------------------------------------------------------
     public static final float FOV_KICK_DASH = .1f, FOV_KICK_SPEED = .06f, FOV_RATE = 10;
     public static final float TRAIL_MIN_SPEED = 1.0f;     // m/s

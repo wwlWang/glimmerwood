@@ -105,7 +105,103 @@ final class SpiritSecondary {
         String[] legs = {"thigh_l", "thigh_r", "knee_l", "knee_r"};
         for (int i = 0; i < legs.length; i++)
             if (table.slotOfName(legs[i]) >= 0) drivers.add(driver(table, palette, legs[i], new Vector3f(1, 0, 0), count + REST + i));
+        // R94: gait depth. Each leg bone's authored walk/run bend is sampled here and re-applied, scaled, on top.
+        gaitBones = 0;
+        for (int i = 0; i < GAIT_BONES.length; i++) {
+            int slot = table.slotOfName(GAIT_BONES[i]);
+            if (slot < 0) continue;
+            drivers.add(new QuatBone(NodeRotation.offsetOf(table, slot), i * 4, this));
+            gaitBones++;
+        }
         clip = GltfAnimation.procedural("ori_secondary", drivers.toArray(PoseDriver[]::new));
+    }
+
+    /** R94 thigh/knee/ankle per side; {@link FeelTuning#GAIT_BONE_GAIN} by pair. */
+    static final String[] GAIT_BONES = {"thigh_l", "thigh_r", "knee_l", "knee_r", "ankle_l", "ankle_r"};
+    private static final int GAIT_SAMPLES = 32;
+    private float[][] walkDelta, runDelta;   // [bone][sample * 4] local rotation delta from rest (x, y, z, w)
+    private final float[] gaitQuat = identities(GAIT_BONES.length);
+    private int gaitBones;
+    private float gaitExtra;
+
+    private static float[] identities(int n) { float[] q = new float[n * 4]; for (int i = 0; i < n; i++) q[i * 4 + 3] = 1; return q; }
+
+    /** Samples the authored leg bend of the walk and run cycles relative to the rest pose (called with {@link #bind}). */
+    void bindGait(NodeTable table, GltfAnimation walk, GltfAnimation run) {
+        walkDelta = sampleDeltas(table, walk); runDelta = sampleDeltas(table, run);
+    }
+
+    private static float[][] sampleDeltas(NodeTable table, GltfAnimation clip) {
+        float[][] out = new float[GAIT_BONES.length][GAIT_SAMPLES * 4];
+        float[] scratch = table.newScratch();
+        var rest = new Quaternionf(); var q = new Quaternionf();
+        for (int s = 0; s < GAIT_SAMPLES; s++) {
+            table.resetToRest(scratch);
+            if (clip != null && clip.duration() > 0) clip.apply(clip.duration() * s / GAIT_SAMPLES, scratch);
+            for (int b = 0; b < GAIT_BONES.length; b++) {
+                int slot = table.slotOfName(GAIT_BONES[b]);
+                if (slot < 0) { out[b][s * 4 + 3] = 1; continue; }
+                int o = NodeRotation.offsetOf(table, slot);
+                table.restRotation(slot, rest);
+                q.set(scratch[o], scratch[o + 1], scratch[o + 2], scratch[o + 3]).normalize();
+                var d = new Quaternionf(rest).invert().mul(q).normalize();
+                if (d.w < 0) d.set(-d.x, -d.y, -d.z, -d.w);
+                out[b][s * 4] = d.x; out[b][s * 4 + 1] = d.y; out[b][s * 4 + 2] = d.z; out[b][s * 4 + 3] = d.w;
+            }
+        }
+        return out;
+    }
+
+    private static Quaternionf sample(float[] deltas, float phase, Quaternionf out) {
+        float p = (phase - (float) Math.floor(phase)) * GAIT_SAMPLES;
+        int a = (int) p % GAIT_SAMPLES, b = (a + 1) % GAIT_SAMPLES; float t = p - (int) p;
+        var qa = new Quaternionf(deltas[a * 4], deltas[a * 4 + 1], deltas[a * 4 + 2], deltas[a * 4 + 3]);
+        var qb = new Quaternionf(deltas[b * 4], deltas[b * 4 + 1], deltas[b * 4 + 2], deltas[b * 4 + 3]);
+        return qa.nlerp(qb, t, out);
+    }
+
+    /** {@code q} raised to {@code s} (same axis, angle scaled), with the added angle capped at {@code max}. */
+    static Quaternionf scaled(Quaternionf q, float s, float max, Quaternionf out) {
+        float w = Math.clamp(q.w, -1, 1), angle = 2 * (float) Math.acos(Math.abs(w));
+        float len = (float) Math.sqrt(q.x * q.x + q.y * q.y + q.z * q.z);
+        if (len < 1e-6f || s <= 0) return out.identity();
+        float sign = w < 0 ? -1 : 1, extra = Math.min(max, angle * s);
+        return out.identity().fromAxisAngleRad(sign * q.x / len, sign * q.y / len, sign * q.z / len, extra);
+    }
+
+    /**
+     * R94: deepen the stride. The authored community walk/run cycles bend the legs too little for Ori's low athletic
+     * run, so the bend each leg bone already has at this phase is added again, scaled by gait speed (walk/run/sprint).
+     */
+    void gait(float phase, float walk, float run, float sprint) {
+        float max = 0;
+        var qw = new Quaternionf(); var qr = new Quaternionf(); var a = new Quaternionf(); var b = new Quaternionf();
+        for (int i = 0; i < GAIT_BONES.length; i++) {
+            float bone = FeelTuning.GAIT_BONE_GAIN[i / 2];
+            if (walkDelta == null || walk + run <= .002f) { gaitQuat[i * 4] = gaitQuat[i * 4 + 1] = gaitQuat[i * 4 + 2] = 0; gaitQuat[i * 4 + 3] = 1; continue; }
+            sample(walkDelta[i], phase, qw); sample(runDelta[i], phase, qr);
+            scaled(qw, walk * FeelTuning.GAIT_GAIN_WALK * bone, FeelTuning.GAIT_EXTRA_MAX, a);
+            scaled(qr, (run * FeelTuning.GAIT_GAIN_RUN + sprint * FeelTuning.GAIT_GAIN_SPRINT) * bone, FeelTuning.GAIT_EXTRA_MAX, b);
+            a.mul(b).normalize();
+            max = Math.max(max, 2 * (float) Math.acos(Math.min(1, Math.abs(a.w))));
+            gaitQuat[i * 4] = a.x; gaitQuat[i * 4 + 1] = a.y; gaitQuat[i * 4 + 2] = a.z; gaitQuat[i * 4 + 3] = a.w;
+        }
+        gaitExtra = max;
+    }
+
+    /** Post-multiplies the bone's local rotation by a quaternion from {@link #gaitQuat} (same order as NodeRotation.compose). */
+    private record QuatBone(int offset, int index, SpiritSecondary owner) implements PoseDriver {
+        @Override public void apply(float parameter, float[] s) {
+            float[] r = owner.gaitQuat;
+            float rx = r[index], ry = r[index + 1], rz = r[index + 2], rw = r[index + 3];
+            if (rw >= .99999f) return;
+            float qx = s[offset], qy = s[offset + 1], qz = s[offset + 2], qw = s[offset + 3];
+            s[offset] = qw * rx + qx * rw + qy * rz - qz * ry;
+            s[offset + 1] = qw * ry - qx * rz + qy * rw + qz * rx;
+            s[offset + 2] = qw * rz + qx * ry - qy * rx + qz * rw;
+            s[offset + 3] = qw * rw - qx * rx - qy * ry - qz * rz;
+        }
+        @Override public float cycleSeconds() { return 0; }
     }
 
     private PoseDriver driver(NodeTable table, Matrix4f[] palette, String name, Vector3f modelAxis, int index) {
@@ -134,7 +230,8 @@ final class SpiritSecondary {
     void reset() {
         for (Channel c : channels) c.chain.reset();
         lastVelocity = null; lastYaw = Float.NaN; smoothVelocity.zero(); smoothAccel.zero(); smoothTurn = 0;
-        legTuck.reset(0);
+        legTuck.reset(0); tuckOverride = Float.NaN;
+        java.util.Arrays.fill(gaitQuat, 0); for (int i = 0; i < GAIT_BONES.length; i++) gaitQuat[i * 4 + 3] = 1;
         publish();
     }
 
@@ -145,6 +242,18 @@ final class SpiritSecondary {
         feelPitchL.chain.kick(k * .5f); feelPitchR.chain.kick(k * .5f);
         legTuck.kick(FeelTuning.LEG_LAND_KICK * Math.min(1.5f, .35f + impact));
     }
+
+    /** R94: a weapon hit snaps the ears/feelers back and the tail out (lighter than a jump). */
+    void flick(float strength) {
+        float k = FeelTuning.SWING_EAR_FLICK * strength;
+        earLiftL.chain.kick(-k); earLiftR.chain.kick(-k * .9f);
+        earSwingL.chain.kick(k * .6f); earSwingR.chain.kick(k * .6f);
+        tailYaw.chain.kick(-k * .8f); feelPitchL.chain.kick(-k * .5f); feelPitchR.chain.kick(-k * .5f);
+    }
+
+    private float tuckOverride = Float.NaN;
+    /** R94: mantle: hold the knees tucked to this target (rad) while set; NaN returns control to the fall/land tuck. */
+    void tuck(float target) { tuckOverride = target; }
 
     void jump() {
         float k = FeelTuning.SEC_JUMP_KICK;
@@ -209,6 +318,7 @@ final class SpiritSecondary {
             else
                 legTarget = -Math.min(FeelTuning.LEG_STRETCH_MAX, smoothVelocity.y / FeelTuning.SEC_FALL_UNIT * FeelTuning.LEG_STRETCH);
         }
+        if (Float.isFinite(tuckOverride)) legTarget = tuckOverride;
         legTuck.step(legTarget, dt);
         lastForce = earLift;
         publish();
@@ -237,6 +347,7 @@ final class SpiritSecondary {
         out.put("tail_lift", tailLift.chain.angles()); out.put("tail_yaw", tailYaw.chain.angles());
         out.put("bones", values.length - REST - LEG); out.put("earForce", lastForce);
         out.put("legTuck", legTuck.value);
+        out.put("gaitBones", gaitBones); out.put("gaitExtra", gaitExtra);
         return out;
     }
 }

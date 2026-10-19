@@ -44,6 +44,30 @@ public final class ParityGameTests {
                 Fixtures.near(h, p.getDeltaMovement().length(), MovementRules.LAUNCH_GROUND_SPEED, "Ground Launch speed");
             } finally { SpiritMovement.cancel(p, s); }
         });
+        add(tests, "mantle_lip_within_reach_only", h -> {
+            // R94: wall face at x=6 (block column x=6, z=5); Ori hugs it from the -X side, wall direction EAST.
+            var p = spirit(h, 63); p.setOnGround(false);
+            var east = net.minecraft.core.Direction.EAST;
+            java.util.function.BiConsumer<Integer, Double> at = (top, feet) -> {
+                for (int y = 2; y <= 6; y++) h.setBlock(6, y, 5, y <= top ? net.minecraft.world.level.block.Blocks.STONE : net.minecraft.world.level.block.Blocks.AIR);
+                p.setPos(h.absoluteVec(new Vec3(6 - p.getBbWidth() / 2 - .04, feet, 5.5)));
+            };
+            at.accept(2, 2.0);   // one-block wall, feet at its base: lip 1.0 above
+            h.assertTrue(Math.abs(SpiritMovement.mantleRise(p, east) - 1.0) < .01, "One-block lip " + SpiritMovement.mantleRise(p, east));
+            at.accept(3, 3.25);  // two blocks, feet partway up the upper block: lip .75 above
+            h.assertTrue(Math.abs(SpiritMovement.mantleRise(p, east) - .75) < .01, "Lip from mid-face " + SpiritMovement.mantleRise(p, east));
+            at.accept(4, 2.0);   // three blocks: out of reach
+            h.assertTrue(SpiritMovement.mantleRise(p, east) < 0, "Three-block wall is not a mantle");
+            at.accept(2, 2.0);
+            h.assertTrue(SpiritMovement.mantleRise(p, net.minecraft.core.Direction.WEST) < 0, "No wall on that side");
+            h.setBlock(5, 4, 5, net.minecraft.world.level.block.Blocks.STONE);   // ceiling over Ori's head blocks the pop
+            h.assertTrue(SpiritMovement.mantleRise(p, east) < 0, "Ceiling blocks the mantle");
+            h.setBlock(5, 4, 5, net.minecraft.world.level.block.Blocks.AIR);
+            h.setBlock(6, 3, 5, net.minecraft.world.level.block.Blocks.AIR); h.setBlock(6, 4, 5, net.minecraft.world.level.block.Blocks.STONE);
+            h.assertTrue(SpiritMovement.mantleRise(p, east) < 0, "No room to stand on the lip");
+            double vy = MovementRules.mantleLaunch(1.0);
+            h.assertTrue(vy < .7 && MovementRules.peak(vy) >= 1.0, "Pop speed " + vy);
+        });
         add(tests, "air_launch_once_and_refreshes_air_moves", h -> {
             var p = spirit(h, 127); p.setPos(h.absoluteVec(new Vec3(5.5, 5, 5.5))); p.setOnGround(false);
             var s = p.getData(SpiritData.MOVEMENT); s.airLaunchSpent = false; s.airJumpSpent = s.airDashSpent = true;

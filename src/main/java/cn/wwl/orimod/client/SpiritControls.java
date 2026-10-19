@@ -78,6 +78,15 @@ public final class SpiritControls {
             state.mode = IDLE;
             state.activeTicks = 0;
         }
+        // R94: a ledge mantle owns the velocity while it runs; jump / crouch / other actions cancel it inside tick().
+        boolean jumpEdge = (flags & MovementInputPayload.JUMP) != 0 && !prevJumpHeld;
+        if (active && SpiritMovement.canMove(player) && SpiritMantle.tick(player, state, input, jumpEdge)) {
+            if (state.activeTicks > 0 && --state.activeTicks <= 0) state.mode = IDLE;
+            feelControlled = false;
+            prevJumpHeld = (flags & MovementInputPayload.JUMP) != 0;
+            return;
+        }
+        if (!active) SpiritMantle.end(player);
         if (state.activeTicks > 0 && active) {
             if (state.mode == BASH_AIM) {
                 player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);

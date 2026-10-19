@@ -78,6 +78,38 @@ public final class MovementRules {
     public static boolean climbing(boolean unlocked, float forward) { return unlocked && forward > .1f; }
     public static Vec3 climbVelocity(Vec3 velocity) { return new Vec3(velocity.x, CLIMB_SPEED, velocity.z); }
 
+    // ---- R94 ledge mantle (WotW: holding into a wall near its top pops Ori over the lip) -------------------
+    /** Highest lip above the feet that a mantle reaches (blocks), and the lowest worth a mantle instead of a step. */
+    public static final double MANTLE_REACH = 1.05, MANTLE_MIN_RISE = .12;
+    /** Extra height cleared above the lip, horizontal push while rising (keeps contact) and once over the lip (b/t). */
+    public static final double MANTLE_CLEARANCE = .14, MANTLE_HOLD = .04, MANTLE_FORWARD = .2;
+    /** No mantle from a fast fall; the whole mantle ends after this many ticks; re-arm delay after one ends. */
+    public static final double MANTLE_MIN_VY = -.6;
+    public static final int MANTLE_MAX_TICKS = 12, MANTLE_COOLDOWN_TICKS = 8;
+
+    /**
+     * R94: upward speed (b/t) that clears {@code rise} + {@link #MANTLE_CLEARANCE} under vanilla travel (each tick:
+     * move, then {@code (vy - 0.08) * 0.98}). Smallest such speed, so the pop never overshoots into a jump.
+     */
+    public static double mantleLaunch(double rise) {
+        double target = Math.max(0, rise) + MANTLE_CLEARANCE, lo = 0, hi = 1.2;
+        for (int i = 0; i < 40; i++) {
+            double mid = (lo + hi) / 2;
+            if (peak(mid) >= target) hi = mid; else lo = mid;
+        }
+        return hi;
+    }
+
+    /** Peak height reached from vertical speed {@code vy} under vanilla gravity and drag. */
+    public static double peak(double vy) {
+        double y = 0, best = 0;
+        for (int t = 0; t < 80 && vy > 0; t++) { y += vy; best = Math.max(best, y); vy = (vy - .08) * .98; }
+        return best;
+    }
+
+    /** Whether a lip {@code rise} blocks above the feet can be mantled. */
+    public static boolean mantleReach(double rise) { return rise >= MANTLE_MIN_RISE && rise <= MANTLE_REACH; }
+
     public static Vec3 wallSlideVelocity(Vec3 velocity) {
         return new Vec3(velocity.x, Math.max(velocity.y, WALL_SLIDE_SPEED), velocity.z);
     }

@@ -285,6 +285,36 @@ public final class SpiritMovement {
         return best;
     }
 
+    /**
+     * R94: height (blocks above the feet) of the wall's top edge on side {@code wall} when Ori could mantle over it, or
+     * -1. Needs the wall beside the body now, room straight above for the rise, and room for the whole body standing on
+     * the lip half a body width inside. Steps of 1/16 block find the lowest free height, i.e. the lip itself.
+     */
+    public static double mantleRise(Player player, Direction wall) {
+        var level = player.level();
+        var box = player.getBoundingBox();
+        double sx = wall.getStepX(), sz = wall.getStepZ();
+        if (level.noCollision(player, box.deflate(0.01, 0.02, 0.01).move(sx * 0.12, 0, sz * 0.12))) return -1;
+        double inward = player.getBbWidth() * .5 + .2;
+        boolean blocked = false;
+        for (double h = MovementRules.MANTLE_MIN_RISE - 1 / 16.0; h <= MovementRules.MANTLE_REACH + 1 / 16.0 + 1e-6; h += 1 / 16.0) {
+            if (!level.noCollision(player, box.move(0, h + MovementRules.MANTLE_CLEARANCE * .5, 0).deflate(0.01, 0, 0.01))) return -1;
+            boolean free = level.noCollision(player, box.move(sx * inward, h, sz * inward).deflate(0.01, 0, 0.01));
+            if (free) {
+                if (!blocked) return -1;
+                // Refine to the lip's actual top (slabs, stairs, partial blocks) within the last step.
+                double lo = h - 1 / 16.0, hi = h;
+                for (int i = 0; i < 8; i++) {
+                    double mid = (lo + hi) / 2;
+                    if (level.noCollision(player, box.move(sx * inward, mid, sz * inward).deflate(0.01, 0, 0.01))) hi = mid; else lo = mid;
+                }
+                return MovementRules.mantleReach(hi) ? hi : -1;
+            }
+            blocked = true;
+        }
+        return -1;
+    }
+
     public static void cancel(ServerPlayer player, MovementState s) {
         cancel(player, s, false);
     }

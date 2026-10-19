@@ -207,4 +207,31 @@ class FeelTuningTest {
         assertTrue(MovementRules.crouchLaunches(true, true, true, MovementRules.LAUNCH_CHARGE_TICKS, false));
         assertFalse(MovementRules.crouchLaunches(false, true, true, 99, false));
     }
+
+    // ---- R94 animation polish ----
+    @Test void swingCurveAnticipatesSnapsAndEases() {
+        float w = .2f, h = .4f;
+        assertEquals(0, swingCurve(0, w, h), 1e-6); assertEquals(1, swingCurve(1, w, h), 1e-6);
+        assertEquals(SWING_RAISE_AT, swingCurve(w, w, h), 1e-4); assertEquals(SWING_STRIKE_AT, swingCurve(h, w, h), 1e-4);
+        float prev = -1;
+        for (int i = 0; i <= 100; i++) { float v = swingCurve(i / 100f, w, h); assertTrue(v >= prev - 1e-6, "monotonic at " + i); prev = v; }
+        // hit share moves the clip faster than linear, windup slower
+        assertTrue((swingCurve(h, w, h) - swingCurve(w, w, h)) / (h - w) > (1 - swingCurve(h, w, h)) / (1 - h), "hit faster than recovery");
+        assertTrue(swingCurve(w, w, h) / w < 1.6f);
+    }
+    @Test void swingTwistCoilsThenWhipsAndSettles() {
+        float w = .25f, h = .5f;
+        assertEquals(0, swingTwist(0, w, h), 1e-6);
+        assertTrue(swingTwist(w, w, h) < -.5f, "coiled back");
+        assertTrue(swingTwist(h, w, h) > .9f, "whipped through");
+        assertEquals(0, swingTwist(1, w, h), 1e-5);
+        for (int i = 1; i <= 100; i++) assertTrue(Math.abs(swingTwist(i / 100f, w, h) - swingTwist((i - 1) / 100f, w, h)) < .12f, "continuous at " + i);
+    }
+    @Test void landRunLayerFadesWithinItsWindow() {
+        assertEquals(1, landRunWeight(0), 1e-6);
+        assertTrue(landRunWeight(LAND_RUN_TIME * .5f) < .3f);
+        assertEquals(0, landRunWeight(LAND_RUN_TIME), 1e-6);
+        assertEquals(0, landRunWeight(-.01f), 1e-6);
+        assertTrue(LAND_RUN_SPEED < TOP_SPEED * 20, "a full run lands into the run");
+    }
 }

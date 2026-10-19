@@ -75,3 +75,22 @@ Procedural (not clips): facing-from-velocity, lean pitch/roll, squash-stretch sp
 - No dedicated land-into-run clip.
 - Secondary does not collide with terrain (tail can clip blocks).
 - Iris / real GPU bloom not verified in this pass.
+
+## R94 — deferred items done
+
+User (after R93): "修，修啊，别一直问口牙！弄完一起看" — finish everything R93 deferred in one batch.
+
+| Item | What changed | Client evidence (`verify-r94.py r94-v003`) |
+| --- | --- | --- |
+| Land → run | Touchdown above 2.2 m/s (still running, as WotW's held-stick land) no longer plays the full-body `land_*` clip. The run base keeps going (fast crossfade from `apex`), a masked lower-body `land_light` absorb layer fades over 0.26 s, body dives forward (lean kick), squash/leg tuck/ear kicks scaled down. Standing landings unchanged. | `land_run_full_land_clip=false`, absorb weight max 0.95; control drop still `land_heavy`; `shots/r94-landrun-*` |
+| Gait knee depth | The walk/run clips' own thigh/knee/ankle bend (sampled per phase from `ori.glb`, 32 samples) is re-applied on top, scaled by gait (walk 0.22, run 0.38, +0.18 sprint; ≤0.5 rad extra). In phase with the authored stride, so it deepens rather than fights it. | `gaitBones=6`, extra up to 0.50 rad; `shots/r94-run-knee-*` |
+| Wall mantle | New `SpiritMantle` (client). Airborne/wall-sliding, pushing into a wall whose lip is ≤1.05 above the feet with room above and on top: pop with the minimal speed that clears lip+0.14 (`MovementRules.mantleLaunch`), then push 0.2 b/t onto the ledge. Anim: `climb` (2.4×) on the rise, `land_light` over the lip, forward pitch 0.55 rad, knee tuck, stretch→squash. A new jump press / crouch / other action cancels instantly (against the wall that press is a wall jump). | 2-high wall: y path 0→2.14→2.0 on top in ~9 ticks; cancel → `wall_jump_l`; `shots/r94-mantle-*` |
+| Weapons | Blade combo: windup/hit/recovery remapped to the clip's measured raise peak (24%) and strike (45%) — slow coil, fast snap, eased settle; torso twist coils then whips (±0.34 rad, stage 2 mirrored, stage 3 ×1.3); hit lean kick + ear/tail flick. Hammer: hold frame fixed to the real raise peak (R88 held 32% = already striking); back arch with breathing while charging; slam pitch + squash + ear flop on release. Spear: ready twist/bob while held; throw = overhand `blade_3` with coil/whip. Energy weapons flare (+70% light, wider halo on the blade) through swings. R91 condensed-light renderer kept. | twist −0.17..0.31 (blade), arch −0.26..0.36 (hammer), spear −0.20..0.25; `shots/r94-blade-*`, `r94-hammer-*`, `r94-spear-*` |
+
+Ear/feeler/tail chains untouched (still 34 bone angles).
+
+### Still not done
+
+- No authored land→run / mantle / weapon clips — all procedural layers over the community model's clips.
+- Hammer wind-up reads best from the side; from the front the head is mostly behind the body.
+- Secondary still has no terrain collision; true Iris bloom not verified; client only checked on Xvfb + llvmpipe (low FPS, so screenshots step a few ticks).
