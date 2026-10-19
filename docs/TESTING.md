@@ -226,3 +226,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R44：遗迹内的生命格/能量格祭台
 
 504 JUnit、205 GameTest（新增 `flow.ruins_hold_claimable_cell_pedestals`：三种遗迹按不同旋转放置，祭台存在、类型正确、脚下实心、上方是空气；同一玩家只能领一次，换一名玩家仍可领取）。
+
+## R45：真实客户端验证 Bash 反弹投射物
+
+真实客户端 `verify-gloom-bash.py r45-gloom-bash2`：aimed=True，目标 id 等于球 id，释放后球速 (0, 0, 1.568)，喷吐者 12→9，状态 passed；证据在 `evidence/r45-gloom-bash2`（不提交）。
