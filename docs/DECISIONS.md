@@ -130,3 +130,4 @@
 | R84 | 精灵形态直接取消 LivingFallEvent；GemRender 保持独立 jar | Ori 落地本就不该摔伤；把带 mixin 的渲染模组再 JarJar 一层风险高，许可证也更适合单独分发 |
 | R85 | 提高上升与顶点重力、加快下落，而不是改跳跃初速 | 初速仍用原版 jump，只改 FeelTuning 纵向缩放，测试和曲线脚本都能直接读常量 |
 | R86 | 回退粒子也只用 spirit_mote，定义里减少 spark | 用户觉得像原版火花；冷色 + 软光点才像 Ori |
+| R87 | 步态遮罩固定为 belowUpper，武器不用 contactUse 原版姿势 | 否则跑步会盖住挥砍，锤矛会露出原版人形手臂 |
