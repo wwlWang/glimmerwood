@@ -43,6 +43,7 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tickArrow);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SoulLink::respawn);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritFlame::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritCells::login);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritCells::respawn);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::drops);

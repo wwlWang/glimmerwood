@@ -65,9 +65,31 @@ public final class SpiritFxClient {
         if (level == null || mc.isPaused()) return;
         TRACKER.tick(level.getGameTime(), id -> { var e = level.getEntity(id); return e != null && e.isAlive() && !e.isRemoved(); })
                 .forEach(SpiritFxClient::end);
+        companions(mc, level);
         for (var key : TRACKER.active()) {
             var entity = level.getEntity(key.entity());
             if (entity != null) burst(key.kind(), entity.getX(), entity.getY() + entity.getBbHeight() * .5, entity.getZ(), key.entity());
+        }
+    }
+
+    /** R37: where a spirit player's companion light floats (orbiting near the shoulder); shared by the orb and flame beams. */
+    public static net.minecraft.world.phys.Vec3 companion(net.minecraft.world.entity.Entity owner, long gameTime) {
+        double a = gameTime * .08 + owner.getId();
+        return new net.minecraft.world.phys.Vec3(owner.getX() + Math.cos(a) * .55, owner.getY() + owner.getBbHeight() * .9 + Math.sin(gameTime * .15) * .08,
+                owner.getZ() + Math.sin(a) * .55);
+    }
+
+    private static cn.wwl.orimod.fx.SpiritParticleOptions companionOrb;
+
+    /** R37: one glowing mote per tick at each nearby spirit player's companion: a small Sein-like light with a short trail. */
+    private static void companions(Minecraft mc, net.minecraft.client.multiplayer.ClientLevel level) {
+        if (mc.player == null) return;
+        if (companionOrb == null) companionOrb = new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0xFFF4D8, .3f, 6);
+        for (var player : level.players()) {
+            if (!cn.wwl.orimod.spirit.SpiritData.isSpirit(player) || player.isSpectator() || player.distanceToSqr(mc.player) > 32 * 32) continue;
+            if (player == mc.player && mc.options.getCameraType().isFirstPerson()) continue;   // never in your own face
+            var at = companion(player, level.getGameTime());
+            try { level.addParticle(companionOrb, true, at.x, at.y, at.z, 0, 0, 0); } catch (Throwable ignored) { return; }
         }
     }
 
@@ -145,6 +167,14 @@ public final class SpiritFxClient {
                     x -= dir.x * layer.length() * k; y -= dir.y * layer.length() * k; z -= dir.z * layer.length() * k;
                     vx = -dir.x * layer.outward(); vy = -dir.y * layer.outward(); vz = -dir.z * layer.outward();
                     taper = (float) (1 - .65 * k);
+                }
+                case "beam" -> {
+                    // From the companion beside the source's shoulder to the burst point (the struck enemy).
+                    if (sourceEntity != null) {
+                        var from = companion(sourceEntity, level.getGameTime());
+                        x = from.x + (px - from.x) * k; y = from.y + (py - from.y) * k; z = from.z + (pz - from.z) * k;
+                    }
+                    taper = (float) (.55 + .45 * k);
                 }
                 case "column" -> {
                     double a = phase + Math.PI * 2 * slot.j() * .618;

@@ -12,10 +12,10 @@ import java.util.Locale;
  *
  * <p>R32 layer shapes: {@code burst} (gaussian cloud), {@code ring} (circle in the horizontal plane, optional
  * outward speed), {@code arc} (sweep in front of the source's facing), {@code line} (trail segment behind the
- * source's motion, tapering), {@code column} (rising pillar). Spirit particles take colour, size and lifetime.
+ * source's motion, tapering), {@code column} (rising pillar), {@code beam} (R37: from the source's shoulder to the burst point). Spirit particles take colour, size and lifetime.
  */
 public record SpiritFxDefinition(SpiritFxKind kind, List<Layer> layers) {
-    public static final List<String> SHAPES = List.of("burst", "ring", "arc", "line", "column");
+    public static final List<String> SHAPES = List.of("burst", "ring", "arc", "line", "column", "beam");
 
     public record Layer(String particle, double share, double spreadX, double spreadY, double spreadZ, double speed,
                         String shape, double radius, double length, double outward, int rgb, float size, int lifetime) {

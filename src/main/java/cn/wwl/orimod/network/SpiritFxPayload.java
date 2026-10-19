@@ -15,7 +15,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  */
 public record SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, double y, double z, int sourceEntity) implements CustomPacketPayload {
     public static final int NO_SOURCE = -1;
-    public static final String VERSION = "3";
+    public static final String VERSION = "4";
     public static final Type<SpiritFxPayload> TYPE = new Type<>(ResourceLocation.parse("orimod:spirit_fx"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SpiritFxPayload> CODEC = StreamCodec.of(
             (buf, v) -> { buf.writeVarInt(v.kind.wireId()); buf.writeByte(v.phase.wireId()); buf.writeDouble(v.x); buf.writeDouble(v.y); buf.writeDouble(v.z); buf.writeVarInt(v.sourceEntity); },

@@ -75,6 +75,23 @@ public final class SoulLinkGameTests {
             h.assertFalse(cn.wwl.orimod.progression.SpiritCells.absorb(p, cn.wwl.orimod.progression.SpiritCells.Kind.LIFE), "Unawakened player absorbed a cell");
             Fixtures.near(h, p.getMaxHealth(), 20, "Max health changed");
         });
+        add(tests, "companion_flame_targets_nearest_enemy_only", h -> {
+            var p = Fixtures.player(h); SpiritForm.toggle(p);
+            var pig = h.spawn(net.minecraft.world.entity.EntityType.PIG, new net.minecraft.world.phys.Vec3(5.5, 2, 6.5)); pig.setNoAi(true);
+            try {
+                h.assertTrue(cn.wwl.orimod.combat.SpiritFlame.target(p) == null, "Companion targeted a passive mob");
+                var zombie = h.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new net.minecraft.world.phys.Vec3(5.5, 2, 8.5)); zombie.setNoAi(true);
+                try {
+                    h.assertTrue(cn.wwl.orimod.combat.SpiritFlame.target(p) == zombie, "Companion missed the zombie");
+                    float before = zombie.getHealth();
+                    h.assertTrue(cn.wwl.orimod.combat.SpiritFlame.fire(p, zombie), "Spirit Flame did not hurt");
+                    Fixtures.near(h, before - zombie.getHealth(), cn.wwl.orimod.combat.SpiritFlame.DAMAGE, "Spirit Flame damage");
+                    h.setBlock(new net.minecraft.core.BlockPos(5, 3, 7), net.minecraft.world.level.block.Blocks.STONE);
+                    h.setBlock(new net.minecraft.core.BlockPos(5, 2, 7), net.minecraft.world.level.block.Blocks.STONE);
+                    h.assertTrue(cn.wwl.orimod.combat.SpiritFlame.target(p) == null, "Companion fired through a wall");
+                } finally { zombie.discard(); }
+            } finally { pig.discard(); }
+        });
         return tests;
     }
 

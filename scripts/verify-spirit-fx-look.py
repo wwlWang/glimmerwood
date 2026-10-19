@@ -1,5 +1,5 @@
 """FX02: load check and look sheets of every spirit effect definition in the client.
-Requires all 14 definitions loaded without problems (also after a resource reload). Then, at dusk over a dark
+Requires every definition (15 since R37) loaded without problems (also after a resource reload). Then, at dusk over a dark
 floor with a fixed first-person spectator camera close to the effect, plays each kind the way the game emits it
 (one burst for one-shots, one burst per tick for trails/persistent effects) and screenshots it early (~2 ticks)
 and mid-animation (~5 ticks). A second pass shows selected effects around Ori in third person for scale.
@@ -10,7 +10,7 @@ from devtools_client import DevClient
 p = argparse.ArgumentParser(); p.add_argument('build_id'); p.add_argument('--sheet'); p.add_argument('--ori'); args = p.parse_args()
 c = DevClient(args.build_id)
 KINDS = ['BLADE_HIT', 'STOMP_IMPACT', 'ARROW_TRAIL', 'CHECKPOINT_REACHED', 'ROUTE_MARKER', 'DASH', 'DOUBLE_JUMP',
-         'WALL_JUMP', 'BASH', 'BASH_AIM', 'GRAPPLE_HOOK', 'FORM_SWITCH', 'GLIDE', 'GRAPPLE_TETHER']
+         'WALL_JUMP', 'BASH', 'BASH_AIM', 'GRAPPLE_HOOK', 'FORM_SWITCH', 'GLIDE', 'GRAPPLE_TETHER', 'SPIRIT_FLAME']
 PERSISTENT = {'GLIDE', 'GRAPPLE_TETHER', 'BASH_AIM'}
 X, Y, Z = 1000, 200, 1000
 EX, EY, EZ = X + .5, Y + 1.2, Z + 3.2           # effect anchor, ~3 blocks in front of the camera

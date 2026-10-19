@@ -192,3 +192,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R36：生命格与能量格
 
 477 JUnit（`SpiritCellsTest` 存档键与上限）、192 GameTest（新增：生命格 +2 最大生命、能量格 +10 上限、第 11 个被拒、重复重算不叠加；未唤醒拒绝）。
+
+## R37：同伴灵焰
+
+486 JUnit（`SpiritFlameTest` 开火条件与调参；效果定义 15 个、编号 0–14、通道版本 4）、194 GameTest（新增：不打被动生物、锁定最近僵尸并造成 2 伤害、隔墙不打）。
