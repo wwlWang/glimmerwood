@@ -395,3 +395,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 
 - `FeelTuningTest.heldJumpGoesHigherThanTappedAndFallsAreCapped` 按新曲线更新阈值。
 - `scripts/feel_curves.py` 输出更新后的 feel-metrics。
+
+## ori-r86：拖尾与同伴光
+
+- `FeelTuningTest.trailIsContinuousAboveThresholdAndRespectsSettings` 更新密度。
