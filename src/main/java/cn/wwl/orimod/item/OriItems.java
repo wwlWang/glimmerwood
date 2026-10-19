@@ -18,5 +18,7 @@ public final class OriItems {
     /** R49: Spirit Smash heavy weapon. */
     public static final DeferredItem<SpiritHammerItem> SPIRIT_HAMMER = ITEMS.register("spirit_hammer", () ->
             new SpiritHammerItem(new Item.Properties().stacksTo(1)));
+    /** R57: keystones open keystone doors in ruins. */
+    public static final DeferredItem<Item> KEYSTONE = ITEMS.register("keystone", () -> new Item(new Item.Properties().stacksTo(16)));
     private OriItems() {}
 }

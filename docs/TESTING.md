@@ -274,3 +274,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R56：水中冲刺与净水呼吸
 
 518 JUnit（`WaterMovementTest`：冲刺沿视线方向，加速有上限）、218 GameTest（新增 `parity.water_dash_breath_and_cooldown`：水中生效、补满氧气、冷却生效、没有能力不生效）。
+
+## R57：钥石与钥石门
+
+219 GameTest（新增 `flow.cave_ruin_keystone_vault_opens_with_two_keystones`：洞穴遗迹顺时针 90° 放置，两个钥石台脚下实心、各只能取一次；门由 4 块组成；密室内有灵格祭台；第一枚钥石后 4 块门都显示 1/2，第二枚后门全部消失，钥石被消耗）。

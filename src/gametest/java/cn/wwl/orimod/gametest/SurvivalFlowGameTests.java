@@ -57,6 +57,34 @@ public final class SurvivalFlowGameTests {
         add(tests, "fresh_peaceful_world_to_all_ruins", h -> flow(h, Difficulty.PEACEFUL));
         add(tests, "ruins_hold_claimable_cell_pedestals", SurvivalFlowGameTests::cellPedestals);
         add(tests, "glide_ruins_lift_over_their_gaps", SurvivalFlowGameTests::updrafts);
+        add(tests, "cave_ruin_keystone_vault_opens_with_two_keystones", h -> {
+            var placement = place(h, RuinKind.CAVE, Rotation.CLOCKWISE_90);
+            try {
+                var layout = RuinKind.CAVE.layout();
+                var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+                for (var local : layout.keystones()) {
+                    var pos = placement.block(local);
+                    h.assertTrue(h.getLevel().getBlockState(pos.below()).isFaceSturdy(h.getLevel(), pos.below(), net.minecraft.core.Direction.UP), "Keystone pedestal floats at " + pos);
+                    h.assertTrue(cn.wwl.orimod.block.KeystonePedestalBlock.take(player, pos), "Keystone not taken at " + pos);
+                    h.assertTrue(!cn.wwl.orimod.block.KeystonePedestalBlock.take(player, pos), "Keystone taken twice at " + pos);
+                }
+                var keystone = cn.wwl.orimod.item.OriItems.KEYSTONE.get();
+                h.assertValueEqual(player.getInventory().countItem(keystone), 2, "Keystones collected");
+                var door = placement.block(layout.vault().door().getFirst());
+                h.assertValueEqual(cn.wwl.orimod.block.KeystoneDoorBlock.door(h.getLevel(), door).size(), 4, "Door size");
+                var cell = placement.block(layout.cells().getLast().position());
+                h.assertTrue(h.getLevel().getBlockState(cell).getBlock() instanceof cn.wwl.orimod.block.CellPedestalBlock, "Vault cell missing");
+                int slot = player.getInventory().findSlotMatchingItem(new ItemStack(keystone));
+                var stack = player.getInventory().getItem(slot);
+                h.assertValueEqual(cn.wwl.orimod.block.KeystoneDoorBlock.insert(player, door, stack), 1, "First keystone");
+                for (var local : layout.vault().door())
+                    h.assertValueEqual(h.getLevel().getBlockState(placement.block(local)).getValue(cn.wwl.orimod.block.KeystoneDoorBlock.FILLED), 1, "Door progress not shared");
+                h.assertValueEqual(cn.wwl.orimod.block.KeystoneDoorBlock.insert(player, placement.block(layout.vault().door().getLast()), stack), 0, "Second keystone did not open");
+                for (var local : layout.vault().door()) h.assertTrue(h.getLevel().getBlockState(placement.block(local)).isAir(), "Door block left after opening");
+                h.assertValueEqual(player.getInventory().countItem(keystone), 0, "Keystones not consumed");
+            } finally { clear(h, placement, RuinKind.CAVE); }
+            h.succeed();
+        });
         add(tests, "cave_ruin_holds_the_gloom_altar", h -> {
             var placement = place(h, RuinKind.CAVE, Rotation.COUNTERCLOCKWISE_90);
             try {

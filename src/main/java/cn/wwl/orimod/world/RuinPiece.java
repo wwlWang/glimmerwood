@@ -52,6 +52,25 @@ public final class RuinPiece extends TemplateStructurePiece {
     /** R44: put the layout's cell pedestals into the ruin (only the parts inside the chunk being generated). */
     public static int placeCells(net.minecraft.world.level.LevelAccessor level, RuinKind kind, RuinPlacement placement, BoundingBox bounds) {
         int placed = 0;
+        // R57: the keystone vault shell and door first, so the cell inside is placed into its hollow.
+        var vault = kind.layout().vault();
+        if (vault != null) {
+            for (int x = vault.from().getX(); x <= vault.to().getX(); x++)
+                for (int y = vault.from().getY(); y <= vault.to().getY(); y++)
+                    for (int z = vault.from().getZ(); z <= vault.to().getZ(); z++) {
+                        boolean shell = x == vault.from().getX() || x == vault.to().getX() || y == vault.to().getY() || z == vault.from().getZ() || z == vault.to().getZ();
+                        var pos = placement.block(new BlockPos(x, y, z));
+                        if (bounds.isInside(pos)) level.setBlock(pos, (shell ? net.minecraft.world.level.block.Blocks.DEEPSLATE_TILES : net.minecraft.world.level.block.Blocks.AIR).defaultBlockState(), 2);
+                    }
+            for (var local : vault.door()) {
+                var pos = placement.block(local);
+                if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.KEYSTONE_DOOR.get().defaultBlockState(), 2); placed++; }
+            }
+        }
+        for (var local : kind.layout().keystones()) {
+            var pos = placement.block(local);
+            if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.KEYSTONE_PEDESTAL.get().defaultBlockState(), 2); placed++; }
+        }
         for (var cell : kind.layout().cells()) {
             var pos = placement.block(cell.position());
             if (!bounds.isInside(pos)) continue;

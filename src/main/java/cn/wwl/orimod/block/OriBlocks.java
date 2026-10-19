@@ -28,6 +28,11 @@ public final class OriBlocks {
     /** R50: gloom altar that wakes the Gloom Heart boss. */
     public static final DeferredBlock<GloomAltarBlock> GLOOM_ALTAR = BLOCKS.register("gloom_altar", () -> new GloomAltarBlock(
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 7).sound(SoundType.SCULK_CATALYST)));
+    /** R57: keystone doors and keystone pedestals inside ruins. */
+    public static final DeferredBlock<KeystoneDoorBlock> KEYSTONE_DOOR = BLOCKS.register("keystone_door", () -> new KeystoneDoorBlock(
+            BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 3 + 6 * state.getValue(KeystoneDoorBlock.FILLED)).sound(SoundType.TUFF)));
+    public static final DeferredBlock<KeystonePedestalBlock> KEYSTONE_PEDESTAL = BLOCKS.register("keystone_pedestal", () -> new KeystonePedestalBlock(
+            BlockBehaviour.Properties.of().strength(3, 12).noOcclusion().lightLevel(state -> state.getValue(KeystonePedestalBlock.FULL) ? 10 : 2).sound(SoundType.AMETHYST)));
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> FOREST_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.FOREST);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CREEK_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CREEK);
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);

@@ -259,5 +259,12 @@
   "ability.orimod.climb": "Climb",
   "ability.orimod.climb.description": "While sliding on a wall, keep pushing forward into it to climb up. Jump still kicks off the wall.",
   "ability.orimod.water_dash": "Water Dash",
-  "ability.orimod.water_dash.description": "In spirit form: swim faster, never run out of air, and press dash under water to burst along your view."
+  "ability.orimod.water_dash.description": "In spirit form: swim faster, never run out of air, and press dash under water to burst along your view.",
+  "item.orimod.keystone": "Keystone",
+  "block.orimod.keystone_door": "Keystone Door",
+  "block.orimod.keystone_pedestal": "Keystone Pedestal",
+  "message.orimod.keystone.need": "This door needs keystones (%s/%s)",
+  "message.orimod.keystone.inserted": "Keystone set (%s/%s)",
+  "message.orimod.keystone.opened": "The keystone door opens",
+  "message.orimod.keystone.found": "Found a keystone"
 }
