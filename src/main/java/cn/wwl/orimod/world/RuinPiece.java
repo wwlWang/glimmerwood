@@ -88,6 +88,10 @@ public final class RuinPiece extends TemplateStructurePiece {
             level.setBlock(pos, block.get().defaultBlockState(), 2);
             placed++;
         }
+        if (kind.layout().stormAltar() != null) {   // R70
+            var pos = placement.block(kind.layout().stormAltar());
+            if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.STORM_ALTAR.get().defaultBlockState(), 2); placed++; }
+        }
         // R50: the boss altar replaces one floor block of the arena hall.
         if (kind.layout().bossAltar() != null) {
             var pos = placement.block(kind.layout().bossAltar());

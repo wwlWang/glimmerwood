@@ -34,6 +34,7 @@ public final class OriModClient {
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get(), GloomSpitterRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), GloomHeartRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK.get(), GloomHawkRenderer::new);
+            event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH.get(), GloomMatriarchRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.SPIRIT_SPEAR.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SHOT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         });

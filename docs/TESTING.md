@@ -326,3 +326,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R69：幽灵回放写入存档
 
 533 JUnit（新增 `TrialGhostsTest` 3 项：定点数往返误差、上限与截断数据、保存后再加载）；GameTest 的通关流程仍然断言每处遗迹都留下幽灵。
+
+## R70：第二首领：腐光翼母（空中）
+
+537 JUnit（新增 `GloomMatriarchRulesTest` 4 项）；230 GameTest（新增 `parity.gloom_matriarch_dives_stuns_feathers_and_enrages`：俯冲有预警且对准标记、眩晕时受双倍伤害、眩晕结束后回到待机、羽刃 5 枚、半血进入二阶段并召来两只鸦；`flow.forest_ruin_holds_the_storm_altar`：旋转 90° 后祭坛仍在、只能召唤一只、首次击败奖励只发一次）。

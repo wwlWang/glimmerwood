@@ -28,6 +28,9 @@ public final class OriBlocks {
     /** R50: gloom altar that wakes the Gloom Heart boss. */
     public static final DeferredBlock<GloomAltarBlock> GLOOM_ALTAR = BLOCKS.register("gloom_altar", () -> new GloomAltarBlock(
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 7).sound(SoundType.SCULK_CATALYST)));
+    /** R70: storm altar (Gloom Matriarch) in the forest spring ruin. */
+    public static final DeferredBlock<StormAltarBlock> STORM_ALTAR = BLOCKS.register("storm_altar", () -> new StormAltarBlock(
+            BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 9).sound(SoundType.LODESTONE)));
     /** R57: keystone doors and keystone pedestals inside ruins. */
     public static final DeferredBlock<KeystoneDoorBlock> KEYSTONE_DOOR = BLOCKS.register("keystone_door", () -> new KeystoneDoorBlock(
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().lightLevel(state -> 3 + 6 * state.getValue(KeystoneDoorBlock.FILLED)).sound(SoundType.TUFF)));

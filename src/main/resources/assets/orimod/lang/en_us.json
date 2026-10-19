@@ -293,5 +293,11 @@
   "message.orimod.map_fragment.dormant": "The fragment's ink stays faint until your spirit core awakens",
   "message.orimod.map_fragment.read": "The map fragment reveals the way: +%s Spirit Light, the guide points to the nearest ruin.",
   "tooltip.orimod.map_fragment": "Use to point the ruin guide at the nearest ruin. Found at map stones and on Gloom Hawks.",
-  "tooltip.orimod.bow_volley": "Sneak on a full charge: Spirit Arc volley, three arrows for 20 energy"
+  "tooltip.orimod.bow_volley": "Sneak on a full charge: Spirit Arc volley, three arrows for 20 energy",
+  "entity.orimod.gloom_matriarch": "Gloom Matriarch",
+  "block.orimod.storm_altar": "Storm Altar",
+  "message.orimod.matriarch.awake": "The Gloom Matriarch is already hunting",
+  "message.orimod.matriarch.woke": "The Gloom Matriarch descends! Dash from the red ring, Bash her feathers back",
+  "message.orimod.matriarch.victory": "The Gloom Matriarch falls: +100 Spirit Light, a life and an energy cell",
+  "message.orimod.matriarch.again": "The Gloom Matriarch falls again"
 }

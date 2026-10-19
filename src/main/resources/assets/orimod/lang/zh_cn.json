@@ -293,5 +293,11 @@
   "message.orimod.map_fragment.dormant": "唤醒灵核之前，碎片上的墨迹看不清",
   "message.orimod.map_fragment.read": "地图碎片指明了方向：+%s 灵光，指引指向最近的遗迹。",
   "tooltip.orimod.map_fragment": "使用后让遗迹指引指向最近的遗迹。地图石首次激活和腐光鸦掉落。",
-  "tooltip.orimod.bow_volley": "潜行并蓄满：灵弧齐射，三支箭，消耗 20 能量"
+  "tooltip.orimod.bow_volley": "潜行并蓄满：灵弧齐射，三支箭，消耗 20 能量",
+  "entity.orimod.gloom_matriarch": "腐光翼母",
+  "block.orimod.storm_altar": "风暴祭坛",
+  "message.orimod.matriarch.awake": "腐光翼母正在盘旋",
+  "message.orimod.matriarch.woke": "腐光翼母降临！冲刺躲开红圈，用 Bash 把羽刃打回去",
+  "message.orimod.matriarch.victory": "腐光翼母倒下了：+100 灵光，获得生命格与能量格",
+  "message.orimod.matriarch.again": "腐光翼母再次倒下"
 }

@@ -109,6 +109,24 @@ public final class SurvivalFlowGameTests {
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });
+        add(tests, "forest_ruin_holds_the_storm_altar", h -> {
+            var placement = place(h, RuinKind.FOREST, Rotation.CLOCKWISE_90);
+            try {
+                var altar = placement.block(RuinKind.FOREST.layout().stormAltar());
+                h.assertTrue(h.getLevel().getBlockState(altar).is(cn.wwl.orimod.block.OriBlocks.STORM_ALTAR.get()), "Storm altar missing");
+                var player = cn.wwl.orimod.gametest.Fixtures.player(h);
+                player.setData(cn.wwl.orimod.spirit.SpiritData.AWAKENED, true);
+                var boss = cn.wwl.orimod.block.StormAltarBlock.summon(player, altar);
+                h.assertTrue(boss != null, "Matriarch not summoned");
+                h.assertTrue(cn.wwl.orimod.block.StormAltarBlock.summon(player, altar) == null, "Second Matriarch summoned");
+                player.getInventory().clearContent();
+                h.assertTrue(cn.wwl.orimod.entity.GloomMatriarch.victory(player), "First victory");
+                h.assertValueEqual(player.getInventory().countItem(cn.wwl.orimod.item.OriItems.LIFE_CELL.get()), 1, "Victory life cell");
+                h.assertFalse(cn.wwl.orimod.entity.GloomMatriarch.victory(player), "Victory rewarded twice");
+                boss.discard();
+            } finally { clear(h, placement, RuinKind.FOREST); }
+            h.succeed();
+        });
         add(tests, "map_stone_surveys_the_cave_ruin", h -> {
             var placement = place(h, RuinKind.CAVE, Rotation.NONE);
             try {

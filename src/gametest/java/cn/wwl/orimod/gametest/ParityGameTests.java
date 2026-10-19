@@ -325,6 +325,42 @@ public final class ParityGameTests {
                 h.assertTrue(hawk.strike(victim) && victim.getHealth() < hp, "Dive contact did not hurt");
             } finally { hawk.discard(); victim.discard(); }
         });
+        add(tests, "gloom_matriarch_dives_stuns_feathers_and_enrages", h -> {
+            var M = cn.wwl.orimod.entity.GloomMatriarch.class;
+            var victim = h.spawn(net.minecraft.world.entity.EntityType.VILLAGER, new Vec3(5.5, 2, 3.5)); victim.setNoAi(true);
+            var boss = h.spawn(cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH.get(), new Vec3(5.5, 9, 9.5)); boss.setNoAi(true);
+            boss.setHome(h.absolutePos(new net.minecraft.core.BlockPos(5, 2, 9)));
+            try {
+                // Dive: telegraph first, then a plunge towards the marked point.
+                boss.startAttack(cn.wwl.orimod.entity.GloomMatriarch.DIVE_TELEGRAPH, victim);
+                for (int i = 1; i < cn.wwl.orimod.entity.GloomMatriarch.DIVE_TELEGRAPH_TICKS; i++) boss.step();
+                h.assertValueEqual(boss.attack(), cn.wwl.orimod.entity.GloomMatriarch.DIVE_TELEGRAPH, "Dived before the telegraph ended");
+                boss.step();
+                h.assertValueEqual(boss.attack(), cn.wwl.orimod.entity.GloomMatriarch.DIVE, "No dive after the telegraph");
+                var v = boss.diveVelocity();
+                h.assertTrue(v.y < 0 && v.z < 0 && Math.abs(v.length() - cn.wwl.orimod.entity.GloomMatriarch.DIVE_SPEED) < 1e-6, "Dive not aimed at the mark: " + v);
+                // A dodged dive leaves her stunned, taking double damage.
+                boss.stun();
+                float hp = boss.getHealth();
+                boss.hurt(h.getLevel().damageSources().generic(), 4);
+                h.assertTrue(Math.abs(hp - boss.getHealth() - 4 * cn.wwl.orimod.entity.GloomMatriarch.STUN_MULTIPLIER) < .01f, "Stun damage " + (hp - boss.getHealth()));
+                for (int i = 0; i < cn.wwl.orimod.entity.GloomMatriarch.STUN_TICKS; i++) boss.step();
+                h.assertValueEqual(boss.attack(), cn.wwl.orimod.entity.GloomMatriarch.IDLE, "Stun did not end");
+                // Feathers: a Bashable fan after the telegraph.
+                boss.startAttack(cn.wwl.orimod.entity.GloomMatriarch.FEATHERS, victim);
+                java.util.List<cn.wwl.orimod.entity.GloomShot> shots = java.util.List.of();
+                for (int i = 0; i < cn.wwl.orimod.entity.GloomMatriarch.FEATHER_TELEGRAPH && shots.isEmpty(); i++) shots = boss.step();
+                h.assertValueEqual(shots.size(), cn.wwl.orimod.entity.GloomMatriarch.featherCount(1), "Feather fan");
+                shots.forEach(net.minecraft.world.entity.Entity::discard);
+                // Phase two at half health: two Gloom Hawks join.
+                boss.invulnerableTime = 0;
+                boss.hurt(h.getLevel().damageSources().generic(), boss.getHealth() - cn.wwl.orimod.entity.GloomMatriarch.MAX_HEALTH / 2 + 1);
+                h.assertValueEqual(boss.phase(), 2, "No phase two");
+                var hawks = h.getLevel().getEntitiesOfClass(cn.wwl.orimod.entity.GloomHawk.class, boss.getBoundingBox().inflate(16));
+                h.assertValueEqual(hawks.size(), 2, "Phase two hawks");
+                hawks.forEach(net.minecraft.world.entity.Entity::discard);
+            } finally { boss.discard(); victim.discard(); }
+        });
         add(tests, "launch_contact_hits_enemies_once", h -> {
             var p = spirit(h, 127);
             var s = p.getData(SpiritData.MOVEMENT);

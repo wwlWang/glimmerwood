@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"top": "minecraft:block/lapis_block", "bottom": "minecraft:block/polished_deepslate", "side": "minecraft:block/chiseled_tuff_bricks"}}
