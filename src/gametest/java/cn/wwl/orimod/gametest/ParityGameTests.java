@@ -97,6 +97,28 @@ public final class ParityGameTests {
                 h.assertValueEqual(s.acceptedJumps, 3, "With the shard two more air jumps (double + triple)");
             } finally { SpiritMovement.cancel(p, s); }
         });
+        add(tests, "spirit_well_refills_and_travels", h -> {
+            var p = spirit(h, 127);
+            var a = new net.minecraft.core.BlockPos(5, 2, 3); var b = new net.minecraft.core.BlockPos(5, 2, 8);
+            h.setBlock(a, cn.wwl.orimod.block.OriBlocks.FOREST_SHRINE.get()); h.setBlock(b, cn.wwl.orimod.block.OriBlocks.FOREST_SHRINE.get());
+            var absA = h.absolutePos(a); var absB = h.absolutePos(b);
+            p.setPos(h.absoluteVec(new Vec3(5.5, 2, 5.5)));
+            p.hurt(p.damageSources().generic(), 6); p.setData(SpiritData.ENERGY, 10f);
+            h.assertTrue(cn.wwl.orimod.world.SpiritWell.refill(p), "Well did not refill");
+            Fixtures.near(h, p.getHealth(), p.getMaxHealth(), "Health after well");
+            h.assertFalse(cn.wwl.orimod.world.SpiritWell.refill(p), "Well refilled again during cooldown");
+            var progress = p.getData(SpiritData.PROGRESS); var records = new java.util.HashMap<>(progress.rewards());
+            String dim = h.getLevel().dimension().location().toString();
+            records.put("discover/" + dim + "/" + absA.getX() + "," + absA.getY() + "," + absA.getZ(), 1);
+            h.assertFalse(cn.wwl.orimod.world.SpiritWell.travel(p, absA), "Travel with a single discovered well");
+            records.put("discover/" + dim + "/" + absB.getX() + "," + absB.getY() + "," + absB.getZ(), 1);
+            p.setData(SpiritData.PROGRESS, progress.withRewards(records));
+            var stand = cn.wwl.orimod.world.SpiritWell.destination(h.getLevel(), absA, records.keySet());
+            h.assertTrue(stand != null && stand.closerThan(absB, 1.5), "Destination is not the second well: " + stand);
+            h.assertTrue(cn.wwl.orimod.world.SpiritWell.travel(p, absA), "Travel to the second well failed");
+            h.setBlock(b, net.minecraft.world.level.block.Blocks.AIR);
+            h.assertTrue(cn.wwl.orimod.world.SpiritWell.destination(h.getLevel(), absA, records.keySet()) == null, "Travel to a destroyed well");
+        });
         return tests;
     }
 

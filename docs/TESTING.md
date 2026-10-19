@@ -210,3 +210,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R40：灵风口与三段跳碎片
 
 497 JUnit（`UpdraftRulesTest` 加速与上限、三段跳计数；碎片定义与掩码 63）、202 GameTest（新增：风口正上方抬升、隔实心方块或偏离风口不抬升；无碎片只能空中跳一次、装备后两次）。
+
+## R41：灵泉 Spirit Well
+
+499 JUnit（`SpiritWellTest` 排序循环、维度隔离、键解析）、203 GameTest（新增：回满生命能量并有冷却；只有一处时不能传送；两处时落点在第二处神龛前；第二处被毁后无落点）。

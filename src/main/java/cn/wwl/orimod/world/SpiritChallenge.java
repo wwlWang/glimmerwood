@@ -43,6 +43,7 @@ public final class SpiritChallenge {
         String key = ChallengeSession.key(player.level().dimension(), shrine);
         if (SpiritData.isAwakened(player) && SpiritProgression.reward(player, "discover/" + key, 15, 0))
             player.displayClientMessage(Component.translatable("challenge.orimod.discovered", kind.title(), 15), false);
+        if (session(player) == null) SpiritWell.refill(player); // R41: shrines are Spirit Wells
         var progress = player.getData(SpiritData.PROGRESS);
         PacketDistributor.sendToPlayer(player, new RuinOfferPayload(shrine, kind.id, requirement(player, shrine, kind),
                 progress.rewards().getOrDefault("clear/" + key, 0), progress.rewards().getOrDefault("best/" + key, 0), session(player) != null));

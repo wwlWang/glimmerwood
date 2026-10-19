@@ -223,5 +223,9 @@
   "message.orimod.light_burst.energy": "Not enough energy for Light Burst (15)",
   "block.orimod.updraft": "Spirit Updraft",
   "shard.orimod.triple_jump": "Triple Jump",
-  "shard.orimod.triple_jump.description": "One more jump in the air after your double jump."
+  "shard.orimod.triple_jump.description": "One more jump in the air after your double jump.",
+  "screen.orimod.well_travel": "Spirit Well: travel to the next well (%s discovered)",
+  "message.orimod.well.refilled": "The Spirit Well restores your health and energy",
+  "message.orimod.well.travelled": "Travelled to the well at %s, %s, %s",
+  "message.orimod.well.none": "No other discovered well to travel to"
 }

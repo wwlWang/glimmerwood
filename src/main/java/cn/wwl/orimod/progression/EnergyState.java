@@ -8,6 +8,8 @@ public final class EnergyState {
     public long flameReadyAt;
     /** R39: next Light Burst throw. */
     public long burstReadyAt;
+    /** R41: next Spirit Well refill. */
+    public long wellReadyAt;
     public long lastSpent, lastHurt, healReadyAt;
     public boolean pendingHeal;
 }

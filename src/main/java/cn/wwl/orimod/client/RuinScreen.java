@@ -28,7 +28,7 @@ public final class RuinScreen extends Screen {
         paragraph(Component.translatable("challenge.orimod.rules", Component.keybind("key.orimod.panel")), 0xAFC6C2);
         paragraph(Component.translatable("challenge.orimod.rewards", offer.clears(), offer.bestTicks() == 0 ? "—" : String.format(java.util.Locale.ROOT, "%.2f s", offer.bestTicks() / 20.0)), 0xAFC6C2);
         if (!offer.problem().isEmpty()) paragraph(Component.translatable("challenge.orimod.require." + offer.problem()), 0xFFD18A);
-        visibleLines = Math.max(2, (panelHeight - 80) / 11);
+        visibleLines = Math.max(2, (panelHeight - 104) / 11);
         scroll = Math.clamp(scroll, 0, Math.max(0, lines.size() - visibleLines));
         var start = addRenderableWidget(new SpiritButton(left + 14, top + panelHeight - 32, (panelWidth - 42) / 2, 20,
                 Component.translatable(offer.active() ? "challenge.orimod.exit" : "challenge.orimod.start"), button -> {
@@ -37,6 +37,16 @@ public final class RuinScreen extends Screen {
         start.active = offer.active() || offer.problem().isEmpty();
         addRenderableWidget(new SpiritButton(left + 28 + (panelWidth - 42) / 2, top + panelHeight - 32, (panelWidth - 42) / 2, 20,
                 Component.translatable("gui.back"), button -> onClose()));
+        // R41: Spirit Well travel to the next discovered well in this dimension.
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        int wells = mc.player == null ? 0 : cn.wwl.orimod.world.SpiritWell.count(mc.player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).rewards().keySet(),
+                mc.player.level().dimension().location().toString());
+        var travel = addRenderableWidget(new SpiritButton(left + 14, top + panelHeight - 56, panelWidth - 28, 20,
+                Component.translatable("screen.orimod.well_travel", wells), button -> {
+            var s = offer.shrine();
+            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("well_travel", s.getX() + "," + s.getY() + "," + s.getZ())); onClose();
+        }));
+        travel.active = wells > 1 && !offer.active();
     }
     @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {

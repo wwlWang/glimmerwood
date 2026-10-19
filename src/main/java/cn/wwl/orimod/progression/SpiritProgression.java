@@ -39,6 +39,7 @@ public final class SpiritProgression {
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
             case "soul_link" -> SoulLink.create(player);
+            case "well_travel" -> cn.wwl.orimod.world.SpiritWell.travel(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
             case "light_burst" -> cn.wwl.orimod.combat.LightBurst.toss(player);
             case "locate" -> cn.wwl.orimod.world.RuinLocator.request(player);
             case "exit_challenge" -> cn.wwl.orimod.world.SpiritChallenge.finish(player, "exit", true);
