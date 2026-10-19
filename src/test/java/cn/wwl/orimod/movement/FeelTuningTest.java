@@ -98,4 +98,19 @@ class FeelTuningTest {
         assertTrue(approachAngle(170, -170, FACING_RATE, .05f) > 170);
         assertEquals(90, approachAngle(0, 90, 1000, 1), 1e-3);
     }
+
+    @Test void fovKickRampsWithSpeedAndPeaksOnDash() {
+        assertEquals(0, fovKickTarget(false, 4.0), 1e-6);
+        assertEquals(FOV_KICK_SPEED, fovKickTarget(false, 7.5), 1e-6);
+        assertEquals(FOV_KICK_DASH, fovKickTarget(true, 0), 1e-6);
+        assertTrue(fovKickTarget(false, 5.5) > 0 && fovKickTarget(false, 5.5) < FOV_KICK_SPEED);
+    }
+
+    @Test void trailIsContinuousAboveThresholdAndRespectsSettings() {
+        assertEquals(0, trailMotes(.5, 1, true, 0));
+        assertEquals(1, trailMotes(2, 1, true, 0));
+        assertEquals(3, trailMotes(9, 1, true, 0));
+        assertEquals(1, trailMotes(9, .5, true, 0) > 0 ? 1 : 0);
+        assertEquals(1, trailMotes(9, 1, false, 0)); assertEquals(0, trailMotes(9, 1, false, 1));
+    }
 }

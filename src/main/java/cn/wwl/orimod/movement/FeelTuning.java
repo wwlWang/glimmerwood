@@ -119,4 +119,19 @@ public final class FeelTuning {
         int i = MovementRules.DASH_TICKS - Math.max(1, Math.min(MovementRules.DASH_TICKS, ticksLeft));
         return DASH_PROFILE[Math.min(DASH_PROFILE.length - 1, i)];
     }
+
+    /** R75: FOV kick target (fraction) for dash / run speed in m/s; vanilla FOV effect scale is applied by the caller. */
+    public static float fovKickTarget(boolean dashing, double speedMps) {
+        if (dashing) return FOV_KICK_DASH;
+        double t = (speedMps - 4.5) / 2.5;
+        return (float) (FOV_KICK_SPEED * Math.max(0, Math.min(1, t)));
+    }
+
+    /** R75: trail motes per tick for a given speed; low quality halves it, no advanced particles keeps one every other tick. */
+    public static int trailMotes(double speedMps, double particleScale, boolean advanced, long tick) {
+        if (speedMps < TRAIL_MIN_SPEED) return 0;
+        if (!advanced) return tick % 2 == 0 ? 1 : 0;
+        int n = speedMps > 8 ? 3 : speedMps > 4 ? 2 : 1;
+        return Math.max(1, (int) Math.round(n * particleScale));
+    }
 }

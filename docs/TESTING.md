@@ -347,3 +347,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 
 - `FeelTuningTest`：挤压弹簧会过冲、能回稳；弹簧结果不随帧率变化；朝向沿最短方向转。
 - `python3 scripts/feel_anim.py` 输出动画响应曲线。
+
+## ori-r75：镜头与运动特效
+
+- `FeelTuningTest`：FOV 冲击随速度渐增、冲刺时最大；拖尾数量受画质设置约束。
