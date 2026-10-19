@@ -310,3 +310,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R65：R59–R64 真实客户端验证
 
 真实客户端：`scripts/verify-r64.py`（蓄力灵焰净化、灵矛穿透 3 只、腐光鸦预警后俯冲、地图石、灵沙穿行）结果 status ok。
+
+## R66：灵沙小洞奖励
+
+`flow.spirit_sand_lets_only_burrowers_through` 断言小洞里有生命格台；`flow.map_stone_surveys_the_cave_ruin` 改为勘察到 3 个灵格。

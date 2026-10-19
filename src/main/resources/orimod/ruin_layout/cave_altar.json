@@ -129,6 +129,14 @@
         19
       ],
       "kind": "energy"
+    },
+    {
+      "position": [
+        19,
+        2,
+        13
+      ],
+      "kind": "life"
     }
   ],
   "boss_altar": [

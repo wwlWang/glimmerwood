@@ -105,6 +105,7 @@ public final class SurvivalFlowGameTests {
                 h.assertTrue(cn.wwl.orimod.block.SpiritSandBlock.exitVelocity(new net.minecraft.world.phys.Vec3(1, 0, 0)).y >= .35, "Exit pop");
                 var pocket = placement.block(new net.minecraft.core.BlockPos(18, 3, 13));
                 h.assertTrue(h.getLevel().getBlockState(pocket).isAir(), "Pocket not carved");
+                h.assertTrue(h.getLevel().getBlockState(placement.block(new net.minecraft.core.BlockPos(19, 2, 13))).is(cn.wwl.orimod.block.OriBlocks.LIFE_CELL_PEDESTAL.get()), "Burrow pocket reward missing");
             } finally { clear(h, placement, RuinKind.CAVE); }
             h.succeed();
         });
@@ -115,7 +116,7 @@ public final class SurvivalFlowGameTests {
                 h.assertTrue(h.getLevel().getBlockState(stone).is(cn.wwl.orimod.block.OriBlocks.MAP_STONE.get()), "Map stone missing");
                 var player = cn.wwl.orimod.gametest.Fixtures.player(h);
                 var survey = cn.wwl.orimod.block.MapStoneBlock.survey(player, stone);
-                h.assertValueEqual(survey.cells(), 2, "Cells surveyed");
+                h.assertValueEqual(survey.cells(), 3, "Cells surveyed");
                 h.assertValueEqual(survey.keystones(), 2, "Keystones surveyed");
                 h.assertValueEqual(survey.altars(), 1, "Altar surveyed");
                 cn.wwl.orimod.block.KeystonePedestalBlock.take(player, placement.block(RuinKind.CAVE.layout().keystones().getFirst()));
