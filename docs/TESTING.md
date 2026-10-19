@@ -322,3 +322,7 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## R68：地图碎片
 
 `flow.map_stone_surveys_the_cave_ruin` 新增：地图石激活两次只给 1 片碎片；使用后碎片被消耗，灵光 +5。
+
+## R69：幽灵回放写入存档
+
+533 JUnit（新增 `TrialGhostsTest` 3 项：定点数往返误差、上限与截断数据、保存后再加载）；GameTest 的通关流程仍然断言每处遗迹都留下幽灵。

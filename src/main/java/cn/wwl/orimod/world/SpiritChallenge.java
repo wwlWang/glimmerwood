@@ -26,9 +26,8 @@ public final class SpiritChallenge {
     private static final Map<UUID, ChallengeSession> SESSIONS = new HashMap<>();
     private SpiritChallenge() {}
     public static ChallengeSession session(ServerPlayer player) { return SESSIONS.get(player.getUUID()); }
-    /** R63: best-run traces per player and trial, server memory only. */
-    private static final Map<String, java.util.List<Vec3>> GHOSTS = new HashMap<>();
-    public static java.util.List<Vec3> ghost(ServerPlayer player, String key) { return GHOSTS.get(player.getUUID() + "|" + key); }
+    /** R63 best-run traces per player and trial; R69 persisted in the world save. */
+    public static java.util.List<Vec3> ghost(ServerPlayer player, String key) { return TrialGhosts.get(player.server).ghost(player.getUUID() + "|" + key); }
     public static int sessionCount() { return SESSIONS.size(); }
 
     public static void stopAll(net.minecraft.server.MinecraftServer server) {
@@ -37,9 +36,9 @@ public final class SpiritChallenge {
             if (player != null) finish(player, "exit", true);
             else discardTarget(server, entry.getValue());
         }
-        SESSIONS.clear(); GHOSTS.clear();
+        SESSIONS.clear();
     }
-    public static void discardAll() { SESSIONS.clear(); GHOSTS.clear(); }
+    public static void discardAll() { SESSIONS.clear(); }
 
     public static void offer(ServerPlayer player, BlockPos shrine, RuinKind kind) {
         if (!player.isAlive() || player.distanceToSqr(Vec3.atCenterOf(shrine)) > 36) return;
@@ -199,7 +198,7 @@ public final class SpiritChallenge {
         var progress = player.getData(SpiritData.PROGRESS);
         var records = new HashMap<>(progress.rewards());
         int best = records.getOrDefault("best/" + s.key(), Integer.MAX_VALUE);
-        if (ChallengeGhost.replaces(best, s.ghost != null, ticks)) GHOSTS.put(player.getUUID() + "|" + s.key(), java.util.List.copyOf(s.trace));
+        if (ChallengeGhost.replaces(best, s.ghost != null, ticks)) TrialGhosts.get(player.server).put(player.getUUID() + "|" + s.key(), s.trace);
         records.put("best/" + s.key(), Math.min(best, Math.max(1, ticks)));
         player.setData(SpiritData.PROGRESS, progress.withRewards(records));
         cleanup(player, s);
