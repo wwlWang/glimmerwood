@@ -1,5 +1,14 @@
 # 当前工作状态
 
+2026-10-20 R96（灵灯，Codex 实现，待 Claude 审查提交）：
+- **玩法：** `SpiritLanternBlock` 保留 `orimod:bash_anchor` ID，旧模板缺少 `lit` 时默认熄灭；亮度 7→15，持续 100 tick（5 秒），仍无碰撞，轮廓 6×10×6。猛击释放、光爆 4 格、蓄力灵焰 4.5 格内点亮，重复点亮只续时，不重复播放特效或声音。
+- **续亮：** 使用 `LevelChunk.getBlockTicks()` 返回的 `LevelChunkTicks<Block>` 公开 `getAll()/removeIf()`，只替换当前灯的计划刻，再走 `ServerLevel.scheduleTick()`。短续期不缩短原到期时间；不引入 Map、方块实体、mixin、AT 或反射。GameTest 验证相邻灯不受影响，以及续期刻的保存/读取。
+- **表现：** 暗紫水晶框、四柱、挂钩与冷蓝核心，双 cutout 模型；`scripts/art/build_lantern_textures.py` 用标准库生成三张原创 16×16 纹理。`LANTERN_IGNITE`（编号 16）为 8 tick 冷白蓝扩散微粒 + 紫水晶风铃（音高 1.5）；特效协议 4→5。点亮期间在 `SpiritAura` 同批绘制半径 0.9、峰值 alpha 0.25 的呼吸柔光；32 格内仅扫描已加载区块，每 10 tick 缓存，最多 32 盏。
+- **配方调整（Claude 确认）：** 1 原版灯笼 + 2 紫水晶碎片 + 1 荧石粉 → 2 灵灯，紫水晶解锁配方书。原方案灵光会自动入账，故改用荧石粉；ROADMAP 已同步。
+- **验证：** Temurin 21.0.12.1 用户目录安装；同步 Iris 等锁定依赖并校验后，R95 基线 **581 JUnit / 236 GameTest** 全过；R96 **591 / 250** 全过，含新增 13 项灯测试、1 项 FX 路由和原有 10 项遗迹边界测试。纹理复现、FX 导出检查通过。`CLOUD_HANDOFF` 已将依赖同步移到 build 前。
+- **遗迹检查例外：** `check-ruins.py` 无只读模式，会调用旧生成器，报 `AssertionError: Generated assets changed`。3 个 NBT 仅 gzip 头 OS 字节不同（`0a→ff`，解压完全相同）；旧生成器还删掉布局扩展字段并覆盖神龛贴图。产生的 9 个文件已通过只读 `git show HEAD:<path>` 恢复；另行只读验证三类模板契约与 14 个相关文件的 HEAD 哈希均通过，遗迹资源无改动。没有把重生成检查记为通过。
+- **未实机验证：** 模型、粒子、柔光观感、实际声音、Iris 组合和 GPU 性能；未做完整客户端/服务端重启与区块卸载实测（只测计划刻序列化）。不开始 R97，不执行 git 写操作。构建、失败原文及哈希证据见 [TESTING](TESTING.md#r96灵灯)。
+
 2026-10-20 00:33（UTC+8）发布包重建（R95，60713ab967）：`/workspace/oriMod/release/orimod-0.1.0-SNAPSHOT-60713ab967.jar`，sha256 `9b3affa3eff70b1617af9aac78cfd514ccd077589351285df6739702d08c4649`；同目录有 `gemrender-0.1.17.jar`。
 
 2026-10-20 00:35（UTC+8）云端 ori-r95（姿态覆盖：跑 / 游 / 滑翔+鞘翅 / 手持物）：用户「弄完一起看」，一个 jar 覆盖四项。参考：WotW 游泳冲刺、Kuro 羽毛滑翔、Luma Pools、E3 2019 预告（仅截剪影对照，`shots/r95-ref-*.png`，不打包）。详见 [ORI_ANIM_AUDIT.md](ORI_ANIM_AUDIT.md#r95--pose-overrides-run--swim--glide--elytra--held-items)。

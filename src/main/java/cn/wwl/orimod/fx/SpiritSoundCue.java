@@ -27,6 +27,7 @@ public record SpiritSoundCue(String sound, float volume, float pitch, boolean lo
         TABLE.put(SpiritFxKind.GRAPPLE_TETHER, null);
         TABLE.put(SpiritFxKind.SPIRIT_FLAME, new SpiritSoundCue("minecraft:entity.blaze.shoot", .3f, 1.9f, false));
         TABLE.put(SpiritFxKind.RACE_GHOST, null);
+        TABLE.put(SpiritFxKind.LANTERN_IGNITE, new SpiritSoundCue("minecraft:block.amethyst_block.chime", .6f, 1.5f, false));
         TABLE.put(SpiritFxKind.BASH_AIM, new SpiritSoundCue("minecraft:block.beacon.ambient", .25f, 1.6f, true));
     }
 

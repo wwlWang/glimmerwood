@@ -1,0 +1,7 @@
+{
+  "parent": "orimod:block/bash_anchor",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "core": "orimod:block/spirit_lantern_core_lit"
+  }
+}

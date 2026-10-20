@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "kind": "lantern_ignite",
+  "notes": "R96: original cold white-blue lantern flare; expands for 8 ticks (0.4 seconds).",
+  "layers": [
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.75,
+      "spread": [0.04, 0.1, 0.04],
+      "speed": 0.005,
+      "shape": "ring",
+      "radius": 0.16,
+      "outward": 0.075,
+      "color": "#9ec8ff",
+      "size": 0.16,
+      "lifetime": 8
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.25,
+      "spread": [0.04, 0.12, 0.04],
+      "speed": 0.01,
+      "shape": "ring",
+      "radius": 0.12,
+      "outward": 0.05,
+      "color": "#f2f8ff",
+      "size": 0.1,
+      "lifetime": 8
+    }
+  ]
+}

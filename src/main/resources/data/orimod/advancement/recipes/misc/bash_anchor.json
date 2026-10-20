@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_amethyst_shard": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {"items": [{"items": "minecraft:amethyst_shard"}]}
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {"recipe": "orimod:bash_anchor"}
+    }
+  },
+  "requirements": [["has_amethyst_shard", "has_the_recipe"]],
+  "rewards": {"recipes": ["orimod:bash_anchor"]}
+}

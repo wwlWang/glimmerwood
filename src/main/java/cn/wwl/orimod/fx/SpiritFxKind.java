@@ -26,7 +26,9 @@ public enum SpiritFxKind {
     /** One-shot (R37): companion Spirit Flame, a beam from the companion to the struck enemy. */
     SPIRIT_FLAME(14, 10, 4, 0, 0, 0, 0),
     /** One-shot (R63): Spirit Trials ghost of the best run, a pale column every other tick. */
-    RACE_GHOST(15, 4, 2, .08, .05, .08, 0);
+    RACE_GHOST(15, 4, 2, .08, .05, .08, 0),
+    /** R96: a cold white-blue flare when a spirit ability first ignites a lantern. */
+    LANTERN_IGNITE(16, 12, 4, .1, .1, .1, .02);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

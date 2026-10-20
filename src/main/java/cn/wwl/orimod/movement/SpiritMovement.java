@@ -383,6 +383,8 @@ public final class SpiritMovement {
         if (!session.target.valid(player) || now >= session.expiresAt) { cancel(player, s); return; }
         Vec3 direction = Vec3.directionFromRotation(s.pitch, s.yaw);
         session.release(direction, player);
+        if (session.target.block() != null)
+            cn.wwl.orimod.block.SpiritLanternBlock.ignite(player.serverLevel(), session.target.block(), cn.wwl.orimod.block.SpiritLanternBlock.LIT_TICKS);
         s.targetCooldowns.put(session.target.key(), now + BashSession.TARGET_COOLDOWN_TICKS);
         s.bash = null;
         s.airJumpSpent = s.airDashSpent = false;

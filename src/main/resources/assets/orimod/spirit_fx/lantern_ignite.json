@@ -1,0 +1,38 @@
+{
+  "format": 1,
+  "kind": "lantern_ignite",
+  "layers": [
+    {
+      "color": "#9ec8ff",
+      "lifetime": 8,
+      "outward": 0.075,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.16,
+      "shape": "ring",
+      "share": 0.75,
+      "size": 0.16,
+      "speed": 0.005,
+      "spread": [
+        0.04,
+        0.1,
+        0.04
+      ]
+    },
+    {
+      "color": "#f2f8ff",
+      "lifetime": 8,
+      "outward": 0.05,
+      "particle": "orimod:spirit_spark",
+      "radius": 0.12,
+      "shape": "ring",
+      "share": 0.25,
+      "size": 0.1,
+      "speed": 0.01,
+      "spread": [
+        0.04,
+        0.12,
+        0.04
+      ]
+    }
+  ]
+}

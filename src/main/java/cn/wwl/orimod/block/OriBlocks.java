@@ -11,8 +11,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class OriBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(OriMod.MOD_ID);
-    public static final DeferredBlock<Block> BASH_ANCHOR = BLOCKS.registerSimpleBlock("bash_anchor", BlockBehaviour.Properties.of()
-            .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AMETHYST));
+    /** R96: keep the original registry id so existing ruins and player-built Bash routes remain valid. */
+    public static final DeferredBlock<SpiritLanternBlock> BASH_ANCHOR = BLOCKS.register("bash_anchor", () -> new SpiritLanternBlock(BlockBehaviour.Properties.of()
+            .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> SpiritLanternBlock.lightLevel(state.getValue(SpiritLanternBlock.LIT)))
+            .sound(SoundType.AMETHYST)));
     public static final DeferredBlock<Block> GRAPPLE_FLOWER = BLOCKS.registerSimpleBlock("grapple_flower", BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AZALEA_LEAVES));
     /** R40: glowing updraft vent that lifts gliding players. */

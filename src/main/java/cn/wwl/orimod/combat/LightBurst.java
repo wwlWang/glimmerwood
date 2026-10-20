@@ -62,6 +62,7 @@ public final class LightBurst extends ThrowableProjectile {
             }
         }
         cn.wwl.orimod.block.GloomWaterBlock.cleanse(level, blockPosition(), (int) RADIUS);
+        cn.wwl.orimod.block.SpiritLanternBlock.igniteAround(level, position(), RADIUS + 1, cn.wwl.orimod.block.SpiritLanternBlock.LIT_TICKS);
         SpiritFx.emit(level, SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
         level.playSound(null, getX(), getY(), getZ(), SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.PLAYERS, .8f, 1.3f);
         discard();

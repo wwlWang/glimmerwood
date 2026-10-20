@@ -35,6 +35,12 @@ public final class SpiritAura {
     /** Light the spirit casts on the ground under it: radius (blocks), peak alpha, and how high it still reaches. */
     public static final float GROUND_RADIUS = 2.6f, GROUND_ALPHA = .42f, GROUND_REACH = 4.5f;
     public static final int GROUND_COLOR = 0xB4DAFF;
+    /** R96: lantern halos share the spirit batch; loaded-section scans are cached for half a second. */
+    public static final int LANTERN_RANGE = 32, LANTERN_SCAN_TICKS = 10, MAX_LANTERNS = 32;
+    public static final float LANTERN_RADIUS = .9f, LANTERN_ALPHA = .25f;
+    private static final java.util.List<net.minecraft.core.BlockPos> LANTERNS = new java.util.ArrayList<>();
+    private static java.lang.ref.WeakReference<net.minecraft.client.multiplayer.ClientLevel> lanternLevel = new java.lang.ref.WeakReference<>(null);
+    private static long lanternScanAt = Long.MIN_VALUE;
     private SpiritAura() {}
 
     /** 0.8..1 slow breathing (same period as the body's breath). */
@@ -96,6 +102,43 @@ public final class SpiritAura {
         SpiritEnergy.quad(out, pose, c, new Vector3f(r * .45f, 0, 0), new Vector3f(0, 0, r * .45f), 0xEAF6FF, GROUND_ALPHA * .8f * fade * fade * b);
     }
 
+    /** R96: palette-filter loaded sections before checking blocks; stop after finding 32 lamps in the sphere. */
+    private static void scanLanterns(net.minecraft.client.multiplayer.ClientLevel level, Player player) {
+        long now = level.getGameTime();
+        if (lanternLevel.get() == level && now >= lanternScanAt && now - lanternScanAt < LANTERN_SCAN_TICKS) return;
+        lanternLevel = new java.lang.ref.WeakReference<>(level);
+        lanternScanAt = now;
+        LANTERNS.clear();
+        var centre = player.position();
+        int minX = Mth.floor(centre.x - LANTERN_RANGE), maxX = Mth.floor(centre.x + LANTERN_RANGE);
+        int minZ = Mth.floor(centre.z - LANTERN_RANGE), maxZ = Mth.floor(centre.z + LANTERN_RANGE);
+        int minY = Math.max(level.getMinBuildHeight(), Mth.floor(centre.y - LANTERN_RANGE));
+        int maxY = Math.min(level.getMaxBuildHeight() - 1, Mth.floor(centre.y + LANTERN_RANGE));
+        var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int cx = minX >> 4; cx <= maxX >> 4; cx++) for (int cz = minZ >> 4; cz <= maxZ >> 4; cz++) {
+            var chunk = level.getChunkSource().getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false);
+            if (chunk == null) continue;
+            for (int sy = minY >> 4; sy <= maxY >> 4; sy++) {
+                var section = chunk.getSection(chunk.getSectionIndex(sy << 4));
+                if (!section.maybeHas(SpiritAura::isLitLantern)) continue;
+                for (int y = Math.max(minY, sy << 4); y <= Math.min(maxY, (sy << 4) + 15); y++)
+                    for (int x = Math.max(minX, cx << 4); x <= Math.min(maxX, (cx << 4) + 15); x++)
+                        for (int z = Math.max(minZ, cz << 4); z <= Math.min(maxZ, (cz << 4) + 15); z++) {
+                            pos.set(x, y, z);
+                            if (pos.distToCenterSqr(centre) <= LANTERN_RANGE * LANTERN_RANGE
+                                    && isLitLantern(section.getBlockState(x & 15, y & 15, z & 15))) {
+                                LANTERNS.add(pos.immutable());
+                                if (LANTERNS.size() >= MAX_LANTERNS) return;
+                            }
+                        }
+            }
+        }
+    }
+
+    private static boolean isLitLantern(net.minecraft.world.level.block.state.BlockState state) {
+        return state.is(cn.wwl.orimod.block.OriBlocks.BASH_ANCHOR.get()) && state.getValue(cn.wwl.orimod.block.SpiritLanternBlock.LIT);
+    }
+
     public static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         var mc = Minecraft.getInstance();
@@ -112,6 +155,16 @@ public final class SpiritAura {
         var pose = poses.last();
         float t = SpiritEnergy.time();
         boolean drew = false;
+        scanLanterns(level, mc.player);
+        for (var pos : LANTERNS) {
+            // Recheck cached entries so a broken/extinguished lamp vanishes immediately and never loads a chunk.
+            if (pos.distToCenterSqr(mc.player.position()) > LANTERN_RANGE * LANTERN_RANGE
+                    || !level.hasChunkAt(pos) || !isLitLantern(level.getBlockState(pos))) continue;
+            var c = new Vector3f((float) (pos.getX() + .5 - cam.x), (float) (pos.getY() + .5 - cam.y), (float) (pos.getZ() + .5 - cam.z));
+            SpiritEnergy.billboard(out, pose, c, rotation, LANTERN_RADIUS, COMPANION_HALO,
+                    LANTERN_ALPHA * breath(t + (pos.asLong() & 255) * .037f));
+            drew = true;
+        }
         for (Player player : level.players()) {
             if (!SpiritData.isSpirit(player) || player.isSpectator() || player.isInvisible() || player.distanceToSqr(mc.player) > 48 * 48) continue;
             boolean self = player == mc.player && mc.options.getCameraType().isFirstPerson();

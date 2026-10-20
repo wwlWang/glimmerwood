@@ -52,6 +52,7 @@ public final class ChargeFlame {
             }
         }
         cn.wwl.orimod.block.GloomWaterBlock.cleanse(level, player.blockPosition(), (int) Math.ceil(RADIUS) + 1);
+        cn.wwl.orimod.block.SpiritLanternBlock.igniteAround(level, player.position(), RADIUS + 1, cn.wwl.orimod.block.SpiritLanternBlock.LIT_TICKS);
         cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, player.getX(), player.getY() + .1, player.getZ(), null);
         cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.FORM_SWITCH, player.getX(), player.getY(), player.getZ(), null);
         level.playSound(null, player.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1, 1.4f);

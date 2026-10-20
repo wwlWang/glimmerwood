@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=false": {
       "model": "orimod:block/bash_anchor"
+    },
+    "lit=true": {
+      "model": "orimod:block/bash_anchor_lit"
     }
   }
 }

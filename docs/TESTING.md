@@ -1,8 +1,9 @@
 # 回归测试
 
-需要 JDK 21、Git LFS 中的两个锁定依赖，以及首次下载 Gradle / Minecraft 依赖的网络连接。
+需要 JDK 21、Git LFS 中的两个锁定依赖、`sync-dependencies.py` 下载的 Iris 编译接口，以及首次下载 Gradle / Minecraft 依赖的网络连接。
 
 ```sh
+python3 scripts/sync-dependencies.py
 ./gradlew test runGameTestServer --console=plain
 ```
 
@@ -399,3 +400,43 @@ FX02 第 1 步：459 JUnit（`SpiritFxDefinitionTest` 28 项：每类效果的�
 ## ori-r86：拖尾与同伴光
 
 - `FeelTuningTest.trailIsContinuousAboveThresholdAndRespectsSettings` 更新密度。
+
+## R96：灵灯
+
+2026-10-20 Linux / 用户目录 Temurin 21.0.12.1，`./gradlew build runGameTestServer --console=plain`：
+环境补齐后的原基线 **581 JUnit / 236 GameTest** 全过；R96 **591 JUnit / 250 GameTest**，零失败、零跳过。
+
+- `SpiritLanternBlockTest` 新增 3 项：100 tick 时长、7 / 15 亮度映射；新 FX 枚举带来 7 项既有参数化测试（载荷、声音、定义、预算）。FX 编号 16 追加，通道版本为 5，未知编号测试推进到 17。
+- `LanternGameTests` 新增 13 项：旧 NBT 无 `Properties` 的默认状态、实际光照映射/形状/无碰撞；非灯和非正时长拒绝；真实计划刻在第 100 tick 熄灭；第 50 tick 续到 150、不影响旁灯、短续时不缩短、计划刻序列化往返；拆掉重放不继承旧到期时间；球形半径/边界/计数；光爆两格内点亮且五格外不亮；蓄力灵焰仅成功释放时点亮；Bash 释放点亮且亮灯仍可选；取消 Bash 不点亮；工作台实际取出两盏灯并消耗全部材料；紫水晶获得时解锁配方书；续亮不重复发 FX 或风铃声音。
+- `FxGameTests` 自动增加 `fx.route_lantern_ignite`，确认网络路由。既有 `RuinBoundaryGameTests` 10 项全部通过；没有另跑独立 WorldgenAudit。
+- `python3 scripts/art/build_lantern_textures.py --check` 与 `python3 scripts/export-spirit-fx.py --check` 通过，三张纹理可重复生成、17 个效果定义与源一致。物品模型仍继承暗模型。
+
+环境同步新下载并按 `dependencies/lock.json` 校验 SHA-512：`iris-neoforge-1.8.12+mc1.21.1.jar`、`sodium-neoforge-0.6.13+mc1.21.1.jar`、`photon-neoforge-1.21.1-2.2.8-all.jar`、`kilagraph-neoforge-1.21.1-21.1.0.16.jar`、`Mellow v3.4.1a.zip`、`ldlib2-neoforge-1.21.1-2.2.40-all.jar`、`colorwheel-neoforge-1.3.0-beta3+mc1.21.1.jar`；已有 `gemrender-0.1.17.jar` 复验通过。未修改全局 JAVA_HOME/PATH。遗迹检查的 `nbtlib==2.0.4` 安装在用户目录独立 venv，没有新增模组依赖。
+
+失败记录（均未隐去）：
+
+```text
+原环境：SpiritGlowIris.java:4: error: package net.irisshaders.iris does not exist
+R96 第一次编译：SpiritLanternBlock.java:46: error: cannot find symbol
+  symbol:   method getAll()
+  location: variable scheduled of type TickContainerAccess<Block>
+同轮：SpiritLanternBlock.java:50: error: cannot find symbol
+  symbol:   method removeIf((t)->t.typ[...](pos))
+  location: variable scheduled of type TickContainerAccess<Block>
+R96 第二次编译：LanternGameTests.java:84: error: incompatible types: Tag cannot be converted to ListTag
+遗迹重生成检查：AssertionError: Generated assets changed
+```
+
+前三轮编译问题分别由标准依赖同步、将公开 tick 接口转换为 Minecraft 1.21.1 实际的 `LevelChunkTicks<Block>`、将保存结果转换为 `ListTag` 解决；没有运行失败的 JUnit/GameTest 用例。
+
+`check-ruins.py` 当前没有只读参数，会无条件调用旧的 `build_ruins.py`。本环境 Python 3.14.7 / nbtlib 2.0.4：三张 NBT 重生成仅 gzip 头第 9 字节 `0a→ff`，其余压缩字节与解压 NBT 均一致；生成器还会移除布局后加的 `cells/updrafts/map_stone/...` 字段，并把三张神龛模型的原创贴图重置为原版贴图。因此该重生成检查**未通过**，并非 R96 改动遗迹。产生的 9 个文件用 `git show HEAD:<path>` 恢复后，另行只读执行其 NBT/布局契约，并对 14 个相关文件与 HEAD 逐字节及 SHA-256 比较，均通过。模板哈希保留：
+
+| 模板 | SHA-256 |
+| --- | --- |
+| forest_spring.nbt | `e8e425777f9101a79a94ed45a02727de122988a648e561949dfb5158d806eeba` |
+| creek_ruins.nbt | `e0d66c48a63357c6c2f6170ceb37cb718612761fab9c698fa3c3419d717562a0` |
+| cave_altar.nbt | `1e4bd1ce6ef2edcc597f24374928bd10b3502c2661e2839d911f48a0919f5ac3` |
+
+本机会话原始记录：`/tmp/orimod-r96-sync-dependencies.log`、`/tmp/orimod-r96-baseline.log`（首次环境失败）、`/tmp/orimod-r96-baseline-synced.log`、`/tmp/orimod-r96-build-{1,2,3}.log`、`/tmp/orimod-r96-ruins-restore.json`、`/tmp/orimod-r96-ruins-readonly.json`。临时日志未入库。
+
+未实机验证：灯笼和物品外观、点亮瞬间微粒、呼吸柔光、声音、Iris 组合、GPU 性能；服务端重启/区块卸载只验证了计划刻保存往返，没有完整进程重启实测。配方按 Claude 的修订使用荧石粉及紫水晶解锁，避免灵光自动入账造成材料不可用；详见 ROADMAP_R96。

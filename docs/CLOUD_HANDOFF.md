@@ -23,6 +23,7 @@ git lfs install --local
 git lfs pull
 git lfs fsck
 java -version
+python3 scripts/sync-dependencies.py
 ./gradlew build runGameTestServer --console=plain
 ```
 
@@ -31,13 +32,12 @@ java -version
 编译开发工具或运行图形客户端前，额外执行：
 
 ```sh
-python3 scripts/sync-dependencies.py
 ./gradlew compileDevtoolsJava --console=plain
 # 具备可用图形环境时再启动：
 ./gradlew runDevtoolsClient --console=plain
 ```
 
-安装（R82）：Minecraft 1.21.1 + NeoForge 21.1.248 或任意更高的 21.1.x（mods.toml 范围 `[21.1.248,21.2)`，Minecraft 仍为精确的 `[1.21.1]`），`mods/` 放 OriMod JAR 与 `gemrender-0.1.17.jar`（内置 Flywheel 1.0.6；**不**嵌入 OriMod，因 GemRender 含 mixin + 原生库）。官方启动器即可，不需要 runClient。锁定的 GemRender 和 Flywheel 已通过 LFS 保存，无须重新构建渲染库。可选库由同步脚本按锁文件下载并校验；不要因为下载失败换成最新依赖或关闭哈希检查。普通构建和 GameTest 不需要可选画面库。依赖损坏时保留错误记录，按锁文件恢复。
+安装（R82）：Minecraft 1.21.1 + NeoForge 21.1.248 或任意更高的 21.1.x（mods.toml 范围 `[21.1.248,21.2)`，Minecraft 仍为精确的 `[1.21.1]`），`mods/` 放 OriMod JAR 与 `gemrender-0.1.17.jar`（内置 Flywheel 1.0.6；**不**嵌入 OriMod，因 GemRender 含 mixin + 原生库）。官方启动器即可，不需要 runClient。锁定的 GemRender 和 Flywheel 已通过 LFS 保存，无须重新构建渲染库。可选库由同步脚本按锁文件下载并做 SHA-512 校验；不要因为下载失败换成最新依赖或关闭哈希检查。**R96 环境补充：普通构建的 `compileJava` 也需要 Iris 的编译接口，LFS 不提供该 JAR，必须先执行 `sync-dependencies.py`。** GameTest 运行时仍不加载这些可选画面库。依赖损坏时保留错误记录，按锁文件恢复。
 
 本次交接检查了本地 26 个 LFS 条目，`git lfs fsck` 通过。源码 ZIP 可能只有指针，请使用 Git 检出和 LFS。Git 中已包含当前身体/手部 v010、技术样例 v008、采用的下载原件、正式运行资产及其生成脚本。
 
