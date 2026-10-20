@@ -114,6 +114,18 @@ public final class MovementRules {
         return new Vec3(velocity.x, Math.max(velocity.y, WALL_SLIDE_SPEED), velocity.z);
     }
 
+    /** R99: Sticky caps passive wall descent at 35%; pressing into the wall holds, while Climb wins. */
+    public static final double STICKY_SLIDE_SCALE = .35, WALL_PRESS_DOT = .2;
+    /** R99: neutral/tangential input can stay attached; input at or below this dot releases the wall. */
+    public static final double STICKY_WALL_DOT = -WALL_PRESS_DOT;
+    public static boolean stickyWallInput(double dot) { return dot > STICKY_WALL_DOT; }
+    public static boolean pressingWall(Vec3 input, Vec3 normal) { return input.dot(normal) > WALL_PRESS_DOT; }
+    public static Vec3 wallVelocity(Vec3 velocity, boolean climb, boolean sticky, boolean pressing) {
+        if (climb) return climbVelocity(velocity);
+        if (!sticky) return wallSlideVelocity(velocity);
+        return new Vec3(velocity.x, Math.max(velocity.y, pressing ? 0 : WALL_SLIDE_SPEED * STICKY_SLIDE_SCALE), velocity.z);
+    }
+
     public static Vec3 glideVelocity(Vec3 velocity, Vec3 direction, boolean enhancedControl) {
         Vec3 horizontal = new Vec3(velocity.x, 0, velocity.z).scale(.92)
                 .add(direction.scale(enhancedControl ? .075 : .06));

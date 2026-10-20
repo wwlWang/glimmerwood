@@ -566,3 +566,65 @@ src/test/java/cn/wwl/orimod/fx/FxBudgetTest.java
 src/test/java/cn/wwl/orimod/fx/SpiritFxLifecycleTest.java
 src/test/java/cn/wwl/orimod/fx/SpiritFxPayloadTest.java
 ```
+
+## R99：新碎片与第四槽
+
+用户目录 Temurin 21.0.12.1 下执行：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" \
+  ./gradlew build runGameTestServer --console=plain
+python3 scripts/test-summary.py
+git diff --check
+```
+
+结果：**724 JUnit / 342 GameTest**，零失败、零跳过；较 R98（700 / 302）新增 **24 / 40**。首轮单测、首轮全量、补墙跳预测保护及审查修复后的全量均通过，**无构建或测试失败原文**。日志：`/tmp/orimod-r99-unit.log`、`/tmp/orimod-r99-full.log`、`/tmp/orimod-r99-final.log`、`/tmp/orimod-r99-sticky-review.log`（未入库）。没有运行 `check-ruins.py` 或任何 git 写操作。
+
+- `ShardEffectsTest` 新增 17 项：第四槽 9/10 技能边界与原 1/2/3 槽，19/20 tick 边界的滚动回血限额、满血/堆叠/时钟倒退，荆棘直接近战/投射物/反伤源/有效伤害/距离条件和 9/10 tick 冷却，极限猛击玩家与投射物倍率，吸附下降/悬停/攀爬优先级/上升动量，双语言碎片与槽位文案。
+- `SpiritProgressTest` 新增 2 项真实 **NBT** codec 测试：旧 `owned_shards=63`、`equipped_shards=0…63` 的所有组合保留，缺失字段有默认值；`owned_shards=equipped_shards=2047` 连同其他字段完整往返。未知位测试改为 `4095 → 2047`，原来的 255 已全部属于合法碎片位。codec 字段和版本没有改变。
+- `ProgressionDefinitionsTest` 补 5 个前置条件；旧碎片位值不变，新位值依次 64 / 128 / 256 / 512 / 1024。
+- `shards.*` 新增 35 项 GameTest：直接拾取/磁吸接触/背包自动入账、重复事件不重复收益、灵光容量只结算实际消费、人形/未装备禁用、任务直接加币不触发、生命/能量封顶、跨秒滚动窗口；第四槽门槛与能力减少保留装备/仍可卸下；Bash/Climb 购买前置。
+- 战斗用例经真实伤害路径触发 NeoForge `LivingDamageEvent.Post`：近战反伤、同一攻击者冷却及不同攻击者隔离、距离恰好 3 与 3.01，拒绝投射物/间接/THORNS/零伤害/人形/未装备；双真实玩家临时开启 PvP、都装备荆棘，确认只反击一次、不会回弹。夹具先度过 60 tick 登录无敌期，并在结束时还原难度/PvP。
+- Bash 用例走实际输入与释放：敌人额外 4 伤害、玩家速度 1.25→1.5，飞行箭 1.6→2.08 并转交归属，插地箭维持原归属与 0.8 推力，取消瞄准无伤害，玩家/盟友/非敌对动物/练习水晶不能成为加伤对象。原 Bash GameTests 未改、全部通过。
+- 吸附用例用真实墙块和服务端移动入口：无输入被动下降 −0.042、侧向朝墙悬停 0、按前进攀爬 +0.14、未装备保持 −0.12、潜行脱墙、不耗能、零/正速度保持墙面状态、无输入仍能蹬墙跳；预测墙跳的 8 tick 脱墙期内，共享速度入口不让旧墙滑租约把跳跃覆盖为攀爬或悬停。
+- 审查新增 1 项 JUnit：无输入/沿墙输入接受，−0.2 边界及两侧、明确背离的纯函数判定；新增 `sticky_wall_away` / `sticky_wall_away_diagonal` 两项 GameTest：先进入 WALL_SLIDE、保留上一面墙，再按背离方向或点积约 −0.243 的斜向输入，确认退出到 IDLE、下降速度不再受限。斜向用例同时验证 +0.15 偏好不能救回被拒绝的墙。审查前为 723 / 340，修复后为 724 / 342。
+- 原碎片购买参数化 GameTest 自动新增 5 项。其共用夹具原来仅授予旧 6 个能力（63），为覆盖 STICKY 的 CLIMB 前置，改为授予当前所有 `Ability` 位；购买/重复扣费断言不变。其他旧 GameTest 文件未修改。
+
+实现取舍与边界：
+
+- 代码核对确认 `pullLight` 本身只施加朝玩家的速度，没有第二次入账。它触发的实际拾取和背包自动兑换统一调用 `collectLight`，先消耗实际获准入账数量，再触发汲取。任务/命令的 `grantLight` 保持单纯货币操作；不改掉落数量、磁吸范围和灵光上限。限速状态跨换形/卸装保留，防止反复装备绕过窗口，随会话结束消失。
+- 荆棘使用 NeoForge 21.1.248 的伤害 **Post** 事件和 `getNewDamage()>0`；判定 `directEntity == entity`、LivingEntity 攻击者、非 Projectile/非投射物伤害类型、距离 ≤3。按用户允许的方案使用原版 **THORNS** 伤害源，明确过滤该类型，并在调用 `hurt` 前登记同目标冷却，不会发生双荆棘递归；中英文与 ROADMAP 同步描述为荆棘伤害。
+- 极限猛击玩家加速在 `SpiritMovement.releaseBash`；敌人加伤与投射物反弹在 `BashSession.release`。投射物倍率作用于原反弹速度（原上限 4，装备后上限 5.2）；光爆保留原来的直接引爆分支，没有改成反弹。
+- 原服务端墙滑主要续租、原客户端实际限速；现在共用 `slidingWall` / `wallVelocity`。装备 Sticky 才允许无输入接触并慢滑；普通墙滑的输入条件不变，Climb 仍优先。`SpiritJumpPrediction` / `SpiritActionPrediction` 也使用同一接触规则；没有增加网络字段或协议版本。
+- 审查确认：服务端此前已传入 `s.wallDirection` 并加 0.15，客户端此前传 −1。客户端改传 `state.wallDirection` 的规则与服务端相同，但当前客户端该字段没有同步或本地更新、通常仍为默认 −1，因此尚未实际启用该偏好，也不应称为完整解决状态不一致。按审查要求，本次仅说明，未增加客户端状态维护或同步。Sticky 的退出阈值检查原始点积，独立于该偏好。
+- 碎片页为 **11 碎片 + 能量升级，共 12 行**，沿用 `ObjectSelectionList` 的滚动/裁剪；详情可滚动，追加“学会 10 个技能后解锁第 4 槽（当前/10）”或已解锁提示。状态栏沿用已装备数/可用槽数。此为代码检查，未把真实界面操作记为通过。
+
+未实机验证：不同分辨率/GUI 缩放下的碎片列表与文案、客户端延迟下的吸附/攀爬/墙跳衔接、极限猛击的速度观感、完整旧世界升级重启（本轮验证了 NBT codec 与真实服务端逻辑）。停止在 R99，等待审查。
+
+改动文件清单（23 个；不含既有 AgentBridge / AGENTS / CLAUDE 未跟踪文件）：
+
+```text
+docs/ORI_PARITY.md
+docs/ROADMAP_R96.md
+docs/TESTING.md
+docs/WORK_STATUS.md
+src/gametest/java/cn/wwl/orimod/gametest/ProgressionGameTests.java
+src/gametest/java/cn/wwl/orimod/gametest/ShardGameTests.java
+src/main/java/cn/wwl/orimod/client/SpiritActionPrediction.java
+src/main/java/cn/wwl/orimod/client/SpiritControls.java
+src/main/java/cn/wwl/orimod/client/SpiritJumpPrediction.java
+src/main/java/cn/wwl/orimod/client/SpiritScreen.java
+src/main/java/cn/wwl/orimod/movement/BashSession.java
+src/main/java/cn/wwl/orimod/movement/MovementRules.java
+src/main/java/cn/wwl/orimod/movement/SpiritMovement.java
+src/main/java/cn/wwl/orimod/progression/EnergyState.java
+src/main/java/cn/wwl/orimod/progression/Shard.java
+src/main/java/cn/wwl/orimod/progression/ShardEffects.java
+src/main/java/cn/wwl/orimod/progression/SpiritProgress.java
+src/main/java/cn/wwl/orimod/progression/SpiritProgression.java
+src/main/resources/assets/orimod/lang/en_us.json
+src/main/resources/assets/orimod/lang/zh_cn.json
+src/test/java/cn/wwl/orimod/progression/ProgressionDefinitionsTest.java
+src/test/java/cn/wwl/orimod/progression/ShardEffectsTest.java
+src/test/java/cn/wwl/orimod/progression/SpiritProgressTest.java
+```

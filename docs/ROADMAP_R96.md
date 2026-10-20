@@ -181,15 +181,17 @@
 
 | 枚举 | bit | 前置 | 效果 | 实现位置 |
 | --- | --- | --- | --- | --- |
-| `LIFE_HARVEST` 生机汲取 | 64 | 无 | 每拾取 1 个灵光球恢复 0.5 生命，每秒最多恢复 1 | `SpiritProgression.pickup` |
-| `ENERGY_HARVEST` 灵能汲取 | 128 | 无 | 每拾取 1 个灵光球恢复 2 能量 | 同上 |
+| `LIFE_HARVEST` 生机汲取 | 64 | 无 | 每收集 1 个灵光恢复 0.5 生命，任意滚动 20 tick 最多恢复 1 | `SpiritProgression.collectLight`，拾取与背包自动入账共用 |
+| `ENERGY_HARVEST` 灵能汲取 | 128 | 无 | 每收集 1 个灵光恢复 2 能量，封顶容量 | 同上，磁吸后的接触仍走拾取 |
 | `ULTRA_BASH` 极限猛击 | 256 | BASH | 猛击弹射速度 ×1.2；被猛击的敌人受 4 点伤害；反弹投射物速度 ×1.3 | `BashSession` / `SpiritMovement` 的释放分支 |
-| `THORN` 荆棘 | 512 | 无 | 被 3 格内的生物近战伤害时，对攻击者造成 2 点魔法伤害，同一攻击者 10 tick 冷却 | `LivingDamageEvent.Post`（`SpiritProgression` 里已有受伤监听，170 行附近） |
+| `THORN` 荆棘 | 512 | 无 | 被 3 格内的生物近战实际伤害时，对攻击者造成 2 点原版 thorns 伤害，同一攻击者 10 tick 冷却；排除 THORNS 防递归 | NeoForge 21.1.248 `LivingDamageEvent.Post`，复用 `SpiritProgression.damaged` |
 | `STICKY` 吸附 | 1024 | CLIMB | 贴墙下滑速度 ×0.35；按住朝墙方向时可以停在墙上不下滑（不耗能） | `SpiritMovement` 墙面滑落逻辑 |
 
 - 冷却和限速状态放在 `ENERGY_STATE`（瞬时、不存档）。
 - 碎片说明照已有写法写具体数字，中英文同步。
 - 灵光球的获取总量会因为生机汲取 / 灵能汲取变得更有价值，但不改掉落数量。
+- 实现补充：拾取/背包按实际扣除的物品数结算，命令与任务奖励的直接货币不触发汲取。荆棘要求 `directEntity == entity`、LivingEntity 攻击者、非投射物、实际伤害 >0。吸附被动下降上限 −0.042；向墙悬停与原攀爬 +0.14 共用服务端/客户端规则，跳跃/滑翔预测也用同一接触判定，墙跳后的 8 tick 脱墙期保留。
+- 审查修复：被动吸附要求原始输入点积 `> STICKY_WALL_DOT`（−0.2），不输入/沿墙输入可保持，明确背离则松开。先检查该阈值，再加上一面墙的 0.15 选墙偏好，偏好不能覆盖退出意图。
 
 ### 测试
 

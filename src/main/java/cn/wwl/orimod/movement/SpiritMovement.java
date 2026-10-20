@@ -64,7 +64,7 @@ public final class SpiritMovement {
                 }
                 var request = new MovementState.JumpRequest(input.sequence(), s.jumpPressedAt, s.jumpUntil,
                         player.position(), player.getDeltaMovement(), player.fallDistance,
-                        touchingWall(player, inputDirection(s, false), s.wallDirection), input.has(MovementInputPayload.PREDICTED_JUMP));
+                        slidingWall(player, inputDirection(s, false), s.wallDirection), input.has(MovementInputPayload.PREDICTED_JUMP));
                 // Handle independent edges in packet order, including several arriving after a
                 // server hitch. The short queue is only for inputs waiting for a valid landing.
                 if (tryJump(player, s, request, now)) s.jumpUntil = -100;
@@ -136,7 +136,7 @@ public final class SpiritMovement {
             if (++s.launchCharge == LAUNCH_CHARGE_TICKS)
                 player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, .8f, 1.6f);
         } else s.launchCharge = 0;
-        Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
+        Direction wall = slidingWall(player, inputDirection(s, false), s.wallDirection);
         s.wallDirection = wall == null ? -1 : wall.ordinal();
         while (!s.jumps.isEmpty()) {
             var request = s.jumps.getFirst();
@@ -150,9 +150,12 @@ public final class SpiritMovement {
             return;
         }
         boolean climb = s.mode == WALL_SLIDE && climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), s.forward);
-        if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && (player.getDeltaMovement().y < 0 || climb)) {
+        boolean hold = wall != null && s.mode == WALL_SLIDE && cn.wwl.orimod.progression.Shard.STICKY.equipped(player)
+                && pressingWall(inputDirection(s, false), Vec3.atLowerCornerOf(wall.getNormal()));
+        if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && (player.getDeltaMovement().y < 0 || climb || hold)) {
             // A short renewable lease prevents a missed release from leaving the client attached to a wall.
             signal(player, s, WALL_SLIDE, 3, Vec3.ZERO);
+            player.setDeltaMovement(wallVelocity(player, inputDirection(s, false), s.forward, wall));
             player.fallDistance = 0;
         } else {
             if (s.mode == WALL_SLIDE) cancel(player, s);
@@ -164,7 +167,7 @@ public final class SpiritMovement {
         // R88: sneaking no longer blocks jumping (Ori can jump from a crouch); only a ready Launch takes the press.
         if (s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
-        Direction wall = touchingWall(player, inputDirection(s, false), s.wallDirection);
+        Direction wall = slidingWall(player, inputDirection(s, false), s.wallDirection);
         if (wall == null) wall = request.wall();
         // R40: any refill clears the triple jump too (it is only consulted once the double jump is spent).
         if (!s.airJumpSpent) s.tripleJumpSpent = false;
@@ -276,10 +279,31 @@ public final class SpiritMovement {
     }
 
     public static Direction touchingWall(Player player, Vec3 toward, int previous) {
+        return touchingWall(player, toward, previous, false);
+    }
+
+    /** R99: Sticky also catches passive descents; jump and glide prediction share this contact rule. */
+    public static Direction slidingWall(Player player, Vec3 toward, int previous) {
+        return touchingWall(player, toward, previous, cn.wwl.orimod.progression.Shard.STICKY.equipped(player));
+    }
+
+    /** Shared by the server lease and the local movement controller, with the original Climb priority. */
+    public static Vec3 wallVelocity(Player player, Vec3 toward, float forward, Direction wall) {
+        // A predicted wall jump can still carry the old wall-slide lease until the server acknowledgement.
+        if (player.level().getGameTime() < player.getData(SpiritData.MOVEMENT).wallReadyAt) return player.getDeltaMovement();
+        return MovementRules.wallVelocity(player.getDeltaMovement(),
+                climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), forward),
+                cn.wwl.orimod.progression.Shard.STICKY.equipped(player), pressingWall(toward, Vec3.atLowerCornerOf(wall.getNormal())));
+    }
+
+    private static Direction touchingWall(Player player, Vec3 toward, int previous, boolean passive) {
         Direction best = null;
-        double bestDot = 0.2;
+        double bestDot = passive ? STICKY_WALL_DOT : WALL_PRESS_DOT;
         for (Direction side : WALLS) {
-            double dot = toward.dot(Vec3.atLowerCornerOf(side.getNormal())) + (previous == side.ordinal() ? 0.15 : 0);
+            double inputDot = toward.dot(Vec3.atLowerCornerOf(side.getNormal()));
+            // Hysteresis chooses among acceptable walls; it must not override a deliberate Sticky release.
+            if (passive && !stickyWallInput(inputDot)) continue;
+            double dot = inputDot + (previous == side.ordinal() ? 0.15 : 0);
             if (dot <= bestDot) continue;
             var box = player.getBoundingBox().deflate(0.01, 0.08, 0.01).move(side.getStepX() * 0.12, 0, side.getStepZ() * 0.12);
             if (!player.level().noCollision(player, box)) { best = side; bestDot = dot; }
@@ -393,7 +417,7 @@ public final class SpiritMovement {
         s.groundJumpAvailable = false;
         s.groundLockUntil = now + 4;
         s.acceptedBashes++;
-        Vec3 velocity = direction.scale(1.25);
+        Vec3 velocity = direction.scale(BashSession.launchSpeed(cn.wwl.orimod.progression.Shard.ULTRA_BASH.equipped(player)));
         player.setDeltaMovement(velocity);
         player.fallDistance = 0;
         signal(player, s, BASH_LAUNCH, 0, velocity);

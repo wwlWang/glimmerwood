@@ -62,7 +62,7 @@ public final class SpiritActionPrediction {
         boolean jump = (flags & MovementInputPayload.JUMP) != 0;
         if (jump && !crouch && MovementRules.glideArmed(s.jumpEdgeAt, s.jumpPerformedAt) && s.activeTicks <= 0 && !grounded && SpiritData.hasGlide(player) && now >= s.groundLockUntil
                 && player.getDeltaMovement().y < -.03 && !player.horizontalCollision
-                && SpiritMovement.touchingWall(player, MovementRules.inputDirection(forward, left, player.getYRot(), false), -1) == null) {
+                && SpiritMovement.slidingWall(player, MovementRules.inputDirection(forward, left, player.getYRot(), false), s.wallDirection) == null) {
             start(s, GLIDE, GLIDE_LEASE, Vec3.ZERO, now + GLIDE_LEASE + ACK_SLACK);
         }
     }

@@ -8,7 +8,10 @@ public enum Shard {
     CAPACITY(1, Ability.DASH), RECOVERY(2, Ability.DASH), GATHERING(4, null),
     RESILIENCE(8, Ability.BASH), AIR_CONTROL(16, Ability.GLIDE),
     /** R40: a third air jump (Ori triple jump). */
-    TRIPLE_JUMP(32, Ability.BASH);
+    TRIPLE_JUMP(32, Ability.BASH),
+    /** R99: WotW-inspired pickup sustain, Bash upgrade, retaliation and wall attachment. */
+    LIFE_HARVEST(64, null), ENERGY_HARVEST(128, null), ULTRA_BASH(256, Ability.BASH),
+    THORN(512, null), STICKY(1024, Ability.CLIMB);
 
     public static final int COST = 20;
     public final int bit;

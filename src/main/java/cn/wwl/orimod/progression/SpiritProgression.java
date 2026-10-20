@@ -20,7 +20,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class SpiritProgression {
     private SpiritProgression() {}
-    public static int slots(Player player) { return Ability.GRAPPLE.unlocked(player) ? 3 : Ability.BASH.unlocked(player) ? 2 : 1; }
+    public static int slots(Player player) { return slots(SpiritData.isAwakened(player) ? player.getData(SpiritData.ABILITIES) : 0); }
+    /** R99: fourth slot at ten learned abilities; existing equipment is retained if this count later falls. */
+    public static int slots(int abilities) {
+        return Integer.bitCount(abilities) >= ShardEffects.FOURTH_SLOT_ABILITIES ? 4
+                : (abilities & Ability.GRAPPLE.bit) != 0 ? 3 : (abilities & Ability.BASH.bit) != 0 ? 2 : 1;
+    }
     public static int capacityCost(SpiritProgress p) { return 30 + 15 * p.capacityLevel(); }
     public static float maxEnergy(Player player) {
         return 100 + 25 * player.getData(SpiritData.PROGRESS).capacityLevel() + (Shard.CAPACITY.equipped(player) ? 25 : 0)
@@ -117,6 +122,15 @@ public final class SpiritProgression {
         return granted;
     }
 
+    /** R99: one consumption path for loose pickups (including magnet pulls) and inventory auto-deposit. */
+    public static int collectLight(ServerPlayer player, ItemStack stack) {
+        if (!SpiritData.isAwakened(player) || !stack.is(OriItems.SPIRIT_LIGHT)) return 0;
+        int taken = grantLight(player, stack.getCount());
+        stack.shrink(taken);
+        ShardEffects.harvested(player, taken);
+        return taken;
+    }
+
     /** Discovery and challenge services must supply a stable world-position key. */
     public static boolean reward(ServerPlayer player, String key, int first, int repeat) {
         var p = player.getData(SpiritData.PROGRESS);
@@ -165,17 +179,17 @@ public final class SpiritProgression {
     public static void pickup(ItemEntityPickupEvent.Pre event) {
         if (event.getPlayer() instanceof ServerPlayer player && SpiritData.isAwakened(player) && event.getItemEntity().getItem().is(OriItems.SPIRIT_LIGHT)) {
             var entity = event.getItemEntity();
-            int taken = grantLight(player, entity.getItem().getCount());
+            int taken = collectLight(player, entity.getItem());
             if (taken == 0) return;
             event.setCanPickup(TriState.FALSE);
             player.take(entity, taken);
-            entity.getItem().shrink(taken);
             if (entity.getItem().isEmpty()) entity.discard();
             player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, .25f, 1.25f);
         }
     }
 
     public static void damaged(LivingDamageEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player) ShardEffects.reflect(player, event.getSource(), event.getNewDamage());
         if (event.getEntity() instanceof ServerPlayer player && event.getNewDamage() > 0 && Shard.RESILIENCE.equipped(player)) {
             var s = player.getData(SpiritData.ENERGY_STATE);
             s.lastHurt = player.level().getGameTime();
@@ -211,7 +225,7 @@ public final class SpiritProgression {
         if (now % 20 == 0) {
             grantGuide(player);
             for (var stack : player.getInventory().items) {
-                if (stack.is(OriItems.SPIRIT_LIGHT)) stack.shrink(grantLight(player, stack.getCount()));
+                if (stack.is(OriItems.SPIRIT_LIGHT)) collectLight(player, stack);
             }
         }
     }

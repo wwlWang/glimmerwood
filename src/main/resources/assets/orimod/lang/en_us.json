@@ -339,5 +339,17 @@
   "message.orimod.flash.energy": "Starting Flash requires at least 5 energy.",
   "message.orimod.flash.movement": "Finish your current action before starting Flash.",
   "message.orimod.flash.charging": "Flash cannot start while charging Spirit Flame.",
-  "message.orimod.flash_key_moved": "Flash’s default H binding conflicts; moved to %s. You can change it in Controls."
+  "message.orimod.flash_key_moved": "Flash’s default H binding conflicts; moved to %s. You can change it in Controls.",
+  "shard.orimod.life_harvest": "Life Harvest",
+  "shard.orimod.life_harvest.description": "Each collected Spirit Light restores 0.5 health, up to 1 health in any 1-second window.",
+  "shard.orimod.energy_harvest": "Energy Harvest",
+  "shard.orimod.energy_harvest.description": "Each collected Spirit Light restores 2 energy, up to your energy capacity.",
+  "shard.orimod.ultra_bash": "Ultra Bash",
+  "shard.orimod.ultra_bash.description": "Bash launches you 20% faster and deals 4 magic damage to the bashed enemy. Redirected flying projectiles travel 30% faster.",
+  "shard.orimod.thorn": "Thorn",
+  "shard.orimod.thorn.description": "After taking melee damage from a creature within 3 blocks, deal 2 thorns damage back. Each attacker has a 0.5-second cooldown. Does not reflect thorns or projectiles.",
+  "shard.orimod.sticky": "Sticky",
+  "shard.orimod.sticky.description": "Wall descent is capped at 35% of normal speed. Press toward the wall to hang without energy cost. With Climb learned, forward still climbs upward.",
+  "screen.orimod.fourth_slot": "Learn 10 abilities to unlock slot 4 (%s/10).",
+  "screen.orimod.fourth_slot_unlocked": "The fourth shard slot is unlocked."
 }

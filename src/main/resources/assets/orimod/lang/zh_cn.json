@@ -339,5 +339,17 @@
   "message.orimod.flash.energy": "开启灵闪需要至少5能量。",
   "message.orimod.flash.movement": "当前动作中不能开启灵闪。",
   "message.orimod.flash.charging": "蓄力灵焰时不能开启灵闪。",
-  "message.orimod.flash_key_moved": "灵闪默认H键有冲突，已改为%s；可在按键设置中更改。"
+  "message.orimod.flash_key_moved": "灵闪默认H键有冲突，已改为%s；可在按键设置中更改。",
+  "shard.orimod.life_harvest": "生机汲取",
+  "shard.orimod.life_harvest.description": "每收集1个灵光恢复0.5生命，任意1秒内最多恢复1生命。",
+  "shard.orimod.energy_harvest": "灵能汲取",
+  "shard.orimod.energy_harvest.description": "每收集1个灵光恢复2能量，不超过能量上限。",
+  "shard.orimod.ultra_bash": "极限猛击",
+  "shard.orimod.ultra_bash.description": "猛击弹射速度提高20%，被猛击的敌人受到4点魔法伤害；反弹飞行中投射物的速度提高30%。",
+  "shard.orimod.thorn": "荆棘",
+  "shard.orimod.thorn.description": "受到3格内生物的近战伤害时，反击2点荆棘伤害；同一攻击者冷却0.5秒，不反弹荆棘或投射物伤害。",
+  "shard.orimod.sticky": "吸附",
+  "shard.orimod.sticky.description": "墙面下滑速度降至35%。按住朝墙方向可悬停，不耗能；已学攀爬时按前进仍向上爬。",
+  "screen.orimod.fourth_slot": "学会10个技能后解锁第4槽（%s/10）。",
+  "screen.orimod.fourth_slot_unlocked": "已解锁第4个碎片槽。"
 }

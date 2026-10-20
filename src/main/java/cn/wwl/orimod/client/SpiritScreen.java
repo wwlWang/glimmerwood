@@ -182,7 +182,14 @@ public final class SpiritScreen extends Screen {
         if (choices != null && choices.getSelected() != null) {
             var d = choices.getSelected().definition;
             g.drawString(font, d.title, detailX, bodyTop + 4, SpiritButton.ACCENT, false);
-            var lines = font.split(d.description, detailWidth - 7);
+            var description = d.description;
+            if (page == 1 && minecraft.player != null) {
+                int learned = Integer.bitCount(minecraft.player.getData(SpiritData.ABILITIES));
+                var slots = learned >= cn.wwl.orimod.progression.ShardEffects.FOURTH_SLOT_ABILITIES
+                        ? tr("screen.orimod.fourth_slot_unlocked") : Component.translatable("screen.orimod.fourth_slot", learned);
+                description = description.copy().append("\n\n").append(slots);
+            }
+            var lines = font.split(description, detailWidth - 7);
             int count = Math.max(1, (bodyHeight - (page == 2 ? 24 : 66)) / 10);
             detailOverflow = Math.max(0, lines.size() - count);
             detailScroll = Math.clamp(detailScroll, 0, detailOverflow);

@@ -74,7 +74,9 @@ public final class ProgressionGameTests {
         }
         for (var shard : Shard.values()) {
             add(tests, "buy_shard_" + shard.id() + "_once", h -> {
-                var p = Fixtures.player(h); p.setData(SpiritData.ABILITIES, 63);
+                var p = Fixtures.player(h);
+                int all = 0; for (var ability : Ability.values()) all |= ability.bit;
+                p.setData(SpiritData.ABILITIES, all);
                 p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withLight(100));
                 SpiritProgression.request(p, "shard", shard.id()); SpiritProgression.request(p, "shard", shard.id());
                 h.assertTrue((p.getData(SpiritData.PROGRESS).ownedShards() & shard.bit) != 0, "Shard not owned");

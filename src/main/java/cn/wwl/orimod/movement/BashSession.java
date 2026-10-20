@@ -49,6 +49,11 @@ public final class BashSession {
     public static double redirectSpeed(double originalSpeed) {
         return Math.min(4, Math.max(REDIRECT_MIN_SPEED, originalSpeed * REDIRECT_GAIN));
     }
+    /** R99: Ultra Bash boosts the final launch and the already-bounded ordinary redirect speed. */
+    public static double launchSpeed(boolean ultra) { return 1.25 * (ultra ? cn.wwl.orimod.progression.ShardEffects.BASH_LAUNCH_MULTIPLIER : 1); }
+    public static double redirectSpeed(double originalSpeed, boolean ultra) {
+        return redirectSpeed(originalSpeed) * (ultra ? cn.wwl.orimod.progression.ShardEffects.PROJECTILE_SPEED_MULTIPLIER : 1);
+    }
 
     /** @return whether the target was a projectile still in flight when caught (lodged arrows stay plain anchors). */
     public boolean inFlightProjectile() {
@@ -69,7 +74,8 @@ public final class BashSession {
         if (launchDirection != null && entity instanceof cn.wwl.orimod.combat.LightBurst burst) { burst.detonate(); return; }
         if (!entity.isRemoved() && launchDirection != null && redirector != null && inFlightProjectile()) {
             var projectile = (net.minecraft.world.entity.projectile.Projectile) entity;
-            Vec3 velocity = launchDirection.normalize().scale(-redirectSpeed(targetVelocity.length()));
+            Vec3 velocity = launchDirection.normalize().scale(-redirectSpeed(targetVelocity.length(),
+                    cn.wwl.orimod.progression.Shard.ULTRA_BASH.equipped(redirector)));
             projectile.setOwner(redirector);
             projectile.setDeltaMovement(velocity);
             double horizontal = velocity.horizontalDistance();
@@ -82,6 +88,7 @@ public final class BashSession {
             return;
         }
         if (!entity.isRemoved()) {
+            if (launchDirection != null && redirector != null) cn.wwl.orimod.progression.ShardEffects.bashHit(redirector, entity);
             entity.setDeltaMovement(launchDirection == null ? targetVelocity : launchDirection.scale(-0.8));
             entity.fallDistance = launchDirection == null ? targetFallDistance : 0;
             entity.hurtMarked = true;

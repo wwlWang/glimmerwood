@@ -39,7 +39,7 @@ public final class SpiritJumpPrediction {
         // an action whose weapon state may still be in transit.
         if (!combat.mode().equals("idle") || SpiritCombatClient.awaitingAttack()) return false;
         state.forward = forward; state.left = left; state.yaw = player.getYRot();
-        var wall = SpiritMovement.touchingWall(player, SpiritMovement.inputDirection(state, false), state.wallDirection);
+        var wall = SpiritMovement.slidingWall(player, SpiritMovement.inputDirection(state, false), state.wallDirection);
         MoveMode mode = MovementRules.jumpMode(state.groundJumpAvailable, now, state.groundedAt,
                 grounded, wall != null, now >= state.wallReadyAt, state.airJumpSpent,
                 state.activeTicks > 0 && state.mode.blocksJump());

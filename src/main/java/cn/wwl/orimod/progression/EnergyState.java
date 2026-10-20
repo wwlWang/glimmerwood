@@ -18,4 +18,7 @@ public final class EnergyState {
     public long flashUntil = Long.MIN_VALUE, flashActiveSince = Long.MIN_VALUE, flashLastTick = Long.MIN_VALUE,
             chargeFlameUntil = Long.MIN_VALUE;
     public long flashReadyAt, flashNoticeAt;
+    /** R99: rolling pickup healing and per-attacker retaliation cooldowns, never saved. */
+    public final ShardEffects.HarvestWindow lifeHarvest = new ShardEffects.HarvestWindow();
+    public final java.util.Map<java.util.UUID, Long> thornHits = new java.util.HashMap<>();
 }
