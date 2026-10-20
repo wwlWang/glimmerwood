@@ -59,6 +59,41 @@ Linux 使用 `./gradlew runDevtoolsClient --console=plain`，需要可用图形�
 
 单人服务器没有 `save-all` 命令。测试快照须先暂停，再调用 `save_world`，等待原版 `saveEverything` 完成强制写盘后复制，并检查 SHA-256 和关键区块内容。仅暂停触发的自动保存不保证所有异步区块写入已完成。`command` 对单人服务器没有注册的命令直接报错；只读查询的短暂超时最多重试两次，并记录在证据中，操作请求不自动重发。
 
-遗迹模板的可编辑源文件是 `scripts/art/build_ruins.py`。安装 `scripts/requirements-art.txt` 中锁定的 `nbtlib` 后，执行 `python scripts/check-ruins.py` 验证 NBT、路线 JSON 和重复生成哈希。实际路线使用 `verify-ruin-routes.py`，边界使用 `verify-ruin-boundaries.py`，自然生成使用 `verify-natural-ruins.py <构建标识> <orimod_dev_世界名> <种子>`。这些脚本会修改专用测试世界；不能用于用户生存存档。
+遗迹模板的可编辑源文件是 `scripts/art/build_ruins.py`。使用独立虚拟环境安装 `scripts/requirements-art.txt`（锁定 `nbtlib==2.0.4`），已有环境可直接复用：
+
+```sh
+python3 -m venv ~/.local/opt/orimod-art-venv
+~/.local/opt/orimod-art-venv/bin/python -m pip install -r scripts/requirements-art.txt
+~/.local/opt/orimod-art-venv/bin/python -B scripts/check-ruins.py
+```
+
+`check-ruins.py` **默认只读**：先在系统临时目录生成，再检查三份 NBT/路线契约，并比较全部 17 个产物（NBT、布局、世界生成配置、神龛模型和方块状态）。NBT 比较解压后的原始内容，忽略 gzip 头；JSON 比较解析后的结构，忽略空白和对象键顺序。内容缺失、损坏或不一致时列出路径并以非零状态退出，成功或失败都不回写仓库。输出的 SHA-256 用于记录现有文件字节，不作为默认比较条件。
+
+只有显式执行以下命令才更新仓库资源；先验证生成结果，再写入有字节差异的文件，未变化文件保留修改时间：
+
+```sh
+~/.local/opt/orimod-art-venv/bin/python -B scripts/check-ruins.py --write
+git diff -- src/main/resources
+~/.local/opt/orimod-art-venv/bin/python -B scripts/test_check_ruins.py -v
+```
+
+生成器不再有隐式仓库输出路径；独立预览可用 `python -B scripts/art/build_ruins.py --output-root /tmp/orimod-ruins-preview`，在指定目录下创建 `src/main/resources` 树。NBT 固定压缩级别 9、`mtime=0`、OS 字节 `0x0a`，保留初始提交 `c8b254e` 的 gzip 头；OS 字节是历史封装元数据，不代表当前操作系统。Python/zlib 的压缩输出若发生变化，默认内容校验仍可通过，逐字节复现需再检查 `--write` 的资源 diff。
+
+布局中的后续机关由 `RuinKind` 读取、`RuinPiece.placeCells` 在模板放置后添加，因此生成器把它们写入布局契约，不烘焙进基础 NBT。坐标与模板共用地表遗迹的 4 格基础偏移；风口按矩形生成，宝库门由侧墙范围生成，灵砂奖励位于隧道末端外两格的洞室。2026-10-20 根据只读 `git log` / `git show` 补回以下来源，神龛模型按遗迹主题选择原创 top/side 并共用 bottom：
+
+| 来源提交 | 原资源变更 |
+| --- | --- |
+| R44 `57bcc97` | 三座遗迹的生命/能量核心基座 `cells` |
+| R46 `29e0d1b` | 森林与溪流滑翔间隙的 `updrafts` |
+| R50 `ffd4841` | 洞穴竞技场的 `boss_altar` |
+| R57 `eef6b65` | 洞穴 `keystones`、`vault` 和宝库内能量核心 |
+| R59 `c7a6351` | 溪流滑翔路线下的 `gloom_water` 范围 |
+| R62 `0fc04c1` | 三座遗迹入口旁的 `map_stone` |
+| R64 `e845034` | 洞穴 `spirit_sand` 隧道范围 |
+| R66 `882ed8d` | 灵砂隧道末端洞室的生命核心 |
+| R70 `2dc5bb4` | 森林后部的 `storm_altar` |
+| R76 `516bb93` | 三种神龛的原创纹理引用，替换原版重生锚/深板岩纹理 |
+
+实际路线使用 `verify-ruin-routes.py`，边界使用 `verify-ruin-boundaries.py`，自然生成使用 `verify-natural-ruins.py <构建标识> <orimod_dev_世界名> <种子>`。这些游戏内验证脚本会修改专用测试世界；不能用于用户生存存档。上述纯 Python 校验与回归测试不启动 Minecraft 或 Gradle。
 
 这些接口只在开发模组中存在。正式入口使用核心、V/C/R/G 按键、鼠标和原版物品栏，不依赖开发命令。具体已验证范围分别见移动、成长和战斗检查记录。

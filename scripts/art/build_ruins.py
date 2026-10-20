@@ -1,24 +1,50 @@
 """Author the three vanilla-block ruin templates and their runtime route contracts.
 
-Requires nbtlib. Deterministic: no random terrain or palette choices enter these assets.
+Requires the nbtlib version in requirements-art.txt and an explicit output root.
 The generated JSON is also read by the server, so safety checks follow the same layout.
+Use check-ruins.py --write to publish generated assets to the repository.
 """
+import argparse
 from pathlib import Path
 import gzip
 import io
 import json
 import nbtlib as nbt
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "src/main/resources/data/orimod"
-ASSETS = ROOT / "src/main/resources/assets/orimod"
+NAMES = ("forest_spring", "creek_ruins", "cave_altar")
+# Preserve the original templates' gzip envelope (OS=10, TOPS-20), independently
+# of the host OS / Python version. This byte describes no Minecraft semantics.
+GZIP_OS = 0x0a
+
+
+def compressed_nbt(content):
+    compressed = bytearray(gzip.compress(content, compresslevel=9, mtime=0))
+    compressed[9] = GZIP_OS
+    return bytes(compressed)
 
 
 class Template:
-    def __init__(self, name, size, pad=0):
+    def __init__(self, root, name, size, pad=0):
+        self.root = root
+        self.data = root / "src/main/resources/data/orimod"
         self.name, self.size, self.pad = name, (size[0], size[1] + pad, size[2]), pad
         self.blocks = {}
         self.critical = []
+        # R44 onward: RuinPiece.placeCells adds these after placing the base NBT.
+        # Keep them in the route contract, not in the palette / template blocks.
+        self.features = {}
+
+    def shifted(self, position):
+        return [position[0], position[1] + self.pad, position[2]]
+
+    def cell(self, position, kind):
+        self.features.setdefault("cells", []).append({"position": self.shifted(position), "kind": kind})
+
+    def updrafts(self, a, b):
+        self.features["updrafts"] = [self.shifted((x, y, z))
+                                    for x in range(a[0], b[0] + 1)
+                                    for y in range(a[1], b[1] + 1)
+                                    for z in range(a[2], b[2] + 1)]
 
     def put(self, x, y, z, name, **properties):
         if ":" not in name:
@@ -59,16 +85,17 @@ class Template:
                          "entities": nbt.List[nbt.Compound]()})
         stream = io.BytesIO()
         file.write(stream)
-        target = DATA / "structure/ruins" / (self.name + ".nbt")
+        target = self.data / "structure/ruins" / (self.name + ".nbt")
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(gzip.compress(stream.getvalue(), mtime=0))
-        shifted = lambda p: [p[0], p[1] + self.pad, p[2]]
+        target.write_bytes(compressed_nbt(stream.getvalue()))
+        shifted = self.shifted
         layout = {"size": self.size, "shrine": shifted(shrine), "safe": shifted(safe), "entry": shifted(entry),
                   "surface_y": surface + self.pad, "critical": self.critical,
                   "clearances": [{"from": shifted(a), "to": shifted(b)} for a, b in clearances],
                   "checkpoints": [{"position": shifted(p), "action": action, "count": count} for p, action, count in checkpoints]}
-        write(ROOT / "src/main/resources/orimod/ruin_layout" / (self.name + ".json"), layout)
-        write(DATA / "worldgen/structure" / (self.name + ".json"), {
+        layout.update(self.features)
+        write(self.root / "src/main/resources/orimod/ruin_layout" / (self.name + ".json"), layout)
+        write(self.data / "worldgen/structure" / (self.name + ".json"), {
             "type": "orimod:ruin", "kind": self.name, "biomes": "#orimod:has_ruins", "spawn_overrides": {},
             "step": "top_layer_modification", "terrain_adaptation": "none"})
         print(f"{self.name}: {len(blocks)} blocks, {len(palette)} states, {target.stat().st_size} bytes")
@@ -79,8 +106,8 @@ def write(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def surface(name, size):
-    t = Template(name, size, pad=4)
+def surface(root, name, size):
+    t = Template(root, name, size, pad=4)
     w, h, d = size
     t.box((0, -4, 0), (w - 1, 0, d - 1), "stone")
     t.box((0, 1, 0), (w - 1, h - 1, d - 1), "air")
@@ -102,8 +129,8 @@ def surface(name, size):
     return t
 
 
-def forest():
-    t = surface("forest_spring", (19, 13, 31))
+def forest(root):
+    t = surface(root, "forest_spring", (19, 13, 31))
     # Two root arches frame the route; the inner face is the wall-jump surface.
     t.box((5, 2, 4), (5, 8, 12), "stripped_dark_oak_log", axis="y")
     for y in (3, 5, 7):
@@ -117,14 +144,18 @@ def forest():
     for x, z in ((3, 24), (14, 22)):
         t.box((x, 2, z), (x, 6, z), "dark_oak_log", axis="y")
         t.box((x - 1, 7, z - 1), (x + 1, 7, z + 1), "flowering_azalea_leaves", persistent="true")
+    t.cell((5, 9, 12), "life")  # R44: reward above the wall-jump roots.
+    t.updrafts((8, 2, 20), (10, 2, 21))  # R46: lift below the final glide gap.
+    t.features["map_stone"] = t.shifted((5, 2, 3))  # R62: beside the entry.
+    t.features["storm_altar"] = t.shifted((4, 2, 29))  # R70: rear storm arena.
     t.export((12, 2, 4), (9.5, 2, 5.5), (9.5, 2, 4.5), 2,
              [((8.5, 4, 8.5), "wall_jump", 1), ((8.5, 6, 15.5), "jump", 2), ((9.5, 5, 25.5), "dash", 1)],
              [((6, 2, 4), (10, 6, 6)), ((6, 4, 7), (10, 7, 10)), ((7, 4, 11), (10, 8, 13)),
               ((7, 6, 14), (10, 8, 17)), ((7, 5, 18), (11, 8, 22)), ((7, 5, 23), (11, 7, 28))])
 
 
-def creek():
-    t = surface("creek_ruins", (21, 17, 35))
+def creek(root):
+    t = surface(root, "creek_ruins", (21, 17, 35))
     for x in (3, 17):
         for z, height in ((8, 5), (18, 9), (30, 6)):
             t.box((x, 2, z), (x + 1, height, z + 1), "mossy_stone_bricks")
@@ -133,14 +164,19 @@ def creek():
     t.platform((8, 6, 14), (12, 6, 18))
     t.platform((8, 3, 26), (13, 3, 32))
     t.box((4, 10, 19), (16, 10, 20), "stone_brick_slab", type="bottom", waterlogged="false")
+    t.cell((3, 11, 18), "energy")  # R44: above the tall illuminated pillar.
+    t.updrafts((9, 2, 22), (11, 2, 23))  # R46: lift between the two platforms.
+    # R59: only existing water under the glide route is corrupted at placement.
+    t.features["gloom_water"] = {"from": t.shifted((6, 1, 19)), "to": t.shifted((14, 1, 26))}
+    t.features["map_stone"] = t.shifted((7, 2, 4))  # R62: beside the entry.
     t.export((13, 2, 4), (10.5, 2, 5.5), (10.5, 2, 4.5), 2,
              [((10.5, 7, 16.5), "bash", 1), ((10.5, 4, 30.5), "glide", 1)],
              [((9, 2, 6), (11, 10, 13)), ((9, 7, 14), (11, 9, 18)),
               ((9, 4, 19), (11, 9, 25)), ((9, 4, 26), (12, 7, 32))])
 
 
-def cave():
-    t = Template("cave_altar", (23, 19, 39))
+def cave(root):
+    t = Template(root, "cave_altar", (23, 19, 39))
     t.box((0, 0, 0), (22, 13, 38), "deepslate_bricks")
     t.box((1, 2, 14), (21, 12, 37), "air")
     t.box((6, 12, 0), (16, 18, 13), "air")
@@ -163,22 +199,49 @@ def cave():
     t.put(11, 9, 23, "orimod:grapple_flower")
     t.platform((8, 1, 27), (14, 1, 31))
     t.important(11, 1, 29, "sea_lantern")
+    vault_from, vault_to = (1, 2, 18), (4, 4, 21)
+    sand_from, sand_to = (14, 2, 12), (17, 3, 13)
+    t.cell((8, 8, 25), "life")  # R44: edge of the grapple platform.
+    # R57: inside the hollow vault; R66: the pocket two blocks past the R64 tunnel.
+    t.cell((vault_from[0] + 1, vault_from[1], vault_from[2] + 1), "energy")
+    t.cell((sand_to[0] + 2, sand_from[1], sand_to[2]), "life")
+    t.features["boss_altar"] = t.shifted((16, 1, 33))  # R50: arena floor.
+    t.features["keystones"] = [t.shifted(p) for p in ((2, 4, 28), (20, 4, 16))]
+    # R57: a two-by-two door in the east wall, below the vault ceiling.
+    t.features["vault"] = {
+        "from": t.shifted(vault_from), "to": t.shifted(vault_to),
+        "door": [t.shifted((vault_to[0], y, z))
+                 for y in range(vault_from[1], vault_to[1])
+                 for z in range(vault_from[2] + 1, vault_to[2])]}
+    t.features["map_stone"] = t.shifted((7, 2, 15))  # R62: beside the shrine.
+    t.features["spirit_sand"] = [t.shifted(sand_from), t.shifted(sand_to)]
     t.export((8, 2, 15), (11.5, 2, 17.5), (11.5, 13, 1.5), 13,
              [((11.5, 8, 23.5), "grapple", 1), ((11.5, 2, 29.5), "stomp", 1), ((11.5, 2, 32.5), "blade", 1)],
              [((10, 3, 18), (12, 8, 21)), ((10, 8, 22), (12, 10, 25)), ((10, 2, 26), (12, 11, 34))])
 
 
-if __name__ == "__main__":
-    forest(); creek(); cave()
-    write(DATA / "tags/worldgen/biome/has_ruins.json", {"replace": False, "values": [
+def build(root):
+    data = root / "src/main/resources/data/orimod"
+    assets = root / "src/main/resources/assets/orimod"
+    forest(root); creek(root); cave(root)
+    write(data / "tags/worldgen/biome/has_ruins.json", {"replace": False, "values": [
         "minecraft:forest", "minecraft:birch_forest", "minecraft:old_growth_birch_forest", "minecraft:flower_forest",
         "minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow", "minecraft:taiga"]})
-    write(DATA / "worldgen/structure_set/spirit_ruins.json", {
-        "structures": [{"structure": "orimod:" + name, "weight": 1} for name in ("forest_spring", "creek_ruins", "cave_altar")],
+    write(data / "worldgen/structure_set/spirit_ruins.json", {
+        "structures": [{"structure": "orimod:" + name, "weight": 1} for name in NAMES],
         "placement": {"type": "minecraft:random_spread", "spacing": 6, "separation": 3, "salt": 19721014}})
-    for name in ("forest_spring", "creek_ruins", "cave_altar"):
+    for name in NAMES:
         block = name + "_shrine"
-        write(ASSETS / "blockstates" / (block + ".json"), {"variants": {"": {"model": "orimod:block/" + block}}})
-        write(ASSETS / "models/block" / (block + ".json"), {"parent": "minecraft:block/cube_bottom_top", "textures": {
-            "top": "minecraft:block/respawn_anchor_top", "bottom": "minecraft:block/chiseled_deepslate",
-            "side": "minecraft:block/respawn_anchor_side1"}})
+        # R76: each ruin has its own original top/side, with one shared base.
+        theme = name.split("_", 1)[0]
+        write(assets / "blockstates" / (block + ".json"), {"variants": {"": {"model": "orimod:block/" + block}}})
+        write(assets / "models/block" / (block + ".json"), {"parent": "minecraft:block/cube_bottom_top", "textures": {
+            "top": f"orimod:block/{theme}_shrine_top", "side": f"orimod:block/{theme}_shrine_side",
+            "bottom": "orimod:block/shrine_bottom"}})
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-root", required=True, type=Path,
+                        help="Generate a src/main/resources tree here; no implicit repository writes.")
+    build(parser.parse_args().output_root)

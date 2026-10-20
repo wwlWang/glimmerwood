@@ -1,5 +1,11 @@
 # 当前工作状态
 
+2026-10-20 遗迹生成器与只读校验修复（Codex 实现，待 Claude 审查提交）：
+- **校验：** `check-ruins.py` 默认生成到临时目录，NBT 按解压内容、JSON 按解析结构比较全部 17 个产物；包括旧脚本漏检的神龛模型/方块状态。只有 `--write` 发布已验证的结果，字节未变的文件不重写。生成器独立调用必须提供 `--output-root`。
+- **历史补齐：** 根据只读 git 历史恢复 R44–R70 的布局字段与 R76 原创神龛纹理；机关仍由 `RuinPiece.placeCells` 运行时放置，基础 NBT 不变。风口/门洞按范围生成，灵砂奖励根据洞室位置推导。gzip 固定级别 9、mtime 0、OS `0x0a`；提交来源表与使用说明见 [DEVELOPMENT](DEVELOPMENT.md)。
+- **验证：** 使用 `~/.local/opt/orimod-art-venv` 的 Python 3.14.7 / nbtlib 2.0.4；默认模式与 `--write` 均为 `status=passed, files=17, written=0`。默认模式前后全部 187 个资源文件的 SHA-256 与修改时间不变；17 个产物逐字节等于 HEAD，资源目录 `git status --short` / `git diff HEAD` 为空（本轮脚本、文档改动保留）。**8 项 Python 回归测试全过**，覆盖只读成功/失败、JSON/gzip 表示差异、布局/模型/NBT 内容差异、缺失/损坏文件、实际写回 4 个文件并验证幂等、无效契约禁止发布和生成器显式目标要求。日志位于 `/tmp/orimod-ruins-check.log`、`/tmp/orimod-ruins-write.log`、`/tmp/orimod-ruins-python-tests.log`，未入库。
+- **范围：** 仅 Python 脚本及开发文档；本轮不运行 Gradle，不执行 git 写操作，不触碰正在验收的客户端。
+
 2026-10-20 R99（五个新碎片与第 4 槽，Codex 实现，待 Claude 审查提交）：
 - **成长与存档：** 新增生机汲取 / 灵能汲取 / 极限猛击 / 荆棘 / 吸附，位值 64–1024，价格沿用 20 灵光；前置分别为无 / 无 / Bash / 无 / Climb。mask 扩到 2047，旧六位与已装备数据不变，codec 字段/版本不变。纯函数 `slots(int)` 在已学 ≥10 技能时开第 4 槽；技能减少保留装备，只禁止继续超额装备。
 - **汲取：** `collectLight` 统一拾取和背包自动入账，按实际扣除的灵光数回血/回能；磁吸原来只拉动物品，接触后仍走拾取，不另计一次。生机每颗 0.5、任意滚动 20 tick 最多 1，灵能每颗 2、封顶容量；任务奖励/命令加币不触发。限速状态在 ENERGY_STATE，不存档。
