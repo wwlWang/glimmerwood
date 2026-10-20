@@ -29,7 +29,9 @@ import java.util.Set;
 
 /** R98: WotW Flash adapted as a leased, server-owned light that drains energy, dazzles gloom and suppresses natural spawns. */
 public final class Flash {
-    public static final int KEEPALIVE_TICKS = 5, LEASE_TICKS = 8, COOLDOWN_TICKS = 20,
+    // Client ticks can arrive in frame-sized batches. Explicit release ends Flash;
+    // this longer lease only bounds how long lost input can keep it alive.
+    public static final int KEEPALIVE_TICKS = 5, LEASE_TICKS = 20, COOLDOWN_TICKS = 20,
             GLOOM_INTERVAL = 10, BOSS_INTERVAL = 20, UNDEAD_INTERVAL = 20, WEAKNESS_TICKS = 40,
             DAZZLE_TICKS = 12, LANTERN_INTERVAL = 10, LANTERN_TICKS = 40, CLEANSE_START = 40, CLEANSE_INTERVAL = 20,
             CLEANSE_RADIUS = 3;

@@ -29,7 +29,7 @@ def frame(x, y):
 def core(x, y, lit):
     distance = math.hypot(x - 7.5, y - 7.5) / 10.61
     shade = 1 - .27 * max(0, distance - .2)
-    rgb = (242, 248, 255) if lit else (158, 200, 255)
+    rgb = (242, 248, 255) if lit else (95, 134, 184)  # Unlit #5F86B8; visibly colder/darker than the lit core.
     return tuple(round(c * shade) for c in rgb)
 
 

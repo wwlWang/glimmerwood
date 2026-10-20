@@ -2,9 +2,32 @@ package cn.wwl.orimod.client.fx;
 
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CompanionMotionTest {
+    @ParameterizedTest
+    @CsvSource({"4, none", "10, none", "4, hint", "10, hint", "4, seek", "10, seek"})
+    void followsMovingAnchorForThreeSecondsIncludingExcursionReturn(double speed, String excursion) {
+        var origin = new Vec3(2000, 201, -2000);
+        var state = new CompanionMotion.State(origin);
+        if (!excursion.equals("none")) {
+            boolean hint = excursion.equals("hint");
+            state.seek(origin.add(-10, 0, 0), hint);
+            for (int i = 0; i < (hint ? CompanionMotion.HINT_TICKS : CompanionMotion.SEEK_TICKS); i++)
+                state.step(origin, false);
+            assertEquals(true, state.diagnostics().get("returning"));
+        }
+        for (int tick = 1; tick <= 60; tick++) {
+            var anchor = origin.add(speed * tick * CompanionMotion.STEP_SECONDS, 0, 0);
+            state.step(anchor, false);
+            if (tick >= 40) assertTrue(state.pos.distanceTo(anchor) < 2.5,
+                    "speed=" + speed + ", excursion=" + excursion + ", lag=" + state.pos.distanceTo(anchor));
+        }
+        assertTrue(Double.isFinite(state.vel.x));
+    }
+
     @Test void springConvergesWithinASecondWithoutOvershooting() {
         var state = new CompanionMotion.State(new Vec3(2, 0, 0));
         double min = 2;

@@ -24,6 +24,20 @@ public final class ProgressionGameTests {
     @GameTestGenerator
     public static Collection<TestFunction> cases() {
         var tests = new ArrayList<TestFunction>();
+        add(tests, "unlock_all_includes_every_shard_and_preserves_progress", h -> {
+            var p = Fixtures.player(h);
+            p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withLight(17).withOwned(63).withEquipped(3));
+            cn.wwl.orimod.command.OriCommands.unlockAll(p);
+            var progress = p.getData(SpiritData.PROGRESS);
+            int all = 0;
+            for (var shard : Shard.values()) {
+                all |= shard.bit;
+                h.assertTrue((progress.ownedShards() & shard.bit) != 0, "Missing shard " + shard);
+            }
+            h.assertValueEqual(progress.ownedShards(), all, "All-shards mask");
+            h.assertValueEqual(progress.light(), 17, "Unlock consumed currency");
+            h.assertValueEqual(progress.equippedShards(), 3, "Unlock changed equipment");
+        });
         add(tests, "form_requires_core", h -> {
             var p = Fixtures.player(h); p.setData(SpiritData.AWAKENED, false);
             h.assertFalse(SpiritForm.toggle(p), "Unawakened player must remain human");

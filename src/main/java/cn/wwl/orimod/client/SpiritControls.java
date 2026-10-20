@@ -29,7 +29,7 @@ public final class SpiritControls {
     public static final KeyMapping LIGHT_BURST = new KeyMapping("key.orimod.light_burst", GLFW.GLFW_KEY_Z, "key.categories.orimod");
     /** R59: hold to charge the flame, release to burst. */
     public static final KeyMapping CHARGE_FLAME = new KeyMapping("key.orimod.charge_flame", GLFW.GLFW_KEY_X, "key.categories.orimod");
-    /** R98: hold Flash; the server expires input after eight ticks. */
+    /** R98: hold Flash; release sends an edge, with a twenty-tick server lease as fallback. */
     public static final KeyMapping FLASH = new KeyMapping("key.orimod.flash", GLFW.GLFW_KEY_H, "key.categories.orimod");
     private static int flashHeld;
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
@@ -228,19 +228,27 @@ public final class SpiritControls {
         if (mc.player == null || mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player)
                 || !mc.player.isAlive() || !FLASH.isDown() || CHARGE_FLAME.isDown()
                 || mc.player.isUsingItem() || mc.options.keyAttack.isDown() || mc.options.keyUse.isDown()) {
-            flashHeld = 0;
+            stopFlash(mc);
             return;
         }
         if (flashHeld++ % cn.wwl.orimod.combat.Flash.KEEPALIVE_TICKS == 0)
             PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("flash", ""));
     }
 
+    /** Send once on release or input invalidation, without waiting for the next keepalive. */
+    private static void stopFlash(Minecraft mc) {
+        if (flashHeld > 0 && mc.player != null && mc.getConnection() != null)
+            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("flash_stop", ""));
+        flashHeld = 0;
+    }
+
     /** R98: a screen has no server menu for e.g. G/Escape; reuse the existing inactive movement input immediately. */
     public static void opening(net.neoforged.neoforge.client.event.ScreenEvent.Opening event) {
         var mc = Minecraft.getInstance();
         if (event.getNewScreen() == null || mc.player == null || flashHeld == 0 && !cn.wwl.orimod.client.fx.SpiritFxClient.flashing(mc.player.getId())) return;
+        stopFlash(mc);
         PacketDistributor.sendToServer(new MovementInputPayload(++inputSequence, mc.player.level().getGameTime(), 0, 0, 0, mc.player.getYRot(), mc.player.getXRot()));
-        flashHeld = 0; sentActive = false;
+        sentActive = false;
     }
 
     private static boolean waterDashHeld;

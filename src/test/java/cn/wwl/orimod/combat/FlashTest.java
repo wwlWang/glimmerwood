@@ -27,11 +27,13 @@ class FlashTest {
         boolean blocked = mode == MoveMode.BASH_AIM || mode == MoveMode.DASH || mode == MoveMode.GRAPPLE || mode == MoveMode.STOMP;
         assertEquals(blocked ? "movement" : null, Flash.refusal(true, true, 100, 0, 0, mode, false, false));
     }
-    @Test void leaseEndsAtEightAndRenewalExtendsIt() {
-        assertTrue(Flash.leased(107, 100 + Flash.LEASE_TICKS));
-        assertFalse(Flash.leased(108, 100 + Flash.LEASE_TICKS));
-        assertTrue(Flash.leased(112, 105 + Flash.LEASE_TICKS));
-        assertFalse(Flash.leased(113, 105 + Flash.LEASE_TICKS));
+    @Test void leaseToleratesBatchedInputAndExpiresAtTwenty() {
+        assertTrue(Flash.leased(112, 100 + Flash.LEASE_TICKS));
+        assertTrue(Flash.leased(119, 100 + Flash.LEASE_TICKS));
+        assertFalse(Flash.leased(120, 100 + Flash.LEASE_TICKS));
+        assertTrue(Flash.leased(131, 112 + Flash.LEASE_TICKS));
+        assertFalse(Flash.leased(132, 112 + Flash.LEASE_TICKS));
+        assertEquals(8, ChargeFlame.INPUT_LEASE_TICKS, "Flash lease must not change Charge Flame input");
     }
     @Test void blockWorkHasBoundedCadence() {
         var lamps = new java.util.ArrayList<Long>();

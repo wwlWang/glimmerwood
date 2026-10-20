@@ -41,6 +41,8 @@ public final class SpiritProgression {
     }
 
     public static void request(ServerPlayer player, String action, String target) {
+        // Releasing must remain possible even if eligibility changed after the last hold packet.
+        if (action.equals("flash_stop")) { cn.wwl.orimod.combat.Flash.stop(player); return; }
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
@@ -48,7 +50,7 @@ public final class SpiritProgression {
             case "charge_flame_hold" -> {
                 if (SpiritData.isSpirit(player) && Ability.CHARGE_FLAME.unlocked(player) && !player.hasContainerOpen()) {
                     cn.wwl.orimod.combat.Flash.stop(player);
-                    player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = player.level().getGameTime() + cn.wwl.orimod.combat.Flash.LEASE_TICKS;
+                    player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = player.level().getGameTime() + cn.wwl.orimod.combat.ChargeFlame.INPUT_LEASE_TICKS;
                 }
             }
             case "charge_flame_cancel" -> player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;

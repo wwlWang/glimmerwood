@@ -77,4 +77,14 @@ public final class SpiritEnergy extends RenderStateShard {
         var v = camera.transform(new Vector3f(0, radius, 0));
         quad(out, pose, c, u, v, rgb, alpha);
     }
+
+    /** Large Flash bloom must fade before its camera-facing plane intersects the terrain depth buffer. */
+    public static void billboardAboveGround(VertexConsumer out, PoseStack.Pose pose, Vector3f c,
+                                           org.joml.Quaternionf camera, float radius, int rgb, float alpha, float floor) {
+        var u = camera.transform(new Vector3f(radius, 0, 0));
+        var v = camera.transform(new Vector3f(0, radius, 0));
+        float r = (rgb >> 16 & 255) / 255f, g = (rgb >> 8 & 255) / 255f, b = (rgb & 255) / 255f;
+        for (var vertex : SoftGlowClip.vertices(c, u, v, floor, .45f))
+            corner(out, pose, vertex.x(), vertex.y(), vertex.z(), vertex.u(), vertex.v(), r, g, b, alpha * vertex.alpha());
+    }
 }

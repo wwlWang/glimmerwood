@@ -3,6 +3,7 @@ package cn.wwl.orimod.command;
 import cn.wwl.orimod.entity.OriMobs;
 import cn.wwl.orimod.item.OriItems;
 import cn.wwl.orimod.progression.Ability;
+import cn.wwl.orimod.progression.Shard;
 import cn.wwl.orimod.progression.SpiritCells;
 import cn.wwl.orimod.progression.SpiritProgress;
 import cn.wwl.orimod.progression.SpiritProgression;
@@ -104,7 +105,9 @@ public final class OriCommands {
         awaken(p);
         p.setData(SpiritData.ABILITIES, allAbilities());
         var progress = p.getData(SpiritData.PROGRESS);
-        p.setData(SpiritData.PROGRESS, progress.withOwned(63));
+        int shards = 0;
+        for (var shard : Shard.values()) shards |= shard.bit;
+        p.setData(SpiritData.PROGRESS, progress.withOwned(shards));
         return true;
     }
 

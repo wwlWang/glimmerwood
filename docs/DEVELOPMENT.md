@@ -55,6 +55,10 @@ Linux 使用 `./gradlew runDevtoolsClient --console=plain`，需要可用图形�
 
 `spirit_state` 同时返回客户端和集成服务器形态、移动、战斗信息；`progress_state` 返回成长、能量和物品栏。`record_motion` / `save_motion` 记录两端每刻状态。`input_script` 的 `steps` 由相对 `at`、按键名 `key`、按下状态 `down` 组成；也可附 `action` 对象，限定为命令、换槽位、背包、暂停、关闭界面、切形态和转向。定时操作报错记入 `inputScriptError`，后续步骤停止。
 
+`spirit_state.client.companion` 返回「萤」最近一个 tick 的世界坐标 `pos`、速度 `vel`（格/秒）、肩部锚点 `anchor`、`anchorDistance`、`returning`、`seekTicks`、`dartTicks`、`hintFlight`；没有跟踪状态时为 `{"tracked":false}`。`spirit_state.client.aura` 和 `render_diagnostics.aura` 返回灯缓存数 `cachedLanterns`、上一帧提交绘制的灯数 `renderedLanterns`、缓存位置与扫描时间；灯已熄灭而缓存尚未刷新时，两数可以不同。
+
+同一个 `aura` 的 `companionDraws` 记录上一帧实际绘制的同伴中心：`source`、`owner` 实体 ID、插值后的世界 `pos`、到主人插值脚部的 `ownerDistance`、`billboards` 数和 `tail`。`screenPixels` 是该中心经当前渲染矩阵投影到窗口的像素坐标（左上为原点，非 GUI 缩放坐标）；`inFrontOfCamera` 指示是否在相机前方，投影 w 接近零时坐标为空。第一人称隐藏本人的光球，因此没有本人的该条记录。用这些字段核对截图中的亮点来源，避免把屏幕间距当成世界距离；状态查询与截图是不同帧，移动时应允许小幅像素差。
+
 `ruin_state` 返回挑战、恢复标记、附近已加载的真实结构起点与有界搜索状态。`use_block` 走原版物品使用入口，`gui_click` / `gui_key` 操作当前游戏界面；`container_state` 只读合成与物品栏槽位。`focus_game` 仅请求本客户端窗口焦点，测试仍使用正式失焦保护。`server_hitch` 仅限集成服务器、1–600 毫秒，可作为定时脚本动作，复现服务器停顿下的输入行为。
 
 单人服务器没有 `save-all` 命令。测试快照须先暂停，再调用 `save_world`，等待原版 `saveEverything` 完成强制写盘后复制，并检查 SHA-256 和关键区块内容。仅暂停触发的自动保存不保证所有异步区块写入已完成。`command` 对单人服务器没有注册的命令直接报错；只读查询的短暂超时最多重试两次，并记录在证据中，操作请求不自动重发。

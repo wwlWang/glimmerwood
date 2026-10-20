@@ -20,6 +20,8 @@ public final class ChargeFlame {
     public static final float COST = 10, DAMAGE = 8;
     public static final double RADIUS = 3.5;
     public static final int CHARGE_TICKS = 12, COOLDOWN_TICKS = 30;
+    /** Input lease only excludes Flash while charging; never a prerequisite for release. */
+    public static final int INPUT_LEASE_TICKS = 8;
 
     public static String refusal(boolean spirit, boolean unlocked, float energy, long now, long readyAt) {
         if (!spirit) return "not_spirit";

@@ -140,7 +140,7 @@
 
 - `Ability.FLASH(8192, 40, CHARGE_FLAME)`；技能树里排在蓄力灵焰之后。
 - 按键 `key.orimod.flash`，默认 **H**；在 `SpiritKeyDefaults` 里照现有做法检查冲突。按住生效。
-- **输入：** 按住期间客户端每 5 tick 发一次 `ProgressActionPayload("flash", "")`；服务端每次收到就把 `flashUntil` 设为 `now + 8`。松开或丢包时，最多 8 tick 自动停止，不需要单独的停止包。状态放在 `ENERGY_STATE` 里（加 `flashUntil`、`flashActiveSince`）。
+- **输入：** 按住期间客户端每 5 tick 发一次 `ProgressActionPayload("flash", "")`；服务端每次收到就把 `flashUntil` 设为 `now + 20`，容忍低帧率下客户端 tick 成批到达。松手或输入失效的边沿立即发送 `ProgressActionPayload("flash_stop", "")`；菜单打开也主动停止，20 tick 租约只作输入中断兜底。续租不重置 `flashActiveSince`；明确停止或租约到期后的再次开启是新一轮，不继承净化计时。状态放在 `ENERGY_STATE` 里（`flashUntil`、`flashActiveSince`）。此为低帧率验收修正，替代原先仅靠 8 tick 超时停止的方案。
 - **开启条件（纯函数 `Flash.refusal(...)`，写法照 `ChargeFlame.refusal`）：** 精灵形态、已学会、能量 ≥ 5、不在 Bash 瞄准 / 冲刺 / 抓钩 / 下砸中、没有在蓄力灵焰。
 - **消耗：** 每 tick 0.3 能量（每秒 6）；能量降到 0 时停止，并进入 20 tick 冷却。期间暂停自然回能（把 `lastSpent` 更新为当前时间）。
 - **效果（服务端，半径 `RADIUS = 7`）：** 实体每 tick 用 AABB 预筛，再按球形距离过滤；方块扫描按下面的独立节奏执行。

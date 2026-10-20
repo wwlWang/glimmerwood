@@ -556,7 +556,8 @@ public final class DevelopmentBridge {
             }
             case "render_diagnostics" -> {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
-                        com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()));
+                        com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()),
+                        "aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
             }
             case "layer_preview" -> { return LayerPreview.configure(action); }
             case "preview_effect" -> {
@@ -774,7 +775,11 @@ public final class DevelopmentBridge {
                 "health", player.getHealth(), "fallDistance", player.fallDistance,
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
-        if (player.level().isClientSide) state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
+        if (player.level().isClientSide) {
+            state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
+            state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
+            state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
+        }
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
                 "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),

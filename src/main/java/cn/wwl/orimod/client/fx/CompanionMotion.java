@@ -41,6 +41,7 @@ public final class CompanionMotion {
     /** R97: tick state doubles as a pure spring fixture; velocities are in blocks/second. */
     public static final class State {
         public Vec3 pos, vel = Vec3.ZERO, prevPos, dartTarget, seekTarget;
+        private Vec3 anchor;
         public int dartTicks, seekTicks, pulseTicks, sinceCombat = SEEK_PEACE_TICKS + 1;
         public Vec3 mood = rgb(CALM), prevMood = mood;
         private Player owner;
@@ -48,7 +49,13 @@ public final class CompanionMotion {
         private int nextSeek = SEEK_INTERVAL, seekEntity = -1;
         private boolean hintFlight, returning;
         private double petalPhase, previousPetalPhase;
-        public State(Vec3 at) { pos = prevPos = at; }
+        public State(Vec3 at) { pos = prevPos = anchor = at; }
+
+        public java.util.Map<String, Object> diagnostics() {
+            return java.util.Map.of("pos", coordinates(pos), "vel", coordinates(vel), "anchor", coordinates(anchor),
+                    "anchorDistance", pos.distanceTo(anchor), "returning", returning, "seekTicks", seekTicks,
+                    "dartTicks", dartTicks, "hintFlight", hintFlight);
+        }
 
         public void dart(Vec3 target) {
             dartTarget = target;
@@ -67,6 +74,7 @@ public final class CompanionMotion {
 
         /** Intentional excursions spring out and back; a real owner teleport always snaps and cancels the excursion. */
         public void step(Vec3 anchor, boolean ownerTeleported) {
+            this.anchor = anchor;
             prevPos = pos;
             if (ownerTeleported) {
                 pos = prevPos = anchor; vel = Vec3.ZERO;
@@ -147,6 +155,13 @@ public final class CompanionMotion {
     public static State state(Player player) {
         var state = STATES.get(player.getId());
         return state != null && state.owner == player ? state : null;
+    }
+
+    private static double[] coordinates(Vec3 at) { return new double[]{at.x, at.y, at.z}; }
+
+    public static java.util.Map<String, Object> diagnostics(Player player) {
+        var state = state(player);
+        return state == null ? java.util.Map.of("tracked", false) : state.diagnostics();
     }
 
     private static State ensure(Player player) {

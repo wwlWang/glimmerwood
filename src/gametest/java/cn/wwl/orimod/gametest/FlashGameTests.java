@@ -36,6 +36,34 @@ import java.util.function.BiConsumer;
 public final class FlashGameTests {
     @GameTestGenerator public static Collection<TestFunction> cases() {
         var tests = new ArrayList<TestFunction>();
+        add(tests, "dazzle_running_ranged_goal_survives_entity_ticks", (h, c) -> {
+            var server = h.getLevel().getServer();
+            var difficulty = server.getWorldData().getDifficulty();
+            // A real connected survival player, and the real goal registered by GloomSpitter.
+            var spitter = new GloomSpitter(OriMobs.GLOOM_SPITTER.get(), h.getLevel());
+            try {
+                server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+                spitter.setPos(c.player().position().add(0, 0, 4));
+                spitter.setTarget(c.player());
+                spitter.goalSelector.tick();
+                var ranged = spitter.goalSelector.getAvailableGoals().stream().filter(g ->
+                        g.getGoal() instanceof net.minecraft.world.entity.ai.goal.RangedAttackGoal).findFirst().orElseThrow();
+                h.assertTrue(ranged.isRunning(), "RangedAttackGoal never entered running state");
+                spitter.dazzle(20);
+                // Mob alternates cleanup ticks with tickRunningGoals(false). Force the latter first.
+                spitter.tickCount = 2 + Math.floorMod(spitter.getId(), 2);
+                for (int i = 0; i < 6; i++) {
+                    // ServerLevel normally increments this before tickNonPassenger calls tick().
+                    spitter.tickCount++;
+                    spitter.tick();
+                }
+                h.assertFalse(ranged.isRunning(), "GoalSelector did not stop the dazzled goal");
+                h.assertValueEqual(spitter.charge(), 0, "Dazzled spitter resumed charging");
+            } finally {
+                spitter.discard();
+                server.setDifficulty(difficulty, true);
+            }
+        });
         add(tests, "purchase_requires_charge_flame_and_costs_40", (h, c) -> {
             var p = c.player();
             p.setData(SpiritData.ABILITIES, 0);
@@ -247,6 +275,8 @@ public final class FlashGameTests {
             var p = c.player(); p.setData(SpiritData.ABILITIES, Ability.FLASH.bit | Ability.CHARGE_FLAME.bit);
             Flash.keepAlive(p);
             SpiritProgression.request(p, "charge_flame_hold", "");
+            h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).chargeFlameUntil,
+                    p.level().getGameTime() + 8, "Charge Flame input lease changed");
             h.assertFalse(Flash.active(p), "Charging did not stop Flash");
             h.assertFalse(Flash.keepAlive(p), "Flash during charge");
             p.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = p.level().getGameTime() - 1;
@@ -278,11 +308,71 @@ public final class FlashGameTests {
                 h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).flashReadyAt, p.level().getGameTime() + 20, "Missing exhaustion cooldown");
             });
         }
-        timed(tests, "lease_expires_at_eight_without_release_packet", (h, c) -> {
+        timed(tests, "irregular_ten_to_twelve_tick_keepalives_preserve_age_and_cleanse", (h, c) -> {
+            var p = c.player();
+            var water = new BlockPos(7, 2, 5);
+            h.setBlock(water, OriBlocks.GLOOM_WATER.get());
+            FxGameTests.drain(c.channel());
+            SpiritProgression.request(p, "flash", "");
+            long started = p.getData(SpiritData.ENERGY_STATE).flashActiveSince;
+            var arrivals = Set.of(10, 22, 33, 43, 55);
+            for (int i = 1; i <= 60; i++) {
+                final int elapsed = i;
+                h.runAfterDelay(i, safe(c, () -> {
+                    if (arrivals.contains(elapsed)) SpiritProgression.request(p, "flash", "");
+                    tick(p);
+                    h.assertTrue(Flash.active(p), "Batched keepalive lost Flash at " + elapsed);
+                    h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).flashActiveSince, started,
+                            "Batched keepalive restarted age at " + elapsed);
+                    h.assertFalse(FxGameTests.fx(FxGameTests.drain(c.channel())).stream().anyMatch(v ->
+                            v.sourceEntity() == p.getId() && (v.phase() == SpiritFxPhase.STOP_ALL
+                                    || v.kind() == SpiritFxKind.FLASH && v.phase() == SpiritFxPhase.STOP)),
+                            "Batched keepalive stopped the FX loop at " + elapsed);
+                    if (elapsed == 38) h.assertTrue(h.getBlockState(water).is(OriBlocks.GLOOM_WATER), "Early cleanse");
+                    if (elapsed == 60) {
+                        h.assertTrue(h.getBlockState(water).is(Blocks.WATER), "Continuous Flash never cleansed water");
+                        finish(h, c);
+                    }
+                }));
+            }
+        });
+        timed(tests, "explicit_stop_is_immediate_idempotent_and_next_hold_starts_fresh", (h, c) -> {
+            var p = c.player();
+            SpiritProgression.request(p, "flash", "");
+            long started = p.getData(SpiritData.ENERGY_STATE).flashActiveSince;
+            h.runAfterDelay(3, safe(c, () -> {
+                h.assertTrue(Flash.active(p), "Fixture lease already expired");
+                h.assertTrue(SpiritFxLifecycle.active(p).contains(SpiritFxKind.FLASH), "Fixture loop missing");
+                FxGameTests.drain(c.channel());
+                float energy = SpiritProgression.energy(p);
+                SpiritProgression.request(p, "flash_stop", "");
+                SpiritProgression.request(p, "flash_stop", "");
+                h.assertFalse(Flash.active(p), "Explicit stop waited for lease expiry");
+                h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).flashActiveSince, Long.MIN_VALUE, "Old age retained");
+                h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).flashUntil, Long.MIN_VALUE, "Old lease retained");
+                h.assertFalse(SpiritFxLifecycle.active(p).contains(SpiritFxKind.FLASH), "Loop survived explicit stop");
+                tick(p);
+                Fixtures.near(h, SpiritProgression.energy(p), energy, "Stopped Flash kept draining");
+            }));
+            h.runAfterDelay(4, safe(c, () -> {
+                // MinecraftServer suspends connection flushing during the world tick;
+                // observe the queued STOP after its normal end-of-tick flush.
+                h.assertValueEqual(FxGameTests.fx(FxGameTests.drain(c.channel())).stream().filter(v ->
+                        v.sourceEntity() == p.getId() && v.kind() == SpiritFxKind.FLASH && v.phase() == SpiritFxPhase.STOP).count(),
+                        1L, "Stop edge must end the loop once");
+                SpiritProgression.request(p, "flash", "");
+                h.assertTrue(Flash.active(p), "New hold failed");
+                long since = p.getData(SpiritData.ENERGY_STATE).flashActiveSince;
+                h.assertValueEqual(since, p.level().getGameTime(), "New hold inherited old age");
+                h.assertTrue(since > started, "New hold reused stopped session");
+                finish(h, c);
+            }));
+        });
+        timed(tests, "lease_expires_at_twenty_without_release_packet", (h, c) -> {
             var p = c.player(); Flash.keepAlive(p);
-            h.runAfterDelay(7, safe(c, () -> h.assertTrue(Flash.active(p), "Lease expired before eight")));
-            h.runAfterDelay(8, safe(c, () -> {
-                tick(p); h.assertFalse(Flash.active(p), "Lease survived eight");
+            h.runAfterDelay(19, safe(c, () -> h.assertTrue(Flash.active(p), "Lease expired before twenty")));
+            h.runAfterDelay(20, safe(c, () -> {
+                tick(p); h.assertFalse(Flash.active(p), "Lease survived twenty");
                 h.assertFalse(SpiritFxLifecycle.active(p).contains(SpiritFxKind.FLASH), "Expired loop still active");
                 finish(h, c);
             }));

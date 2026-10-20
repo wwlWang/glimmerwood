@@ -628,3 +628,91 @@ src/test/java/cn/wwl/orimod/progression/ProgressionDefinitionsTest.java
 src/test/java/cn/wwl/orimod/progression/ShardEffectsTest.java
 src/test/java/cn/wwl/orimod/progression/SpiritProgressTest.java
 ```
+
+## R96–R99：客户端验收修复
+
+2026-10-20，用户目录 JDK 21 执行 `./gradlew build runGameTestServer --console=plain`，结果为 **734 JUnit / 344 GameTest，零失败、零跳过**（原 724 / 342，新增 10 / 2）。另执行 `compileDevtoolsJava` 和 `python3 scripts/art/build_lantern_textures.py --check`，均通过。构建日志、最终 XML 和修复前失败记录保存在 `evidence/client-fixes-build-v001/`；没有运行 `check-ruins.py` 或任何 git 写操作。
+
+崩溃回归 `flash.dazzle_running_ranged_goal_survives_entity_ticks` 使用真实连接的生存玩家，启动喷吐者原有 RangedAttackGoal 并断言包装目标处于 running，随后炫目，连续执行六次真实实体 `tick()`。夹具模拟 ServerLevel 的 tickCount 递增，并让第一次进入 Mob 的仅运行目标分支，覆盖 GoalSelector 下一次清理之前的窗口。修复前 344 项 GameTest 中仅此项失败，原文：
+
+```text
+flash.dazzle_running_ranged_goal_survives_entity_ticks
+(1423742, -60, -11994830) Cannot invoke "net.minecraft.world.entity.LivingEntity.getX()" because "this.target" is null
+```
+
+修复移除 `dazzle()` 对内部 `rangedGoal.stop()` 的直接调用，由 `canContinueToUse()` 返回 false 让 GoalSelector 正常停止包装目标；炫目期间目标 `tick()` 直接返回，导航仍立即停止。检查其他实体未发现同类直接停止内部目标的调用。回归最终保持相同的连续 tick 路径并通过。新命令回归 `unlock_all_includes_every_shard_and_preserves_progress` 从旧 `owned=63` 出发，检查全部 Shard 位都解锁，且灵光 17、装备 3 保留。
+
+同伴运动新增 6 项参数化 JUnit：锚点以 4 / 10 m/s 移动 3 秒，分别从普通状态、hint 返回、seek 返回开始，后两者先确认 `returning=true`；最后一秒每 tick 锚点距离均 <2.5 格。原弹簧实现即通过此距离要求，所以未调 ω=9 或改锚点。初版额外要求末端瞬时速度严格等于锚点速度 ±0.05，导致六项失败（4 m/s 测得 3.93359、10 m/s 测得 9.83398）；离散锚点每 tick 跳一步，子步结束瞬时速度与平均速度不完全相等，已去掉这个无关断言，保留逐 tick 距离及有限值检查。对应初版 XML 为 `before-companion.xml`。
+
+真实客户端探测使用专用 `orimod_dev_r96accept` 世界、Mesa llvmpipe、关闭 Iris 光影，截图已查看：
+
+| 证据目录 | 结果 |
+| --- | --- |
+| `evidence/client-fixes-follow-probe-v001/` | 站立、移动、按疾跑键采样；实际移动速度约 6.4 m/s，稳定锚点距离约 1.15–1.21 格，returning/seek/dart 正常。此客户端采样不等于 10 m/s 实测；10 m/s 由上述 JUnit 覆盖。 |
+| `evidence/client-fixes-light-probe-v001/` | 灵灯缓存 3、实际提交绘制 3，排除扫描遗漏。Flash 第三人称旧 bloom 出现长横线，而同场第一人称地面光池无此横线。 |
+| `evidence/client-fixes-confirm-v001/` | `moving-source.png` 的后方短彗尾亮点与 `SpiritAura.companion` 的投影 (483, 494) 对应；查询和截图略有帧差。该次插值中心距主人脚底约 2.15 格，tick 状态距锚点约 1.15 格。`flash-third-after.png` 横线消失；`lantern-lit-unlit.png` 中央白芯与两侧冷蓝熄灭灯芯可区分，柔光可见。 |
+
+对“远处光点”的结论：它确实是「萤」，没有证据支持十几格的世界坐标滞后，也没有在该帧被 Ori 的 bloom 盖住；更低处的长粒子带是 `MotionFeel.emit` 的身体尾迹。新增 devtools 运动状态与实际绘制中心/来源/屏幕坐标，便于换镜头复查。没有把未复现的运动故障记为已修复。
+
+光效修改：
+
+- 灯晕从半径 0.9 / alpha 0.25 改为内层 1.4 / 0.4、外层 2.2 / 0.12，仍共用原批次与调色板预筛。熄灭灯芯基色 #5F86B8，点亮仍近白，由生成脚本重建；只有熄灭核心 PNG 的字节变化。最终混合亮灭截图后的查询可能碰上旧 Flash 计划刻使灯熄灭，故该次 `cached=1/rendered=0` 不作持续点亮证据；缓存与绘制均为 3 的独立探测已确认正常路径。
+- Flash 硬边来自放大后的朝向相机身体 bloom 平面被地面深度截断。抽取已有向下射线求地表，让这些 billboard 在地面以上 0.45 格内按 smoothstep 渐隐；四个高度带插值，保持原径向纹理 UV。半径 7 的地面光池仍走原径向纹理绘制。新增 4 项 `SoftGlowClipTest` 覆盖大半径的地面透明/UV、旋转镜头、完全埋入与完全高于渐隐区。
+
+验证范围：本轮确认上述同机截图差异与数值，不代表硬件 GPU、开启 Iris 光影、所有地形和镜头角度的验收。没有运行 Claude 正在编写的 `verify-r96-r99.py`，该文件未修改。客户端已正常关闭，留待 Claude 综合复测和审查。
+
+改动文件清单（16 个；不含既有 AgentBridge / AGENTS / CLAUDE 文件、Claude 的验收脚本或忽略的证据目录）：
+
+```text
+docs/DEVELOPMENT.md
+docs/TESTING.md
+docs/WORK_STATUS.md
+scripts/art/build_lantern_textures.py
+src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java
+src/gametest/java/cn/wwl/orimod/gametest/FlashGameTests.java
+src/gametest/java/cn/wwl/orimod/gametest/ProgressionGameTests.java
+src/main/java/cn/wwl/orimod/client/fx/CompanionMotion.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritAura.java
+src/main/java/cn/wwl/orimod/client/render/SoftGlowClip.java
+src/main/java/cn/wwl/orimod/client/render/SpiritEnergy.java
+src/main/java/cn/wwl/orimod/command/OriCommands.java
+src/main/java/cn/wwl/orimod/entity/GloomSpitter.java
+src/main/resources/assets/orimod/textures/block/spirit_lantern_core.png
+src/test/java/cn/wwl/orimod/client/fx/CompanionMotionTest.java
+src/test/java/cn/wwl/orimod/client/render/SoftGlowClipTest.java
+```
+
+## R98：低帧率灵闪租约修复
+
+Claude 的 `evidence/r98-flash-lease-probe-lowfps-v001/` 在客户端 fpsLimit=4 时记录能量 100→68.4、近处腐光水未净化；`r98-flash-lease-probe-v001/` 的较高帧率对照可以净化。每五个客户端 tick 的保活会随低帧率成批到达，旧服务端八 tick 租约可能在相邻包之间超时，使下一包重新开始计龄。
+
+修改为 20 tick 兜底租约，客户端松手或输入失效的第一个可处理 tick 发送一次 `flash_stop`，菜单打开时也发送；不等待下一个五 tick 保活时点。服务端 action 在资格检查之前处理，只能停止发送者自己的 Flash，并立即清空租约与起始时间、同步 FX STOP。实际输入线程卡住期间无法提前感知松手，兜底仍以服务端 tick 为界。没有添加停止后的恢复宽限：超过 20 tick 的输入中断仍结束本次施放，明确松手后再次按下不会继承旧净化进度。
+
+新增 GameTest：
+
+- `flash.irregular_ten_to_twelve_tick_keepalives_preserve_age_and_cleanse`：真实服务器时钟推进 60 tick，在 0、10、22、33、43、55 tick 经正式请求入口续租；每 tick 检查 Flash 存活、`flashActiveSince` 等于首次值、没有发出本玩家的 FX STOP/STOP_ALL，第 38 tick 腐光水仍在，第 60 tick 已净化。
+- `flash.explicit_stop_is_immediate_idempotent_and_next_hold_starts_fresh`：租约仍有效时连续发送两次 `flash_stop`，立即清空活动状态/租约/计龄，恰好一个 FX STOP，随后的 tick 不再扣能；下一 tick 重新开启使用新的起始时间。
+
+原 `lease_expires_at_eight_without_release_packet` 更名并改验第 19 tick 仍有效、第 20 tick 失效；JUnit 同步覆盖第 12 tick 延迟仍有效、19/20 边界与续租后的新边界。修改原因是租约现在只作丢失输入兜底，正常松手走明确停止包。蓄力灵焰改用独立 `ChargeFlame.INPUT_LEASE_TICKS=8`，并断言原值不变；旧 `ChargeFlameGameTests` 未修改，release 不依赖互斥保活。
+
+全量验证命令（Claude 确认客户端正常退出后执行）：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" \
+  ./gradlew build runGameTestServer compileDevtoolsJava --console=plain
+python3 scripts/test-summary.py
+git diff --check
+```
+
+首轮 734 项 JUnit 通过，346 项 GameTest 中新增停止测试有一项夹具失败，原文：
+
+```text
+flash.explicit_stop_is_immediate_idempotent_and_next_hold_starts_fresh
+Expected Stop edge must end the loop once to be 1, but was 0
+```
+
+服务端立即停用、清空计龄和停止扣能的断言已通过；原因是原版 `MinecraftServer.tickChildren` 在世界 tick 内对既有连接 `suspendFlushing()`，到 tick 末尾才 `resumeFlushing()`。将包计数检查移到下一 tick、正式队列已 flush 后，仍断言恰好一条 STOP；不改服务端发送路径。失败日志与 XML 保存在 `evidence/flash-lease-build-v001/first-full.log` / `first-gametest.xml`。
+
+最终全量 **734 JUnit / 346 GameTest，零失败、零跳过**；`build`、`compileDevtoolsJava` 和 `git diff --check` 通过。日志和最终 XML 位于 `evidence/flash-lease-build-v001/`（另有 `/tmp/orimod-flash-lease-final.log`）。本轮未启动客户端，未执行 git 写操作；低帧率实际按键松手、净化和音画连续性留待 Claude 复测。
+
+本次增量涉及 9 个文件：`Flash.java`、`ChargeFlame.java`、`SpiritControls.java`、`SpiritProgression.java`、`FlashTest.java`、`FlashGameTests.java`、`ROADMAP_R96.md`、`TESTING.md`、`WORK_STATUS.md`。没有新增网络字段或效果类型，协议版本不变。

@@ -37,11 +37,25 @@ public final class SpiritAura {
     public static final int GROUND_COLOR = 0xB4DAFF;
     /** R96: lantern halos share the spirit batch; loaded-section scans are cached for half a second. */
     public static final int LANTERN_RANGE = 32, LANTERN_SCAN_TICKS = 10, MAX_LANTERNS = 32;
-    public static final float LANTERN_RADIUS = .9f, LANTERN_ALPHA = .25f;
+    public static final float LANTERN_RADIUS = 1.4f, LANTERN_ALPHA = .4f,
+            LANTERN_OUTER_RADIUS = 2.2f, LANTERN_OUTER_ALPHA = .12f;
     private static final java.util.List<net.minecraft.core.BlockPos> LANTERNS = new java.util.ArrayList<>();
     private static java.lang.ref.WeakReference<net.minecraft.client.multiplayer.ClientLevel> lanternLevel = new java.lang.ref.WeakReference<>(null);
     private static long lanternScanAt = Long.MIN_VALUE;
+    private static int renderedLanterns;
+    private static final java.util.List<java.util.Map<String, Object>> COMPANION_DRAWS = new java.util.ArrayList<>();
     private SpiritAura() {}
+
+    /** Last scan/render results only: diagnostics never load chunks or initiate a scan. */
+    public static java.util.Map<String, Object> diagnostics() {
+        boolean current = lanternLevel.get() != null && lanternLevel.get() == Minecraft.getInstance().level;
+        return java.util.Map.of("cachedLanterns", current ? LANTERNS.size() : 0,
+                "renderedLanterns", current ? renderedLanterns : 0,
+                "lanternScanAt", current ? lanternScanAt : -1L,
+                "lanternPositions", current ? LANTERNS.stream()
+                        .map(p -> new int[]{p.getX(), p.getY(), p.getZ()}).toList() : java.util.List.of(),
+                "companionDraws", current ? java.util.List.copyOf(COMPANION_DRAWS) : java.util.List.of());
+    }
 
     /** 0.8..1 slow breathing (same period as the body's breath). */
     public static float breath(float seconds) {
@@ -60,8 +74,15 @@ public final class SpiritAura {
             var spine = bone(frame, "spine", at, cam);
             if (spine != null) centre = spine;
         }
-        for (int i = 0; i < BLOOM_RADIUS.length; i++)
-            SpiritEnergy.billboard(out, pose, centre, rotation, h * BLOOM_RADIUS[i] * Mth.lerp(flash, 1, cn.wwl.orimod.fx.FlashLight.BLOOM_SCALE), BLOOM_COLOR[i], Math.min(1, BLOOM_ALPHA[i] * b * boost));
+        var floor = flash > 0 ? groundSurface(player, at) : null;
+        for (int i = 0; i < BLOOM_RADIUS.length; i++) {
+            float radius = h * BLOOM_RADIUS[i] * Mth.lerp(flash, 1, cn.wwl.orimod.fx.FlashLight.BLOOM_SCALE);
+            float alpha = Math.min(1, BLOOM_ALPHA[i] * b * boost);
+            if (floor != null)
+                SpiritEnergy.billboardAboveGround(out, pose, centre, rotation, radius, BLOOM_COLOR[i], alpha,
+                        (float) (floor.y - cam.y));
+            else SpiritEnergy.billboard(out, pose, centre, rotation, radius, BLOOM_COLOR[i], alpha);
+        }
         if (frame == null) return;
         for (String name : GLOW_BONES) {
             var p = bone(frame, name, at, cam);
@@ -96,17 +117,22 @@ public final class SpiritAura {
     /** R97: share the ground projection with Glimmer, including the local player's first-person pool. */
     private static void groundLight(com.mojang.blaze3d.vertex.VertexConsumer out, com.mojang.blaze3d.vertex.PoseStack.Pose pose, Player player,
                                     net.minecraft.world.phys.Vec3 at, net.minecraft.world.phys.Vec3 cam, float b, float radius, boolean expand) {
-        var level = player.level();
-        var hit = level.clip(new net.minecraft.world.level.ClipContext(at.add(0, .3, 0), at.subtract(0, GROUND_REACH, 0),
-                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, player));
-        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK || hit.getDirection() != net.minecraft.core.Direction.UP) return;
-        float height = (float) (at.y - hit.getLocation().y);
+        var floor = groundSurface(player, at);
+        if (floor == null) return;
+        float height = (float) (at.y - floor.y);
         float fade = Math.clamp(1 - height / GROUND_REACH, 0, 1);
         if (fade <= 0) return;
-        var c = new Vector3f((float) (at.x - cam.x), (float) (hit.getLocation().y + .015 - cam.y), (float) (at.z - cam.z));
+        var c = new Vector3f((float) (at.x - cam.x), (float) (floor.y + .015 - cam.y), (float) (at.z - cam.z));
         float r = radius * (expand ? 1 + .25f * (1 - fade) : 1);
         SpiritEnergy.quad(out, pose, c, new Vector3f(r, 0, 0), new Vector3f(0, 0, r), GROUND_COLOR, GROUND_ALPHA * fade * fade * b);
         SpiritEnergy.quad(out, pose, c, new Vector3f(r * .45f, 0, 0), new Vector3f(0, 0, r * .45f), 0xEAF6FF, GROUND_ALPHA * .8f * fade * fade * b);
+    }
+
+    private static net.minecraft.world.phys.Vec3 groundSurface(Player player, net.minecraft.world.phys.Vec3 at) {
+        var hit = player.level().clip(new net.minecraft.world.level.ClipContext(at.add(0, .3, 0), at.subtract(0, GROUND_REACH, 0),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, player));
+        return hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && hit.getDirection() == net.minecraft.core.Direction.UP
+                ? hit.getLocation() : null;
     }
 
     /** R96: palette-filter loaded sections before checking blocks; stop after finding 32 lamps in the sphere. */
@@ -163,13 +189,17 @@ public final class SpiritAura {
         float t = SpiritEnergy.time();
         boolean drew = false;
         scanLanterns(level, mc.player);
+        renderedLanterns = 0;
+        COMPANION_DRAWS.clear();
         for (var pos : LANTERNS) {
             // Recheck cached entries so a broken/extinguished lamp vanishes immediately and never loads a chunk.
             if (pos.distToCenterSqr(mc.player.position()) > LANTERN_RANGE * LANTERN_RANGE
                     || !level.hasChunkAt(pos) || !isLitLantern(level.getBlockState(pos))) continue;
             var c = new Vector3f((float) (pos.getX() + .5 - cam.x), (float) (pos.getY() + .5 - cam.y), (float) (pos.getZ() + .5 - cam.z));
-            SpiritEnergy.billboard(out, pose, c, rotation, LANTERN_RADIUS, COMPANION_HALO,
-                    LANTERN_ALPHA * breath(t + (pos.asLong() & 255) * .037f));
+            float light = breath(t + (pos.asLong() & 255) * .037f);
+            SpiritEnergy.billboard(out, pose, c, rotation, LANTERN_OUTER_RADIUS, COMPANION_HALO, LANTERN_OUTER_ALPHA * light);
+            SpiritEnergy.billboard(out, pose, c, rotation, LANTERN_RADIUS, COMPANION_HALO, LANTERN_ALPHA * light);
+            renderedLanterns++;
             drew = true;
         }
         for (Player player : level.players()) {
@@ -192,6 +222,20 @@ public final class SpiritAura {
             if (dark) groundLight(out, pose, player, orb, cam, b, CompanionMotion.POOL_RADIUS, false);
             if (!self) {
                 var c = new Vector3f((float) (orb.x - cam.x), (float) (orb.y - cam.y), (float) (orb.z - cam.z));
+                // Project the exact centre sent to SpiritEnergy, so a screenshot light can be
+                // attributed to its draw path instead of estimating its world distance by eye.
+                var clip = new org.joml.Vector4f(c, 1).mul(pose.pose())
+                        .mul(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix())
+                        .mul(com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix());
+                COMPANION_DRAWS.add(java.util.Map.of("source", "SpiritAura.companion",
+                        "owner", player.getId(), "pos", new double[]{orb.x, orb.y, orb.z},
+                        "ownerDistance", orb.distanceTo(at),
+                        "screenPixels", Math.abs(clip.w) < 1e-6f ? new float[0]
+                                : new float[]{(clip.x / clip.w + 1) * .5f * mc.getWindow().getWidth(),
+                                        (1 - clip.y / clip.w) * .5f * mc.getWindow().getHeight()},
+                        "inFrontOfCamera", clip.w > 0,
+                        "billboards", 6, "tail", CompanionMotion.state(player) != null
+                                && CompanionMotion.state(player).vel.length() > CompanionMotion.RUN_SPEED));
                 var state = CompanionMotion.state(player);
                 int color = state == null ? CompanionMotion.CALM : state.color(partial);
                 if (flash > 0) color = net.minecraft.util.FastColor.ARGB32.lerp(flash, 0xFF000000 | color, 0xFFFFFFFF) & 0xFFFFFF;

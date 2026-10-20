@@ -1,5 +1,21 @@
 # 当前工作状态
 
+2026-10-20 R96–R99 客户端验收（Claude 在本机 Linux 开发客户端操作，llvmpipe 软件渲染约 4–20 FPS，光影关闭）：`scripts/verify-r96-r99.py` 四段 13 项检查最终全部通过（证据 `evidence/r96-r99-accept-v002`、`r98-r99-accept-v003`、`r98-flash-lease-lowfps-v002`，不入库）。
+- **验收中发现并已修复：** ① 灵闪照到腐光喷吐者导致服务端崩溃（`RangedAttackGoal` 目标为空）；② 低帧率下灵闪租约断续，净化永远无法触发；③ `/ori unlock all` 写死旧碎片掩码 63；④ 点亮灵灯的柔光太淡、熄灭灯芯过白；⑤ 灵闪时身体光晕与地面相交，出现一条硬边。
+- **撤回的误报：** 「萤」在主人移动时“落后十几格”是侧面镜头的透视错觉。诊断数据显示，疾跑时它距锚点 1.16–1.19 格；运动参数未改，新增 companion 诊断字段和匀速跟随测试。
+- **仍需真机确认：** 硬件 GPU 与 Iris 光影下的观感和帧率、声音、低血时「萤」的琥珀色闪烁（单帧截图无法判断）、碎片面板的实际操作手感。
+
+2026-10-20 R98 低帧率灵闪租约修复（Codex 实现，待 Claude 复测）：
+- **输入：** 每 5 个客户端 tick 保活不变，服务端租约 8→20 tick，容忍客户端补跑 tick 时的成批到包。松手、失焦、换形、使用物品等输入失效边沿只发一次 `flash_stop`，打开菜单也主动发送；服务端收到立即停止扣能与持续 FX。仅新增 action 字符串，ProgressAction 协议仍为 1、FX 仍为 6。
+- **计时：** 不加停止后的恢复宽限；有效续租保留 `flashActiveSince`，明确停止/真正超时后再按下从零开始。蓄力灵焰互斥租约独立保留 8 tick，12 tick 蓄力释放规则不变。
+- **验证：** 全量 `build runGameTestServer compileDevtoolsJava` 通过，**734 JUnit / 346 GameTest，零失败、零跳过**。新增 10–12 tick 不规则续租持续 60 tick 后净化、计时不重置/FX 不停止，以及明确 stop 立即生效/幂等/重新开启重置计时两项 GameTest。原 8 tick 超时单测与 GameTest 改为 20 tick 边界，这是兜底租约的设计调整。首轮 STOP 包读取早于原版 tick 末 flush 的夹具失败已修正，原文见 [TESTING](TESTING.md#r98低帧率灵闪租约修复)；4 FPS 实机复测留给 Claude，本轮不启动客户端。
+
+2026-10-20 R96–R99 客户端验收修复（Codex 实现，待 Claude 审查）：
+- **崩溃与命令：** 喷吐者炫目不再直接停止内部 `RangedAttackGoal`，由 GoalSelector 清理，运行刻另加炫目保护。新增真实连接玩家、运行中目标的连续实体 tick 回归，修复前已复现相同 `target is null` NPE。`/ori unlock all` 按全部 `Shard.bit` 求并集，保留货币与装备。
+- **同伴定位：** 新增 4 / 10 m/s、普通跟随及 hint / seek 返回的 6 项移动锚点测试；原 ω=9 实现均满足稳态距离 <2.5 格。客户端采样锚点距离约 1.15–1.21 格；把实际绘制中心投影到截图，确认带短彗尾的后方亮点就是 `SpiritAura.companion`（距主人脚底约 2.15 格），下方长粒子带来自 `MotionFeel`。未复现十几格滞后，也未发现该亮点被 bloom 覆盖，保留运动参数与锚点。devtools 增加运动状态、光源位置/来源与屏幕坐标。
+- **光效：** 灵灯确认缓存/提交绘制均为 3 盏，柔光改为半径 1.4 / alpha 0.4 与 2.2 / 0.12 两层，熄灭灯芯改为 #5F86B8 并由脚本重生成。Flash 横线来自放大的身体 billboard 与地面深度相交；在地面以上 0.45 格内渐隐并保留径向 UV，半径 7 的地面光池本身未改。
+- **验证：** **734 JUnit / 344 GameTest，零失败、零跳过**；`compileDevtoolsJava`、灯纹理 `--check` 通过。Mesa llvmpipe、关闭光影的真实客户端对照中，Flash 横线消失、灯芯亮灭可区分；证据与完整文件清单见 [TESTING](TESTING.md#r96r99客户端验收修复)。未验证硬件 GPU / 开启 Iris 光影；Claude 的综合验收脚本留待复测。客户端已关闭，无 git 写操作，停止等待审查。
+
 2026-10-20 遗迹生成器与只读校验修复（Codex 实现，待 Claude 审查提交）：
 - **校验：** `check-ruins.py` 默认生成到临时目录，NBT 按解压内容、JSON 按解析结构比较全部 17 个产物；包括旧脚本漏检的神龛模型/方块状态。只有 `--write` 发布已验证的结果，字节未变的文件不重写。生成器独立调用必须提供 `--output-root`。
 - **历史补齐：** 根据只读 git 历史恢复 R44–R70 的布局字段与 R76 原创神龛纹理；机关仍由 `RuinPiece.placeCells` 运行时放置，基础 NBT 不变。风口/门洞按范围生成，灵砂奖励根据洞室位置推导。gzip 固定级别 9、mtime 0、OS `0x0a`；提交来源表与使用说明见 [DEVELOPMENT](DEVELOPMENT.md)。

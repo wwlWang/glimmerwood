@@ -27,7 +27,6 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     private LivingEntity chargeTarget;
     /** R98: light interrupts telegraphing and resets the ranged goal's attack timer. */
     private int dazzled;
-    private RangedAttackGoal rangedGoal;
 
     public GloomSpitter(EntityType<? extends GloomSpitter> type, Level level) { super(type, level); xpReward = 5; }
 
@@ -37,9 +36,11 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
 
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new FloatGoal(this));
-        rangedGoal = new RangedAttackGoal(this, 1, ATTACK_INTERVAL, 14) {
+        var rangedGoal = new RangedAttackGoal(this, 1, ATTACK_INTERVAL, 14) {
             @Override public boolean canUse() { return dazzled == 0 && super.canUse(); }
             @Override public boolean canContinueToUse() { return dazzled == 0 && super.canContinueToUse(); }
+            // Mob can tick running goals before its next selector cleanup pass.
+            @Override public void tick() { if (dazzled == 0) super.tick(); }
         };
         goalSelector.addGoal(2, rangedGoal);
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, .8));
@@ -60,7 +61,9 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
         if (ticks <= 0) return;
         dazzled = Math.max(dazzled, ticks);
         entityData.set(CHARGE, 0); chargeTarget = null;
-        rangedGoal.stop();
+        // Only GoalSelector may stop its WrappedGoal; calling the inner stop()
+        // would clear its target while the wrapper still considers it running.
+        getNavigation().stop();
     }
 
     /** Advance the telegraph; the orb leaves when it runs out. @return the shot, if one left this tick. */
