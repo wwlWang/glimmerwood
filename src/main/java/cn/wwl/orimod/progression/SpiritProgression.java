@@ -31,6 +31,7 @@ public final class SpiritProgression {
         if (!Float.isFinite(amount) || amount <= 0 || energy(player) < amount) return false;
         player.setData(SpiritData.ENERGY, energy(player) - amount);
         player.getData(SpiritData.ENERGY_STATE).lastSpent = player.level().getGameTime();
+        player.getData(SpiritData.ENERGY_STATE).lastHintSpendAt = player.level().getGameTime();
         return true;
     }
 

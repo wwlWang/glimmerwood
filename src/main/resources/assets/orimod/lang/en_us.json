@@ -314,5 +314,21 @@
   "commands.orimod.status": "%s: awakened=%s spirit=%s abilities=%s light=%s energy=%s life cells=%s energy cells=%s",
   "tooltip.orimod.hammer.flavor": "Condensed spirit light; it grows heavier the longer you hold it",
   "tooltip.orimod.spear.flavor": "A drawn-out beam of light, gone as soon as it flies",
-  "tooltip.orimod.blade.flavor": "An edge of condensed light, weightless and keen"
+  "tooltip.orimod.blade.flavor": "An edge of condensed light, weightless and keen",
+  "hint.orimod.updraft": "Glimmer: Open your glide; this wind will lift you.",
+  "hint.orimod.updraft_locked": "Glimmer: Learn Glide first; then we can ride this wind.",
+  "hint.orimod.bash_anchor": "Glimmer: Aim at the lantern and press R to Bash off it!",
+  "hint.orimod.grapple_flower": "Glimmer: Aim at that flower and use Grapple to pull across!",
+  "hint.orimod.grapple_flower_locked": "Glimmer: Learn Grapple and we can cross to that flower.",
+  "hint.orimod.spirit_sand": "Glimmer: Use Water Dash to burrow through this spirit sand.",
+  "hint.orimod.gloom_water": "Glimmer: Toxic water! Cleanse it with Charge Flame or Light Burst.",
+  "hint.orimod.keystone_door": "Glimmer: This door needs keystones. Check the ruin pedestals.",
+  "hint.orimod.map_stone": "Glimmer: Touch the map stone; let’s survey the ruins together.",
+  "hint.orimod.cell_pedestal": "Glimmer: Climb up! That pedestal holds a Life or Energy Cell.",
+  "hint.orimod.boss_altar": "Glimmer: A boss waits here. Fill your energy before touching the altar.",
+  "hint.orimod.low_energy": "Glimmer: Energy’s low. Rest your abilities for two seconds to recover.",
+  "hint.orimod.shard_slot": "Glimmer: Press G to open your panel and equip that new shard.",
+  "orimod.configuration.companionHints": "Glimmer’s guidance",
+  "orimod.configuration.companionHints.tooltip": "Glimmer speaks, chimes and flies toward new discoveries. Hints are still marked as seen when disabled.",
+  "commands.orimod.hints.list": "Seen Glimmer hints: %s"
 }

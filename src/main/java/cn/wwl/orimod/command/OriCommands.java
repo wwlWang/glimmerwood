@@ -62,6 +62,13 @@ public final class OriCommands {
                                 .executes(c -> unlock(c, java.util.List.of(c.getSource().getPlayerOrException())))
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
+                .then(Commands.literal("hints")
+                        .then(players("reset", cn.wwl.orimod.progression.CompanionHints::reset))
+                        .then(players("list", p -> {
+                            var ids = cn.wwl.orimod.progression.CompanionHints.seen(p.getData(SpiritData.PROGRESS)).stream().sorted().toList();
+                            p.sendSystemMessage(Component.translatable("commands.orimod.hints.list", String.join(", ", ids)));
+                            return true;
+                        })))
                 .then(amount("light", 0, SpiritProgress.LIGHT_LIMIT, (p, n) -> { SpiritProgression.grantLight(p, n); return true; }))
                 .then(Commands.literal("energy")
                         .then(players("fill", p -> { p.setData(SpiritData.ENERGY, SpiritProgression.maxEnergy(p)); return true; }))

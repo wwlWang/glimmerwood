@@ -54,6 +54,8 @@ public final class SpiritFxClient {
             case STOP_ALL -> { TRACKER.stopAll(payload.sourceEntity()).forEach(SpiritFxClient::end); return; }
             case BURST -> {}
         }
+        if (payload.kind() == SpiritFxKind.SPIRIT_FLAME && level.getEntity(payload.sourceEntity()) instanceof net.minecraft.world.entity.player.Player player)
+            CompanionMotion.attack(player, new net.minecraft.world.phys.Vec3(payload.x(), payload.y(), payload.z()));
         burst(payload.kind(), payload.x(), payload.y(), payload.z(), payload.sourceEntity());
     }
 
@@ -62,6 +64,7 @@ public final class SpiritFxClient {
         var mc = Minecraft.getInstance();
         var level = mc.level;
         if (level != trackedLevel) { TRACKER.clear().forEach(SpiritFxClient::end); trackedLevel = level; }
+        CompanionMotion.tick();
         if (level == null || mc.isPaused()) return;
         TRACKER.tick(level.getGameTime(), id -> { var e = level.getEntity(id); return e != null && e.isAlive() && !e.isRemoved(); })
                 .forEach(SpiritFxClient::end);
@@ -79,18 +82,16 @@ public final class SpiritFxClient {
                 owner.getZ() + Math.sin(a) * .55);
     }
 
-    private static cn.wwl.orimod.fx.SpiritParticleOptions companionOrb;
-
     /** R37: one glowing mote per tick at each nearby spirit player's companion: a small Sein-like light with a short trail. */
     private static void companions(Minecraft mc, net.minecraft.client.multiplayer.ClientLevel level) {
         if (mc.player == null) return;
-        // R86: cool white-blue Sein-like orb (not warm vanilla gold), with a short soft trail.
-        if (companionOrb == null) companionOrb = new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0xF2F8FF, .22f, 8);
         for (var player : level.players()) {
             if (!cn.wwl.orimod.spirit.SpiritData.isSpirit(player) || player.isSpectator() || player.distanceToSqr(mc.player) > 32 * 32) continue;
             if (player == mc.player && mc.options.getCameraType().isFirstPerson()) continue;   // never in your own face
-            var at = companion(player, level.getGameTime());
-            var prev = companion(player, level.getGameTime() - 1);
+            var state = CompanionMotion.state(player);
+            if (state != null && state.vel.length() > CompanionMotion.RUN_SPEED) continue;
+            var at = CompanionMotion.position(player, 1);
+            var prev = CompanionMotion.position(player, 0);
             try {
                 // R88: the orb itself is drawn smoothly by SpiritAura; particles only leave a sparse soft trail.
                 if ((level.getGameTime() + player.getId()) % 2 == 0) level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x9EC8FF, .14f, 10), false,
@@ -100,7 +101,7 @@ public final class SpiritFxClient {
     }
 
     public static void loggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
-        TRACKER.clear().forEach(SpiritFxClient::end); trackedLevel = null;
+        TRACKER.clear().forEach(SpiritFxClient::end); trackedLevel = null; CompanionMotion.clear();
     }
 
     private static void startLoop(int entityId, SpiritFxKind kind) {
@@ -177,7 +178,9 @@ public final class SpiritFxClient {
                 case "beam" -> {
                     // From the companion beside the source's shoulder to the burst point (the struck enemy).
                     if (sourceEntity != null) {
-                        var from = companion(sourceEntity, level.getGameTime());
+                        var from = sourceEntity instanceof net.minecraft.world.entity.player.Player player
+                                ? CompanionMotion.position(player, mc.getTimer().getGameTimeDeltaPartialTick(false))
+                                : companion(sourceEntity, level.getGameTime());
                         x = from.x + (px - from.x) * k; y = from.y + (py - from.y) * k; z = from.z + (pz - from.z) * k;
                     }
                     taper = (float) (.55 + .45 * k);

@@ -89,6 +89,12 @@ public final class SpiritAura {
     /** A soft pool of cool light on the first surface below the spirit, fading with height (fake dynamic light). */
     private static void groundLight(com.mojang.blaze3d.vertex.VertexConsumer out, com.mojang.blaze3d.vertex.PoseStack.Pose pose, Player player,
                                     net.minecraft.world.phys.Vec3 at, net.minecraft.world.phys.Vec3 cam, float b) {
+        groundLight(out, pose, player, at, cam, b, GROUND_RADIUS, true);
+    }
+
+    /** R97: share the ground projection with Glimmer, including the local player's first-person pool. */
+    private static void groundLight(com.mojang.blaze3d.vertex.VertexConsumer out, com.mojang.blaze3d.vertex.PoseStack.Pose pose, Player player,
+                                    net.minecraft.world.phys.Vec3 at, net.minecraft.world.phys.Vec3 cam, float b, float radius, boolean expand) {
         var level = player.level();
         var hit = level.clip(new net.minecraft.world.level.ClipContext(at.add(0, .3, 0), at.subtract(0, GROUND_REACH, 0),
                 net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, player));
@@ -97,7 +103,7 @@ public final class SpiritAura {
         float fade = Math.clamp(1 - height / GROUND_REACH, 0, 1);
         if (fade <= 0) return;
         var c = new Vector3f((float) (at.x - cam.x), (float) (hit.getLocation().y + .015 - cam.y), (float) (at.z - cam.z));
-        float r = GROUND_RADIUS * (1 + .25f * (1 - fade));
+        float r = radius * (expand ? 1 + .25f * (1 - fade) : 1);
         SpiritEnergy.quad(out, pose, c, new Vector3f(r, 0, 0), new Vector3f(0, 0, r), GROUND_COLOR, GROUND_ALPHA * fade * fade * b);
         SpiritEnergy.quad(out, pose, c, new Vector3f(r * .45f, 0, 0), new Vector3f(0, 0, r * .45f), 0xEAF6FF, GROUND_ALPHA * .8f * fade * fade * b);
     }
@@ -175,17 +181,43 @@ public final class SpiritAura {
                 bloom(out, pose, player, at, cam, chest, rotation, h, b, level.getSkyDarken() / 11f);
                 groundLight(out, pose, player, at, cam, b);
             }
-            // Companion (never in your own first-person face).
+            var orb = CompanionMotion.position(player, partial);
+            var orbBlock = net.minecraft.core.BlockPos.containing(orb);
+            boolean dark = Math.max(level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, orbBlock),
+                    level.getBrightness(net.minecraft.world.level.LightLayer.SKY, orbBlock)) < CompanionMotion.DARK_LIGHT_LIMIT;
+            // R97: this is intentionally outside the first-person orb guard.
+            if (dark) groundLight(out, pose, player, orb, cam, b, CompanionMotion.POOL_RADIUS, false);
             if (!self) {
-                long gt = level.getGameTime();
-                var c0 = SpiritFxClient.companion(player, gt); var c1 = SpiritFxClient.companion(player, gt + 1);
-                // companion() reads the owner's current position; re-anchor on the interpolated body.
-                double ox = at.x - player.getX(), oy = at.y - player.getY(), oz = at.z - player.getZ();
-                var c = new Vector3f((float) (Mth.lerp(partial, c0.x, c1.x) + ox - cam.x), (float) (Mth.lerp(partial, c0.y, c1.y) + oy - cam.y),
-                        (float) (Mth.lerp(partial, c0.z, c1.z) + oz - cam.z));
-                SpiritEnergy.billboard(out, pose, c, rotation, .7f, COMPANION_HALO, COMPANION_OUTER_ALPHA * b);
-                SpiritEnergy.billboard(out, pose, c, rotation, .3f, COMPANION_HALO, COMPANION_HALO_ALPHA * b);
-                SpiritEnergy.billboard(out, pose, c, rotation, .1f, COMPANION, COMPANION_CORE_ALPHA);
+                var c = new Vector3f((float) (orb.x - cam.x), (float) (orb.y - cam.y), (float) (orb.z - cam.z));
+                var state = CompanionMotion.state(player);
+                int color = state == null ? CompanionMotion.CALM : state.color(partial);
+                boolean combat = state != null && state.combat();
+                float pulse = state == null ? 1 : state.pulse(partial);
+                float boost = (dark ? CompanionMotion.DARK_BOOST : 1) * pulse;
+                SpiritEnergy.billboard(out, pose, c, rotation, .7f, color, COMPANION_OUTER_ALPHA * b * pulse);
+                SpiritEnergy.billboard(out, pose, c, rotation, .3f, color, Math.min(1, COMPANION_HALO_ALPHA * b * boost));
+                SpiritEnergy.billboard(out, pose, c, rotation, .1f, color,
+                        Math.min(1, (COMPANION_CORE_ALPHA + (combat ? CompanionMotion.COMBAT_ALPHA : 0)) * boost));
+                double seconds = (level.getGameTime() + partial) * CompanionMotion.STEP_SECONDS;
+                // Integrate phase continuously: switching combat changes speed, never jumps petal positions.
+                double phase = state == null ? seconds / CompanionMotion.PETAL_PERIOD : state.petalPhase(partial);
+                double tilt = Math.toRadians(CompanionMotion.PETAL_TILT);
+                for (int i = 0; i < 3; i++) {
+                    double angle = (phase + i / 3.0) * Math.PI * 2;
+                    float dx = CompanionMotion.PETAL_ORBIT * (float) Math.cos(angle);
+                    float dz = CompanionMotion.PETAL_ORBIT * (float) Math.sin(angle);
+                    var petal = new Vector3f(c).add(dx, dz * (float) Math.sin(tilt), dz * (float) Math.cos(tilt));
+                    SpiritEnergy.billboard(out, pose, petal, rotation, CompanionMotion.PETAL_RADIUS, color, Math.min(1, .75f * boost));
+                }
+                if (state != null && state.vel.length() > CompanionMotion.RUN_SPEED) {
+                    float length = (float) Math.min(state.vel.length() * CompanionMotion.TAIL_SCALE, CompanionMotion.TAIL_MAX);
+                    var direction = state.vel.normalize();
+                    var along = new Vector3f((float) direction.x, (float) direction.y, (float) direction.z);
+                    var across = new Vector3f(along).cross(new Vector3f(c).negate()).normalize();
+                    if (!Float.isFinite(across.x) || across.lengthSquared() < .01f) across = rotation.transform(new Vector3f(1, 0, 0));
+                    var centre = new Vector3f(c).sub(new Vector3f(along).mul(length * .5f));
+                    SpiritEnergy.quad(out, pose, centre, along.mul(length * .5f), across.mul(CompanionMotion.TAIL_WIDTH), color, .35f * b);
+                }
             }
             drew = true;
         }

@@ -10,6 +10,8 @@ public final class OriClientConfig {
     public static final ModConfigSpec.EnumValue<VisualQuality> QUALITY;
     public static final ModConfigSpec.BooleanValue ADVANCED_PARTICLES;
     public static final ModConfigSpec.BooleanValue SPIRIT_GLOW;
+    /** R97: first-encounter guidance from Glimmer (automatically exposed by ConfigurationScreen). */
+    public static final ModConfigSpec.BooleanValue COMPANION_HINTS;
     public static final ModConfigSpec.IntValue SCREEN_SHAKE;
     public static final ModConfigSpec.IntValue SCREEN_FLASH;
     /** Plan default: shake is light; flash is moderate. */
@@ -40,6 +42,8 @@ public final class OriClientConfig {
                         "Choosing another pack in Iris turns this off.")
                 .define("spiritGlow", true);
         builder.pop();
+        COMPANION_HINTS = builder.comment("Glimmer's first-encounter hints, sound and guiding flight. The server remembers hints even when hidden.")
+                .define("companionHints", true);
         builder.push("feedback");
         SCREEN_SHAKE = builder.comment("Camera shake strength in percent when hurt or landing a stomp. 0 disables it.")
                 .defineInRange("screenShake", DEFAULT_SHAKE, 0, 100);
@@ -59,6 +63,8 @@ public final class OriClientConfig {
         if (!SPEC.isLoaded()) return Visuals.DEFAULTS;
         return new Visuals(QUALITY.get(), ADVANCED_PARTICLES.get(), SCREEN_SHAKE.get(), SCREEN_FLASH.get());
     }
+
+    public static boolean companionHints() { return !SPEC.isLoaded() || COMPANION_HINTS.get(); }
 
     /** Called on config load/reload: records the schema upgrade once and saves the corrected file. */
     public static void upgrade(org.slf4j.Logger log) {

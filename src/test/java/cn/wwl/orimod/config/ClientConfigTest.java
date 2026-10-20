@@ -114,5 +114,16 @@ class ClientConfigTest {
         assertEquals(OriClientConfig.Visuals.DEFAULTS, OriClientConfig.visuals());
         assertEquals(VisualQuality.BALANCED, OriClientConfig.Visuals.DEFAULTS.quality());
         assertTrue(OriClientConfig.Visuals.DEFAULTS.advancedParticles());
+        assertTrue(OriClientConfig.companionHints());
+    }
+
+    @Test void companionHintDefaultMigratesAndExplicitOptOutSurvives() {
+        var config = legacyV1();
+        OriClientConfig.SPEC.correct(config);
+        assertEquals(true, config.get("companionHints"));
+        config.set("companionHints", false);
+        OriClientConfig.SPEC.correct(config);
+        assertEquals(false, config.get("companionHints"));
+        assertFalse(OriClientConfig.HIDDEN_IN_MENU.contains("companionHints"));
     }
 }

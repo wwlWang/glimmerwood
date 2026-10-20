@@ -440,3 +440,40 @@ R96 第二次编译：LanternGameTests.java:84: error: incompatible types: Tag c
 本机会话原始记录：`/tmp/orimod-r96-sync-dependencies.log`、`/tmp/orimod-r96-baseline.log`（首次环境失败）、`/tmp/orimod-r96-baseline-synced.log`、`/tmp/orimod-r96-build-{1,2,3}.log`、`/tmp/orimod-r96-ruins-restore.json`、`/tmp/orimod-r96-ruins-readonly.json`。临时日志未入库。
 
 未实机验证：灯笼和物品外观、点亮瞬间微粒、呼吸柔光、声音、Iris 组合、GPU 性能；服务端重启/区块卸载只验证了计划刻保存往返，没有完整进程重启实测。配方按 Claude 的修订使用荧石粉及紫水晶解锁，避免灵光自动入账造成材料不可用；详见 ROADMAP_R96。
+
+## R97：同伴「萤」Glimmer
+
+2026-10-20，沿用用户目录 Temurin 21.0.12.1，命令级 `JAVA_HOME` / `PATH`：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" ./gradlew build runGameTestServer --console=plain
+python3 scripts/test-summary.py
+```
+
+结果：**648 JUnit / 271 GameTest**，零失败、零跳过；较已通过审查的 R96（591 / 250）新增 **57 / 21**。
+
+- `CompanionMotionTest`（12 项）：2 格误差在 1 秒内收敛至 <0.05、超调 <5%；>3 格瞬移并清速度/插值、恰好 3 格仍弹簧跟随；4 tick 攻击后自然返回；10 格提示飞行不被瞬移规则截断、50 tick 后弹簧返回；主人传送打断飞行；提示优先于寻光；30 tick 寻光结束；插值不推进物理；身体朝向、跑步/冲刺/滑翔/游泳锚点；闲置/停战门槛与低血/战斗颜色。
+- `CompanionHintsTest`（14 项，含参数化）：已读过滤、优先级、200 tick 边界、时钟倒退保护、严格低于 15% / 消耗 200 tick 内、从未消耗不误报；旧存档/混合奖励键 codec 往返；技能文案对应同一机关条件但已读记录独立；新增滑翔/抓钩两项回归，验证学习后仍可提示且保留 200 tick 间隔；两种语言齐全、中文同伴口吻且 ≤30 个汉字。
+- `CompanionHintPayloadTest`（30 项，含参数化）：11 类及 2 种锁定文案往返，通道版本 1；拒绝未知/空/非法变体 ID、超过 32 字符、非 0/1 坐标标志、空间提示缺坐标/个人提示多坐标、截断头/位置、越出 ±30000000 的坐标；复制可变 BlockPos。客户端关闭选项不改变服务端包内容或已读规则。
+- `ClientConfigTest` 新增 1 项：旧配置补 `companionHints=true`，保留显式 false，自动设置菜单不隐藏此项；原 unloaded 测试补默认访问验证。
+- `CompanionGameTests`（21 项）：20 tick 内灵风口提示并验证载荷坐标/未解锁文案，225 tick 后不重复；人形不发；11 种方块（含两种台、两种祭坛）的半径内/边界/边界外/立方体角落；最近且未读的候选；提示顺序、200 tick 间隔和已解锁文案；真实耗能触发低能量提示；拥有但未装备碎片；旧存档首次记提示及往返；真实命令 dispatcher 的 list 不改状态、reset 保留非提示奖励/灵光/碎片。
+- 审查回归：`companion.updraft_locked_then_unlocked_each_once` 与 `companion.grapple_flower_locked_then_unlocked_each_once` 各运行至 455 tick；先收到 locked 版本，超过间隔后不重复，在同一机关旁学会技能，20 tick 内收到正常版本，再过间隔也不重复；两个 reward 键同时保留为 1。该夹具把其他提示都标为已读，同时覆盖“已看完就提前返回”在技能变化后的重新判断。原命令测试增加 locked 键，确认 reset 一并清除。
+- 嵌入式玩家连接没有正常网络连接的逐刻调用，定时测试在每个 GameTest tick 调用真实 `ServerPlayer.doTick()`，经 NeoForge 事件总线验证已注册监听器；不是直接调用 `CompanionHints.check()` 替代时序。其余条件矩阵使用同步扫描/判定以隔离干扰。
+- 未运行 `check-ruins.py`（按本轮要求）；遗迹 NBT、布局和神龛模型无改动。新网络通道 `orimod:companion_hint` 版本 **1**，原 `spirit_fx` 版本 **5** 未变。没有修改持久化 codec。
+
+首轮失败原文（修复后全部通过；首次全量运行重复了尚未重新编译的两项 JUnit 失败）：
+
+```text
+CompanionHintsTest > lowEnergyRequiresRecentSpendAndStrictThreshold(float, float, long, long, boolean) > [2] 15, 100, 200, 0, false FAILED
+    org.opentest4j.AssertionFailedError: expected: <false> but was: <true>
+CompanionHintsTest > bothLanguagesCoverAllHintsWithShortCompanionVoice() FAILED
+    java.nio.file.NoSuchFileException: src/main/resources/assets/orimod/lang/zh_cn.json
+companion.scan_storm_altar failed at -11899062, -60, -7089628! Expected Exact radius must include block to be BlockPos{x=-11899055, y=-58, z=-7089623}, but was BlockPos{x=-11899072, y=-58, z=-7089623}
+companion.updraft_after_20_ticks_once_even_after_cooldown failed at -11899130, -60, -7089646! Cannot invoke "Object.equals(Object)" because "actual" is null
+```
+
+修复原因：`.15f * 100` 略大于 15，阈值改为 double；资源路径使用既有 `orimod.projectDir`；半径夹具改为在目标正上方测试，避免相邻房间同类祭坛更近；嵌入连接补真实 `doTick()`，确保事件实际发生。原始日志在 `/tmp/orimod-r97-test.log`、`/tmp/orimod-r97-full.log`、`/tmp/orimod-r97-full2.log`、`/tmp/orimod-r97-final.log`；审查修复全量复验记录在 `/tmp/orimod-r97-hint-review.log`，本次修复复验无失败；临时文件未入库。
+
+与方案的明确取舍：主动提示/寻光/攻击及返回不执行“距锚点 >3 格归位”，否则飞往 6–12 格目标会被瞬移逻辑覆盖；主人单 tick 位移 >3 格仍立即归位并取消飞行。低血警示覆盖战斗色，战斗花瓣仍加速；花瓣相位连续积分，避免切换战斗时跳位。16 个状态满时为本人让出最远远端玩家的状态，远端继续旧轨道回退。`EnergyState.lastHintSpendAt` 单独记录真实消耗，保留既有回能计时行为。
+
+未实机验证：同伴各状态运动和灵焰光束衔接的观感，花瓣/彗尾/情绪色/亮度脉冲，暗处第一人称地面光池，声音与配置菜单交互，客户端寻光的实际遮挡/拾取表现，多客户端离线/传送/16 人上限与回退，Iris 组合、GPU 性能。地面光池沿用加色贴片，不改变世界方块光照；同伴无碰撞，飞行可能穿过地形。没有开始 R98。

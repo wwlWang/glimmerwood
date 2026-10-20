@@ -29,6 +29,7 @@ public final class OriMod {
         modEventBus.addListener(cn.wwl.orimod.network.CombatInputPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.ChallengeActionPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.SpiritFxPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.CompanionHintPayload::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.recipe.OriRecipes::difficultyChanged);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.EscapeSequence::tick);
@@ -44,6 +45,7 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tickArrow);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionHints::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SoulLink::respawn);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritFlame::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritCells::login);

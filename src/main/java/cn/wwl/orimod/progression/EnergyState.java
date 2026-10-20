@@ -11,5 +11,7 @@ public final class EnergyState {
     /** R41: next Spirit Well refill. */
     public long wellReadyAt;
     public long lastSpent, lastHurt, healReadyAt;
+    /** R97: separate hint timers avoid treating a fresh player's tick zero as an energy spend. */
+    public long lastHintSpendAt = Long.MIN_VALUE, lastCompanionHintAt = Long.MIN_VALUE;
     public boolean pendingHeal;
 }

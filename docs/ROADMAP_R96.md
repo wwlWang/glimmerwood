@@ -114,7 +114,7 @@
   | `shard_slot` | 第一次拥有碎片且未装备 | 在 G 面板装备碎片 |
 
 - **判定频率：** 每 20 tick 对每个精灵玩家检查一次；方块扫描用玩家周围半径 10 的立方体，只看 `level.hasChunkAt` 的位置。一次最多发一条提示，同一玩家两条提示之间至少间隔 200 tick。
-- **只提示一次：** 已发提示记在 `SpiritProgress.rewards` 里，键为 `"hint/<id>"`、值为 1（不改 codec）。规则写成纯函数 `CompanionHints.pick(Set<String> seen, EnumSet<Hint> conditions, long now, long lastHintAt)`，返回 `Hint` 或 null，方便 JUnit。
+- **只提示一次：** 已发提示记在 `SpiritProgress.rewards` 里，键为 `"hint/<id>"`、值为 1（不改 codec）。未学技能时单独记 `hint/updraft_locked` / `hint/grapple_flower_locked`，学会后正常用法提示仍可触发；两个版本各提示一次、共用 200 tick 间隔（2026-10-20 审查修订）。规则写成纯函数 `CompanionHints.pick(Set<String> seen, EnumSet<Hint> conditions, int abilities, long now, long lastHintAt)`，按当前技能对应的实际 id 查已读，返回 `Hint` 或 null；扫描预筛和提前返回使用同一判定。
 - **客户端表现：** 收到提示后，`CompanionMotion` 设 `seekTarget = pos`（有坐标时），光球飞到方块上方 1 格并停留 2.5 s 后回来；同时在快捷栏上方显示文字（`displayClientMessage(..., true)`），光球做一次亮度脉冲，播放 `block.amethyst_block.resonate`（音高 1.8、音量 0.4）。
 - **开关：** `OriClientConfig` 加 `companionHints`（默认 true）。关闭时客户端不显示文字，也不飞去；服务端照常记为已提示，避免重新打开后弹出一堆旧提示。设置界面加对应开关。
 - **调试：** 在 `command/OriCommands` 的 `/orimod` 命令树（与 `form`、`unlock`、`energy` 同级）加 `hints reset`（清除 `rewards` 里所有 `hint/` 键）和 `hints list`。

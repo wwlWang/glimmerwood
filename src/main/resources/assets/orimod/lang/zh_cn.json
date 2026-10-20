@@ -314,5 +314,21 @@
   "commands.orimod.status": "%s：已觉醒=%s 精灵形态=%s 能力=%s 灵光=%s 能量=%s 生命格=%s 能量格=%s",
   "tooltip.orimod.hammer.flavor": "凝聚成形的灵光，握得越久越沉",
   "tooltip.orimod.spear.flavor": "一束被拉长的光，掷出即逝",
-  "tooltip.orimod.blade.flavor": "灵光凝成的刃，轻而锋利"
+  "tooltip.orimod.blade.flavor": "灵光凝成的刃，轻而锋利",
+  "hint.orimod.updraft": "萤：张开滑翔，让这股风托住你。",
+  "hint.orimod.updraft_locked": "萤：先学会滑翔，我再陪你乘风。",
+  "hint.orimod.bash_anchor": "萤：对准灵灯按R，借它跳远些！",
+  "hint.orimod.grapple_flower": "萤：对准那朵花，用抓钩拉过去！",
+  "hint.orimod.grapple_flower_locked": "萤：先学会抓钩，我们就能过去。",
+  "hint.orimod.spirit_sand": "萤：用水中冲刺，钻过这片灵沙。",
+  "hint.orimod.gloom_water": "萤：水有毒！用蓄力灵焰或光爆净化。",
+  "hint.orimod.keystone_door": "萤：门要钥石，去遗迹灯柱上找找。",
+  "hint.orimod.map_stone": "萤：摸摸地图石，我陪你勘察遗迹。",
+  "hint.orimod.cell_pedestal": "萤：爬上去！台上有生命格或能量格。",
+  "hint.orimod.boss_altar": "萤：这里有首领，先备好能量再碰祭坛。",
+  "hint.orimod.low_energy": "萤：能量快空了，停手两秒就会回复。",
+  "hint.orimod.shard_slot": "萤：按G打开面板，把新碎片装上吧。",
+  "orimod.configuration.companionHints": "萤的引导提示",
+  "orimod.configuration.companionHints.tooltip": "首次遇到机关时，萤会说话、响铃并飞去引路。关闭后仍记录已读。",
+  "commands.orimod.hints.list": "已读萤的提示：%s"
 }
