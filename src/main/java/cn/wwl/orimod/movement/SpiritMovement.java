@@ -82,6 +82,8 @@ public final class SpiritMovement {
             }
             else if (!bash && s.bashHeld && s.bash != null) releaseBash(player, s, now);
         } else {
+            cn.wwl.orimod.combat.Flash.stop(player);
+            player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
             s.jumpUntil = -100;
             s.jumps.clear();
             if (wasActive || s.mode != IDLE) cancel(player, s);

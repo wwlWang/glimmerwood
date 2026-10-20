@@ -204,6 +204,11 @@ public final class CompanionMotion {
             double speed = displacement.horizontalDistance() / STEP_SECONDS;
             boolean teleported = displacement.lengthSqr() > SNAP_DISTANCE * SNAP_DISTANCE;
             state.lastOwner = player.position();
+            float flash = SpiritFxClient.flashAmount(player, 1);
+            if (flash > 0) {
+                state.dartTicks = state.seekTicks = 0; state.seekEntity = -1;
+                state.dartTarget = state.seekTarget = null; state.hintFlight = false;
+            }
             if (state.seekEntity >= 0) {
                 var item = mc.level.getEntity(state.seekEntity);
                 if (item == null || !item.isAlive()) { state.seekTicks = 0; state.seekEntity = -1; state.seekTarget = null; }
@@ -211,9 +216,10 @@ public final class CompanionMotion {
             }
             if (--state.nextSeek <= 0) {
                 state.nextSeek = SEEK_INTERVAL;
-                if (!teleported && eligibleForSeek(speed, state.sinceCombat, state.guiding())) seekLight(player, state);
+                if (flash == 0 && !teleported && eligibleForSeek(speed, state.sinceCombat, state.guiding())) seekLight(player, state);
             }
-            state.step(anchor(player, speed), teleported);
+            var at = anchor(player, speed).lerp(player.position().add(0, player.getBbHeight() + cn.wwl.orimod.fx.FlashLight.COMPANION_ABOVE, 0), flash);
+            state.step(at, teleported);
             state.prevMood = state.mood;
             int target = moodTarget(state.combat(), player.getHealth() < player.getMaxHealth() * LOW_HEALTH,
                     mc.level.getGameTime() * STEP_SECONDS);

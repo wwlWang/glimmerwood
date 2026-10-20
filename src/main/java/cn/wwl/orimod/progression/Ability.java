@@ -19,6 +19,8 @@ public enum Ability {
     WATER_DASH(1024, 30, DASH),
     /** R59: Charge Flame (BF). */
     CHARGE_FLAME(2048, 30, LIGHT_BURST),
+    /** R98: sustained protective light (WotW Flash); displayed immediately after its prerequisite. */
+    FLASH(8192, 40, CHARGE_FLAME),
     /** R60: Spirit Spear (WotW). */
     SPEAR(4096, 40, BOW);
 

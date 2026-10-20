@@ -35,6 +35,7 @@ public final class SpiritFxClient {
     private static final cn.wwl.orimod.fx.SpiritFxTracker TRACKER = new cn.wwl.orimod.fx.SpiritFxTracker();
     private static final java.util.Map<cn.wwl.orimod.fx.SpiritFxTracker.Key, SpiritLoopSound> LOOPS = new java.util.HashMap<>();
     private static Object trackedLevel;
+    private static final it.unimi.dsi.fastutil.ints.Int2ObjectMap<cn.wwl.orimod.fx.FlashLight> FLASHES = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
     private static int started, stopped;
 
     /** Read-only lifecycle state for the development bridge and smoke scripts. */
@@ -63,11 +64,18 @@ public final class SpiritFxClient {
     public static void tick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
-        if (level != trackedLevel) { TRACKER.clear().forEach(SpiritFxClient::end); trackedLevel = level; }
-        CompanionMotion.tick();
-        if (level == null || mc.isPaused()) return;
+        if (level != trackedLevel) { TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); trackedLevel = level; }
+        if (level == null || mc.isPaused()) { CompanionMotion.tick(); return; }
         TRACKER.tick(level.getGameTime(), id -> { var e = level.getEntity(id); return e != null && e.isAlive() && !e.isRemoved(); })
                 .forEach(SpiritFxClient::end);
+        for (var key : TRACKER.active()) if (key.kind() == SpiritFxKind.FLASH) FLASHES.computeIfAbsent(key.entity(), id -> new cn.wwl.orimod.fx.FlashLight());
+        FLASHES.int2ObjectEntrySet().removeIf(entry -> {
+            var entity = level.getEntity(entry.getIntKey());
+            if (entity == null || !entity.isAlive()) return true;
+            entry.getValue().tick(TRACKER.isActive(entry.getIntKey(), SpiritFxKind.FLASH) && (entity != mc.player || mc.screen == null));
+            return entry.getValue().ended();
+        });
+        CompanionMotion.tick();
         companions(mc, level);
         for (var key : TRACKER.active()) {
             var entity = level.getEntity(key.entity());
@@ -101,7 +109,14 @@ public final class SpiritFxClient {
     }
 
     public static void loggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
-        TRACKER.clear().forEach(SpiritFxClient::end); trackedLevel = null; CompanionMotion.clear();
+        TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); trackedLevel = null; CompanionMotion.clear();
+    }
+
+    public static boolean flashing(int entity) { return TRACKER.isActive(entity, SpiritFxKind.FLASH); }
+    public static float flashAmount(net.minecraft.world.entity.player.Player player, float partial) {
+        if (player == Minecraft.getInstance().player && Minecraft.getInstance().screen != null) return 0;
+        var light = FLASHES.get(player.getId());
+        return light == null ? 0 : light.amount(partial);
     }
 
     private static void startLoop(int entityId, SpiritFxKind kind) {

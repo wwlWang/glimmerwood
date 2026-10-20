@@ -59,6 +59,7 @@ public final class SpiritCombat {
     }
 
     private static void startBlade(ServerPlayer player, int stage) {
+        Flash.stop(player);
         var s = player.getData(SpiritData.COMBAT);
         s.mode = "blade"; s.stage = stage; s.startedAt = player.level().getGameTime();
         s.weapon = player.getMainHandItem(); s.buffered = false; s.hitTargets.clear(); s.bladeStarts++;
@@ -80,6 +81,7 @@ public final class SpiritCombat {
     public static boolean beginBow(ServerPlayer player, ItemStack stack) {
         var s = player.getData(SpiritData.COMBAT);
         if (!canUseBow(player) || player.level().getGameTime() < s.nextBowAt || !s.mode.equals("idle")) return false;
+        Flash.stop(player);
         s.mode = "bow"; s.stage = 0; s.startedAt = player.level().getGameTime(); s.weapon = stack;
         publish(player);
         return true;

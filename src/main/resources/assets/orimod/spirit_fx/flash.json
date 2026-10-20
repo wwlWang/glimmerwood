@@ -1,0 +1,22 @@
+{
+  "format": 1,
+  "kind": "flash",
+  "layers": [
+    {
+      "color": "#f2f8ff",
+      "lifetime": 24,
+      "outward": 0.035,
+      "particle": "orimod:spirit_mote",
+      "radius": 6,
+      "shape": "ring",
+      "share": 1.0,
+      "size": 0.18,
+      "speed": 0.005,
+      "spread": [
+        0.08,
+        0.15,
+        0.08
+      ]
+    }
+  ]
+}

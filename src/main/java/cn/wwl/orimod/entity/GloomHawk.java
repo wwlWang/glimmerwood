@@ -29,6 +29,10 @@ public final class GloomHawk extends Monster {
     private int timer = CIRCLE_TICKS;
     private Vec3 mark;
     private boolean struck;
+    /** R98: retreat from the light, cancelling any telegraph or dive. */
+    private int dazzled;
+    private Vec3 lightOrigin;
+    public static final double DAZZLE_RETREAT_SPEED = .35, DAZZLE_LIFT = .15;
 
     public GloomHawk(EntityType<? extends GloomHawk> type, Level level) { super(type, level); setNoGravity(true); xpReward = 8; }
 
@@ -39,6 +43,19 @@ public final class GloomHawk extends Monster {
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STATE, CIRCLE); }
     public int state() { return entityData.get(STATE); }
     public Vec3 mark() { return mark; }
+    public boolean dazzled() { return dazzled > 0; }
+    public void dazzle(int ticks) { dazzle(ticks, getTarget() == null ? position().subtract(1, 0, 0) : getTarget().position()); }
+    public void dazzle(int ticks, Vec3 light) {
+        if (ticks <= 0) return;
+        dazzled = Math.max(dazzled, ticks); lightOrigin = light;
+        mark = null; struck = false; timer = CIRCLE_TICKS; entityData.set(STATE, CIRCLE);
+        retreat();
+    }
+    private void retreat() {
+        var away = position().subtract(lightOrigin).multiply(1, 0, 1).normalize();
+        if (away.lengthSqr() < 1e-6) away = new Vec3(1, 0, 0);
+        setDeltaMovement(away.scale(DAZZLE_RETREAT_SPEED).add(0, DAZZLE_LIFT, 0));
+    }
     @Override public boolean causeFallDamage(float distance, float multiplier, DamageSource source) { return false; }
     @Override protected void checkFallDamage(double y, boolean onGround, net.minecraft.world.level.block.state.BlockState state, net.minecraft.core.BlockPos pos) {}
 
@@ -49,6 +66,7 @@ public final class GloomHawk extends Monster {
     }
 
     public void telegraph(LivingEntity target) {
+        if (dazzled > 0) return;
         setTarget(target);
         mark = target.position().add(0, .5, 0);
         entityData.set(STATE, TELEGRAPH); timer = TELEGRAPH_TICKS; struck = false;
@@ -57,6 +75,7 @@ public final class GloomHawk extends Monster {
 
     /** One step of the attack cycle (driven by tick, callable from tests). */
     public void step() {
+        if (dazzled > 0) { dazzled--; retreat(); return; }
         int s = state();
         if (s == TELEGRAPH) {
             setDeltaMovement(getDeltaMovement().scale(.5));
@@ -75,6 +94,7 @@ public final class GloomHawk extends Monster {
 
     /** Dive contact. @return whether the target was hurt. */
     public boolean strike(LivingEntity target) {
+        if (dazzled > 0) return false;
         boolean hurt = target.hurt(damageSources().mobAttack(this), DIVE_DAMAGE);
         if (hurt) { var push = getDeltaMovement().multiply(1, 0, 1).normalize().scale(.6); target.push(push.x, .3, push.z); target.hurtMarked = true; }
         return hurt;
@@ -83,6 +103,7 @@ public final class GloomHawk extends Monster {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) { cn.wwl.orimod.client.fx.GloomLook.hawk(this); return; }
+        if (dazzled > 0) { step(); return; }
         if (isNoAi()) return;
         var target = level().getNearestPlayer(getX(), getY(), getZ(), 32, p -> p instanceof Player pl && !pl.isCreative() && !pl.isSpectator());
         if (state() == CIRCLE) {

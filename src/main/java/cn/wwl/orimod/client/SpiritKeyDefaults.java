@@ -16,6 +16,22 @@ final class SpiritKeyDefaults {
 
     static void tick(Minecraft mc) {
         if (!OriClientConfig.SPEC.isLoaded()) return;
+        if (!OriClientConfig.FLASH_KEY_DEFAULTS_APPLIED.get()) {
+            var flash = SpiritControls.FLASH;
+            if (flash.isDefault()) {
+                int code = flashKey(candidate -> java.util.Arrays.stream(mc.options.keyMappings)
+                        .anyMatch(key -> key != flash && key.getKeyModifier() == KeyModifier.NONE
+                                && key.getKey().equals(InputConstants.Type.KEYSYM.getOrCreate(candidate))));
+                var replacement = InputConstants.Type.KEYSYM.getOrCreate(code);
+                if (!flash.getKey().equals(replacement)) {
+                    flash.setKeyModifierAndCode(KeyModifier.NONE, replacement);
+                    KeyMapping.resetMapping(); mc.options.save();
+                    notice = Component.translatable("message.orimod.flash_key_moved", flash.getTranslatedKeyMessage());
+                    OriMod.LOGGER.info("Flash default key conflict: selected {}", replacement.getName());
+                }
+            }
+            OriClientConfig.FLASH_KEY_DEFAULTS_APPLIED.set(true); OriClientConfig.SPEC.save();
+        }
         if (!OriClientConfig.KEY_DEFAULTS_APPLIED.get()) {
             for (KeyMapping mapping : mc.options.keyMappings) {
                 if (!mapping.getName().equals("iris.keybind.reload") || !mapping.isDefault()
@@ -38,5 +54,12 @@ final class SpiritKeyDefaults {
             mc.player.sendSystemMessage(notice);
             notice = null;
         }
+    }
+
+    /** R98: keep H if free; move only our still-default binding, never another mod's or a user's custom binding. */
+    static int flashKey(java.util.function.IntPredicate occupied) {
+        for (int code : new int[]{GLFW.GLFW_KEY_H, GLFW.GLFW_KEY_J, GLFW.GLFW_KEY_K, GLFW.GLFW_KEY_L, GLFW.GLFW_KEY_U, GLFW.GLFW_KEY_Y})
+            if (!occupied.test(code)) return code;
+        return GLFW.GLFW_KEY_UNKNOWN;
     }
 }

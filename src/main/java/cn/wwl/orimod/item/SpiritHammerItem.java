@@ -43,6 +43,7 @@ public final class SpiritHammerItem extends Item {
             if (!level.isClientSide) player.displayClientMessage(Component.translatable(refusal), true);
             return InteractionResultHolder.fail(stack);
         }
+        if (player instanceof ServerPlayer serverPlayer) cn.wwl.orimod.combat.Flash.stop(serverPlayer);
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(stack);
     }

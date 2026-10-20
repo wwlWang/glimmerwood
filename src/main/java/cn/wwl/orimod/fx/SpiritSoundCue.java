@@ -29,6 +29,7 @@ public record SpiritSoundCue(String sound, float volume, float pitch, boolean lo
         TABLE.put(SpiritFxKind.RACE_GHOST, null);
         TABLE.put(SpiritFxKind.LANTERN_IGNITE, new SpiritSoundCue("minecraft:block.amethyst_block.chime", .6f, 1.5f, false));
         TABLE.put(SpiritFxKind.BASH_AIM, new SpiritSoundCue("minecraft:block.beacon.ambient", .25f, 1.6f, true));
+        TABLE.put(SpiritFxKind.FLASH, new SpiritSoundCue("minecraft:block.beacon.ambient", .3f, 1.6f, true));
     }
 
     /** @return the cue, or {@code null} for a silent effect. */

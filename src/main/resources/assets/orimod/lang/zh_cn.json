@@ -330,5 +330,14 @@
   "hint.orimod.shard_slot": "萤：按G打开面板，把新碎片装上吧。",
   "orimod.configuration.companionHints": "萤的引导提示",
   "orimod.configuration.companionHints.tooltip": "首次遇到机关时，萤会说话、响铃并飞去引路。关闭后仍记录已读。",
-  "commands.orimod.hints.list": "已读萤的提示：%s"
+  "commands.orimod.hints.list": "已读萤的提示：%s",
+  "key.orimod.flash": "灵闪（按住）",
+  "ability.orimod.flash": "灵闪",
+  "ability.orimod.flash.description": "按住灵闪键照亮周围，开启需5能量，每秒消耗6。7格内炫目腐光生物，16格内压制自然刷怪；持续2秒净化3格内腐光水。耗尽后冷却1秒。",
+  "message.orimod.flash.not_spirit": "灵闪需要精灵形态。",
+  "message.orimod.flash.locked": "尚未学会灵闪。",
+  "message.orimod.flash.energy": "开启灵闪需要至少5能量。",
+  "message.orimod.flash.movement": "当前动作中不能开启灵闪。",
+  "message.orimod.flash.charging": "蓄力灵焰时不能开启灵闪。",
+  "message.orimod.flash_key_moved": "灵闪默认H键有冲突，已改为%s；可在按键设置中更改。"
 }

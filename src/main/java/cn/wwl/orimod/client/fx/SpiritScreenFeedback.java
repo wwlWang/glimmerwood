@@ -55,6 +55,13 @@ public final class SpiritScreenFeedback {
     }
 
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
+        var mc = Minecraft.getInstance();
+        var visuals = OriClientConfig.visuals();
+        if (mc.player != null) {
+            float exposure = cn.wwl.orimod.fx.FlashLight.exposure(SpiritFxClient.flashAmount(mc.player, delta.getGameTimeDeltaPartialTick(false)),
+                    visuals.quality(), visuals.advancedParticles(), visuals.screenFlash());
+            if (exposure > 0) graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), Math.round(exposure * 255) << 24 | 0xFFFFFF);
+        }
         if (!FEEDBACK.active()) return;
         double alpha = FEEDBACK.flashAlpha(delta.getGameTimeDeltaPartialTick(false));
         if (alpha <= 0.002) return;

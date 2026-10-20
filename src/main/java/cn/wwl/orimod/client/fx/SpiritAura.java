@@ -50,9 +50,10 @@ public final class SpiritAura {
 
     private static void bloom(com.mojang.blaze3d.vertex.VertexConsumer out, com.mojang.blaze3d.vertex.PoseStack.Pose pose, Player player,
                               net.minecraft.world.phys.Vec3 at, net.minecraft.world.phys.Vec3 cam, Vector3f chest,
-                              org.joml.Quaternionf rotation, float h, float b, float skyDarken) {
+                              org.joml.Quaternionf rotation, float h, float b, float skyDarken, float flash) {
         // skyDarken: 0 at noon, 1 at midnight (Level.getSkyDarken() / 11).
         float boost = Mth.lerp(Math.clamp(skyDarken, 0, 1), BLOOM_DAY_BOOST, 1);
+        boost *= Mth.lerp(flash, 1, cn.wwl.orimod.fx.FlashLight.BLOOM_ALPHA);
         var frame = cn.wwl.orimod.client.render.SpiritPlayerVisual.frame(player);
         Vector3f centre = chest;
         if (frame != null) {
@@ -60,7 +61,7 @@ public final class SpiritAura {
             if (spine != null) centre = spine;
         }
         for (int i = 0; i < BLOOM_RADIUS.length; i++)
-            SpiritEnergy.billboard(out, pose, centre, rotation, h * BLOOM_RADIUS[i], BLOOM_COLOR[i], Math.min(1, BLOOM_ALPHA[i] * b * boost));
+            SpiritEnergy.billboard(out, pose, centre, rotation, h * BLOOM_RADIUS[i] * Mth.lerp(flash, 1, cn.wwl.orimod.fx.FlashLight.BLOOM_SCALE), BLOOM_COLOR[i], Math.min(1, BLOOM_ALPHA[i] * b * boost));
         if (frame == null) return;
         for (String name : GLOW_BONES) {
             var p = bone(frame, name, at, cam);
@@ -176,11 +177,13 @@ public final class SpiritAura {
             boolean self = player == mc.player && mc.options.getCameraType().isFirstPerson();
             var at = player.getPosition(partial);
             float b = breath(t + player.getId() * .37f), h = player.getBbHeight();
+            float flash = SpiritFxClient.flashAmount(player, partial);
             if (!self) {
                 var chest = new Vector3f((float) (at.x - cam.x), (float) (at.y + h * .5 - cam.y), (float) (at.z - cam.z));
-                bloom(out, pose, player, at, cam, chest, rotation, h, b, level.getSkyDarken() / 11f);
-                groundLight(out, pose, player, at, cam, b);
+                bloom(out, pose, player, at, cam, chest, rotation, h, b, level.getSkyDarken() / 11f, flash);
             }
+            if (!self || flash > 0) groundLight(out, pose, player, at, cam, b * (self ? flash : 1),
+                    Mth.lerp(flash, GROUND_RADIUS, cn.wwl.orimod.fx.FlashLight.GROUND_RADIUS), flash == 0);
             var orb = CompanionMotion.position(player, partial);
             var orbBlock = net.minecraft.core.BlockPos.containing(orb);
             boolean dark = Math.max(level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, orbBlock),
@@ -191,6 +194,7 @@ public final class SpiritAura {
                 var c = new Vector3f((float) (orb.x - cam.x), (float) (orb.y - cam.y), (float) (orb.z - cam.z));
                 var state = CompanionMotion.state(player);
                 int color = state == null ? CompanionMotion.CALM : state.color(partial);
+                if (flash > 0) color = net.minecraft.util.FastColor.ARGB32.lerp(flash, 0xFF000000 | color, 0xFFFFFFFF) & 0xFFFFFF;
                 boolean combat = state != null && state.combat();
                 float pulse = state == null ? 1 : state.pulse(partial);
                 float boost = (dark ? CompanionMotion.DARK_BOOST : 1) * pulse;
@@ -204,8 +208,9 @@ public final class SpiritAura {
                 double tilt = Math.toRadians(CompanionMotion.PETAL_TILT);
                 for (int i = 0; i < 3; i++) {
                     double angle = (phase + i / 3.0) * Math.PI * 2;
-                    float dx = CompanionMotion.PETAL_ORBIT * (float) Math.cos(angle);
-                    float dz = CompanionMotion.PETAL_ORBIT * (float) Math.sin(angle);
+                    float orbit = CompanionMotion.PETAL_ORBIT * Mth.lerp(flash, 1, cn.wwl.orimod.fx.FlashLight.PETAL_SCALE);
+                    float dx = orbit * (float) Math.cos(angle);
+                    float dz = orbit * (float) Math.sin(angle);
                     var petal = new Vector3f(c).add(dx, dz * (float) Math.sin(tilt), dz * (float) Math.cos(tilt));
                     SpiritEnergy.billboard(out, pose, petal, rotation, CompanionMotion.PETAL_RADIUS, color, Math.min(1, .75f * boost));
                 }

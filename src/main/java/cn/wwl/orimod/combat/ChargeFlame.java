@@ -31,6 +31,8 @@ public final class ChargeFlame {
 
     /** Release a charged flame. @return targets hit, or -1 if refused. */
     public static int release(ServerPlayer player) {
+        Flash.stop(player);
+        player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
         long now = player.level().getGameTime();
         var state = player.getData(SpiritData.ENERGY_STATE);
         String refusal = refusal(SpiritData.isSpirit(player), Ability.CHARGE_FLAME.unlocked(player), SpiritProgression.energy(player), now, state.chargeFlameReadyAt);

@@ -143,15 +143,16 @@
 - **输入：** 按住期间客户端每 5 tick 发一次 `ProgressActionPayload("flash", "")`；服务端每次收到就把 `flashUntil` 设为 `now + 8`。松开或丢包时，最多 8 tick 自动停止，不需要单独的停止包。状态放在 `ENERGY_STATE` 里（加 `flashUntil`、`flashActiveSince`）。
 - **开启条件（纯函数 `Flash.refusal(...)`，写法照 `ChargeFlame.refusal`）：** 精灵形态、已学会、能量 ≥ 5、不在 Bash 瞄准 / 冲刺 / 抓钩 / 下砸中、没有在蓄力灵焰。
 - **消耗：** 每 tick 0.3 能量（每秒 6）；能量降到 0 时停止，并进入 20 tick 冷却。期间暂停自然回能（把 `lastSpent` 更新为当前时间）。
-- **效果（服务端每 tick，半径 `RADIUS = 7`）：**
+- **效果（服务端，半径 `RADIUS = 7`）：** 实体每 tick 用 AABB 预筛，再按球形距离过滤；方块扫描按下面的独立节奏执行。
   - 腐光生物（`GloomSpitter`、`GloomHawk`，以及首领召唤出的小怪）：每 10 tick 受 1 点 `indirectMagic` 伤害，并处于“炫目”状态：喷吐者重置攻击计时、不能开始预警；腐光鸦打断俯冲、往远离玩家的方向退开。给这两个实体各加一个 `dazzle(int ticks)` 方法实现。
   - 首领（`GloomHeart`、`GloomMatriarch`）：只受伤害，每 20 tick 1 点，不受炫目影响。
   - 原版亡灵（`EntityTypeTags.UNDEAD`）：虚弱 I 持续 40 tick，每 20 tick 受 0.5 点伤害。
   - 其他生物不受影响。
-  - 灵灯：调用 `SpiritLanternBlock.igniteAround(玩家, RADIUS, 40)`（R96 的接口）。
-  - 腐光水：灵闪持续 40 tick 以上时，3 格内的腐光水被净化（复用 `GloomWaterBlock.cleanse(level, center, 3)`）。
-  - **刷怪压制：** 监听 `MobSpawnEvent.PositionCheck`（或 NeoForge 1.21.1 对应的事件），自然生成的 `Monster` 若在任一灵闪中的玩家 16 格内，结果设为 `DENY`。判定写成纯函数，JUnit 可测。刷怪笼、刷怪蛋、命令生成不受影响。
+  - 灵灯：首 tick 调用 `SpiritLanternBlock.igniteAround(level, 玩家位置, RADIUS, 40)`，之后每 10 tick 一次，复用 R96 区段调色板预筛与续亮。
+  - 腐光水：第 40 tick 首次净化，之后每 20 tick 一次，半径 3（复用 `GloomWaterBlock.cleanse(level, center, 3)`，跳过未加载区块）。
+  - **刷怪压制：** 已核对 NeoForge 21.1.248：监听 `MobSpawnEvent.PositionCheck`，同维度 16 格内的自然生成 `Monster` 设为 `Result.FAIL`（实际 API 没有 `DENY`）。事件只遍历当前灵闪玩家集合，下线/世界卸载/服务器停止清理；判定抽成纯函数。只拦 `NATURAL`，不拦 `CHUNK_GENERATION`，以保留初始区块生态；刷怪笼、刷怪蛋、命令、增援也不受影响。
 - **与其他系统：** 灵闪中可以正常移动、跳跃、滑翔；使用灵刃、灵弓、灵锤、灵矛时自动停止（与 `DamageInterrupts` 的打断规则保持一致）；变回人形、死亡、打开菜单时立即停止。
+- **蓄力灵焰兼容：** `charge_flame_hold` / `charge_flame_cancel` 仅维护互斥用的短租约；原有按住 12 tick 后松手释放规则不变，保活缺失/延迟/过期不得参与 release 的拒绝判定。ProgressAction 只新增 action 字符串，协议仍为 1；新增 FLASH kind 后 FX 协议为 6。
 
 ### 表现
 

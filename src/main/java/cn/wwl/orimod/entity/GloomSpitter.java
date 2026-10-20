@@ -25,6 +25,9 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> CHARGE =
             net.minecraft.network.syncher.SynchedEntityData.defineId(GloomSpitter.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
     private LivingEntity chargeTarget;
+    /** R98: light interrupts telegraphing and resets the ranged goal's attack timer. */
+    private int dazzled;
+    private RangedAttackGoal rangedGoal;
 
     public GloomSpitter(EntityType<? extends GloomSpitter> type, Level level) { super(type, level); xpReward = 5; }
 
@@ -34,7 +37,11 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
 
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new FloatGoal(this));
-        goalSelector.addGoal(2, new RangedAttackGoal(this, 1, ATTACK_INTERVAL, 14));
+        rangedGoal = new RangedAttackGoal(this, 1, ATTACK_INTERVAL, 14) {
+            @Override public boolean canUse() { return dazzled == 0 && super.canUse(); }
+            @Override public boolean canContinueToUse() { return dazzled == 0 && super.canContinueToUse(); }
+        };
+        goalSelector.addGoal(2, rangedGoal);
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, .8));
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 10));
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -47,9 +54,18 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     }
     /** Ticks left before the charged orb leaves (0 when idle). */
     public int charge() { return entityData.get(CHARGE); }
+    public boolean dazzled() { return dazzled > 0; }
+
+    public void dazzle(int ticks) {
+        if (ticks <= 0) return;
+        dazzled = Math.max(dazzled, ticks);
+        entityData.set(CHARGE, 0); chargeTarget = null;
+        rangedGoal.stop();
+    }
 
     /** Advance the telegraph; the orb leaves when it runs out. @return the shot, if one left this tick. */
     public GloomShot tickCharge() {
+        if (dazzled > 0) return null;
         int left = charge();
         if (left <= 0) return null;
         entityData.set(CHARGE, left - 1);
@@ -60,12 +76,15 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
 
     @Override public void tick() {
         super.tick();
-        if (!level().isClientSide) tickCharge();
+        if (!level().isClientSide) {
+            if (dazzled > 0) dazzled--;
+            else tickCharge();
+        }
         if (level().isClientSide) cn.wwl.orimod.client.fx.GloomLook.body(this);
     }
 
     @Override public void performRangedAttack(LivingEntity target, float power) {
-        if (charge() > 0) return;
+        if (dazzled > 0 || charge() > 0) return;
         chargeTarget = target; entityData.set(CHARGE, CHARGE_TICKS);
         playSound(SoundEvents.AMETHYST_BLOCK_RESONATE, 1, .6f);
     }

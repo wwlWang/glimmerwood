@@ -6,6 +6,8 @@ public final class OriClientConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.IntValue CONFIG_VERSION;
     public static final ModConfigSpec.BooleanValue KEY_DEFAULTS_APPLIED;
+    /** R98: independent one-time check so existing installations also resolve the new Flash binding. */
+    public static final ModConfigSpec.BooleanValue FLASH_KEY_DEFAULTS_APPLIED;
     public static final ModConfigSpec.EnumValue<SpiritCameraView> SPIRIT_CAMERA;
     public static final ModConfigSpec.EnumValue<VisualQuality> QUALITY;
     public static final ModConfigSpec.BooleanValue ADVANCED_PARTICLES;
@@ -17,7 +19,7 @@ public final class OriClientConfig {
     /** Plan default: shake is light; flash is moderate. */
     public static final int DEFAULT_SHAKE = 30, DEFAULT_FLASH = 40;
     /** Bookkeeping entries kept in the file but not offered in the settings screen. */
-    public static final java.util.Set<String> HIDDEN_IN_MENU = java.util.Set.of("configVersion", "keyDefaultsApplied");
+    public static final java.util.Set<String> HIDDEN_IN_MENU = java.util.Set.of("configVersion", "keyDefaultsApplied", "flashKeyDefaultsApplied");
 
     static {
         var builder = new ModConfigSpec.Builder();
@@ -25,6 +27,8 @@ public final class OriClientConfig {
                 .defineInRange("configVersion", ClientConfigMigration.LEGACY, 1, Integer.MAX_VALUE);
         KEY_DEFAULTS_APPLIED = builder.comment("One-time setup of the bundled key layout. Custom bindings are preserved.")
                 .define("keyDefaultsApplied", false);
+        FLASH_KEY_DEFAULTS_APPLIED = builder.comment("One-time conflict check for the default Flash key. Custom bindings are preserved.")
+                .define("flashKeyDefaultsApplied", false);
         // R19: an enum so the settings screen offers a cycle button; stored names are unchanged from the v1 text field.
         SPIRIT_CAMERA = builder.comment("Camera used in spirit form: FIRST_PERSON, THIRD_PERSON_BACK (default) or THIRD_PERSON_FRONT.",
                         "Switching the camera with F5 while in spirit form updates this value.")

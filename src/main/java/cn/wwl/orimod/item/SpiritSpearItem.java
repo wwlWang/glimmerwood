@@ -19,6 +19,7 @@ public final class SpiritSpearItem extends Item {
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
         if (level.isClientSide) return InteractionResultHolder.success(stack);
+        cn.wwl.orimod.combat.Flash.stop((ServerPlayer) player);
         var spear = cn.wwl.orimod.combat.SpiritSpear.thrown((ServerPlayer) player);
         if (spear == null) return InteractionResultHolder.fail(stack);
         player.getCooldowns().addCooldown(this, cn.wwl.orimod.combat.SpiritSpear.COOLDOWN_TICKS);

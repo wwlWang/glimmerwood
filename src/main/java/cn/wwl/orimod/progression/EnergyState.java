@@ -14,4 +14,8 @@ public final class EnergyState {
     /** R97: separate hint timers avoid treating a fresh player's tick zero as an energy spend. */
     public long lastHintSpendAt = Long.MIN_VALUE, lastCompanionHintAt = Long.MIN_VALUE;
     public boolean pendingHeal;
+    /** R98: unsaved leases and cooldown for sustained Flash and the charge-flame input that excludes it. */
+    public long flashUntil = Long.MIN_VALUE, flashActiveSince = Long.MIN_VALUE, flashLastTick = Long.MIN_VALUE,
+            chargeFlameUntil = Long.MIN_VALUE;
+    public long flashReadyAt, flashNoticeAt;
 }

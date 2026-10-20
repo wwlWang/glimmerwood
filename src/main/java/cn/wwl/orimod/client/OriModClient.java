@@ -45,6 +45,7 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::opening);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritCombatClient::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritControls::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritControls::opening);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritControls::movement);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tickTarget);

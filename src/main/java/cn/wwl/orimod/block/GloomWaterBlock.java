@@ -46,7 +46,7 @@ public final class GloomWaterBlock extends Block {
     public static int cleanse(ServerLevel level, BlockPos center, int radius) {
         int n = 0;
         for (var pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
-            if (pos.distSqr(center) > radius * radius || !level.getBlockState(pos).is(OriBlocks.GLOOM_WATER.get())) continue;
+            if (pos.distSqr(center) > radius * radius || !level.hasChunkAt(pos) || !level.getBlockState(pos).is(OriBlocks.GLOOM_WATER.get())) continue;
             level.setBlock(pos, Blocks.WATER.defaultBlockState(), 3);
             level.sendParticles(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0xBFF0FF, .5f, 30),
                     pos.getX() + .5, pos.getY() + .9, pos.getZ() + .5, 2, .3, .1, .3, .02);

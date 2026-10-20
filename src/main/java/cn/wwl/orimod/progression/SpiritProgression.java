@@ -39,6 +39,14 @@ public final class SpiritProgression {
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
+            case "flash" -> cn.wwl.orimod.combat.Flash.keepAlive(player);
+            case "charge_flame_hold" -> {
+                if (SpiritData.isSpirit(player) && Ability.CHARGE_FLAME.unlocked(player) && !player.hasContainerOpen()) {
+                    cn.wwl.orimod.combat.Flash.stop(player);
+                    player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = player.level().getGameTime() + cn.wwl.orimod.combat.Flash.LEASE_TICKS;
+                }
+            }
+            case "charge_flame_cancel" -> player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
             case "soul_link" -> SoulLink.create(player);
             case "well_travel" -> cn.wwl.orimod.world.SpiritWell.travel(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
             case "light_burst" -> cn.wwl.orimod.combat.LightBurst.toss(player);
@@ -185,7 +193,7 @@ public final class SpiritProgression {
         var s = player.getData(SpiritData.ENERGY_STATE);
         if (now % 4 == 0) {
             float energy = energy(player);
-            if (now - s.lastSpent >= 40) energy = Math.min(maxEnergy(player), energy + (Shard.RECOVERY.equipped(player) ? 1.5f : 1));
+            if (!cn.wwl.orimod.combat.Flash.active(player) && now - s.lastSpent >= 40) energy = Math.min(maxEnergy(player), energy + (Shard.RECOVERY.equipped(player) ? 1.5f : 1));
             if (Float.compare(player.getData(SpiritData.ENERGY), energy) != 0) player.setData(SpiritData.ENERGY, energy);
         }
         if (now % 2 == 0) pullLight(player);

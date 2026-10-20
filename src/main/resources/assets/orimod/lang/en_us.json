@@ -330,5 +330,14 @@
   "hint.orimod.shard_slot": "Glimmer: Press G to open your panel and equip that new shard.",
   "orimod.configuration.companionHints": "Glimmer’s guidance",
   "orimod.configuration.companionHints.tooltip": "Glimmer speaks, chimes and flies toward new discoveries. Hints are still marked as seen when disabled.",
-  "commands.orimod.hints.list": "Seen Glimmer hints: %s"
+  "commands.orimod.hints.list": "Seen Glimmer hints: %s",
+  "key.orimod.flash": "Flash (hold)",
+  "ability.orimod.flash": "Flash",
+  "ability.orimod.flash.description": "Hold Flash to shine. Requires 5 energy to start and drains 6 per second. Dazzles gloom within 7 blocks and suppresses natural monster spawns within 16. After 2 seconds, cleanses gloom water within 3 blocks. Exhaustion causes a 1-second cooldown.",
+  "message.orimod.flash.not_spirit": "Flash requires spirit form.",
+  "message.orimod.flash.locked": "Flash has not been unlocked.",
+  "message.orimod.flash.energy": "Starting Flash requires at least 5 energy.",
+  "message.orimod.flash.movement": "Finish your current action before starting Flash.",
+  "message.orimod.flash.charging": "Flash cannot start while charging Spirit Flame.",
+  "message.orimod.flash_key_moved": "Flash’s default H binding conflicts; moved to %s. You can change it in Controls."
 }

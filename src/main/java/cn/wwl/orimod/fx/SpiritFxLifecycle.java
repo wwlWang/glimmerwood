@@ -30,6 +30,7 @@ public final class SpiritFxLifecycle {
         if (s.mode == MoveMode.GLIDE) set.add(SpiritFxKind.GLIDE);
         if (s.grapple != null) set.add(SpiritFxKind.GRAPPLE_TETHER);
         if (s.bash != null) set.add(SpiritFxKind.BASH_AIM);
+        if (cn.wwl.orimod.combat.Flash.active(player)) set.add(SpiritFxKind.FLASH);
         return set;
     }
 
@@ -65,6 +66,7 @@ public final class SpiritFxLifecycle {
 
     /** Ends every persistent effect of the player immediately. */
     public static void stopAll(ServerPlayer player, String reason) {
+        cn.wwl.orimod.combat.Flash.forget(player);
         var have = ACTIVE.remove(player.getUUID());
         // Always tell clients: they may hold an effect whose START raced a reconnect.
         send(player, SpiritFxKind.GLIDE, SpiritFxPhase.STOP_ALL);
@@ -93,7 +95,7 @@ public final class SpiritFxLifecycle {
     public static void dimension(PlayerEvent.PlayerChangedDimensionEvent event) { if (event.getEntity() instanceof ServerPlayer player) stopAll(player, "dimension"); }
     public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { if (event.getEntity() instanceof ServerPlayer player) stopAll(player, "logout"); }
     public static void respawn(PlayerEvent.PlayerRespawnEvent event) { if (event.getEntity() instanceof ServerPlayer player) ACTIVE.remove(player.getUUID()); }
-    public static void reset() { ACTIVE.clear(); STOPS.clear(); }
+    public static void reset() { ACTIVE.clear(); STOPS.clear(); cn.wwl.orimod.combat.Flash.reset(); }
 
     private static void count(String reason) { STOPS.merge(reason, 1, Integer::sum); }
 

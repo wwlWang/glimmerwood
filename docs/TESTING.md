@@ -477,3 +477,92 @@ companion.updraft_after_20_ticks_once_even_after_cooldown failed at -11899130, -
 与方案的明确取舍：主动提示/寻光/攻击及返回不执行“距锚点 >3 格归位”，否则飞往 6–12 格目标会被瞬移逻辑覆盖；主人单 tick 位移 >3 格仍立即归位并取消飞行。低血警示覆盖战斗色，战斗花瓣仍加速；花瓣相位连续积分，避免切换战斗时跳位。16 个状态满时为本人让出最远远端玩家的状态，远端继续旧轨道回退。`EnergyState.lastHintSpendAt` 单独记录真实消耗，保留既有回能计时行为。
 
 未实机验证：同伴各状态运动和灵焰光束衔接的观感，花瓣/彗尾/情绪色/亮度脉冲，暗处第一人称地面光池，声音与配置菜单交互，客户端寻光的实际遮挡/拾取表现，多客户端离线/传送/16 人上限与回退，Iris 组合、GPU 性能。地面光池沿用加色贴片，不改变世界方块光照；同伴无碰撞，飞行可能穿过地形。没有开始 R98。
+
+## R98：灵闪
+
+使用用户目录 Temurin 21.0.12.1，最终执行：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" \
+  ./gradlew build runGameTestServer --console=plain
+python3 scripts/test-summary.py
+python3 scripts/export-spirit-fx.py --check
+git diff --check
+```
+
+结果：**700 JUnit / 302 GameTest**，零失败、零跳过；较 R97（648 / 271）新增 **52 / 31**。18 个效果资源导出一致。未运行 `check-ruins.py`，未修改遗迹 NBT、布局与神龛模型；未执行 git 写操作。
+
+- `FlashTest`（40 项，含参数化）：开启/续用能量门槛、非有限能量、形态/解锁/冷却/蓄力条件、全部移动模式、5/8 tick 保活边界、10/40/20 tick 方块扫描节奏、全部 `MobSpawnType`、16 格距离/维度/实体类型，以及技能价格、位值、前置和耗能/伤害数值。
+- `FlashLightTest`（3 项）：5 tick 渐入、8 tick 渐出与插值，渐出中重启不跳变，曝光上限与画质/高级粒子/强度开关。`SpiritKeyDefaultsTest`（2 项）：H 优先、冲突回退、候选全占用时留空。
+- 原 FX 参数化测试随 FLASH 扩展 7 项：预算、资源定义、生命周期与协议完整往返；声音清单检查也覆盖新增循环音。`SpiritFxPayloadTest` 验证协议 **6**、未知 kind / phase 与非法一次性 START 解码拒绝。ProgressAction 的 action 扩展不改协议 **1**。
+- `flash.*` **29 项 GameTest**：前置/购买、拒绝条件，喷吐者清预警/阻止开火/炫目到期恢复，鸦停止俯冲并向外退避、恢复攻击，双首领伤害且不中断招式，亡灵虚弱与伤害、其他生物不受影响，球形边界与点灯节奏，40/60 tick 净化，真实 `PositionCheck` 总线与原因/距离/维度/租约过滤，FX START/heartbeat/STOP 和重复事件不重复扣能，换形/下线/死亡/换维度/失活输入/移动/菜单/外部伤害中断、环境伤害不中断，四种武器中断，世界卸载隔离，8 tick 到期，50 能量完整耗尽且无回能/20 tick 冷却，其他能力耗尽时的 tick/续包路径。
+- 新增蓄力灵焰兼容用例验证“保活过期”和“完全没有保活”都仍可合法 release，费用不变；**`ParityGameTests` 与 `LanternGameTests` 内的原有 ChargeFlame 用例一行未改，全部通过**。另有随枚举增加的 `progression.buy_flash_once` 与 `fx.route_flash` 两项 GameTest。
+
+首轮失败原文（均已修复，未删除或放宽失败断言）：
+
+```text
+FxBudgetTest > advancedOffKeepsOnlyEssentialAndNeverZero(SpiritFxKind) > [18] FLASH FAILED
+    org.opentest4j.AssertionFailedError: gameplay feedback must stay visible: FLASH ==> expected: <true> but was: <false>
+SpiritFxLifecycleTest > persistentKindsAreTheTrailsAndTheBashAimRing() FAILED
+    org.opentest4j.AssertionFailedError: expected: <[GLIDE, GRAPPLE_TETHER, BASH_AIM]> but was: <[GLIDE, GRAPPLE_TETHER, BASH_AIM, FLASH]>
+flash.interrupt_damage failed at -11051887, -60, -11271851! Flash survived damage
+```
+
+修复原因：FLASH 留 1 个必要反馈微粒，装饰关闭时也遵守既有预算契约；持久 FX 清单加入 FLASH；伤害夹具沿用 `DamageGameTests` 的真实玩家 61 次 tick 路径度过登录无敌期，先断言伤害被接受、生命下降，再断言灵闪停止；没有修改伤害打断规则。修复后首轮全量 700 / 300 通过，补其他能力耗尽路径及喷吐者恢复后，最终 700 / 302 通过。日志：`/tmp/orimod-r98-unit.log`、`/tmp/orimod-r98-full.log`、`/tmp/orimod-r98-full-2.log`、`/tmp/orimod-r98-final.log`（临时文件未入库）。
+
+实现取舍与检查边界：
+
+- NeoForge **21.1.248** 依赖源码确认事件为 `MobSpawnEvent.PositionCheck`、结果为 `Result.FAIL`。只检查静态活动玩家集合，不每次遍历所有在线玩家；只抑制 `NATURAL`，`CHUNK_GENERATION` 保留区块初始生态。
+- 灯第 1/11/21… tick 扫描，时长 40；水第 40/60/80… tick 扫描，跳过未加载区块。能量最后不足 0.3 时扣清并停止，避免残留不足一 tick 的能量。
+- H 注册到 Controls；默认键冲突检查有独立迁移标记，已有安装也会执行。只迁移仍为默认的 Flash，保留其他模组和用户自定义。H 被占时依次尝试 J/K/L/U/Y，全占用则设为未绑定并通知。没有发现需要全局替换 H 的仓库内绑定。
+- `SpiritScreen` 已有 `ObjectSelectionList` 滚动、裁剪与滚动条，行高 25、最大视口高 206；现在 14 个技能 + 领刃共 15 行，内容可滚动访问，Flash 排在蓄力灵焰后。此为代码检查，未将实际分辨率/UI 操作记为已验证。
+- FLASH 微粒环半径 6，遵守已有资源校验器的半径上限；地面光池与战斗效果半径仍为 7。均衡 2、精细 3 个/ tick，流畅或关闭装饰保留 1 个。曝光遵守既有闪光强度，默认 40 时为最大 3.2%，可调到 8%；流畅画质或高级粒子关闭时为零。光池沿用加色贴片，不改变方块光照。
+- 菜单开启通过既有失活移动输入立即通知服务端（含没有服务端容器的 G/Escape），不增加 Flash 停止包；服务器容器也监听 Open。正常松键仍由 8 tick 租约退出。
+
+未实机验证：长按/松键与蓄力灵焰切换手感、按键冲突迁移与重绑、15 行技能面板滚动、第一/第三人称渐变/光池/萤/曝光、循环音、多客户端断线/传送、Iris 和 GPU 性能。没有开始 R99。
+
+本轮改动文件清单（41 个，不含既有未跟踪的 AgentBridge / AGENTS / CLAUDE 文件）：
+
+```text
+art/source/effects/spirit/flash.json
+docs/ORI_PARITY.md
+docs/ROADMAP_R96.md
+docs/TESTING.md
+docs/WORK_STATUS.md
+src/gametest/java/cn/wwl/orimod/gametest/FlashGameTests.java
+src/main/java/cn/wwl/orimod/OriMod.java
+src/main/java/cn/wwl/orimod/block/GloomWaterBlock.java
+src/main/java/cn/wwl/orimod/client/OriModClient.java
+src/main/java/cn/wwl/orimod/client/SpiritControls.java
+src/main/java/cn/wwl/orimod/client/SpiritKeyDefaults.java
+src/main/java/cn/wwl/orimod/client/fx/CompanionMotion.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritAura.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritFxClient.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritScreenFeedback.java
+src/main/java/cn/wwl/orimod/combat/ChargeFlame.java
+src/main/java/cn/wwl/orimod/combat/Flash.java
+src/main/java/cn/wwl/orimod/combat/SpiritCombat.java
+src/main/java/cn/wwl/orimod/config/OriClientConfig.java
+src/main/java/cn/wwl/orimod/entity/GloomHawk.java
+src/main/java/cn/wwl/orimod/entity/GloomSpitter.java
+src/main/java/cn/wwl/orimod/fx/FlashLight.java
+src/main/java/cn/wwl/orimod/fx/SpiritFxKind.java
+src/main/java/cn/wwl/orimod/fx/SpiritFxLifecycle.java
+src/main/java/cn/wwl/orimod/fx/SpiritSoundCue.java
+src/main/java/cn/wwl/orimod/item/SpiritHammerItem.java
+src/main/java/cn/wwl/orimod/item/SpiritSpearItem.java
+src/main/java/cn/wwl/orimod/movement/SpiritMovement.java
+src/main/java/cn/wwl/orimod/network/SpiritFxPayload.java
+src/main/java/cn/wwl/orimod/progression/Ability.java
+src/main/java/cn/wwl/orimod/progression/EnergyState.java
+src/main/java/cn/wwl/orimod/progression/SpiritProgression.java
+src/main/resources/assets/orimod/lang/en_us.json
+src/main/resources/assets/orimod/lang/zh_cn.json
+src/main/resources/assets/orimod/spirit_fx/flash.json
+src/test/java/cn/wwl/orimod/client/SpiritKeyDefaultsTest.java
+src/test/java/cn/wwl/orimod/combat/FlashTest.java
+src/test/java/cn/wwl/orimod/fx/FlashLightTest.java
+src/test/java/cn/wwl/orimod/fx/FxBudgetTest.java
+src/test/java/cn/wwl/orimod/fx/SpiritFxLifecycleTest.java
+src/test/java/cn/wwl/orimod/fx/SpiritFxPayloadTest.java
+```
