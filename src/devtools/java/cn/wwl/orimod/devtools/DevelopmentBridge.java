@@ -199,6 +199,17 @@ public final class DevelopmentBridge {
                 return server.submit(() -> Map.<String, Object>of("saved", server.saveEverything(true, true, true),
                         "serverTick", server.getTickCount())).get(35, TimeUnit.SECONDS);
             }
+            case "spirit_tree_probe" -> {
+                require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
+                var server = mc.getSingleplayerServer();
+                var playerId = mc.player.getUUID();
+                return server.submit(() -> {
+                    var player = server.getPlayerList().getPlayer(playerId);
+                    require(player != null, "Server player missing");
+                    return SpiritTreeProbe.scan(player.serverLevel(), action.get("minX").getAsInt(), action.get("maxX").getAsInt(),
+                            action.get("minZ").getAsInt(), action.get("maxZ").getAsInt(), action.get("step").getAsInt());
+                }).get(30, TimeUnit.SECONDS);
+            }
             case "inspect_block" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var playerId = mc.player.getUUID();

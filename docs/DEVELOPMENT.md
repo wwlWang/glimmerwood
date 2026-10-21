@@ -23,7 +23,7 @@
 .\scripts\gradle.ps1 runDevtoolsClient --console=plain
 ```
 
-Linux 使用 `./gradlew runDevtoolsClient --console=plain`，需要可用图形环境。云端无界面构建和交接步骤见 [CLOUD_HANDOFF](CLOUD_HANDOFF.md)。
+本机 Linux 客户端统一使用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient --console=plain`（先在当前命令设置 JDK 21 的 JAVA_HOME/PATH）。所有图形命令使用 `DISPLAY=:0`；启动后确认日志 `GL info` 为 llvmpipe / OpenGL 4.6，避免默认 virgl 的 GL 4.2 与 Flywheel 不兼容。云端无界面构建和交接步骤见 [CLOUD_HANDOFF](CLOUD_HANDOFF.md)。
 
 开发实例位于 `run-devtools`。构建工具下载失败时保留日志和已有缓存，再定位或更换网络入口；不要因一次等待超时就启动重复客户端。
 
@@ -60,6 +60,32 @@ Linux 使用 `./gradlew runDevtoolsClient --console=plain`，需要可用图形�
 同一个 `aura` 的 `companionDraws` 记录上一帧实际绘制的同伴中心：`source`、`owner` 实体 ID、插值后的世界 `pos`、到主人插值脚部的 `ownerDistance`、`billboards` 数和 `tail`。`screenPixels` 是该中心经当前渲染矩阵投影到窗口的像素坐标（左上为原点，非 GUI 缩放坐标）；`inFrontOfCamera` 指示是否在相机前方，投影 w 接近零时坐标为空。第一人称隐藏本人的光球，因此没有本人的该条记录。用这些字段核对截图中的亮点来源，避免把屏幕间距当成世界距离；状态查询与截图是不同帧，移动时应允许小幅像素差。
 
 `ruin_state` 返回挑战、恢复标记、附近已加载的真实结构起点与有界搜索状态。`use_block` 走原版物品使用入口，`gui_click` / `gui_key` 操作当前游戏界面；`container_state` 只读合成与物品栏槽位。`focus_game` 仅请求本客户端窗口焦点，测试仍使用正式失焦保护。`server_hitch` 仅限集成服务器、1–600 毫秒，可作为定时脚本动作，复现服务器停顿下的输入行为。
+
+R100 灵树验收：在开阔平地执行 `/place feature orimod:spirit_tree ~ ~ ~`，多棵中心至少隔 32 格。Feature 按指定 X/Z 的中心 5×5 地表最高处确定根部 Y；地表高差须 ≤3，脚下干燥实心，树冠/树干/入口不能碰石柱或建筑。树心在中心北侧 2 格处，前方是 3×3×3 空地。若需要固定坐标的测试平台，可在专用开发世界先执行 `/fill 1985 99 1985 2015 99 2015 minecraft:stone`，确保其上方至 Y=130 开阔，再 `/place feature orimod:spirit_tree 2000 100 2000`；树心为 `(2000,100,1998)`。不要在要保留的玩家建筑旁用填充命令。
+
+`/ori awaken`、`/ori form on` 后空手右键树心；`/ori status` 查看能力，`progress_state` 查看灵光与 rewards。已全解锁时，可用另一棵树确认 100 灵光；`/ori hints reset` 可重测 24 格 `spirit_tree` 提示（树心记账不受 hints reset 影响）。`inspect_block` 返回树心状态中的 `bloomed=true/false`；测试用树心也可 `/give @s orimod:spirit_tree_heart`。自然分布的尝试率锁在 `worldgen/placed_feature/spirit_tree.json` 的 `chance:220`，仅合格群系计入，平均每 56,320 平方格一次尝试、约 237 格名义间距，实际成树因地形/障碍/遗迹保护更稀疏。`python3 scripts/art/build_spirit_tree_textures.py --check` 检查七张纹理；不带 `--check` 重生成。灵树是 Feature，当前不参与 `/locate` 或地图石指引。
+
+外观返工后的树形为约 20–22 格高、冠半径最多 11 格的多层穹顶：5×5 根部逐级收到 3×3 / 2×2，3–4 根粗主枝从中段向外伸出，7–8 个有空腔和下部缺口的冠团高低错开。外围主枝冠中心按 3 枝 `[-2,0,+2]` / 4 枝 `[-3,+1,-1,+3]` 交错，包括首尾相邻都至少差 2 格；冠团下半径比上半径大 1，形成下垂圆弧。主干之外的板根最长 6 格；清理被壁龛切断的根尖和随机疏叶留下的孤块，再挂冷蓝白 `spirit_vine`。悬藤固定 2–5 格长，不生长、无浆果；藤尖按下方连接更新，失去支撑时整段脱落，剪刀或精准采集才掉自身。叶子采用 cutout_mipped，悬藤采用 cutout；两者和树心使用自发光渲染，树皮仍受环境光影响。已有世界里的旧树不会自动重塑，外观复测请重新放置。
+
+自然生成调查用 `/ori tree nearest [radius]`，默认 256，允许 1–1024。只搜索当前维度的已加载区块，区段调色板预筛后比较到树心中心的三维距离；不会加载或生成新区块。找到时报告坐标、距离和搜索半径，点击坐标建议传送到北侧入口地面高度；未找到会明确提示。森林航拍时先飞过待调查区域并等待加载，再查询并按坐标去重。命令也会找到人工摆放的树心，因此自然密度记录应使用新的调查区域；不能将未加载区域的“未找到”计为无树。
+
+`SpiritTreeShapeReportTest` 使用实际 Java 形状函数生成 `build/reports/spirit-tree-shapes.md`：五个固定位置种子、每层主干/全树面积、冠幅/冠高、方块数和沿 Z 轴压缩的 XY 侧视投影。运行完整 JUnit 即可重生成；不需要启动客户端。
+
+R100 生成阶段为 `local_modifications`，先于当前区块的原版花草/树木；稀有度仍为 220、起伏仍为 3。迁移原因是原版原木在中心地基阶段就会拒绝，seed100100密网格29个合格点中13个首先被原木阻挡。不清除原版原木，相邻已装饰区块仍可能阻挡。遗迹 start 在 STRUCTURE_STARTS 就确定；`RuinVegetationGuard` 读取其模板+入口的联合包围盒并外扩 14 格，仍覆盖后来 `top_layer_modification` 放置/清冠的范围。
+
+开发桥只读动作 `spirit_tree_probe` 接收 `minX/maxX/minZ/maxZ/step`（闭区间，跨度≤4096，步长 1–1024，总采样≤1024）。缺失完整 ±14 footprint 的点返回 UNLOADED，绝不补加载；返回原因直方图、合格群系直方图、按群系分组、每点基座/地形高差/首个阻挡方块、附近已有树心，以及整个矩形内按区段调色板扫描的精确树心列表 `hearts`。可用：
+
+```sh
+python3 scripts/probe-spirit-trees.py r100-probe-my-world --min-x=-224 --max-x=224 --min-z=-224 --max-z=224 --step=64
+```
+
+探针不放置树、不改区块票据；要加载区域，另在专用开发世界执行 forceload 或飞行。512×512 要分成四个 256×256 象限，避免单条命令的 256 区块上限。`command` 的 success 不能代替命令返回码；nearest/place/forceload add 要核对 `result > 0`。例外：原版 forceload remove all 固定返回0，应以票据或保存后的 Forced 列表确认清理。`hearts` 仅统计已加载区块，未加载部分不能作为“无树”；在全新世界未人工放树时才可用它计自然树。
+
+`SpiritTreeFeature.preflight` 保留 place 的顺序和规则，失败不暴露部分写入计划；`preflightLoaded` 先用 getChunkNow 拒绝缺失区块。原因依次为 RUIN_GUARD、NOT_DRY、RELIEF、FOOT_BLOCKED/FOOT_UNGROUNDED、BUILD_HEIGHT/CLEARANCE_LOG/CLEARANCE_OTHER，全部通过为 OK。NOT_DRY 包含水、非坚固地基、原木/叶/方块实体；BUILD_HEIGHT 也包含生成区域写入边界。探针运行于装饰完成的 ServerLevel，与 `/place feature` 相同，不执行仅 WorldGenRegion 生效的遗迹保护；它的通过率**不是** local_modifications 时刻的天然尝试成功率。原因是遇到的第一个失败，不代表后续检查一定通过。
+
+全冠最低叶片 y 的极差≥4、众数占比≤35%；另对水平半径≥6 的外圈约束极差≥4、众数占比≤30%，防止内冠空腔掩盖外围平底。测试含 64 个位置种子及截图基座 `(3000,120,3000)`；直方图输出 `build/reports/spirit-tree-undersides.csv`。
+
+R100 最终实拍已通过：seed100101 新世界原点周围512×512精确查到3棵自然树，冠底错落、冠顶收圆、白桦林入口通畅和夜景均由Claude确认。客户端使用上文 llvmpipe + DISPLAY=:0 标准命令；收尾先 `forceload remove all`，再 `leave_world`、`quit`。证据 `evidence/r100-rework-natural-v001/`；前两轮 `r100-rework-accept-v001/v002`、旧密度 `r100-rework-density-v001/` / `r100-rework-acceptance-rate-v001/`、探针 `r100-preflight-loaded-v001/` / `r100-preflight-dense-v001/`、新世界 `r100-early-density-v002/`；完整索引见 TESTING。
 
 单人服务器没有 `save-all` 命令。测试快照须先暂停，再调用 `save_world`，等待原版 `saveEverything` 完成强制写盘后复制，并检查 SHA-256 和关键区块内容。仅暂停触发的自动保存不保证所有异步区块写入已完成。`command` 对单人服务器没有注册的命令直接报错；只读查询的短暂超时最多重试两次，并记录在证据中，操作请求不自动重发。
 

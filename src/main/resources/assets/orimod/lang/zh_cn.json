@@ -351,5 +351,16 @@
   "shard.orimod.sticky": "吸附",
   "shard.orimod.sticky.description": "墙面下滑速度降至35%。按住朝墙方向可悬停，不耗能；已学攀爬时按前进仍向上爬。",
   "screen.orimod.fourth_slot": "学会10个技能后解锁第4槽（%s/10）。",
-  "screen.orimod.fourth_slot_unlocked": "已解锁第4个碎片槽。"
+  "screen.orimod.fourth_slot_unlocked": "已解锁第4个碎片槽。",
+  "block.orimod.spirit_log": "灵树木",
+  "block.orimod.spirit_leaves": "灵树叶",
+  "block.orimod.spirit_tree_heart": "灵树之心",
+  "message.orimod.tree.dormant": "灵树在沉睡，以精灵之身前来",
+  "message.orimod.tree.taken": "这棵灵树已把光给了你",
+  "message.orimod.tree.skill": "灵树赐予你：%s",
+  "message.orimod.tree.light": "灵树赐予你 %s 灵光",
+  "hint.orimod.spirit_tree": "萤：那棵树在发光……去树根看看",
+  "block.orimod.spirit_vine": "灵藤",
+  "commands.orimod.tree.nearest": "最近的灵树树心：%s，距离 %s 格（半径 %s 格，仅搜索已加载区块）。",
+  "commands.orimod.tree.none": "半径 %s 格内的已加载区块中没有找到灵树树心。"
 }

@@ -205,6 +205,19 @@ public final class SpiritFxClient {
                     x += Math.cos(a) * layer.radius(); z += Math.sin(a) * layer.radius(); y += layer.length() * k;
                     vy = layer.outward();
                 }
+                case "gather" -> {
+                    // R100: originate around the root heart and converge on the recipient's chest.
+                    double a = phase + Math.PI * 2 * k;
+                    x += Math.cos(a) * layer.radius(); z += Math.sin(a) * layer.radius();
+                    y += k * layer.length();
+                    if (sourceEntity != null) {
+                        double friction = layer.particle().equals("orimod:spirit_spark") ? SpiritParticle.SPARK_FRICTION : SpiritParticle.MOTE_FRICTION;
+                        double travel = (1 - Math.pow(friction, layer.lifetime())) / (1 - friction);
+                        vx = (sourceEntity.getX() - x) / travel;
+                        vy = (sourceEntity.getY() + sourceEntity.getBbHeight() * .6 - y) / travel;
+                        vz = (sourceEntity.getZ() - z) / travel;
+                    }
+                }
                 default -> {}
             }
             // Same distribution as ServerLevel.sendParticles: gaussian offset and speed, per definition layer.

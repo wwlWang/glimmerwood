@@ -6,6 +6,7 @@ import net.minecraft.client.particle.*;
 
 /** FX02: full-bright spirit light. Motes swell in, glow, then shrink and fade; sparks flash and die fast. */
 public final class SpiritParticle extends TextureSheetParticle {
+    public static final float MOTE_FRICTION = .88f, SPARK_FRICTION = .78f;
     private final SpriteSet sprites;
     private final float startSize;
     private final boolean spark;
@@ -14,7 +15,7 @@ public final class SpiritParticle extends TextureSheetParticle {
         super(level, x, y, z, vx, vy, vz);
         this.sprites = sprites; this.spark = spark;
         this.xd = vx; this.yd = vy; this.zd = vz;      // keep the definition's velocity instead of vanilla's random kick
-        this.friction = spark ? .78f : .88f;
+        this.friction = spark ? SPARK_FRICTION : MOTE_FRICTION;
         this.gravity = spark ? 0 : -.003f;             // motes rise very slightly
         this.lifetime = Math.max(2, Math.round(o.lifetime() * (.8f + random.nextFloat() * .4f)));
         this.startSize = o.size() * (.85f + random.nextFloat() * .3f);

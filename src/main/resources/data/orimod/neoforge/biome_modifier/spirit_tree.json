@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#orimod:has_spirit_tree",
+  "features": "orimod:spirit_tree",
+  "step": "local_modifications"
+}

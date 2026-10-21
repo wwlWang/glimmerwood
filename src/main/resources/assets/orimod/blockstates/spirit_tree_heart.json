@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "bloomed=false": {
+      "model": "orimod:block/spirit_tree_heart"
+    },
+    "bloomed=true": {
+      "model": "orimod:block/spirit_tree_heart_bloomed"
+    }
+  }
+}

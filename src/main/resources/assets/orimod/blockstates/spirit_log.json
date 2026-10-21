@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "orimod:block/spirit_log"
+    },
+    "axis=x": {
+      "model": "orimod:block/spirit_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=z": {
+      "model": "orimod:block/spirit_log",
+      "x": 90
+    }
+  }
+}

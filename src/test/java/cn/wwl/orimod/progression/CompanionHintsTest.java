@@ -15,6 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CompanionHintsTest {
     private static final int SKILLS = Ability.GLIDE.bit | Ability.GRAPPLE.bit;
+    @Test void treeHintFollowsBossAltarAndReachesTwentyFourBlocks() {
+        assertEquals(24, Hint.SPIRIT_TREE.radius);
+        var both = EnumSet.of(Hint.BOSS_ALTAR, Hint.SPIRIT_TREE);
+        assertEquals(Hint.BOSS_ALTAR, CompanionHints.pick(Set.of(), both, 0, 0, Long.MIN_VALUE));
+        assertEquals(Hint.SPIRIT_TREE, CompanionHints.pick(Set.of("boss_altar"), both, 0, 0, Long.MIN_VALUE));
+    }
 
     @Test void seenHintsAreSkippedAndDeclarationOrderWins() {
         var all = EnumSet.allOf(Hint.class);

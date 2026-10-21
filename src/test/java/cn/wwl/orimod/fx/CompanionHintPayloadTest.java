@@ -22,7 +22,7 @@ class CompanionHintPayloadTest {
     @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked"})
     void roundTripLockedVariants(String id) { roundTrip(new CompanionHintPayload(id, Optional.of(BlockPos.ZERO))); }
 
-    @Test void explicitChannelVersion() { assertEquals("1", CompanionHintPayload.VERSION); }
+    @Test void explicitChannelVersion() { assertEquals("2", CompanionHintPayload.VERSION); }
 
     @ParameterizedTest @ValueSource(strings = {"", "unknown", "low_energy_locked", "hint/updraft", "../updraft"})
     void rejectsUnknownIds(String id) { rejected(b -> { b.writeUtf(id); b.writeByte(0); }); }
@@ -31,6 +31,7 @@ class CompanionHintPayloadTest {
     void rejectsNonBooleanPositionFlag(int flag) { rejected(b -> { b.writeUtf("updraft"); b.writeByte(flag); b.writeBlockPos(BlockPos.ZERO); }); }
 
     @Test void rejectsMissingSpatialPosition() { rejected(b -> { b.writeUtf("updraft"); b.writeByte(0); }); }
+    @Test void treeHintRequiresItsHeartPosition() { rejected(b -> { b.writeUtf("spirit_tree"); b.writeByte(0); }); }
     @Test void rejectsPositionOnPersonalHint() { rejected(b -> { b.writeUtf("low_energy"); b.writeByte(1); b.writeBlockPos(BlockPos.ZERO); }); }
     @Test void rejectsOverlongId() { rejected(b -> { b.writeUtf("a".repeat(33)); b.writeByte(0); }); }
     @Test void rejectsTruncatedPosition() { rejected(b -> { b.writeUtf("updraft"); b.writeByte(1); b.writeInt(0); }); }

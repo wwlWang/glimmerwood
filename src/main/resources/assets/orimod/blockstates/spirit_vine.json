@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "tip=false": {
+      "model": "orimod:block/spirit_vine"
+    },
+    "tip=true": {
+      "model": "orimod:block/spirit_vine_tip"
+    }
+  }
+}

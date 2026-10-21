@@ -716,3 +716,297 @@ Expected Stop edge must end the loop once to be 1, but was 0
 最终全量 **734 JUnit / 346 GameTest，零失败、零跳过**；`build`、`compileDevtoolsJava` 和 `git diff --check` 通过。日志和最终 XML 位于 `evidence/flash-lease-build-v001/`（另有 `/tmp/orimod-flash-lease-final.log`）。本轮未启动客户端，未执行 git 写操作；低帧率实际按键松手、净化和音画连续性留待 Claude 复测。
 
 本次增量涉及 9 个文件：`Flash.java`、`ChargeFlame.java`、`SpiritControls.java`、`SpiritProgression.java`、`FlashTest.java`、`FlashGameTests.java`、`ROADMAP_R96.md`、`TESTING.md`、`WORK_STATUS.md`。没有新增网络字段或效果类型，协议版本不变。
+
+## R100：灵树
+
+2026-10-20，R100 前基线为 734 JUnit / 346 GameTest。用户已确认客户端关闭，本轮使用用户目录 JDK 21：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" \
+  ./gradlew build runGameTestServer compileDevtoolsJava --console=plain
+python3 scripts/test-summary.py
+python3 scripts/art/build_spirit_tree_textures.py --check
+python3 scripts/export-spirit-fx.py --check
+git diff --check
+```
+
+最终 **755 JUnit / 361 GameTest，零失败、零跳过**，较基线新增 **21 / 15**；`build`、`compileDevtoolsJava`、五张纹理复现检查、19 项 FX 导出检查和 `git diff --check` 通过。首轮全量 754 / 359 全过，补遗迹留距和真实斜坡后 755 / 360 全过，交付轮另加树冠空腔障碍回归。日志与最终 XML 保存在 `evidence/r100-build-v001/`（不入库），原日志为 `/tmp/orimod-r100-{unit,full,final,delivery}.log`。没有启动客户端、没有执行 git 写操作或运行 `check-ruins.py`，遗迹资源未改。
+
+测试覆盖：
+
+- `SpiritTreeTest`：完整 14 技能领取顺序；全部 16,384 种现有技能掩码下的前置、最低价与并列枚举优先级；未知位、全满与 100 灵光常量；新树心记录和旧奖励/碎片字段一起 codec 往返。
+- `SpiritTreeFeatureTest`：25 点地形采样的 3/4 格边界、湿地拒绝、64 种可替换条件组合；64 个位置的确定性/树形差异、主干高度/枝根数/水平范围、冠叶与藤、3×3×3 入口；木材面相连和藤的上方支撑；worldgen JSON 频率/群系/阶段；灵树 14 格遗迹保护边界且原版树 12 格规则不变。
+- 新增 14 项 `spirit_tree.*` GameTest：通过注册的 configured feature 放置平地大树；3 格高差下根部和入口接地；冠叶位置石块、冠内空腔石块、湿地、4 格高差、入口箱子均拒绝且整个 31×35×31 场地逐块不变；正式右键免费学习且同树不可重复、未觉醒/人形拒绝、全技能给 100 灵光、不同树各一次/不同玩家可领取已开花树；剪刀掉叶/无工具不掉、木头掉落、树心无掉落与方块物品存在；23 格树心提示实际发包、25 格不提示、已读不再发送。
+- 祝福回归核对新 FX 包数量、来源玩家与树心起点；已有 FX 路由参数化新增 `TREE_BLESSING`。FX 协议 **7**，新增编号 **18**；未知编号从 18 顺延到 19，拒绝将祝福解码成持续 START。提示协议 **2**，新 ID 正常往返且缺少坐标时拒绝；旧未知 ID / 坐标范围 / 截断 / 可选标志拒绝测试继续通过。中英文提示均覆盖并保持同伴口吻、中文不超过 30 字。
+
+首轮唯一失败原文：
+
+```text
+OriginalTexturesTest > modelsUseOnlyOriginalTexturesThatExist() FAILED
+.../src/main/resources/assets/orimod/textures/block/spirit_log_top.png ==> expected: <16> but was: <32>
+754 tests completed, 1 failed
+```
+
+原因是首版纹理生成器输出 32×32，不符合 R76 的全局原创纹理契约。改为在 32 单位绘图网格上采样输出 16×16，重新生成五张 PNG；没有修改或放宽原测试。最终无构建/GameTest 失败。
+
+实现取舍与验收边界：
+
+- 方案的“中心 ±14 格”解释为水平方向，才能同时满足主干 16–22 格高度；顶部椭球叶冠可高于主干，最大计划高度 <30 格。位置种子生成弯曲干、板根、分层斜枝、多团空心缺口冠及悬藤，完整描述在 WORK_STATUS 顶部。预检包含树冠完整椭球范围（即使实际树叶留了孔洞），防止硬障碍藏在空腔中。
+- 中心 5×5 的最高干燥实心地面决定基座 Y；在允许高差内以木根补足地面到基座的落差，入口也有稳固落脚点。脚下日志/叶片/方块实体不作为自然地基；检查完整后才写入。天然灵树显式复用 `RuinVegetationGuard`，因为原版 TreeFeature 的 mixin 不会自动覆盖自定义 Feature。
+- `rarity_filter.chance=220` 是合格群系每区块的尝试率。220×16×16=56,320 平方格/次，平方根约 237 格是名义网格间距，不是平均最近邻距离，也不是成功成树率；预检与遗迹避让会进一步降低实际密度。森林/针叶林标签加平原、向日葵平原、草甸、樱花林；不含繁茂洞穴。
+- 叶片为不衰减的普通 Block，使用 LEAVES 标签、剪刀掉落表和带透明孔隙的 cutout_mipped 叶面；不引入树叶随机衰减。BLOOMED 不改变已经为 15 的世界光照，改用更白的核心纹理与花瓣状微粒。
+- 新 hint ID 虽未改变载荷字段，旧客户端严格校验 ID，会拒绝 `spirit_tree`，因此提示通道也升到 2。提示未读时将扫描范围扩到 24 格，继续只访问已加载区块并按区段调色板筛选；其他提示各自半径和顺序保持不变。已读后退回原 10 格范围。
+- 奖励保存在已有 rewards，不改存档字段；满技能灵光赠送遵守原货币上限。所有方块有创造物品；树心按坐标识别站点，适合命令/创造测试。地图石/地图碎片联动与 `/locate` 本轮未做，后续可选。
+
+验收命令：在干燥开阔平地 `/place feature orimod:spirit_tree ~ ~ ~`；中心北侧 2 格处是树心。`/ori awaken`、`/ori form on` 后空手右键，`/ori status` / devtools `progress_state` 核对能力与成长，`inspect_block` 核对 `bloomed`；`/ori hints reset` 重测提示。多棵中心至少隔 32 格，固定平台示例见 DEVELOPMENT。没有添加绕过检查的 `/ori tree place`，现有原版命令已能通过平地放置。
+
+**未实机验证：** 树形轮廓、板根/斜枝/多冠的观感、叶片透明与原版浆果藤搭配、昼夜发光纹路、祝福光柱/汇聚/声音、自然新世界的成功率与地形适配、Iris/硬件 GPU。自动测试不替代这些视觉与自然生成验收。R100 完成后停止，不进入 R101/R102。
+
+改动文件清单（58 个；不含既有 AgentBridge 文件与忽略的测试证据）：
+
+```text
+art/source/effects/spirit/tree_blessing.json
+docs/DEVELOPMENT.md
+docs/ORI_PARITY.md
+docs/TESTING.md
+docs/WORK_STATUS.md
+scripts/art/build_spirit_tree_textures.py
+scripts/export-spirit-fx.py
+src/gametest/java/cn/wwl/orimod/gametest/SpiritTreeGameTests.java
+src/main/java/cn/wwl/orimod/block/OriBlocks.java
+src/main/java/cn/wwl/orimod/block/SpiritTreeHeartBlock.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritFxClient.java
+src/main/java/cn/wwl/orimod/client/fx/SpiritParticle.java
+src/main/java/cn/wwl/orimod/fx/SpiritFxDefinition.java
+src/main/java/cn/wwl/orimod/fx/SpiritFxKind.java
+src/main/java/cn/wwl/orimod/fx/SpiritSoundCue.java
+src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java
+src/main/java/cn/wwl/orimod/network/SpiritFxPayload.java
+src/main/java/cn/wwl/orimod/progression/CompanionHints.java
+src/main/java/cn/wwl/orimod/progression/SpiritTree.java
+src/main/java/cn/wwl/orimod/world/OriWorldgen.java
+src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeFeature.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeShape.java
+src/main/resources/assets/orimod/blockstates/spirit_leaves.json
+src/main/resources/assets/orimod/blockstates/spirit_log.json
+src/main/resources/assets/orimod/blockstates/spirit_tree_heart.json
+src/main/resources/assets/orimod/lang/en_us.json
+src/main/resources/assets/orimod/lang/zh_cn.json
+src/main/resources/assets/orimod/models/block/spirit_leaves.json
+src/main/resources/assets/orimod/models/block/spirit_log.json
+src/main/resources/assets/orimod/models/block/spirit_tree_heart.json
+src/main/resources/assets/orimod/models/block/spirit_tree_heart_bloomed.json
+src/main/resources/assets/orimod/models/item/spirit_leaves.json
+src/main/resources/assets/orimod/models/item/spirit_log.json
+src/main/resources/assets/orimod/models/item/spirit_tree_heart.json
+src/main/resources/assets/orimod/spirit_fx/tree_blessing.json
+src/main/resources/assets/orimod/textures/block/spirit_leaves.png
+src/main/resources/assets/orimod/textures/block/spirit_log.png
+src/main/resources/assets/orimod/textures/block/spirit_log_top.png
+src/main/resources/assets/orimod/textures/block/spirit_tree_heart.png
+src/main/resources/assets/orimod/textures/block/spirit_tree_heart_bloomed.png
+src/main/resources/data/minecraft/tags/block/leaves.json
+src/main/resources/data/minecraft/tags/block/logs.json
+src/main/resources/data/minecraft/tags/block/logs_that_burn.json
+src/main/resources/data/minecraft/tags/block/mineable/axe.json
+src/main/resources/data/minecraft/tags/block/mineable/hoe.json
+src/main/resources/data/orimod/loot_table/blocks/spirit_leaves.json
+src/main/resources/data/orimod/loot_table/blocks/spirit_log.json
+src/main/resources/data/orimod/neoforge/biome_modifier/spirit_tree.json
+src/main/resources/data/orimod/tags/worldgen/biome/has_spirit_tree.json
+src/main/resources/data/orimod/worldgen/configured_feature/spirit_tree.json
+src/main/resources/data/orimod/worldgen/placed_feature/spirit_tree.json
+src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java
+src/test/java/cn/wwl/orimod/fx/FxBudgetTest.java
+src/test/java/cn/wwl/orimod/fx/SpiritFxPayloadTest.java
+src/test/java/cn/wwl/orimod/progression/CompanionHintsTest.java
+src/test/java/cn/wwl/orimod/progression/SpiritTreeTest.java
+src/test/java/cn/wwl/orimod/world/SpiritTreeFeatureTest.java
+```
+
+
+## R100：外观返工
+
+2026-10-20。Claude 已确认首版功能 5/5 通过，截图暴露柱状主干、伞形冠、暖色浆果藤和夜间自发光不足。本轮在客户端关闭后执行；首版基线 755 JUnit / 361 GameTest。
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" \
+  ./gradlew build runGameTestServer compileDevtoolsJava --console=plain
+python3 scripts/test-summary.py
+python3 scripts/art/build_spirit_tree_textures.py --check
+git diff --check
+```
+
+最终 `build runGameTestServer compileDevtoolsJava` **通过：759 JUnit / 369 GameTest，零失败、零跳过**。新增 4 JUnit / 8 GameTest，`spirit_tree.*` 现为 22 项。七张纹理复现检查通过。本轮不启动客户端、不运行 check-ruins.py、不做 git 写操作；客户端树形、昼夜与 Sodium/Iris 实际渲染留待审查统计后复验。
+
+新增与更新覆盖：
+
+- 64 个位置种子的冠叶跨层≥6、主干底截面≥中段×2、最大水平冠半径在 8–11 之间、较大冠幅/树高≥0.9、冠中心高于外缘；整棵非空气方块六邻接连通，所有藤格不在 crownSpace 中且上方有支撑；已有 ±14、3×3×3 壁龛与树心入口检查保持。
+- 灵叶、藤身/藤尖的渲染层及透明孔隙/冷色纹理检查；灵叶的 minecraft:leaves 标签。真实 Feature 测试改为确认自定义灵藤可存活、无 BERRIES、无原版洞穴藤。
+- GameTest：悬挂在灵叶下存活、藤下接藤、TIP 随增减更新、移除上方支撑整段脱落、不随机生长；剪刀/精准采集掉自身、其他工具不掉；叶片/藤两状态/树心两状态的 emissiveRendering 为 true、树皮为 false。
+- GameTest：负坐标跨区块的三维最近距离选择；半径 1、1024 的恰好边界与越界 0.01 格；非法半径 -1/0/1025/Integer.MAX_VALUE 拒绝；远处未加载区块扫描前后 getChunkNow 仍为空、加载区块总数不变；命令默认/最小/最大半径成功、找到/未找到翻译反馈、距离、入口传送 y 与参数边界。
+- `SpiritTreeShapeReportTest` 直接调用生产 Java 函数生成五个固定位置种子的完整逐层面积和侧视图，产物 `build/reports/spirit-tree-shapes.md`；证据副本 `evidence/r100-rework-v001/shapes.md`。主干面积只算最初弯干，排除板根、斜枝和替换为树心的一格；全树面积包含木、叶、藤、树心，排除壁龛 AIR。每棵高度为最高占用 y+1，侧视沿 Z 投影到 XY，不是透视图。
+
+中间失败原文（最终均已修复）：
+
+```text
+Tree is too tall for its crown: 32 ==> expected: <true> but was: <false>
+Disconnected shape at seed 0: [BlockPos{x=8, y=14, z=-2}, BlockPos{x=8, y=12, z=-2}]
+Disconnected wood: [BlockPos{x=0, y=0, z=-6}]
+Dome centre does not rise above rim: 63 ==> expected: <true> but was: <false>
+Tree is too tall for its crown: 18 ==> expected: <true> but was: <false>
+Tree is too tall for its crown: 32 width 19/19 height 22 ==> expected: <true> but was: <false>
+class net.minecraft.network.chat.contents.PlainTextContents$1 cannot be cast to class net.minecraft.network.chat.contents.TranslatableContents
+```
+
+前三类几何原因分别是外围冠太窄/随机缺口削掉宽肩、疏叶产生孤点、加长板根被入口切断。修正为半径 5 的外围冠、保留冠中部宽肩并限制下部缺口、外冠与肩冠低于中心、六邻接清理孤立块；所有形状断言未放宽。命令失败是测试夹具直接把 sendFailure 返回的红色空组件包装强转为翻译内容，改读其第一个子组件；命令行为不改。
+
+兼容性核对：锁定的 Sodium 0.6.13 在 [LightDataAccess](https://github.com/CaffeineMC/sodium/blob/mc1.21.1-0.6.13/common/src/main/java/net/caffeinemc/mods/sodium/client/model/light/data/LightDataAccess.java) 读取 BlockState.emissiveRendering，并在满亮度分支返回 LightTexture.FULL_BRIGHT；本地 jar 的 FlatLightPipeline 字节码也确认处理该标志。这条光照路径与 cutout/cutout_mipped 的透明层选择独立。原版 LevelRenderer.getLightColor 同样读取 emissiveRendering；hasPostProcess 的调用者是 WorldGenRegion.setBlock，用于标记世界生成后的邻接处理，不是 Bloom 开关。这里只确认代码路径与资源契约，未声称 GPU/Sodium/Iris 实机验收通过。
+
+取舍：悬藤固定长度、不生长、无浆果，以保持树形和全树冷色；新增资源不迁移旧世界里的原版浆果藤。形状整体改为宽冠锥形干，位置种子和 ±14 写入约束保持；不同种子的叶量和缺口会变。树心赠送规则、站点键、整棵预检、自然生成尝试率 1/220 和协议均保持。寻树仅针对已加载区块中的所有树心，不区分人工放置与自然生成，不参与地图石指引。
+
+五个固定位置种子的统计（含坐标所派生的实际 PRNG seed、每个 y 层主干/全树截面积与五张侧视投影）见 `build/reports/spirit-tree-shapes.md` / `evidence/r100-rework-v001/shapes.md`。下面冠幅为占用方块列数，冠底/顶 y 相对基座；高度为最高占用层+1。
+
+| 基座坐标 | 树高 / 主干高 | 冠幅 X×Z | 冠底 / 顶 y | 木 / 叶 / 藤 |
+| --- | ---: | ---: | ---: | ---: |
+| (0, 70, 0) | 20 / 17 | 21×23 | 9 / 19 | 374 / 1302 / 72 |
+| (3000, 120, 3000) | 21 / 17 | 21×21 | 9 / 20 | 335 / 1112 / 70 |
+| (2986, 120, 3000) | 21 / 17 | 21×21 | 9 / 20 | 340 / 1160 / 69 |
+| (-1015, 70, -115) | 20 / 16 | 21×21 | 9 / 19 | 325 / 1124 / 74 |
+| (1200, 80, -300) | 22 / 18 | 21×20 | 11 / 21 | 334 / 1061 / 66 |
+
+所有样本主干截面积：y0 为 24（另有树心 1 格），y1–2 为 25，y3–4 为 21，y5–9 为 9，y10 至主干顶为 4，其上为 0；全树面积逐层不同，见完整统计。首棵侧视图（沿 Z 压缩；# 木、* 叶、| 藤、H 树心，木优先于叶显示）：
+
+```text
+19             ******
+18         *  *********
+17      ****************
+16     *********###********
+15     *******#####*#*******
+14     ********######*******
+13     ****##**#####********
+12     *****##*#####***#****
+11      *****#######*###****
+10       | *|#########*****
+09       | |||########|*  |
+08       | ||| ###### ||  |
+07       | | | |####  ||  |
+06       | |    ###    |  |
+05              ###    |  |
+04             #####
+03             #####
+02            #######
+01           ########
+00          #####H#####
+   -14           0            14
+```
+
+
+相对首版，本次新增/修改的文件：
+
+```text
+docs/WORK_STATUS.md
+docs/TESTING.md
+docs/DEVELOPMENT.md
+docs/ORI_PARITY.md
+scripts/art/build_spirit_tree_textures.py
+src/main/java/cn/wwl/orimod/block/OriBlocks.java
+src/main/java/cn/wwl/orimod/block/SpiritVineBlock.java
+src/main/java/cn/wwl/orimod/command/OriCommands.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeShape.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeFeature.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeSearch.java
+src/main/resources/assets/orimod/blockstates/spirit_vine.json
+src/main/resources/assets/orimod/models/block/spirit_vine.json
+src/main/resources/assets/orimod/models/block/spirit_vine_tip.json
+src/main/resources/assets/orimod/models/item/spirit_vine.json
+src/main/resources/assets/orimod/textures/block/spirit_vine.png
+src/main/resources/assets/orimod/textures/block/spirit_vine_tip.png
+src/main/resources/assets/orimod/lang/en_us.json
+src/main/resources/assets/orimod/lang/zh_cn.json
+src/main/resources/data/orimod/loot_table/blocks/spirit_vine.json
+src/test/java/cn/wwl/orimod/world/SpiritTreeFeatureTest.java
+src/test/java/cn/wwl/orimod/world/SpiritTreeShapeReportTest.java
+src/gametest/java/cn/wwl/orimod/gametest/SpiritTreeGameTests.java
+```
+
+## R100：冠底回归、只读诊断与提前生成
+
+2026-10-20。客户端复验已通过自发光、cutout、冷色固定悬藤、主干锥度及 nearest 命令；外围冠底平整的问题另行修订。当前最终 `build runGameTestServer compileDevtoolsJava` **762 JUnit / 375 GameTest，零失败、零跳过**；较上一轮 759/369 新增 3 JUnit / 6 GameTest。七张纹理 `--check` 通过。无 git 写操作，不运行 check-ruins.py，不进入 R101/R102。
+
+外围冠中心去掉 `min(height-4, ...)` 高度封顶，三枝偏移 -2/0/+2，四枝 -3/+1/-1/+3，首尾也至少相差 2；所有冠团下半径比上半径大 1。保留冠高、锥度、宽高比、半径、±14、六邻接连通、入口、悬藤避开完整 crownSpace 的原约束。全冠最低叶片 y 的极差≥4且众数≤35%，外圈半径≥6再要求众数≤30%。
+
+旧形状替换验证均在 finally 中恢复生产文件：
+- 原 64 个种子有 **17/64** 被全冠 35% 检测拒绝，旧最大 41.23%，新版最大 24.72%。
+- 截图基座 `(3000,120,3000)` **会漏过全冠规则**：旧 65/266=24.44%，极差 9。新增外圈规则锁住这例：旧 50/157=31.85%，极差 6；新版 38/158=24.05%，极差 10。新形状 64 个种子外圈最高 23.57%。没有放宽规则让旧版通过。
+- 单独把生产形状恢复为旧版运行新截图回归，1 test / 1 failed；原文：
+
+```text
+org.opentest4j.AssertionFailedError: More than 30% of outer columns share one bottom at BlockPos{x=3000, y=120, z=3000}: {9=2, 10=50, 11=32, 12=40, 13=22, 14=8, 15=3} ==> expected: <true> but was: <false>
+```
+
+原始失败日志和新旧统计：`evidence/r100-crown-underside-v001/old-screenshot-regression.log`、`old-flat-regression.log`、`old-rim-shapes.md`、`spirit-tree-shapes.md`、`spirit-tree-undersides.csv`。完整五棵逐 y 层主干/全树截面积、最低叶片分布、XY 侧视投影同步生成在 `build/reports/spirit-tree-shapes.md`。树形数据来自生产 Java 函数；主干面积排除板根/斜枝/树心，全树排除 AIR。
+
+| 基座 | 树高/干高 | 冠幅 X×Z | 冠底/顶 y | 木/叶/藤 | 外圈众数 |
+|---|---:|---:|---:|---:|---:|
+| 0,70,0 | 21/17 | 22×22 | 7/20 | 372/1375/77 | 17.87% |
+| 3000,120,3000 | 21/17 | 21×21 | 7/20 | 336/1182/70 | 24.05% |
+| 2986,120,3000 | 21/17 | 22×21 | 7/20 | 343/1204/72 | 22.36% |
+| -1015,70,-115 | 20/16 | 21×21 | 7/19 | 320/1164/62 | 20.99% |
+| 1200,80,-300 | 22/18 | 21×21 | 9/21 | 330/1179/73 | 18.99% |
+
+预检重构保留原有通过/拒绝规则、判断顺序和写入顺序，仅拆出 `Reason` / `Preflight`；拒绝计划不带部分 writes。GameTest 同时核对平地通过、冠部石块/空腔/原木、水地基、4 格起伏、入口箱子、根部水/落差和构建上限，并比较整片场地未被预检改动；加载检查不生成远处区块。探针类只在 devtools source set，正式 JAR 不含它；支持区域/网格、原因和群系直方图、首个阻挡状态、现存树心标记、全区域调色板树心普查。开发脚本 `probe-spirit-trees.py` 只调用只读动作。
+
+seed 100100 的验收存档复制到 `orimod_dev_r100probe` 后检查；原存档 69 个文件 SHA-256 保持一致。64 点网格 x/z=-224..224、间隔64：6 个合格群系点；整个网格 NOT_DRY=63、FOOT_BLOCKED=1，其中2个是之前人工树造成的灵叶高度图污染。5个未人工放树的合格点为4个原木地基拒绝和1个补根撞原木，尚未进入冠部净空阶段。第一次只读扫描记录47个UNLOADED；之后在副本中独立 forceload 四象限，探针本身不加票、不加载。
+
+同区域间隔32的256点中仅统计**29个合格群系点**：
+
+| 分类 | 数量 | 判据 |
+|---|---:|---|
+| 原版原木 | 13 | 首个拒绝方块为原版橡木/白桦原木，横跨地基、补根和净空阶段 |
+| 水 | 3 | 首个拒绝方块为水 |
+| 起伏 | 2 | RELIEF |
+| 其他 | 6 | FOOT_UNGROUNDED=4、CLEARANCE_OTHER=1、补根撞到虞美人=1 |
+| 通过 | 5 | OK |
+
+按群系：forest 12点（NOT_DRY3、FOOT_BLOCKED3、FOOT_UNGROUNDED2、CLEARANCE_LOG1、RELIEF1、OK2）；birch_forest 17点（NOT_DRY8、FOOT_UNGROUNDED2、CLEARANCE_LOG2、CLEARANCE_OTHER1、RELIEF1、OK3）。原始近树标记保留，32格内已有人工树的点不能当独立未经改动样本。加载数前后3364→3364；64点22.49ms、256点114.55ms。资料：`evidence/r100-preflight-loaded-v001/results.json`、`r100-preflight-dense-v001/results.json`、`r100-preflight-v001/eligible-summary.json`。
+
+按 Claude 决定，biome_modifier 改为 **local_modifications**，稀有度220/起伏3/不替换原木保持。数据测试锁住阶段。核对 NeoForge 21.1.248 的 MC 1.21.1 源码：
+- `VegetationPlacements.treePlacementBase` 用 OCEAN_FLOOR；有些外层 placement 带 would_survive，有些在 `TreePlacements.*_CHECKED` 内层过滤。冠顶灵叶能阻挡高度图，但不是树苗地基；新增 GameTest 真实放树后验证冠顶高度、四种树苗不存活及六个 vanilla checked placed feature 拒绝且不改方块。冠洞/冠外列的原版树与冠缘少量叶替换仍可能发生，未宣称全面排斥。
+- `ChunkGenerator.applyBiomeDecoration` 按阶段顺序装饰当前区块，邻块没有全局阶段屏障；先前已装饰邻块的原木仍可能阻挡。
+- 遗迹 JSON 实际是 **top_layer_modification**，不是 surface_structures。`RuinStructure` 在早期 STRUCTURE_STARTS 用基础地形样本确定模板+入口 pieces；`StructureStart.getBoundingBox` 合并两者，`RuinVegetationGuard` 在 WorldGenRegion 读取该不可变范围并外扩14。模板及入口的清冠在同一水平范围内，提前生成的灵树仍被此保护排除，不会被后来遗迹切开/埋掉。无需改遗迹资源。
+
+探针是装饰完成后 ServerLevel 的 `/place feature` 预检，不运行 WorldGenRegion 专用 RUIN_GUARD，也不能把此时的通过率当作 local_modifications 阶段的天然成功率。自然数量另在新世界普查，不用后装饰预检率外推。
+
+本次增量文件：
+
+```text
+src/main/java/cn/wwl/orimod/world/SpiritTreeShape.java
+src/main/java/cn/wwl/orimod/world/SpiritTreeFeature.java
+src/main/resources/data/orimod/neoforge/biome_modifier/spirit_tree.json
+src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java
+src/devtools/java/cn/wwl/orimod/devtools/SpiritTreeProbe.java
+src/gametest/java/cn/wwl/orimod/gametest/SpiritTreeGameTests.java
+src/test/java/cn/wwl/orimod/world/SpiritTreeFeatureTest.java
+src/test/java/cn/wwl/orimod/world/SpiritTreeShapeMetrics.java
+src/test/java/cn/wwl/orimod/world/SpiritTreeShapeReportTest.java
+scripts/devtools_client.py
+scripts/probe-spirit-trees.py
+docs/WORK_STATUS.md
+docs/TESTING.md
+docs/DEVELOPMENT.md
+docs/ORI_PARITY.md
+```
+
+提前生成的新世界实测（`orimod_dev_r100early100101`，seed **100101**，标准 llvmpipe / `DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority` 启动，GL4.6已核对）：
+
+- 新世界未运行任何放树命令。四条 forceload 加载 x/z=-256..255，共1024个目标区块；第一条因生成超过command桥的10秒观察期限而返回 TimeoutException，随后查询确认已添加，未重复执行。其余三条各返回256。
+- 内网格 x/z=-240..240、step32，所有256点的完整±14 footprint都已加载：这些 footprint 覆盖全部目标32×32区块。另对完整512×512矩形按区段调色板逐格普查树心，**3棵**：`(-108,110,-250)`、`(-69,109,-237)`、`(57,72,-11)`。
+- `execute positioned 0 100 0 run ori tree nearest 1024` 返回1；对每颗树心中心执行半径1查询也各返回1。没有用 success=true 误判。
+- 该新世界后装饰网格153个点属于灵树群系；预检NOT_DRY96、RELIEF22、FOOT_BLOCKED9、FOOT_UNGROUNDED8、CLEARANCE_LOG2、CLEARANCE_OTHER13、OK3。它记录已经长完原版植被的状态，不能用来反推提前生成成功率。前一seed的群系覆盖不同，也不能把0与3视为控制变量实验。
+- 网格探针202.61ms、全矩形普查动作56.90ms，加载数均3364→3364。资料：`evidence/r100-early-density-v002/results.json`（网格、普查、命令返回码和加载票据），`evidence/r100-preflight-v001/local-modifications-full.log`（全量），`checks.json`（原验收世界69文件哈希不变及JAR检查）。
+- **最终实拍验收通过（Claude）：** 三棵自然树正常；冠底不再连成直线，冠顶收圆；白桦林中入口仍可通行；夜景发光良好。证据 `evidence/r100-rework-natural-v001/`。前序自发光/cutout/灵藤/锥度通过记录在 `r100-rework-accept-v001/`、`r100-rework-accept-v002/`；旧自然密度和放置率在 `r100-rework-density-v001/`、`r100-rework-acceptance-rate-v001/`。没有从一次512×512样本断言长期自然密度。
+- 按 `forceload remove all` → `leave_world` → `quit` 关闭客户端。remove all 原版实现固定返回0，不能据此误判失败；关闭后读取新世界 `data/chunks.dat`，Forced 列表确认为空。关闭记录 `evidence/r100-final-close-v001/results.json`。客户端/图形操作统一 llvmpipe + `DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority`；最后只跑差异格式与纹理复现检查，代码未改，不重跑全量。
+
+最终交付文件清单见 `evidence/r100-preflight-v001/changed-files.txt`（74个Codex累计R100文件；排除AgentBridge/AGENTS/CLAUDE和Claude维护的验收脚本）。Claude另将 `scripts/verify-r100-rework.py` 纳入提交，提交操作由Claude完成。

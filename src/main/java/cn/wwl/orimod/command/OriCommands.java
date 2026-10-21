@@ -11,6 +11,7 @@ import cn.wwl.orimod.spirit.SpiritData;
 import cn.wwl.orimod.spirit.SpiritForm;
 import cn.wwl.orimod.world.OriEntities;
 import cn.wwl.orimod.world.RuinKind;
+import cn.wwl.orimod.world.SpiritTreeSearch;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -63,6 +64,10 @@ public final class OriCommands {
                                 .executes(c -> unlock(c, java.util.List.of(c.getSource().getPlayerOrException())))
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
+                .then(Commands.literal("tree").then(Commands.literal("nearest")
+                        .executes(c -> nearestTree(c, SpiritTreeSearch.DEFAULT_RADIUS))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, SpiritTreeSearch.MAX_RADIUS))
+                                .executes(c -> nearestTree(c, IntegerArgumentType.getInteger(c, "radius"))))))
                 .then(Commands.literal("hints")
                         .then(players("reset", cn.wwl.orimod.progression.CompanionHints::reset))
                         .then(players("list", p -> {
@@ -184,6 +189,24 @@ public final class OriCommands {
         if (java.util.Arrays.stream(RuinKind.values()).noneMatch(k -> k.id.equals(id))) throw UNKNOWN.create(id);
         // Same search, distance report and clickable teleport as vanilla /locate.
         c.getSource().getServer().getCommands().performPrefixedCommand(c.getSource(), "locate structure orimod:" + id);
+        return 1;
+    }
+
+    private static int nearestTree(CommandContext<CommandSourceStack> c, int radius) {
+        var source = c.getSource();
+        var found = SpiritTreeSearch.nearest(source.getLevel(), source.getPosition(), radius);
+        if (found.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.orimod.tree.none", radius));
+            return 0;
+        }
+        var p = found.orElseThrow();
+        var coords = Component.literal("[" + p.getX() + ", " + p.getY() + ", " + p.getZ() + "]")
+                .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.AQUA)
+                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(
+                                net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND,
+                                "/tp @s " + p.getX() + " " + p.getY() + " " + (p.getZ() - 3))));
+        String distance = String.format(java.util.Locale.ROOT, "%.1f", Math.sqrt(p.distToCenterSqr(source.getPosition())));
+        source.sendSuccess(() -> Component.translatable("commands.orimod.tree.nearest", coords, distance, radius), false);
         return 1;
     }
 

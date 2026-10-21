@@ -15,7 +15,7 @@ import java.util.Locale;
  * source's motion, tapering), {@code column} (rising pillar), {@code beam} (R37: from the source's shoulder to the burst point). Spirit particles take colour, size and lifetime.
  */
 public record SpiritFxDefinition(SpiritFxKind kind, List<Layer> layers) {
-    public static final List<String> SHAPES = List.of("burst", "ring", "arc", "line", "column", "beam");
+    public static final List<String> SHAPES = List.of("burst", "ring", "arc", "line", "column", "beam", "gather");
 
     public record Layer(String particle, double share, double spreadX, double spreadY, double spreadZ, double speed,
                         String shape, double radius, double length, double outward, int rgb, float size, int lifetime) {

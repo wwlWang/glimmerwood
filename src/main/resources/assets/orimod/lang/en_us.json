@@ -351,5 +351,16 @@
   "shard.orimod.sticky": "Sticky",
   "shard.orimod.sticky.description": "Wall descent is capped at 35% of normal speed. Press toward the wall to hang without energy cost. With Climb learned, forward still climbs upward.",
   "screen.orimod.fourth_slot": "Learn 10 abilities to unlock slot 4 (%s/10).",
-  "screen.orimod.fourth_slot_unlocked": "The fourth shard slot is unlocked."
+  "screen.orimod.fourth_slot_unlocked": "The fourth shard slot is unlocked.",
+  "block.orimod.spirit_log": "Spirit Log",
+  "block.orimod.spirit_leaves": "Spirit Leaves",
+  "block.orimod.spirit_tree_heart": "Spirit Tree Heart",
+  "message.orimod.tree.dormant": "The tree sleeps. Return in spirit form.",
+  "message.orimod.tree.taken": "This spirit tree has already shared its light with you.",
+  "message.orimod.tree.skill": "The spirit tree grants you: %s",
+  "message.orimod.tree.light": "The spirit tree grants you %s Spirit Light.",
+  "hint.orimod.spirit_tree": "Glimmer: That tree is glowing... Let’s look by its roots.",
+  "block.orimod.spirit_vine": "Spirit Vine",
+  "commands.orimod.tree.nearest": "Nearest spirit tree heart: %s, %s blocks away (radius %s; loaded chunks only).",
+  "commands.orimod.tree.none": "No spirit tree heart found in loaded chunks within %s blocks."
 }

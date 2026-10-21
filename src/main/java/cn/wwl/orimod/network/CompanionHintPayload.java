@@ -11,9 +11,9 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.Optional;
 
-/** R97: server-selected Glimmer guidance. Version 1 uses a bounded, validated id and a strict optional position. */
+/** R97/R100: server-selected Glimmer guidance. Version 2 adds spirit_tree to the strictly validated ids. */
 public record CompanionHintPayload(String id, Optional<BlockPos> pos) implements CustomPacketPayload {
-    public static final String VERSION = "1";
+    public static final String VERSION = "2";
     public static final int MAX_ID_LENGTH = 32, WORLD_LIMIT = 30_000_000;
     public static final Type<CompanionHintPayload> TYPE = new Type<>(ResourceLocation.parse("orimod:companion_hint"));
     public static final StreamCodec<RegistryFriendlyByteBuf, CompanionHintPayload> CODEC = StreamCodec.of(

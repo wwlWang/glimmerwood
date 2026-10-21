@@ -11,6 +11,20 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class OriBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(OriMod.MOD_ID);
+    /** R100: original luminous spirit wood, permanent foliage and a per-player blessing heart. */
+    public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SPIRIT_LOG = BLOCKS.register("spirit_log",
+            () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2).lightLevel(s -> 4).sound(SoundType.WOOD)));
+    public static final DeferredBlock<Block> SPIRIT_LEAVES = BLOCKS.registerSimpleBlock("spirit_leaves", BlockBehaviour.Properties.of()
+            .strength(.2f).noOcclusion().lightLevel(s -> 9).sound(SoundType.AZALEA_LEAVES)
+            .emissiveRendering((s, l, p) -> true)
+            .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false));
+    public static final DeferredBlock<SpiritVineBlock> SPIRIT_VINE = BLOCKS.register("spirit_vine",
+            () -> new SpiritVineBlock(BlockBehaviour.Properties.of().instabreak().noCollission().noOcclusion()
+                    .lightLevel(s -> 10).sound(SoundType.CAVE_VINES).emissiveRendering((s, l, p) -> true)));
+    public static final DeferredBlock<SpiritTreeHeartBlock> SPIRIT_TREE_HEART = BLOCKS.register("spirit_tree_heart",
+            () -> new SpiritTreeHeartBlock(BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable()
+                    .lightLevel(s -> 15).sound(SoundType.AMETHYST).emissiveRendering((s, l, p) -> true)));
     /** R96: keep the original registry id so existing ruins and player-built Bash routes remain valid. */
     public static final DeferredBlock<SpiritLanternBlock> BASH_ANCHOR = BLOCKS.register("bash_anchor", () -> new SpiritLanternBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> SpiritLanternBlock.lightLevel(state.getValue(SpiritLanternBlock.LIT)))
@@ -62,7 +76,8 @@ public final class OriBlocks {
         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
-                GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE))
+                GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
+                SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

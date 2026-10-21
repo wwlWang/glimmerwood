@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "kind": "tree_blessing",
+  "layers": [
+    {
+      "color": "#e5faff",
+      "length": 4,
+      "lifetime": 30,
+      "outward": 0.025,
+      "particle": "orimod:spirit_spark",
+      "radius": 0.2,
+      "shape": "column",
+      "share": 0.55,
+      "size": 0.3,
+      "speed": 0.002,
+      "spread": [
+        0.05,
+        0.05,
+        0.05
+      ]
+    },
+    {
+      "color": "#b9eaff",
+      "length": 2,
+      "lifetime": 30,
+      "particle": "orimod:spirit_mote",
+      "radius": 1.4,
+      "shape": "gather",
+      "share": 0.45,
+      "size": 0.22,
+      "speed": 0,
+      "spread": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

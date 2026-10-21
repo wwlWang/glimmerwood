@@ -10,7 +10,7 @@ src_dir, out_dir = root / 'art/source/effects/spirit', root / 'src/main/resource
 LAYER_KEYS = {'particle', 'share', 'spread', 'speed'}
 # R32 optional shape/look keys (defaults applied by the client when absent)
 OPTIONAL_KEYS = {'shape', 'radius', 'length', 'outward', 'color', 'size', 'lifetime'}
-SHAPES = {'burst', 'ring', 'arc', 'line', 'column', 'beam'}
+SHAPES = {'burst', 'ring', 'arc', 'line', 'column', 'beam', 'gather'}
 import re
 
 def strip(value):

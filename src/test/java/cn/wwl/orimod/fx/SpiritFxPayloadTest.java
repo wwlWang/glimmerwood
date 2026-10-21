@@ -33,9 +33,9 @@ class SpiritFxPayloadTest {
         assertEquals(SpiritFxPhase.BURST, new SpiritFxPayload(SpiritFxKind.DASH, 0, 0, 0, 1).phase());
     }
 
-    @Test void channelVersionBumpedForFlash() { assertEquals("6", SpiritFxPayload.VERSION); }
+    @Test void channelVersionBumpedForTreeBlessing() { assertEquals("7", SpiritFxPayload.VERSION); }
 
-    @ParameterizedTest @ValueSource(ints = {-1, 18, 99})
+    @ParameterizedTest @ValueSource(ints = {-1, 19, 99})
     void unknownKindRejected(int id) {
         assertRejected(buffer -> { buffer.writeVarInt(id); buffer.writeByte(0); body(buffer); });
     }
@@ -47,6 +47,9 @@ class SpiritFxPayloadTest {
 
     @Test void startOnOneShotRejected() {
         assertRejected(buffer -> { buffer.writeVarInt(SpiritFxKind.DASH.wireId()); buffer.writeByte(SpiritFxPhase.START.wireId()); body(buffer); });
+    }
+    @Test void treeBlessingCannotBeUsedAsAPersistentLoop() {
+        assertRejected(buffer -> { buffer.writeVarInt(SpiritFxKind.TREE_BLESSING.wireId()); buffer.writeByte(SpiritFxPhase.START.wireId()); body(buffer); });
     }
 
     private static void body(RegistryFriendlyByteBuf buffer) { buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeVarInt(-1); }

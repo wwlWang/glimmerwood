@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "orimod:block/spirit_log_top",
+    "side": "orimod:block/spirit_log"
+  }
+}

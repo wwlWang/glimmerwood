@@ -28,6 +28,7 @@ public final class CompanionHints {
         UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), GRAPPLE_FLOWER("grapple_flower", 10),
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
+        SPIRIT_TREE("spirit_tree", 24),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
         public final String id;
@@ -122,10 +123,12 @@ public final class CompanionHints {
         if (unseen.isEmpty()) return found;
         var level = player.serverLevel();
         var centre = player.blockPosition();
-        int minX = centre.getX() - RANGE, maxX = centre.getX() + RANGE;
-        int minZ = centre.getZ() - RANGE, maxZ = centre.getZ() + RANGE;
-        int minY = Math.max(level.getMinBuildHeight(), centre.getY() - RANGE);
-        int maxY = Math.min(level.getMaxBuildHeight() - 1, centre.getY() + RANGE);
+        // Only an unseen tree hint expands the loaded-section scan; ordinary hints keep their original radii.
+        int range = unseen.contains(Hint.SPIRIT_TREE) ? Hint.SPIRIT_TREE.radius : RANGE;
+        int minX = centre.getX() - range, maxX = centre.getX() + range;
+        int minZ = centre.getZ() - range, maxZ = centre.getZ() + range;
+        int minY = Math.max(level.getMinBuildHeight(), centre.getY() - range);
+        int maxY = Math.min(level.getMaxBuildHeight() - 1, centre.getY() + range);
         var pos = new BlockPos.MutableBlockPos();
         for (int cx = minX >> 4; cx <= maxX >> 4; cx++) for (int cz = minZ >> 4; cz <= maxZ >> 4; cz++) {
             var chunk = level.getChunkSource().getChunk(cx, cz, ChunkStatus.FULL, false);
@@ -159,6 +162,7 @@ public final class CompanionHints {
         if (state.is(OriBlocks.MAP_STONE.get())) return Hint.MAP_STONE;
         if (state.is(OriBlocks.LIFE_CELL_PEDESTAL.get()) || state.is(OriBlocks.ENERGY_CELL_PEDESTAL.get())) return Hint.CELL_PEDESTAL;
         if (state.is(OriBlocks.GLOOM_ALTAR.get()) || state.is(OriBlocks.STORM_ALTAR.get())) return Hint.BOSS_ALTAR;
+        if (state.is(OriBlocks.SPIRIT_TREE_HEART.get())) return Hint.SPIRIT_TREE;
         return null;
     }
 

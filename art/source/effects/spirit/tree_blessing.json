@@ -1,0 +1,40 @@
+{
+  "format": 1,
+  "kind": "tree_blessing",
+  "notes": "R100: a 30-tick rising root column and motes converging on the recipient. Original spirit particles, no imported art.",
+  "layers": [
+    {
+      "particle": "orimod:spirit_spark",
+      "share": 0.55,
+      "spread": [
+        0.05,
+        0.05,
+        0.05
+      ],
+      "speed": 0.002,
+      "shape": "column",
+      "radius": 0.2,
+      "length": 4,
+      "outward": 0.025,
+      "color": "#e5faff",
+      "size": 0.3,
+      "lifetime": 30
+    },
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 0.45,
+      "spread": [
+        0,
+        0,
+        0
+      ],
+      "speed": 0,
+      "shape": "gather",
+      "radius": 1.4,
+      "length": 2,
+      "color": "#b9eaff",
+      "size": 0.22,
+      "lifetime": 30
+    }
+  ]
+}

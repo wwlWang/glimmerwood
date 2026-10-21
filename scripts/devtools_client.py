@@ -33,7 +33,7 @@ class DevClient:
             headers={'X-Ori-Devtools': self.connection['token'], 'Content-Type': 'application/json'})
         observation = action is None or action['op'] in {
             'ruin_state', 'spirit_state', 'progress_state', 'gui_state',
-            'container_state', 'nearby_entities', 'inspect_block'}
+            'container_state', 'nearby_entities', 'inspect_block', 'spirit_tree_probe'}
         for attempt in range(3):
             try:
                 with urllib.request.urlopen(req, timeout=55) as response:
