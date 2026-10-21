@@ -20,6 +20,11 @@ public final class OriBlocks {
     public static final DeferredBlock<SpiritLightVesselBlock> SPIRIT_LIGHT_VESSEL = BLOCKS.register("spirit_light_vessel",
             () -> new SpiritLightVesselBlock(BlockBehaviour.Properties.of().strength(-1,1200).noLootTable().noOcclusion()
                     .lightLevel(s -> 10).sound(SoundType.AMETHYST)));
+    public static final DeferredBlock<SpiritPlatformBlock> SPIRIT_PLATFORM = BLOCKS.register("spirit_platform",
+            () -> new SpiritPlatformBlock(BlockBehaviour.Properties.of().strength(2).noOcclusion().dynamicShape()
+                    .lightLevel(SpiritPlatformBlock::light).sound(SoundType.AMETHYST)
+                    .isSuffocating((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))
+                    .isViewBlocking((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))));
     /** R100: original luminous spirit wood, permanent foliage and a per-player blessing heart. */
     public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SPIRIT_LOG = BLOCKS.register("spirit_log",
             () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of()
@@ -86,7 +91,7 @@ public final class OriBlocks {
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
                 GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL))
+                SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

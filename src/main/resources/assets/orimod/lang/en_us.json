@@ -390,5 +390,7 @@
   "line.orimod.first_vessel": "Glimmer: So much light! More crystal vessels are hidden elsewhere.",
   "commands.orimod.ruin.outside": "You are not inside a ruin.",
   "commands.orimod.ruin.no_secrets": "This ruin has no recorded secret chamber (legacy ruin).",
-  "commands.orimod.ruin.secret": "%s secret entrance: [%s, %s, %s], facing %s, sealed by %s."
+  "commands.orimod.ruin.secret": "%s secret entrance: [%s, %s, %s], facing %s, sealed by %s.",
+  "block.orimod.spirit_platform": "Light Platform",
+  "hint.orimod.spirit_platform": "Glimmer: These outlines need light... Ignite a nearby Spirit Lantern!"
 }

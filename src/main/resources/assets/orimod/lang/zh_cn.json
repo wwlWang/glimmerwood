@@ -390,5 +390,7 @@
   "line.orimod.first_vessel": "萤：好多灵光！这样的晶罐还藏在别处。",
   "commands.orimod.ruin.outside": "不在遗迹中。",
   "commands.orimod.ruin.no_secrets": "此遗迹没有秘室记录（旧版遗迹）。",
-  "commands.orimod.ruin.secret": "%s 秘室入口：[%s, %s, %s]，朝向 %s，封口 %s。"
+  "commands.orimod.ruin.secret": "%s 秘室入口：[%s, %s, %s]，朝向 %s，封口 %s。",
+  "block.orimod.spirit_platform": "光敏灵台",
+  "hint.orimod.spirit_platform": "萤：这些虚影需要光……点亮附近的灵灯！"
 }

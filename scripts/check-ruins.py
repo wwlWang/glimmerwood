@@ -104,6 +104,33 @@ def validate_contracts(root):
             a,b = layout["spirit_sand"]
             protected.update(cuboid(a,[b[0]+2,b[1],b[2]]))
         require(not room.intersection(protected), f"{name}: secret intersects existing route feature")
+        bridges=layout.get("bridges",[])
+        require(len(bridges)==1, f"{name}: expected one light bridge")
+        for bridge in bridges:
+            platforms={tuple(p) for p in bridge["platforms"]}
+            require(len(platforms)=={"forest_spring":8,"creek_ruins":5,"cave_altar":12}[name], f"{name}: wrong bridge length")
+            require(all(within(p) and blocks.get(p)=="orimod:spirit_platform" for p in platforms), f"{name}: missing light platform")
+            require(not platforms.intersection(protected|room), f"{name}: bridge intersects protected route")
+            require(all(blocks.get(tuple(p))=="orimod:bash_anchor" for p in bridge["lanterns"]), f"{name}: missing bridge lamp")
+            require(len(bridge["lanterns"])=={"forest_spring":1,"creek_ruins":0,"cave_altar":2}[name], f"{name}: wrong bridge lamp count")
+            empty={"minecraft:air","orimod:bash_anchor","minecraft:ladder"}
+            nodes={tuple(bridge["entry"]),tuple(bridge["exit"])}|{(x,y+1,z) for x,y,z in platforms}
+            for x,y,z in nodes:
+                require(all(blocks.get((x,yy,z),"minecraft:air") in empty for yy in (y,y+1)), f"{name}: blocked bridge headroom {(x,y,z)}")
+            def connected(start,end,points):
+                seen={start};queue=[start]
+                while queue:
+                    a=queue.pop()
+                    for b in points-seen:
+                        if abs(a[1]-b[1])<=1 and (a[0]-b[0])**2+(a[2]-b[2])**2<=4:
+                            seen.add(b);queue.append(b)
+                return end in seen
+            a,b=tuple(bridge["entry"]),tuple(bridge["exit"])
+            require(connected(a,b,nodes) and connected(b,a,nodes), f"{name}: light bridge cannot be traversed both ways")
+            for x,y,z in bridge["escape"]:
+                require(within((x,y,z)), f"{name}: escape outside template")
+                require(all(blocks.get((x,yy,z),"minecraft:air") in empty|{"orimod:spirit_platform","minecraft:water"} for yy in (y,y+1)), f"{name}: blocked unlit escape")
+                require(blocks.get((x,y,z))=="minecraft:ladder" or blocks.get((x,y-1,z),"minecraft:air") not in empty|{"orimod:spirit_platform","minecraft:water"}, f"{name}: unsupported escape")
         print(name, "contract passed")
 
 

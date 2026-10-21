@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "orimod:block/spirit_platform_ghost"
+    },
+    "lit=true,blink=false": {
+      "model": "orimod:block/spirit_platform_lit"
+    },
+    "lit=true,blink=true": {
+      "model": "orimod:block/spirit_platform_blink"
+    }
+  }
+}

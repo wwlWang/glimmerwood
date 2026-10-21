@@ -23,6 +23,7 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::unload);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTideDefense::unloadChunk);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.block.PlatformLight::load);
         cn.wwl.orimod.block.OriBlocks.register(modEventBus);
         cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
         cn.wwl.orimod.world.OriEntities.register(modEventBus);

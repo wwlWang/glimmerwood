@@ -87,6 +87,16 @@ class Template:
             "entrance": self.shifted(entrance), "facing": facing, "blocks": kind, "vessel": self.shifted(vessel)}
         self.features["vessels"] = [self.shifted(p) for p in decorations]
 
+    def light_bridge(self, entry, exit, platforms, lanterns, escape, facing):
+        """R104 optional route: entry/exit/escape are feet positions; platforms/lamps are block positions."""
+        for pos in platforms:
+            self.put(*pos, "orimod:spirit_platform", lit="false", fading="false", blink="false")
+        for pos in lanterns:
+            self.put(*pos, "orimod:bash_anchor", lit="false")
+        self.features["bridges"] = [{"entry": self.shifted(entry), "exit": self.shifted(exit),
+            "platforms": [self.shifted(p) for p in platforms], "lanterns": [self.shifted(p) for p in lanterns],
+            "escape": [self.shifted(p) for p in escape], "facing": facing}]
+
     def export(self, shrine, safe, entry, surface, checkpoints, clearances):
         self.important(*shrine, "orimod:" + self.name + "_shrine")
         palette, indexes, blocks = [], {}, []
@@ -170,6 +180,27 @@ def forest(root):
     t.secret(((13, 1, 14), (17, 5, 18)), ((14, 2, 15), (16, 4, 17)),
              ((13, 2, 15), (13, 4, 17)), (13, 2, 16), "west", "wall", (15, 2, 16), [(2, 2, 6), (16, 2, 29)])
     t.put(12, 1, 16, "mossy_stone_bricks")  # Dry footing in front of the cracked doorway.
+    # R104 interior water court. Walls rise four blocks above the deck, independent of outside terrain.
+    # The reward island is three blocks above the pool floor: the low drain is an exit, not a bypass.
+    t.box((3, 1, 14), (5, 1, 21), "water", level="0")
+    t.box((3, 2, 14), (5, 7, 23), "air")
+    for x in (2, 6):
+        t.box((x, 1, 13), (x, 7, 24), "mossy_stone_bricks")
+    for z in (13, 24):
+        t.box((2, 1, z), (6, 7, z), "mossy_stone_bricks")
+    t.box((4, 4, 13), (4, 6, 13), "air")  # Raised entrance; original root/route stays east of it.
+    t.box((4, 1, 6), (4, 1, 9), "mossy_stone_bricks")  # Dry approach from the original entry bank.
+    t.box((4, 1, 10), (4, 2, 10), "mossy_stone_bricks")
+    t.box((4, 1, 11), (4, 3, 12), "mossy_stone_bricks")
+    t.box((3, 0, 22), (5, 3, 23), "mossy_stone_bricks")
+    t.box((2, 1, 14), (2, 2, 14), "air")  # Two-high drain returns to the western outer bank.
+    t.put(1, 1, 14, "air")  # Step outside the drain before jumping up; do not jump into its low lintel.
+    t.box((4, 7, 18), (4, 7, 23), "stripped_dark_oak_log", axis="z")
+    t.put(4, 6, 18, "chain", axis="y", waterlogged="false")
+    t.put(4, 4, 23, "orimod:spirit_light_vessel")
+    t.features["vessels"].append(t.shifted((4, 4, 23)))  # Ordinary reward; neither a secret nor a map-stone target.
+    t.light_bridge((4, 4, 13), (4, 4, 22), [(4, 3, z) for z in range(14, 22)], [(4, 5, 18)],
+                   [(4, 1, z) for z in range(14, 22)] + [(3, 1, 14), (2, 1, 14), (1, 1, 14), (0, 2, 14)], "south")
     t.export((12, 2, 4), (9.5, 2, 5.5), (9.5, 2, 4.5), 2,
              [((8.5, 4, 8.5), "wall_jump", 1), ((8.5, 6, 15.5), "jump", 2), ((9.5, 5, 25.5), "dash", 1)],
              [((6, 2, 4), (10, 6, 6)), ((6, 4, 7), (10, 7, 10)), ((7, 4, 11), (10, 8, 13)),
@@ -196,6 +227,17 @@ def creek(root):
     t.secret(((1, -2, 23), (5, 2, 27)), ((2, -1, 24), (4, 1, 26)),
              ((2, 2, 24), (4, 2, 26)), (3, 2, 25), "up", "floor", (3, -1, 25), [(2, 2, 6), (18, 2, 32)])
     t.box((4, -1, 25), (4, 1, 25), "ladder", facing="west", waterlogged="false")  # Return without another ability.
+    # R104 east shaft, independent of the original Bash/Glide route and the western secret.
+    t.box((13, 1, 10), (18, 1, 14), "mossy_stone_bricks")
+    t.box((13, 2, 10), (13, 8, 14), "mossy_stone_bricks")
+    t.box((18, 2, 10), (18, 8, 14), "mossy_stone_bricks")
+    t.box((14, 2, 14), (17, 5, 14), "mossy_stone_bricks")
+    t.box((14, 6, 14), (17, 6, 15), "mossy_stone_bricks")
+    t.box((12, 6, 15), (13, 6, 15), "mossy_stone_bricks")  # Exit rejoins existing upper platform.
+    # Drop into water to leave the dark shaft; a ladder here would solve the ascent backwards.
+    t.put(17, 1, 13, "water", level="0")
+    t.light_bridge((14, 2, 10), (15, 7, 14), [(14, 2, 11), (15, 3, 11), (16, 4, 11), (16, 5, 12), (15, 6, 12)], [],
+                   [(17, 1, 13), (17, 2, 12), (16, 2, 12), (15, 2, 12), (14, 2, 12), (14, 2, 11), (14, 2, 10)], "south")
     t.export((13, 2, 4), (10.5, 2, 5.5), (10.5, 2, 4.5), 2,
              [((10.5, 7, 16.5), "bash", 1), ((10.5, 4, 30.5), "glide", 1)],
              [((9, 2, 6), (11, 10, 13)), ((9, 7, 14), (11, 9, 18)),
@@ -245,6 +287,18 @@ def cave(root):
     # R103: south of (not inside or through) the key vault; east-facing three-block-thick seal.
     t.secret(((1, 1, 22), (7, 5, 26)), ((2, 2, 23), (4, 4, 25)),
              ((5, 2, 23), (7, 4, 25)), (7, 2, 24), "east", "wall", (3, 2, 24), [(5, 2, 16), (18, 2, 35)])
+    # R104 east gallery: two lamps with overlapping reach; first cannot illuminate its far half.
+    # The lower floor returns to the entrance only; the raised far alcove has no rear/side entrance.
+    for x in (17, 19):
+        t.box((x, 2, 19), (x, 6, 31), "deepslate_bricks")
+    t.box((17, 7, 19), (19, 7, 32), "deepslate_bricks")
+    t.box((17, 2, 32), (19, 6, 32), "deepslate_bricks")
+    for z in (18, 31):
+        t.box((18 if z == 31 else 17, 2, z), (18 if z == 31 else 19, 3, z), "polished_deepslate")
+    t.box((17, 2, 17), (19, 2, 17), "polished_deepslate")
+    t.put(18, 2, 19, "polished_deepslate")  # One return step, only at the near mouth.
+    t.light_bridge((18, 4, 18), (18, 4, 31), [(18, 3, z) for z in range(19, 31)], [(18, 5, 20), (18, 5, 28)],
+                   [(18, 3 if z == 19 else 2, z) for z in range(19, 31)], "south")
     t.export((8, 2, 15), (11.5, 2, 17.5), (11.5, 13, 1.5), 13,
              [((11.5, 8, 23.5), "grapple", 1), ((11.5, 2, 29.5), "stomp", 1), ((11.5, 2, 32.5), "blade", 1)],
              [((10, 3, 18), (12, 8, 21)), ((10, 8, 22), (12, 10, 25)), ((10, 2, 26), (12, 11, 34))])

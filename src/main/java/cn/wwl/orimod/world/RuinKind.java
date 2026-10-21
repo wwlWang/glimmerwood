@@ -75,10 +75,17 @@ public enum RuinKind {
                 var s = root.getAsJsonObject("secret");
                 secret = new Secret(BlockPos.containing(vector(s.getAsJsonArray("entrance"))), net.minecraft.core.Direction.byName(s.get("facing").getAsString()), s.get("blocks").getAsString());
             }
+            var bridges = new ArrayList<Bridge>();
+            if (root.has("bridges")) for (var value : root.getAsJsonArray("bridges")) {
+                var b = value.getAsJsonObject();
+                bridges.add(new Bridge(BlockPos.containing(vector(b.getAsJsonArray("entry"))), BlockPos.containing(vector(b.getAsJsonArray("exit"))),
+                        positions(b.getAsJsonArray("lanterns")), positions(b.getAsJsonArray("platforms")), positions(b.getAsJsonArray("escape")),
+                        net.minecraft.core.Direction.byName(b.get("facing").getAsString())));
+            }
             layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
-                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret);
+                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret, List.copyOf(bridges));
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }
@@ -88,7 +95,29 @@ public enum RuinKind {
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
                          List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts, BlockPos bossAltar,
-                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret) {}
+                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret, List<Bridge> bridges) {}
+    private static List<BlockPos> positions(com.google.gson.JsonArray array) {
+        var out = new ArrayList<BlockPos>(); for (var p : array) out.add(BlockPos.containing(vector(p.getAsJsonArray()))); return List.copyOf(out);
+    }
+    public record Bridge(BlockPos entry, BlockPos exit, List<BlockPos> lanterns, List<BlockPos> platforms, List<BlockPos> escape, net.minecraft.core.Direction facing) {
+        public Bridge {
+            entry=entry.immutable();exit=exit.immutable();lanterns=lanterns.stream().map(BlockPos::immutable).toList();
+            platforms=platforms.stream().map(BlockPos::immutable).toList();escape=escape.stream().map(BlockPos::immutable).toList();
+            if(facing==null || platforms.isEmpty())throw new IllegalArgumentException("Invalid light bridge");
+        }
+        public net.minecraft.nbt.CompoundTag save() {
+            var t=new net.minecraft.nbt.CompoundTag();t.putLong("Entry",entry.asLong());t.putLong("Exit",exit.asLong());t.putString("Facing",facing.getName());
+            t.putLongArray("Lanterns",lanterns.stream().mapToLong(BlockPos::asLong).toArray());
+            t.putLongArray("Platforms",platforms.stream().mapToLong(BlockPos::asLong).toArray());
+            t.putLongArray("Escape",escape.stream().mapToLong(BlockPos::asLong).toArray());return t;
+        }
+        public static Bridge load(net.minecraft.nbt.CompoundTag t) {
+            return new Bridge(BlockPos.of(t.getLong("Entry")),BlockPos.of(t.getLong("Exit")),
+                    java.util.Arrays.stream(t.getLongArray("Lanterns")).mapToObj(BlockPos::of).toList(),
+                    java.util.Arrays.stream(t.getLongArray("Platforms")).mapToObj(BlockPos::of).toList(),
+                    java.util.Arrays.stream(t.getLongArray("Escape")).mapToObj(BlockPos::of).toList(),net.minecraft.core.Direction.byName(t.getString("Facing")));
+        }
+    }
     public record Secret(BlockPos entrance, net.minecraft.core.Direction facing, String blocks) {
         public Secret {
             if (entrance == null || facing == null || !(blocks.equals("wall") || blocks.equals("floor"))) throw new IllegalArgumentException("Invalid ruin secret");

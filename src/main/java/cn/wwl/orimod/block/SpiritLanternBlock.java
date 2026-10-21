@@ -31,13 +31,17 @@ public final class SpiritLanternBlock extends Block {
 
     @Override protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState old, boolean moving) {
         super.onPlace(state, level, pos, old, moving);
-        if (!old.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+        if (!old.is(this) && level instanceof net.minecraft.server.level.ServerLevel server) {
             cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+            if (state.getValue(LIT)) PlatformLight.push(server,Vec3.atCenterOf(pos),PlatformRules.Source.LANTERN);
+        }
     }
     @Override protected void onRemove(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState next, boolean moving) {
         super.onRemove(state, level, pos, next, moving);
-        if (!next.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+        if (!next.is(this) && level instanceof net.minecraft.server.level.ServerLevel server) {
             cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+            if (state.getValue(LIT)) PlatformLight.lost(server,pos,PlatformRules.Source.LANTERN);
+        }
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(LIT); }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return SHAPE; }
@@ -62,6 +66,7 @@ public final class SpiritLanternBlock extends Block {
         if (!lit) level.setBlock(pos, state.setValue(LIT, true), UPDATE_ALL);
         level.scheduleTick(pos, lantern, (int) Math.min(Integer.MAX_VALUE, deadline - now));
         chunk.setUnsaved(true);
+        PlatformLight.push(level,Vec3.atCenterOf(pos),PlatformRules.Source.LANTERN);
         if (!lit) SpiritFx.emit(level, SpiritFxKind.LANTERN_IGNITE, Vec3.atCenterOf(pos), null);
         return true;
     }
@@ -79,7 +84,9 @@ public final class SpiritLanternBlock extends Block {
 
     @Override protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         // A renewal can arrive after today's old tick was collected. The new pending tick owns the expiry.
-        if (state.getValue(LIT) && !level.getBlockTicks().hasScheduledTick(pos, this))
+        if (state.getValue(LIT) && !level.getBlockTicks().hasScheduledTick(pos, this)) {
             level.setBlock(pos, state.setValue(LIT, false), UPDATE_ALL);
+            PlatformLight.lost(level,pos,PlatformRules.Source.LANTERN);
+        }
     }
 }

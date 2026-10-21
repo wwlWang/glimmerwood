@@ -21,6 +21,7 @@ public final class RuinPiece extends TemplateStructurePiece {
         super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(placement.rotation()), placement.origin());
         this.kind = kind;
         this.secret = kind.layout().secret();
+        this.bridges = kind.layout().bridges();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, ignored -> settings(RuinPlacement.readRotation(tag.getString("Rot"))));
@@ -29,7 +30,12 @@ public final class RuinPiece extends TemplateStructurePiece {
             var s = tag.getCompound("OriSecret");
             this.secret = new RuinKind.Secret(BlockPos.of(s.getLong("Entrance")), net.minecraft.core.Direction.byName(s.getString("Facing")), s.getString("Blocks"));
         } else this.secret = null; // Pre-R103 starts keep their actual old layout, with no invented secret.
+        var list=new java.util.ArrayList<RuinKind.Bridge>();
+        for(var value:tag.getList("OriBridges",net.minecraft.nbt.Tag.TAG_COMPOUND))list.add(RuinKind.Bridge.load((CompoundTag)value));
+        this.bridges=java.util.List.copyOf(list); // Never infer bridges from updated templates for older pieces.
     }
+    private final java.util.List<RuinKind.Bridge> bridges;
+    public java.util.List<RuinKind.Bridge> bridges() { return bridges; }
     private final RuinKind kind;
     private final RuinKind.Secret secret;
     public RuinKind kind() { return kind; }
@@ -45,6 +51,9 @@ public final class RuinPiece extends TemplateStructurePiece {
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
+        if(!bridges.isEmpty()) {
+            var list=new net.minecraft.nbt.ListTag();bridges.forEach(b->list.add(b.save()));tag.put("OriBridges",list);
+        }
         if (secret != null) {
             var s = new CompoundTag(); s.putLong("Entrance", secret.entrance().asLong());
             s.putString("Facing", secret.facing().getName()); s.putString("Blocks", secret.blocks()); tag.put("OriSecret",s);

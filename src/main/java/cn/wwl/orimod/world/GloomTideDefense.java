@@ -57,6 +57,19 @@ public final class GloomTideDefense {
         while (cache.size() > MAX_SECTIONS) cache.remove(cache.keySet().iterator().next());
         return saved;
     }
+    /** R104: reuse the same palette/cache for actual light sources; callers check lamp LIT themselves. */
+    public static List<BlockPos> lightSources(ServerLevel level, Vec3 point, int radius) {
+        var out = new ArrayList<BlockPos>();
+        var min = BlockPos.containing(point.subtract(radius,radius,radius));
+        var max = BlockPos.containing(point.add(radius,radius,radius));
+        for (int cx=min.getX()>>4; cx<=max.getX()>>4; cx++) for (int cz=min.getZ()>>4; cz<=max.getZ()>>4; cz++) {
+            var chunk=level.getChunkSource().getChunkNow(cx,cz); if (chunk==null) continue;
+            for (int sy=Math.max(min.getY(),level.getMinBuildHeight())>>4; sy<=Math.min(max.getY(),level.getMaxBuildHeight()-1)>>4; sy++) {
+                var s=sites(level,chunk,cx,sy,cz); out.addAll(s.lamps); out.addAll(s.hearts);
+            }
+        }
+        return out;
+    }
     public static void invalidate(ServerLevel level, BlockPos pos) {
         var cache = CACHE.get(level);
         if (cache != null) cache.remove(SectionPos.asLong(pos));

@@ -25,7 +25,7 @@ public final class CompanionHints {
 
     /** Declaration order is the priority when several discoveries happen together. */
     public enum Hint {
-        UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), GRAPPLE_FLOWER("grapple_flower", 10),
+        UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), SPIRIT_PLATFORM("spirit_platform", 8), GRAPPLE_FLOWER("grapple_flower", 10),
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
         SPIRIT_TREE("spirit_tree", 24),
@@ -156,6 +156,7 @@ public final class CompanionHints {
     private static Hint blockHint(BlockState state) {
         if (state.is(OriBlocks.UPDRAFT.get())) return Hint.UPDRAFT;
         if (state.is(OriBlocks.BASH_ANCHOR.get())) return Hint.BASH_ANCHOR;
+        if (state.is(OriBlocks.SPIRIT_PLATFORM)) return Hint.SPIRIT_PLATFORM;
         if (state.is(OriBlocks.GRAPPLE_FLOWER.get())) return Hint.GRAPPLE_FLOWER;
         if (state.is(OriBlocks.SPIRIT_SAND.get())) return Hint.SPIRIT_SAND;
         if (state.is(OriBlocks.GLOOM_WATER.get())) return Hint.GLOOM_WATER;

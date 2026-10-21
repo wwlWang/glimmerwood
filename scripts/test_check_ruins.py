@@ -141,7 +141,7 @@ class RuinCheckTest(unittest.TestCase):
             "cave_altar": "7a5038c68ba893ff855be2e165ec370bf25e61b79b635b94726c8d5bcd28582d"}
         for name,digest in expected.items():
             layout=json.loads(self.assets[Path(f"src/main/resources/orimod/ruin_layout/{name}.json")])
-            del layout["secret"];del layout["vessels"]
+            del layout["secret"];del layout["vessels"];del layout["bridges"]
             self.assertEqual(hashlib.sha256(json.dumps(layout,sort_keys=True,separators=(",",":")).encode()).hexdigest(),digest,name)
 
     def test_invalid_secret_seal_cannot_be_published(self):
@@ -153,6 +153,18 @@ class RuinCheckTest(unittest.TestCase):
         with patch("subprocess.run",side_effect=invalid_generator):
             with self.assertRaisesRegex(ValueError,"entrance not in seal"):self.check(write=True)
         self.assertEqual(snapshot(self.root),before)
+
+    def test_invalid_bridge_contract_cannot_be_published(self):
+        for field,value in (("platforms",[]),("entry",[0,0,0]),("escape",[[0,0,0]])):
+            with self.subTest(field=field):
+                def invalid_generator(command, **kwargs):
+                    destination=Path(command[-1]);shutil.copytree(self.generated,destination,dirs_exist_ok=True)
+                    layout=json.loads(self.assets[LAYOUT]);layout["bridges"][0][field]=value
+                    (destination/LAYOUT).write_text(json.dumps(layout),encoding="utf-8")
+                before=snapshot(self.root)
+                with patch("subprocess.run",side_effect=invalid_generator):
+                    with self.assertRaisesRegex(ValueError,"bridge|escape"):self.check(write=True)
+                self.assertEqual(snapshot(self.root),before)
 
 
 if __name__ == "__main__":

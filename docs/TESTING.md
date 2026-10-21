@@ -1,5 +1,21 @@
 # 回归测试
 
+## R104 光敏灵台
+
+JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**933 JUnit / 538 GameTest，0失败、0跳过**，较R103增加17/40；`python3 scripts/test-summary.py`复核XML。光桥防绕行修正后的全量日志 `/tmp/r104-no-bypass-full-5.log`（不入库）。锁定nbtlib2.0.4运行只读 `check-ruins.py`（passed、17个产物、written=0）及 `test_check_ruins.py`（11 tests OK）；`build_platform_textures.py --check`验证3张PNG与6个JSON产物。
+
+- PlatformRulesTest：四种光源球边界/非法距离，100tick续时、30tick预警/5tick模型相位，重叠永不强制变实，SavedData往返、区块/期限索引删除及未加载过期清理。模型分别走translucent/solid；语言与提示协议5往返、v4/v5互拒由现有参数化测试覆盖。
+- `spirit_platform.*` 22项：灵灯6/7边界与灭灯后完整100tick、实际光爆5/6边界、实际Flash tick沿途点亮；树心10/11边界、两种放置顺序、常亮与拆除宽限；玩家/怪物/物品重叠和5tick内重试、持续光源等候超过100tick、无光过期不再变实、站在上面正式熄灭后碰撞下落；256块上限；拆除和到期回收、缺失方块读档清理、重载不延长期限、已加载边缘初始化不加载邻区；未亮寻路/窒息/遮挡属性、预警所有状态亮度12；真实侦测器不被预警唤醒；平台hint优先级和实际发送；拆亮灯/树心后的平台复查不会留下潮夜防御缓存。
+- `ruin_bridges.*` 12项：三类×四旋转，piece契约保存恢复、世界坐标devtools字段、旧piece不推测光桥。森林入口中心及四角（局部XZ偏移(.5,.5)、(.3,.3)、(.3,.7)、(.7,.3)、(.7,.7)）逐点用真实SpiritTargets选取、发送Bash按下/松开输入，要求眼睛到灯距离≤5.5、全桥先亮、真实move落在平台上；每个样本重置夹具的灯/平台状态和目标冷却，避免前个样本掩盖失败。溪谷实际光爆覆盖5级台阶及基础100能量预算；洞穴第一灯不覆盖后段，从入口和已亮中点分别测五个站位的实际选取/视线及≥0.5格余量。四旋转实测最远距离：森林5.205，洞穴第一灯2.212、第二灯4.206。通路以玩家宽高碰撞盒检查行走/保守跳跃弧与双向可达，全灭后检查排水口/落水口/下层回程；原critical锚点未改。
+- `bridge_navigation.*` 新增6项：三类×模板内/外围5格填土草至最高平台高度，搜索整个模板实际碰撞面而非只查预设路线；蹲下精灵体型不得暗态绕行，完整玩家体型须亮态双向可达，出口/所有失足点/退路可回入口，原遗迹入口可到桥入口。跳跃包络升高≤1.25、水平总长≤4，支持空中转向；防绕行允许任何下落，安全撤离要求下落≤3或落水。临时恢复森林干岸、洞穴远端台阶时必须识别绕路，恢复后再验证点亮通行。详见DEVELOPMENT。森林新增普通容器同步更新R103数量断言；原有秘室数量仍为1，移除全部容器前后地图石统计不变。
+- Python契约锁住原模板尺寸、完整R103之前路线、秘室与挑战净空；新增桥长、灯数、平台、入口出口、净空、双向连接与退路支撑断言，无效光桥禁止发布。
+
+中途失败及修正：第一次JUnit `PlatformRulesTest.ghostAndBlinkModelsUseDifferentLayersButNotDifferentLightLevels` 的 `NoSuchFileException` 来自测试工作目录，改用classpath读取。首轮GameTest的 `Occupied platform became solid`、`Lamp failed to expire`、`Tree removal timer never expired` 来自光源放在旧小模板之外，未获完整区块tick且相邻用例光源串扰；改用64×48×64隔离夹具后通过。`Lit route not traversable both ways` 来自测试把平地行走也强制作为跳跃，误撞悬臂链条；改为平地行走、台阶/空隙才测跳跃弧。`Burst left a shaft step dark` 是夹具站到首阶内部触发了正确的实体安全等待，改在入口中央起手。没有放宽生产半径、重叠判定或生命周期。
+
+防绕行修正中间失败：首轮 `Dark exit cannot retreat forest_spring` 暴露排水口外缺少低落脚位，已补；其他 `Dark exit cannot retreat cave_altar` / `Escape does not return to entry BlockPos{x=17, y=5, z=13}` 来自直线抛物线搜索不能先起跳再前移，改为更宽松但仍限高/限距的跳跃包络。`Expected one secret vessel and two decorative vessels, got 4` 是新增桥头奖励需同步数量断言。敏感性测试随后报 `Search missed deliberately restored dark bypass forest_spring`，补入空中转向后可识别原干岸绕路；没有降低高度差或缩小搜索区域来规避失败。
+
+Claude实机 `evidence/r104-accept-v001` 平台机制/外观10项通过；`r104-bridge-debug-v001` 发现森林入口中心选灯卡在6格边界，旧测试只站偏前的z12.85，漏掉此问题。灯前移后，`evidence/r104-accept-v002` 中央选取/点灯/落脚3项通过，但发现模板外草地能绕行。现改为内部围墙水庭、出口岛普通容器和低排水口，溪谷取消可反爬的返回梯、洞穴封闭远端并仅保留近端上行退路。新布局待实拍复验，此次未启动客户端。自然遗迹和 `ruin_state.bridges` 可用于实拍定位；原版place structure不登记结构引用，适合摆放外观、不适合验证桥查询。完整坐标和调试命令见DEVELOPMENT。
+
 ## R103 裂壁与灵光容器
 
 全量命令：`./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK21），**916 JUnit / 498 GameTest，0 失败、0 跳过**；较R102增加31项JUnit、62项GameTest。`python3 scripts/test-summary.py` 已复核XML，最终运行日志 `/tmp/r103-full-3.log`（不入库）。Python使用 `~/.local/opt/orimod-art-venv/bin/python` 的nbtlib2.0.4；`check-ruins.py`只读模式通过（17个产物、written=0），`test_check_ruins.py`的10项回归及R103纹理脚本 `--check` 通过。

@@ -135,7 +135,10 @@ public final class Flash {
                 target.hurt(player.damageSources().indirectMagic(player, player), UNDEAD_DAMAGE);
             }
         }
-        if (lanternDue(age)) SpiritLanternBlock.igniteAround(level, player.position(), RADIUS, LANTERN_TICKS);
+        if (lanternDue(age)) {
+            SpiritLanternBlock.igniteAround(level, player.position(), RADIUS, LANTERN_TICKS);
+            cn.wwl.orimod.block.PlatformLight.push(level,player.position(),cn.wwl.orimod.block.PlatformRules.Source.FLASH);
+        }
         if (cleanseDue(age)) GloomWaterBlock.cleanse(level, player.blockPosition(), CLEANSE_RADIUS);
     }
 

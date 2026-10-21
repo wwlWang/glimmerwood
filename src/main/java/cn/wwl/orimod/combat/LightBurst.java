@@ -50,6 +50,7 @@ public final class LightBurst extends ThrowableProjectile {
     public int detonate() {
         if (detonated || !(level() instanceof ServerLevel level)) return 0;
         detonated = true;
+        cn.wwl.orimod.block.PlatformLight.push(level,position(),cn.wwl.orimod.block.PlatformRules.Source.BURST);
         var owner = getOwner() instanceof ServerPlayer player ? player : null;
         int hit = 0;
         for (var target : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(RADIUS), e -> e instanceof Enemy && e.isAlive()

@@ -33,7 +33,8 @@ public final class RuinSecretsGameTests {
             var vessels=new ArrayList<BlockPos>();var bounds=restored.getBoundingBox();
             for(var pos:BlockPos.betweenClosed(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX(),bounds.maxY(),bounds.maxZ()))
                 if(level.getBlockState(pos).is(OriBlocks.SPIRIT_LIGHT_VESSEL))vessels.add(pos.immutable());
-            h.assertTrue(vessels.size()==3,"Expected one secret vessel and two decorative vessels, got "+vessels.size());
+            int expected=kind==RuinKind.FOREST?4:3; // R104 forest island adds one ordinary reward, not a second secret.
+            h.assertTrue(vessels.size()==expected,"Expected one secret, two decorations and forest bridge reward, got "+vessels.size());
             c.player().setPos(placement.point(kind.layout().safe()));
             var map=placement.block(kind.layout().mapStone());var before=MapStoneBlock.survey(c.player(),map);
             vessels.forEach(p->level.setBlock(p,Blocks.AIR.defaultBlockState(),2));
