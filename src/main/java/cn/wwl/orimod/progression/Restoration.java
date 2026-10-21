@@ -32,7 +32,9 @@ public final class Restoration {
         p.stopRiding();p.stopUsingItem();cn.wwl.orimod.combat.Flash.stop(p);cn.wwl.orimod.combat.SpiritCombat.cancel(p,"restoration");
         cn.wwl.orimod.movement.SpiritMovement.teleported(p);
         p.setDeltaMovement(Vec3.ZERO);p.fallDistance=0;
-        SESSIONS.put(p.getUUID(),new Session(UUID.randomUUID(),p.serverLevel(),tree.immutable(),p.position(),p.level().getGameTime()));
+        var origin=RestorationViewpoint.choose(p,tree);
+        SESSIONS.put(p.getUUID(),new Session(UUID.randomUUID(),p.serverLevel(),tree.immutable(),origin,p.level().getGameTime()));
+        if(!origin.equals(p.position()))p.connection.teleport(origin.x,origin.y,origin.z,p.getYRot(),p.getXRot());
         p.getData(SpiritData.ENERGY_STATE).lines.pending=null;
         WillWisps.sync(p);return true;
     }

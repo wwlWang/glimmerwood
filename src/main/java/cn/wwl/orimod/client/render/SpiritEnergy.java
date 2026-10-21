@@ -22,6 +22,7 @@ import java.util.function.Function;
 public final class SpiritEnergy extends RenderStateShard {
     public static final ResourceLocation SOFT_GLOW = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "textures/misc/soft_glow.png");
     public static final ResourceLocation STREAK = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "textures/misc/energy_streak.png");
+    public static final ResourceLocation RESTORATION_COLUMN = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "textures/misc/restoration_column.png");
     private static final Function<ResourceLocation, RenderType> TYPES = Util.memoize(texture ->
             RenderType.create("orimod_spirit_energy", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 4096, false, false,
                     RenderType.CompositeState.builder()
@@ -36,6 +37,20 @@ public final class SpiritEnergy extends RenderStateShard {
 
     public static RenderType glow() { return TYPES.apply(SOFT_GLOW); }
     public static RenderType streak() { return TYPES.apply(STREAK); }
+    public static RenderType restorationColumn() { return TYPES.apply(RESTORATION_COLUMN); }
+
+    /** A broad vertical column slice, crossed on X/Z, with continuous endpoint alpha. */
+    public static void columnSlice(VertexConsumer out, PoseStack.Pose pose, Vector3f bottom, float height,
+                                   float width, int rgb, float bottomAlpha, float topAlpha) {
+        float r=(rgb>>16&255)/255f,g=(rgb>>8&255)/255f,b=(rgb&255)/255f;
+        for(int axis=0;axis<2;axis++){
+            float dx=axis==0?width/2:0,dz=axis==1?width/2:0;
+            corner(out,pose,bottom.x-dx,bottom.y,bottom.z-dz,0,1,r,g,b,bottomAlpha);
+            corner(out,pose,bottom.x+dx,bottom.y,bottom.z+dz,1,1,r,g,b,bottomAlpha);
+            corner(out,pose,bottom.x+dx,bottom.y+height,bottom.z+dz,1,0,r,g,b,topAlpha);
+            corner(out,pose,bottom.x-dx,bottom.y+height,bottom.z-dz,0,0,r,g,b,topAlpha);
+        }
+    }
 
     /** Seconds on a wrapping clock for pulses. */
     public static float time() { return (Util.getMillis() % 3_600_000L) / 1000f; }

@@ -102,7 +102,40 @@ public final class RestorationGameTests {
             int before=level.getChunkSource().getLoadedChunksCount();RestorationBloom.load(new net.neoforged.neoforge.event.level.ChunkEvent.Load(chunk,false));for(int i=0;i<50;i++)RestorationBloom.step(p.server);
             h.assertTrue(level.getBlockState(leaf).getValue(SpiritLeavesBlock.BLOOMED),"Reload failed to reapply world effect");h.assertValueEqual(level.getChunkSource().getLoadedChunksCount(),before,"Bloom loaded neighbouring chunks");
         });
+        for(String scenario:List.of("clear","wall","void","magma","water","occupied"))
+            add(tests,"viewpoint_"+scenario,(h,p)->viewpoint(h,p,scenario));
+        add(tests,"viewpoint_never_loads_missing_chunks",(h,p)->{
+            var tree=new BlockPos(24000000,100,24000000);p.setPos(Vec3.atBottomCenterOf(tree.north(2)));
+            int chunks=h.getLevel().getChunkSource().getLoadedChunksCount();var before=p.position();
+            h.assertValueEqual(RestorationViewpoint.choose(p,tree),before,"Unloaded viewpoint selected");
+            h.assertValueEqual(h.getLevel().getChunkSource().getLoadedChunksCount(),chunks,"Viewpoint loaded chunks");
+        });
         natural(tests);bloom(tests);return tests;
+    }
+    private static void viewpoint(GameTestHelper h,ServerPlayer p,String scenario){
+        var level=h.getLevel();var heart=h.absolutePos(new BlockPos(30,30,30));
+        var old=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
+        net.minecraft.world.entity.Entity occupant=null;
+        try{
+            for(var mutable:BlockPos.betweenClosed(heart.offset(-4,-1,-12),heart.offset(4,3,1))){
+                var pos=mutable.immutable();old.put(pos,level.getBlockState(pos));level.setBlock(pos,pos.getY()<heart.getY()?Blocks.STONE.defaultBlockState():Blocks.AIR.defaultBlockState(),2);
+            }
+            level.setBlock(heart,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState(),2);
+            p.setPos(Vec3.atBottomCenterOf(heart.north(2)));p.setYRot(17);p.setXRot(23);var before=p.position();
+            p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withWisps(7).withRewards(Map.of(SpiritTreeHeartBlock.siteKey(level,heart),1)));
+            if(scenario.equals("wall"))for(int x=-4;x<=4;x++)for(int y=0;y<3;y++)level.setBlock(heart.offset(x,y,-5),Blocks.STONE.defaultBlockState(),2);
+            if(List.of("void","magma","water").contains(scenario))for(int x=-2;x<=2;x++)for(int z=-10;z<=-6;z++){
+                level.setBlock(heart.offset(x,-1,z),switch(scenario){case "magma"->Blocks.MAGMA_BLOCK.defaultBlockState();case "water"->Blocks.WATER.defaultBlockState();default->Blocks.AIR.defaultBlockState();},2);
+            }
+            if(scenario.equals("occupied")){
+                var mob=net.minecraft.world.entity.EntityType.COW.create(level);mob.setNoAi(true);mob.moveTo(Vec3.atBottomCenterOf(heart.north(8)));level.addFreshEntity(mob);occupant=mob;
+            }
+            h.assertTrue(Restoration.start(p,heart),"Start refused");var origin=Restoration.session(p).origin();
+            if(scenario.equals("clear"))h.assertValueEqual(origin,Vec3.atBottomCenterOf(heart.north(8)),"Did not back away from entrance");
+            else if(scenario.equals("occupied")){h.assertFalse(origin.equals(Vec3.atBottomCenterOf(heart.north(8))),"Teleported into another entity");h.assertTrue(level.noCollision(p,p.getBoundingBox()),"Viewpoint collides");h.assertFalse(p.getBoundingBox().intersects(occupant.getBoundingBox()),"Living entity overlap remains");}
+            else h.assertValueEqual(origin,before,"Unsafe corridor/ground moved player");
+            h.assertValueEqual(p.position(),origin,"Server did not move to authoritative origin");h.assertValueEqual(p.getYRot(),17f,"Forced yaw");h.assertValueEqual(p.getXRot(),23f,"Forced pitch");
+        }finally{Restoration.cancel(p);if(occupant!=null)occupant.discard();old.forEach((pos,state)->level.setBlock(pos,state,2));}
     }
     private static BlockPos tree(GameTestHelper h,ServerPlayer p){var at=h.absolutePos(new BlockPos(7,2,7));h.getLevel().setBlock(at,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState(),2);p.setPos(Vec3.atBottomCenterOf(at).add(0,0,-2));var r=new HashMap<>(p.getData(SpiritData.PROGRESS).rewards());r.put(SpiritTreeHeartBlock.siteKey(p.level(),at),1);p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withRewards(r));return at;}
     private static void prepare(ServerPlayer p){p.setData(SpiritData.AWAKENED,true);p.setData(SpiritData.FORM,true);p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY);}

@@ -1,12 +1,28 @@
 # 回归测试
 
+## R108 视觉打磨
+
+最终 **1138 JUnit / 718 GameTest，0失败、0跳过**。JDK21 执行 `./gradlew test --rerun build runGameTestServer compileDevtoolsJava --console=plain`，JUnit 强制重跑；证据 `evidence/r108-polish-build/final-cyan-full.log`、`final-counts.json`、`final-junit/` 和 `final-gametest.xml`。新增 14 JUnit：开场20tick平滑、yaw最短路径、微小鼠标位移立即取消且不恢复、第三人称不启动、切第三人称终止、结束/断线清理，以及小花占比/饱和度不下降/原 cutout 掩码及盛开模型不压暗、宽光柱贴图/向上连续渐隐、三光配色/依次吸收、站位候选、全局粒子预算/去重/有界/过期。新增 7 GameTest：合法后退、墙/悬空/岩浆/水回退、生物占位避让，以及未加载区块不加票；保持权威锁位及 yaw/pitch。
+
+首轮新用例 `restoration.viewpoint_occupied` 报 `Teleported into another entity`（`full.log`）：原版 `Level.noCollision` 对普通生物不提供所需的目的地排他保证。生产选点补充实际存活生物 AABB 重叠检测，并保留原失败断言、增加不相交断言；最终完整重跑全绿，没有放宽条件。灵叶性能复测：首次打磨全量1175叶/5tick、服务器峰值2.168141ms；引导版1379叶/6tick、服务器峰值2.212533ms；最终青色版 **1135叶 / 5tick，最大批次1.584781ms、最大服务器tick1.816692ms、最终光12**，保留现有256写入/约2ms软预算。
+
+资源复现：`build_spirit_tree_textures.py --check` 8张、`build_wisp_textures.py --check` 6张、新 `build_restoration_texture.py --check` 1张、`export-spirit-fx.py --check` 22定义通过。FX定义/协议未改；程序脚本是原创纹理源，没有新增 `art/source` JSON。
+
+客户端补拍使用 llvmpipe / GL4.6 / DISPLAY=:0。`evidence/r108-polish-after-v001` 保留最初不引导的对照：仅后退仍因原俯仰向下看地面。按 Claude 后续取景决定加入约1秒可打断的引导后，`r108-polish-after-v002/first-person-{20,100,180,260}.png` 分别记录第1/5/9/13秒（实际帧时刻见results.json）：三光在树前可见，随后入树、下半树冠逐层暖金花点/闪光，最后盛开。原始yaw=0、pitch=29.2488；引导目标pitch=-29.139668，后退到(4000.5,120,3990.5)，镜头类型始终第一人称。
+
+最终小花/青色版 `evidence/r108-polish-after-v003` 用同棵树、原锚点和三个指定偏移重新拍摄；`canopy-metrics.json` 记录固定ROI `(640,145)-(1400,560)`、PIL逐像素HSV均值（0–255），排除上方HUD文字，图片不加工。同一机位未盛开S/V为110.77/104.72；第215tick为124.17/156.08（+12.1%/+49.0%）；演出结束后的永久盛开为124.25/156.30（+12.2%/+49.2%）。四朵2×2花占16/106不透明像素，保留原孔隙；青色纹理本身的平均S从0.474升到0.584。Sodium下shade=false/关闭AO的画面效果明确，未使用备选neoforge_data.block_light；方块光照与服务端预算不变。旧大花版同ROI的S/V从110.47/104.75变到80.26/112.74，确有褪色，保留为失败设计对照。
+
+最终补拍脚本状态passed，共16张；wide-260/280实际服务端年龄261/281tick（13.05/14.05秒），能看到光柱由初现到完整亮芯/外晕。第一人称四时刻在最终v003也重拍。XTest真实鼠标中断：开始采样remaining297时引导active=true，发送(24,12)位移后remaining292时active=false/cancelled=true；继续30tick到remaining262，两次yaw/pitch均为3.6000004/24.755848，未继续引导，之后真实Esc正常结算。`results.json.mouse_interrupt`含完整前后状态。v002的首次XTest事件曾被原版ignoreFirstMove吞掉（`guide-capture.log`保留失败原文）；独立mouse-probe-v001证实后续原生事件实际改变yaw。最终脚本先在仪式外预热并断言实际转头，不改生产鼠标语义或放宽中断断言。拍摄完成后清除forceload、leave_world、quit；源码与最终全量的SHA256清单一致。
+
+基础 R108 已在 fbb3c90 由 Claude 完成18项真实输入验收（`r108-accept-v001..v003`）。仪式中伤害被取消，`/kill`也不能触发死亡；自动测试的死亡取消是直接分派事件验证的防御路径，不声称普通实机可达。
+
 ## R108 意志之光与复苏
 
 最终 **1124 JUnit / 711 GameTest，0失败、0跳过**。锁位修正后的首轮全量通过（`evidence/r108-final-validation-v001`）；修正R106测试场地加载票并移除临时诊断后，`cleanTest build runGameTestServer compileDevtoolsJava --console=plain`再次完整通过。由于cleanTest后的JUnit命中了构建缓存，又单独执行`test --rerun`，1124项实际重跑通过。最终完整日志、JUnit重跑日志、XML、计数、资源检查和文件清单在 **`evidence/r108-final-validation-v002/`**。
 
 覆盖：旧NBT默认位/所有组合往返及既有进度更新不丢三光；两位真实首领死亡的多人独立实体/拾取/重复领取、实体NBT与待领身份恢复、不加载远处祭坛；三次真实净化逐人触发、离线第三次补发；七种未满位拒绝、未领树/人形拒绝；会话令牌、防重复结算、已复苏世界的其他玩家结局；真实移动包锁位而保留转头、伤害事件保护、取消后恢复受伤；断线/死亡/维度/拆树/清三光取消；旧回执登录清理、OP命令拒绝普通玩家；300tick自然完成、演出途中低/高冠层先后BLOOMED；新放叶片与区块加载初始化、整树写入预算与reset反向；实际40波复苏潮夜仅喷吐者且每波≤2；客户端显示策略锁住会话外Esc、结束、断线无结束包、超时恢复；FX/同伴旧解码器拒绝及复苏包版本、数量、范围、非法枚举/坐标/浮点值拒绝。
 
-性能在GameTest中放置SpiritTreeShape的完整树，等待30tick让初始光照落稳，再开始永久BLOOMED。使用ServerTickEvent.Pre/Post计时，记录有写入的服务器tick以及写入批次自身时间；每tick预算是全维度总量，不是每树256。最后一轮：**1151片叶 / 5tick，最大批次1.410464ms，最大服务器tick2.174345ms，最终光照12**。锁位修正后首轮1441叶/6tick的服务器峰值1.928026ms；此前1109/1406叶的服务器峰值1.318834/1.903848ms；均未触发5ms降级条件，保留9→12和256上限，另有约2ms软时间片。异步光线程CPU时间未单独测量，这些是本机GameTest实测，不代表所有机器的5ms硬保证。reset回退所有测试叶为未BLOOMED/光9；区块不加载邻块。演出真实画面与声音尚未实机验收。
+性能在GameTest中放置SpiritTreeShape的完整树，等待30tick让初始光照落稳，再开始永久BLOOMED。使用ServerTickEvent.Pre/Post计时，记录有写入的服务器tick以及写入批次自身时间；每tick预算是全维度总量，不是每树256。最后一轮：**1151片叶 / 5tick，最大批次1.410464ms，最大服务器tick2.174345ms，最终光照12**。锁位修正后首轮1441叶/6tick的服务器峰值1.928026ms；此前1109/1406叶的服务器峰值1.318834/1.903848ms；均未触发5ms降级条件，保留9→12和256上限，另有约2ms软时间片。异步光线程CPU时间未单独测量，这些是本机GameTest实测，不代表所有机器的5ms硬保证。reset回退所有测试叶为未BLOOMED/光9；区块不加载邻块。上述为原功能提交时的性能数据；随后 Claude 已完成18项实机功能验收，追加视觉打磨见本文件顶部。
 
 复现检查：`python3 -B scripts/art/build_spirit_tree_textures.py --check`（8张）、`python3 -B scripts/art/build_wisp_textures.py --check`（6张）、`python3 -B scripts/export-spirit-fx.py --check`（22定义），均通过；本轮不运行遗迹生成器、没有遗迹资产变更。
 

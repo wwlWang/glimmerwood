@@ -15,7 +15,7 @@ public final class WillWispRenderer extends EntityRenderer<WillWispEntity>{
     @Override public void render(WillWispEntity e,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
         var p=Minecraft.getInstance().player;if(p==null || !p.getUUID().equals(e.owner()))return;
         float t=(e.tickCount+partial)*.06f;var out=buffers.getBuffer(SpiritEnergy.glow());var center=new Vector3f(0,(float)Math.sin(t)*.12f,0);
-        SpiritEnergy.orb(out,pose.last(),center,.55f,e.kind().color,.55f);SpiritEnergy.orb(out,pose.last(),center,.14f,0xFFFFFF,.9f);
+        SpiritEnergy.orb(out,pose.last(),center,.55f,e.kind().color,.35f);SpiritEnergy.orb(out,pose.last(),center,.10f,e.kind().color,.9f);
         for(int i=0;i<5;i++){double a=t+i*Math.PI*2/5;SpiritEnergy.orb(out,pose.last(),new Vector3f((float)Math.cos(a)*.3f,(float)Math.sin(a*.7)*.2f,(float)Math.sin(a)*.3f),.08f,e.kind().color,.55f);}
     }
     @Override public ResourceLocation getTextureLocation(WillWispEntity e){return SpiritEnergy.SOFT_GLOW;}

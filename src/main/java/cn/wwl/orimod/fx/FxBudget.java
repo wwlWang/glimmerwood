@@ -6,6 +6,11 @@ import cn.wwl.orimod.config.VisualQuality;
 public final class FxBudget {
     /** Hard ceiling per burst so DETAILED cannot turn a stomp into a frame spike. */
     public static final int MAX_PER_BURST = 48;
+    /** One spark per changed leaf, drained across ticks; never forced when advanced particles are off. */
+    public static int bloomSparks(VisualQuality quality, boolean advancedParticles) {
+        if(!advancedParticles)return 0;
+        return switch(quality){case FLUENT->8;case BALANCED->16;case DETAILED->24;};
+    }
 
     /** Tide motes per second: FLUENT 2, BALANCED 3, DETAILED 4; off retains only fog. */
     public static int tideParticles(VisualQuality quality, boolean advanced) {

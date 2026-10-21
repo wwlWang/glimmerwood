@@ -52,6 +52,20 @@ def leaves(x, y):
     return (0, 0, 0, 0)
 
 
+def bloomed_leaves(x, y):
+    # Retain every original cutout hole. Four 2x2-pixel flowers (on the output
+    # 16x16 grid) punctuate a saturated cyan canopy, rather than bleaching it.
+    base = leaves(x, y)
+    if not base[3]:
+        return base
+    px, py = x // 2, y // 2
+    for cx, cy in ((2, 3), (10, 3), (6, 8), (12, 10)):
+        if cx <= px < cx+2 and cy <= py < cy+2:
+            return rgba((255, 236, 171) if (px, py) == (cx+1, cy+1) else (238, 255, 255), base[3])
+    light = base[2]-216
+    return rgba((80+light*.3, 230+light*.5, 252+light*.1), base[3])
+
+
 def vine(x, y, tip):
     # A slender wavy stem and alternating pointed blue-white leaflets; no warm berry shapes.
     stem = 16 + 2 * math.sin(y * math.pi / 16)
@@ -97,7 +111,7 @@ def main():
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     images = {"spirit_log": bark, "spirit_log_top": end, "spirit_leaves": leaves,
-              "spirit_leaves_bloomed": lambda x,y: tuple(min(255,c+34) if i<3 else c for i,c in enumerate(leaves(x,y))),
+              "spirit_leaves_bloomed": bloomed_leaves,
               "spirit_vine": lambda x, y: vine(x, y, False),
               "spirit_vine_tip": lambda x, y: vine(x, y, True),
               "spirit_tree_heart": lambda x, y: heart(x, y, False),

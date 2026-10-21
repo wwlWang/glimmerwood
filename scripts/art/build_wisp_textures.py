@@ -7,7 +7,7 @@ import struct
 import zlib
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'src/main/resources/assets/orimod/textures/gui'
-COLORS = {'heart': (196,239,255), 'wing': (225,217,255), 'earth': (185,246,208)}
+COLORS = {'heart': (255,213,138), 'wing': (198,160,255), 'earth': (117,232,176)}
 
 def png(kind, missing):
     def pixel(x,y):

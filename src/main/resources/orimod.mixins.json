@@ -24,7 +24,9 @@
     "SpiritCameraMixin",
     "SpiritLocalSprintParticlesMixin",
     "GloomTideSkyMixin",
-    "RestorationKeyboardMixin"
+    "RestorationKeyboardMixin",
+    "RestorationLeavesMixin",
+    "RestorationMouseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

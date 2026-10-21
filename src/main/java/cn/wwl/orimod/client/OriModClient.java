@@ -67,6 +67,8 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::fog);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.BloomSparkClient::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.BloomSparkClient::logout);
         modEventBus.addListener(this::onClientSetup);
     }
 

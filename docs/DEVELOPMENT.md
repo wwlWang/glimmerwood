@@ -304,7 +304,7 @@ git diff -- src/main/resources
 
 ## R108 意志之光与复苏验收
 
-客户端与 Gradle 互斥；图形启动固定为 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient`。本轮实现期间未启动客户端。
+客户端与 Gradle 互斥；图形启动固定为 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient`。R108 基础功能已由 Claude 完成 18 项真实输入验收；视觉打磨使用同一 llvmpipe 环境补拍。
 
 仅 OP（权限 2）调试命令：
 
@@ -322,9 +322,9 @@ git diff -- src/main/resources
 
 普通流程：击败两位首领后，在祭坛上方各出现属于参与者自己的光实体；心之光仍留在祭坛，R54 逃离后可返回拾取。每次击败按原首领结算范围内存活、非旁观玩家发放，已收集不再出现，已有待领保留原祭坛而不转移。第三片净化按 R106 固定参与者快照逐人计数，离线补奖时同样计数，光留在第三片核心处。实体不掉物品、不自动消失、不受伤，个人待领账本可恢复缺失实体；只在实体已经加载的区块修复，绝不为待领光加载区块。面板第四页显示三道光的剪影/已收集图标、来源、个人净化计数与待领维度/坐标，不覆盖指引 HUD。
 
-集齐后，精灵形态右键已向自己赐福过的树心（未领过先领一次）。15 秒/300 tick 仪式保留鼠标视角，开始包携带服务端会话原点的 double 坐标，客户端立即采用同一原点锁位（不自行记录预测位置）；Esc 仅在会话内截获并立即走同一结算。结束包、断线及客户端会话租约失效均解除截获；普通状态 Esc 仍打开暂停菜单。断线、死亡、换维度、树心消失取消仪式，不消耗三道光，不发奖励，可回来重试。称号成就「守光者」、500 灵光及「萤：光回来了。森林会记得你。」每人只结算一次；之后其他玩家也可完成自己的结局。
+集齐后，精灵形态右键已向自己赐福过的树心（未领过先领一次）。开场由服务端在入口外 4–6 格选取合法站位（相对自然树心向北 7–9 格，左右/高度允许各偏移 1 格）。检查已加载区块、坚实安全地面、完整移动通道和目的地生物碰撞；找不到就留在原地，不强载区块、不穿过板根。服务端保留 yaw/pitch；客户端仅第一人称开场约20tick平滑引导至树冠下沿附近，任何原始鼠标位移立刻终止并在本会话不恢复。第三人称不引导，不切相机类型。由 MouseHandler.onMove/turnPlayer 在原版灵敏度/电影镜头平滑前处理，中途可自由转头。15 秒/300 tick 仪式保留鼠标视角，开始包携带服务端会话原点的 double 坐标，客户端立即采用同一原点锁位（不自行记录预测位置）；Esc 仅在会话内截获并立即走同一结算。结束包、断线及客户端会话租约失效均解除截获；普通状态 Esc 仍打开暂停菜单。断线、死亡、换维度、树心消失取消仪式，不消耗三道光，不发奖励，可回来重试。称号成就「守光者」、500 灵光及「萤：光回来了。森林会记得你。」每人只结算一次；之后其他玩家也可完成自己的结局。
 
-分镜：0 秒树回应/锁位；1–2 秒三光显现并环绕；3/4/5 秒心、翼、地之光依次飞向树心；6 秒根部扩散光环；7–11 秒树冠从低到高实际 BLOOMED、「萤」绕树；12 秒收束；13–14 秒冲天光柱与轻微屏幕提亮；15 秒结算/淡出。Esc 不打开新 Screen，不强制摄像机方向。仪式途中局部灵叶变化取消时可回退，首位完成后全世界的已加载树逐批 BLOOMED，未加载树在加载时处理。
+分镜：0 秒树回应/锁位；1–2 秒三光显现并环绕；3/4/5 秒心、翼、地之光依次飞向树心；6 秒根部扩散光环；7–11 秒树冠从低到高实际 BLOOMED、「萤」绕树；12 秒收束；13–14 秒冲天光柱与轻微屏幕提亮；15 秒结算/淡出。Esc 不打开新 Screen；开场引导结束或被鼠标打断后完全交还视角。仪式途中局部灵叶变化取消时可回退，首位完成后全世界的已加载树逐批 BLOOMED，未加载树在加载时处理。
 
 世界效果存在主世界 SavedData（覆盖整个存档的各维度）：潮夜每波数量 `ceil(原波数量 / 2)`，只出现喷吐者，`maxNearby` 配置不变。加载事件只记区块，服务端按区段 `maybeHas` 预筛；所有维度共享每 tick 最多 256 次方块写入、32768 格扫描和约 2ms 软时间片。叶片切换使用 UPDATE_CLIENTS，亮度 9→12，reset 反向 12→9；树心原本已是光照15，不进一步提高。所有待办只保存运行时加载区块坐标，存档里的世界标志保证重启恢复，不扫未加载世界。
 
@@ -336,6 +336,17 @@ git diff -- src/main/resources
 | `server.restoration` | `active`、`remaining`（0–300）、`completed`（个人当前回执）、`restored`（全存档）、`epoch` |
 | `server.restoration.pending` | `[{kind, dimension, position:[x,y,z]}]`；待领实体来源坐标，最多三条 |
 | `server.restoration` 更新预算 | `bloomChunks`、`bloomWrites`、`bloomMs`（最近批次实耗时） |
-| `client.restoration` | `active`、`remaining`、`restored`、`completed`、`session`、`second`（演出秒数） |
+| `client.restoration` | `active`、`remaining`、`restored`、`completed`、`session`、`second`（演出秒数）、`sparkPending`（队列）、`sparkLast`（本 tick 提交粒子数）、`sparkEmitted`（本客户端世界累计提交数）、`viewGuide:{active,cancelled,targetYaw,targetPitch}` |
 
 复现资源：`python3 -B scripts/art/build_spirit_tree_textures.py --check`、`python3 -B scripts/art/build_wisp_textures.py --check`、`python3 -B scripts/export-spirit-fx.py --check`。新增源文件 `art/source/effects/spirit/wisp_collect.json`、`art/source/effects/spirit/restoration.json` 必须与导出定义一起提交。FX 通道9、同伴通道9、新复苏通道1；ProgressAction 仍1，Esc 的目标使用32字符会话令牌，不增加原字段长度。
+
+
+R108 视觉打磨：盛开叶片保留原来的 cutout 孔隙，保留高饱和青色底，点缀四朵2×2近白小花与淡金花心；盛开模型shade=false/ambientocclusion=false，解除方向性压暗以显出满亮度；三光和图标统一心金、翼紫、地青绿，入树拖尾同色、吸收后逐个淡出。光柱用独立宽横向渐隐贴图，亮芯 1.8 格、外晕 3.6 格、高 48 格，12 段连续向上淡出，避免把原能量细线贴图横向拉宽后仍只有细线。
+
+客户端仅在真实方块更新的灵叶 `BLOOMED: false → true` 时排队一次闪光；初次区块载入不重放。全客户端每 tick 按流畅/均衡/精细最多 8/16/24 个，受高级粒子开关及原版粒子设置约束；最多排队 2048 个、160 tick 过期，离线/换世界清空。叶片本身仍使用原共享写入预算与光照 9→12，无新网络包或通道升级。
+
+固定机位补拍：打开已有 `orimod_dev_r108`（树心 4000,120,3998）后运行 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" python3 -B scripts/capture-r108-polish.py <唯一证据名>`。脚本使用真实右键，原始锚点 (4000.5,120,3996.5)，`review_camera follow=false`，三个偏移 (-4,2.5,-5)/(-10,6,-18)/(-12,4,-24)，目标高度分别 1.3/8/10；固定夜晚、FOV70、关闭 shader，另拍不动鼠标时第1/5/9/13秒的第一人称，并通过XTest真实鼠标位移走GLFW/MouseHandler验证缓动中断。结果记录实际时刻、相机设置、玩家位置和粒子计数；清除 forceload、恢复界面和相机。它会 reset 该测试世界的复苏数据，只在验收存档使用。旧参照为 `evidence/r108-capture-v001`，不需要替换工作区资源；旧图未保存完整相机目标高度/帧时刻，因此只能比较指定偏移和同棵树，不能声称逐像素同帧。
+
+新增确定性光柱贴图源脚本 `scripts/art/build_restoration_texture.py`，用 `--check` 校验 `textures/misc/restoration_column.png`。本次 polish 没有新增 `art/source` JSON；前述两份 R108 FX JSON 已在 fbb3c90 中，22 个 FX 导出不变。
+
+实拍色彩回归见 `evidence/r108-polish-after-v003/canopy-metrics.json`：Sodium下盛开模型关闭方向压暗/AO，树冠ROI饱和度+12.2%、HSV亮度+49.2%，没有增加光照引擎写入或neoforge_data顶点光照字段。
