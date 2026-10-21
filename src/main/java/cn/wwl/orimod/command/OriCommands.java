@@ -64,6 +64,7 @@ public final class OriCommands {
                                 .executes(c -> unlock(c, java.util.List.of(c.getSource().getPlayerOrException())))
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
+                .then(Commands.literal("ruin").then(Commands.literal("secrets").executes(OriCommands::secrets)))
                 .then(Commands.literal("tree").then(Commands.literal("nearest")
                         .executes(c -> nearestTree(c, SpiritTreeSearch.DEFAULT_RADIUS))
                         .then(Commands.argument("radius", IntegerArgumentType.integer(1, SpiritTreeSearch.MAX_RADIUS))
@@ -113,6 +114,18 @@ public final class OriCommands {
                     status.get("kills"), status.get("nextWaveIn")), false);
         }
         return 1;
+    }
+
+    private static int secrets(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+        var result = cn.wwl.orimod.world.RuinSecrets.find(c.getSource().getPlayerOrException());
+        if (result.secrets().isEmpty()) {
+            c.getSource().sendFailure(Component.translatable(result.inRuin() ? "commands.orimod.ruin.no_secrets" : "commands.orimod.ruin.outside")); return 0;
+        }
+        for (var secret : result.secrets()) {
+            var p = secret.entrance();
+            c.getSource().sendSuccess(() -> Component.translatable("commands.orimod.ruin.secret",secret.kind().title(),p.getX(),p.getY(),p.getZ(),secret.facing().getName(),secret.blocks()),false);
+        }
+        return result.secrets().size();
     }
 
     // ---- actions (public for GameTests) --------------------------------------------------------------------------

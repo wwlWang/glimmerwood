@@ -76,6 +76,34 @@ def validate_contracts(root):
                 points += [area["from"], area["to"]] + area.get("door", [])
         for point in points:
             require(within(point), f"{name}: route feature outside template: {point}")
+        secret = layout["secret"]
+        def cuboid(a, b):
+            return {(x,y,z) for x in range(a[0],b[0]+1) for y in range(a[1],b[1]+1) for z in range(a[2],b[2]+1)}
+        room = cuboid(secret["from"], secret["to"])
+        seal = cuboid(*secret["seal"])
+        interior = cuboid(*secret["interior"])
+        require(all(within(p) for p in room), f"{name}: secret outside old template")
+        require(seal <= room and interior <= room and not seal.intersection(interior), f"{name}: invalid secret geometry")
+        require(tuple(secret["vessel"]) in interior, f"{name}: secret vessel outside chamber")
+        require(all(blocks.get(p) in ("minecraft:air", "minecraft:ladder", "orimod:spirit_light_vessel") for p in interior),
+                f"{name}: blocked secret chamber")
+        require(secret["blocks"] in ("wall", "floor") and secret["facing"] in ("west", "east", "up"), f"{name}: invalid secret kind/direction")
+        require(tuple(secret["entrance"]) in seal, f"{name}: entrance not in seal")
+        require(all(blocks.get(p) == "orimod:cracked_ruin_" + secret["blocks"] for p in seal), f"{name}: missing secret seal")
+        require(len(seal) <= 64, f"{name}: seal exceeds collapse cap")
+        for p in [secret["vessel"], *layout["vessels"]]:
+            require(within(p) and blocks.get(tuple(p)) == "orimod:spirit_light_vessel", f"{name}: missing vessel: {p}")
+        require(len(layout["vessels"]) in (2,3), f"{name}: wrong decorative vessel count")
+        protected = {tuple(map(int,p)) for p in points}
+        protected.update(tuple(a["position"]) for a in layout["critical"])
+        for area in layout["clearances"]:
+            protected.update(cuboid(area["from"],area["to"]))
+        if "vault" in layout:
+            protected.update(cuboid(layout["vault"]["from"],layout["vault"]["to"]))
+        if "spirit_sand" in layout:
+            a,b = layout["spirit_sand"]
+            protected.update(cuboid(a,[b[0]+2,b[1],b[2]]))
+        require(not room.intersection(protected), f"{name}: secret intersects existing route feature")
         print(name, "contract passed")
 
 

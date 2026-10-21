@@ -176,12 +176,19 @@ public final class SpiritProgression {
         if (event.getEntity() instanceof Enemy && event.getSource().getEntity() instanceof ServerPlayer player && SpiritData.isAwakened(player)) {
             // R35: Ori-style burst of single orbs, more for tougher enemies (a zombie still gives 2).
             var victim = event.getEntity(); var random = victim.getRandom();
-            for (int i = lightFor(victim.getMaxHealth(), cn.wwl.orimod.world.GloomTide.tagged(victim)); i > 0; i--) {
-                var orb = new ItemEntity(player.level(), victim.getX(), victim.getY() + .4, victim.getZ(), new ItemStack(OriItems.SPIRIT_LIGHT.get()));
-                orb.setDeltaMovement((random.nextDouble() - .5) * .3, .25 + random.nextDouble() * .15, (random.nextDouble() - .5) * .3);
-                event.getDrops().add(orb);
-            }
+            event.getDrops().addAll(lightOrbs(player.level(),victim.position().add(0,.4,0),lightFor(victim.getMaxHealth(),cn.wwl.orimod.world.GloomTide.tagged(victim)),random));
         }
+    }
+
+    /** Shared R35 orb burst: enemy drops and R103 vessels use identical items, velocity and pickup handling. */
+    public static java.util.List<ItemEntity> lightOrbs(net.minecraft.world.level.Level level, net.minecraft.world.phys.Vec3 at, int amount, net.minecraft.util.RandomSource random) {
+        var orbs = new java.util.ArrayList<ItemEntity>();
+        for (int i = 0; i < amount; i++) {
+            var orb = new ItemEntity(level,at.x,at.y,at.z,new ItemStack(OriItems.SPIRIT_LIGHT.get()));
+            orb.setDeltaMovement((random.nextDouble()-.5)*.3,.25+random.nextDouble()*.15,(random.nextDouble()-.5)*.3);
+            orbs.add(orb);
+        }
+        return orbs;
     }
 
     public static void pickup(ItemEntityPickupEvent.Pre event) {

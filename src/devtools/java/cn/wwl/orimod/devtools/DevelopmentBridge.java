@@ -337,6 +337,7 @@ public final class DevelopmentBridge {
                     result.put("hardcore", player.server.getWorldData().isHardcore());
                     result.put("gameMode", player.gameMode.getGameModeForPlayer().getName());
                     result.put("search", cn.wwl.orimod.world.RuinLocator.debug(player));
+                    result.put("secrets", cn.wwl.orimod.world.RuinSecrets.find(player).debug());
                     var session = cn.wwl.orimod.world.SpiritChallenge.session(player);
                     result.put("active", session != null);
                     if (session != null) {

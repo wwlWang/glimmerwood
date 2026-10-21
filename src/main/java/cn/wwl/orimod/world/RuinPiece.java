@@ -20,12 +20,20 @@ public final class RuinPiece extends TemplateStructurePiece {
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement) {
         super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(placement.rotation()), placement.origin());
         this.kind = kind;
+        this.secret = kind.layout().secret();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, ignored -> settings(RuinPlacement.readRotation(tag.getString("Rot"))));
         this.kind = kindOf(templateName);
+        if (tag.contains("OriSecret", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+            var s = tag.getCompound("OriSecret");
+            this.secret = new RuinKind.Secret(BlockPos.of(s.getLong("Entrance")), net.minecraft.core.Direction.byName(s.getString("Facing")), s.getString("Blocks"));
+        } else this.secret = null; // Pre-R103 starts keep their actual old layout, with no invented secret.
     }
     private final RuinKind kind;
+    private final RuinKind.Secret secret;
+    public RuinKind kind() { return kind; }
+    public RuinKind.Secret secret() { return secret; }
     private static ResourceLocation template(RuinKind kind) { return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + kind.id); }
     private static StructurePlaceSettings settings(Rotation rotation) { return new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation); }
     private static RuinKind kindOf(String template) {
@@ -37,6 +45,10 @@ public final class RuinPiece extends TemplateStructurePiece {
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
+        if (secret != null) {
+            var s = new CompoundTag(); s.putLong("Entrance", secret.entrance().asLong());
+            s.putString("Facing", secret.facing().getName()); s.putString("Blocks", secret.blocks()); tag.put("OriSecret",s);
+        }
     }
     @Override public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator,
                                       RandomSource random, BoundingBox chunkBounds, ChunkPos chunk, BlockPos pivot) {

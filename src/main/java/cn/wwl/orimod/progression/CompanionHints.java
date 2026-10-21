@@ -29,6 +29,7 @@ public final class CompanionHints {
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
         SPIRIT_TREE("spirit_tree", 24),
+        CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
         public final String id;
@@ -163,6 +164,8 @@ public final class CompanionHints {
         if (state.is(OriBlocks.LIFE_CELL_PEDESTAL.get()) || state.is(OriBlocks.ENERGY_CELL_PEDESTAL.get())) return Hint.CELL_PEDESTAL;
         if (state.is(OriBlocks.GLOOM_ALTAR.get()) || state.is(OriBlocks.STORM_ALTAR.get())) return Hint.BOSS_ALTAR;
         if (state.is(OriBlocks.SPIRIT_TREE_HEART.get())) return Hint.SPIRIT_TREE;
+        if (state.is(OriBlocks.CRACKED_RUIN_WALL.get())) return Hint.CRACKED_WALL;
+        if (state.is(OriBlocks.CRACKED_RUIN_FLOOR.get())) return Hint.CRACKED_FLOOR;
         return null;
     }
 

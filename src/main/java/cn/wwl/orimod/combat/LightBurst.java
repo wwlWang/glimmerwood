@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * R39 Light Burst (WotW): a thrown orb of light. It is a Bash anchor for its own thrower while it flies;
  * Bashing it or hitting anything detonates it, as does its fuse. The blast hurts visible hostiles nearby and
- * never breaks blocks or hurts players.
+ * breaks only R103 ability-sensitive ruin blocks, and never hurts players.
  */
 public final class LightBurst extends ThrowableProjectile {
     public static final float COST = 15, DAMAGE = 6;
@@ -62,6 +62,7 @@ public final class LightBurst extends ThrowableProjectile {
             }
         }
         cn.wwl.orimod.block.GloomWaterBlock.cleanse(level, blockPosition(), (int) RADIUS);
+        cn.wwl.orimod.block.CrackedRuin.area(level, owner, position(), RADIUS, cn.wwl.orimod.block.CrackedRuin.Source.LIGHT_BURST);
         cn.wwl.orimod.block.SpiritLanternBlock.igniteAround(level, position(), RADIUS + 1, cn.wwl.orimod.block.SpiritLanternBlock.LIT_TICKS);
         SpiritFx.emit(level, SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
         level.playSound(null, getX(), getY(), getZ(), SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.PLAYERS, .8f, 1.3f);

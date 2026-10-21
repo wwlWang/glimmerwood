@@ -381,5 +381,14 @@
   "line.orimod.tide_end": "Glimmer: Dawn at last. The tide has gone. You held on.",
   "line.orimod.tree_found": "Glimmer: A Spirit Tree! It remembers you and lends you its strength.",
   "line.orimod.low_health": "Glimmer: You're badly hurt! Back off and find a moment to heal.",
-  "line.orimod.night_one": "Glimmer: Night is falling. Stay close; I'll light the way."
+  "line.orimod.night_one": "Glimmer: Night is falling. Stay close; I'll light the way.",
+  "block.orimod.cracked_ruin_wall": "Cracked Ruin Wall",
+  "block.orimod.cracked_ruin_floor": "Cracked Ruin Floor",
+  "block.orimod.spirit_light_vessel": "Spirit Light Vessel",
+  "hint.orimod.cracked_wall": "Glimmer: Cracks in the wall! Try Charge Flame or Spirit Smash!",
+  "hint.orimod.cracked_floor": "Glimmer: It sounds hollow underfoot. Try Stomp!",
+  "line.orimod.first_vessel": "Glimmer: So much light! More crystal vessels are hidden elsewhere.",
+  "commands.orimod.ruin.outside": "You are not inside a ruin.",
+  "commands.orimod.ruin.no_secrets": "This ruin has no recorded secret chamber (legacy ruin).",
+  "commands.orimod.ruin.secret": "%s secret entrance: [%s, %s, %s], facing %s, sealed by %s."
 }

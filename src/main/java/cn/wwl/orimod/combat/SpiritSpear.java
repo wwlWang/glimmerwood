@@ -58,6 +58,7 @@ public final class SpiritSpear extends ThrowableProjectile {
     @Override protected void onHitBlock(BlockHitResult result) {
         super.onHitBlock(result);
         if (!level().isClientSide) {
+            cn.wwl.orimod.block.CrackedRuin.spear(this, result);
             level().playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, .8f, 1.6f);
             discard();
         }

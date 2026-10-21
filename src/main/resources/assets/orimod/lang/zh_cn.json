@@ -381,5 +381,14 @@
   "line.orimod.tide_end": "萤：天亮了，潮水退了。你守住了。",
   "line.orimod.tree_found": "萤：是灵树！它记得你，把力量借给了你。",
   "line.orimod.low_health": "萤：你伤得很重！先退开，找机会回复。",
-  "line.orimod.night_one": "萤：天黑了。别离我太远，我会照亮路。"
+  "line.orimod.night_one": "萤：天黑了。别离我太远，我会照亮路。",
+  "block.orimod.cracked_ruin_wall": "裂壁",
+  "block.orimod.cracked_ruin_floor": "裂地板",
+  "block.orimod.spirit_light_vessel": "灵光容器",
+  "hint.orimod.cracked_wall": "萤：墙上有裂缝，试试蓄力灵焰或灵锤！",
+  "hint.orimod.cracked_floor": "萤：脚下在发空，试试下砸！",
+  "line.orimod.first_vessel": "萤：好多灵光！这样的晶罐还藏在别处。",
+  "commands.orimod.ruin.outside": "不在遗迹中。",
+  "commands.orimod.ruin.no_secrets": "此遗迹没有秘室记录（旧版遗迹）。",
+  "commands.orimod.ruin.secret": "%s 秘室入口：[%s, %s, %s]，朝向 %s，封口 %s。"
 }

@@ -41,6 +41,28 @@
 
 录制使用 `record_video` 操作指定 `name`、`fps`、`seconds`，需要 PATH 中存在 FFmpeg。画面直接来自游戏渲染目标，以 RGBA 流交给编码器；无需桌面捕获。等待状态中的 `recording=false` 且 `pending=0` 后执行 `save_video`，再将返回的 `frames.json` 路径交给 `scripts/encode-capture.py`。缺失的采集时隙保持前一帧，不加速播放；采集时间戳和重复帧数量随清单保存。录屏与性能采样分开执行。
 
+## R103 裂壁、容器与秘室验收
+
+调试准备：`/ori awaken`、`/ori form on`、`/ori unlock all`、`/ori giveall`、`/ori energy fill`。用 `/setblock ~ ~ ~3 orimod:cracked_ruin_wall`、`cracked_ruin_floor`、`spirit_light_vessel` 摆测试目标；`inspect_block` 可读 `collapsing`。裂壁允许 CHARGE_FLAME/SMASH/LIGHT_BURST/BASHED_IMPACT/SPEAR，裂地板仅STOMP且必须在落点下方1.5格内。普通手/工具、活塞、TNT/苦力怕、凋灵、末影龙不能打开裂壁/地板；创造可移除。连锁面相连、半径8、最多64块，按直线距离ceil延迟1tick/格，期间再命中不重排，新放块不加入旧波。
+
+容器可徒手或用刀打碎、用箭射碎，也接受上述能力和普通灵焰；亮度10，慢脉动粒子。碎裂散开25–40颗R35灵光，不掉方块物品；先移除再发奖避免重复。自动灵焰优先既有敌人目标，无目标时只选6格内且射线直达的容器，隔裂壁不能打碎。验证无敌人时请留意自动灵焰可能先于手动操作打掉裸露容器。`first_vessel` 沿用R102门控、240tick最大等待及同伴开关。
+
+新生成的每类遗迹各有一个秘室、室内1个及室外2个容器。下表坐标均为**NBT模板局部坐标（已含森林/溪谷的4格垫层）**，通过 `RuinPiece.placement()` 处理世界原点和旋转；朝向为封口朝外的法线。外壳包含封口，内部空间均为3×3×3。
+
+| 遗迹 / 模板尺寸 | 外壳 from → to | 室内 from → to | 入口 / 朝向 / 封口 | 室内容器 |
+| --- | --- | --- | --- | --- |
+| forest_spring / 19×17×31 | (13,5,14) → (17,9,18) | (14,6,15) → (16,8,17) | (13,6,16) / west / wall；封口(13,6,15)→(13,8,17) | (15,6,16) |
+| creek_ruins / 21×21×35 | (1,2,23) → (5,6,27) | (2,3,24) → (4,5,26) | (3,6,25) / up / floor；封口(2,6,24)→(4,6,26) | (3,3,25) |
+| cave_altar / 23×19×39 | (1,1,22) → (7,5,26) | (2,2,23) → (4,4,25) | (7,2,24) / east / wall；封口(5,2,23)→(7,4,25)，厚3格 | (3,2,24) |
+
+室外装饰容器：森林(2,6,6)/(16,6,29)，溪谷(2,6,6)/(18,6,32)，洞穴(5,2,16)/(18,2,35)。溪谷返回梯在(4,3..5,25)，攀回打开的附属平台即可，无须追加技能。检查点、挑战净空、原平台地板、钥石门、灵沙通道、祭坛和地图石字段均保持；地图石勘察仍只数灵格、钥石和祭坛。
+
+进入自然生成遗迹后执行 `/ori ruin secrets`：找到返回result>0及入口/朝向/封口类型；不在遗迹返回0并提示“不在遗迹中”，旧版遗迹返回0并说明无秘室记录。`{"op":"ruin_state"}` 的顶层 `secrets` 与命令共用数据源，格式为 `[{"kind":"forest_spring","entrance":[x,y,z],"facing":"west","blocks":"wall"}]`；不在遗迹或旧piece无记录时为 `[]`。查询只用已加载starts/references，不扫描方块；入口被打碎后仍能报告原位置。原版 `/place structure` 只放方块、不登记结构引用，可用于外观/破坏验收，不能单独用于该命令的定位验收。
+
+资源：`~/.local/opt/orimod-art-venv/bin/python -B scripts/check-ruins.py` 为只读校验；改生成器后显式 `--write` 才更新资产，随后运行 `scripts/test_check_ruins.py`（相同venv，nbtlib2.0.4）。`python3 -B scripts/art/build_cracked_ruin_textures.py --check` 核对4张原创纹理与模型/方块状态/空掉落表。存量已生成区块不迁移，旧piece不会从新layout推测秘室。坍塌计划刻及COLLAPSING随区块保存，卸载暂停、重载继续；服务器无独立坍塌队列。
+
+同伴新增两个hint与first_vessel后协议为4（wire 0/4），两端版本需匹配；旧v3与新v4相互明确拒绝。客户端继续用llvmpipe + DISPLAY=:0启动，与其他Gradle任务互斥。R103等待Claude实机验证裂纹、晶罐脉动、坍塌观感及秘室路径。
+
 ## R102「萤」台词验收
 
 `{"op":"spirit_state"}` 的 `client.line` 包含 `id`（不含line/前缀）、`text`（当前客户端语言的完整文案）、`remaining`（剩余客户端tick）。未显示时为 `{"id":"","text":"","remaining":0}`。台词显示60tick，末20tick淡出；底行位于屏幕底部以上84像素，原版actionbar在68像素处，长英文向上换行，保留功能性消息。沿用“萤的引导提示”开关，关闭时不显示/响铃/脉冲；已发送的一次性记录仍由服务端保存，与原hint行为相同。
@@ -53,7 +75,7 @@
 
 一次性记录为 rewards `line/<id>`，实际发送后写入。排队下线不保存，登录不会回放旧队列；以后时机再次满足可以再排队。换维度/离开精灵形态会清过时队列，换维度保留会话内冷却。遗迹每20tick仅查当前区块及已加载结构引用，三类记录全齐后跳过。
 
-CompanionHintPayload协议3必须两端匹配；在协议版本握手之外，新格式也带0/3标记和kind，旧v2包、新v3包的交叉解码均明确拒绝。FX与潮夜协议不变。客户端仍用llvmpipe + `DISPLAY=:0`，和全量Gradle互斥；台词布局与实际触发由 `scripts/verify-r102.py` 实拍验收。
+R102引入CompanionHintPayload协议3（R103已升为4），必须两端匹配；在协议版本握手之外，新格式也带0/3标记和kind，旧v2包、新v3包的交叉解码均明确拒绝。FX与潮夜协议不变。客户端仍用llvmpipe + `DISPLAY=:0`，和全量Gradle互斥；台词布局与实际触发由 `scripts/verify-r102.py` 实拍验收。
 
 ## R101 腐光潮夜验收
 

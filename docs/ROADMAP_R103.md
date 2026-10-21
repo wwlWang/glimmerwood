@@ -65,6 +65,16 @@
 
 ---
 
+### R103 实现补充
+
+裂块防绕过：PushReaction.BLOCK、wither_immune/dragon_immune、不在enderman_holdable；硬度-1、防爆1200。连锁以已加载同类方块快照执行，COLLAPSING期间不重排，新增方块不加入；scheduleTick随区块保存，延迟按直线距离ceil，卸载暂停/重载继续。猛击额外碰撞追踪限40tick，不改原发射参数。
+
+秘室保持模板尺寸/原点和既有路线，采用森林东侧室、溪谷西侧附属平台下的地窖（返回梯）、洞穴钥石室南侧三层封口。详细模板局部坐标见 DEVELOPMENT。新piece保存入口/朝向/类型，旧piece无字段明确无秘室；`ruin_state.secrets` 与 `/ori ruin secrets` 共用已加载结构查询，输出 `[{kind,entrance:[x,y,z],facing,blocks:"wall|floor"}]`，遗迹外为空。只读check-ruins及test_check_ruins均列入交付检查。
+
+灵焰只在没有可选敌人目标时寻找6格内容器，要求射线首先命中该容器；不穿墙。新增提示与台词使同伴协议升4，旧版明确拒绝；不新增FX类型。
+
+---
+
 ## R104 光敏灵台（Light Platforms）
 
 **原作：** BF / WotW 里靠光显现或启动的平台和机关。**MC 适配：** 一种平时没有碰撞的虚影方块，被光照到后变成实心平台，过一会儿再淡回虚影。它把 R96 灵灯、R98 灵闪、R39 光爆串成一类解谜。

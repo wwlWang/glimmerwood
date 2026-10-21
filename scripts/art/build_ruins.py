@@ -1,4 +1,4 @@
-"""Author the three vanilla-block ruin templates and their runtime route contracts.
+"""Author the three ruin templates and their route/secret contracts.
 
 Requires the nbtlib version in requirements-art.txt and an explicit output root.
 The generated JSON is also read by the server, so safety checks follow the same layout.
@@ -68,6 +68,24 @@ class Template:
     def important(self, x, y, z, block):
         self.put(x, y, z, block)
         self.critical.append({"position": [x, y + self.pad, z], "block": block if ":" in block else "minecraft:" + block})
+
+    def secret(self, shell, interior, seal, entrance, facing, kind, vessel, decorations):
+        """An optional side branch, fully inside the old template footprint; never a challenge checkpoint.
+
+        Geometry is baked into NBT. Coordinates are exported for new pieces to snapshot in their saves.
+        R44-R70 runtime placements and the existing route contract remain untouched.
+        """
+        self.box(*shell, "deepslate_bricks" if self.name == "cave_altar" else "mossy_stone_bricks")
+        self.box(*interior, "air")
+        self.box(*seal, "orimod:cracked_ruin_" + kind)
+        self.put(*vessel, "orimod:spirit_light_vessel")
+        for pos in decorations:
+            self.put(*pos, "orimod:spirit_light_vessel")
+        self.features["secret"] = {
+            "from": self.shifted(shell[0]), "to": self.shifted(shell[1]),
+            "interior": [self.shifted(p) for p in interior], "seal": [self.shifted(p) for p in seal],
+            "entrance": self.shifted(entrance), "facing": facing, "blocks": kind, "vessel": self.shifted(vessel)}
+        self.features["vessels"] = [self.shifted(p) for p in decorations]
 
     def export(self, shrine, safe, entry, surface, checkpoints, clearances):
         self.important(*shrine, "orimod:" + self.name + "_shrine")
@@ -148,6 +166,10 @@ def forest(root):
     t.updrafts((8, 2, 20), (10, 2, 21))  # R46: lift below the final glide gap.
     t.features["map_stone"] = t.shifted((5, 2, 3))  # R62: beside the entry.
     t.features["storm_altar"] = t.shifted((4, 2, 29))  # R70: rear storm arena.
+    # R103: east of the middle route, away from the root arch, shrine, cells and storm arena.
+    t.secret(((13, 1, 14), (17, 5, 18)), ((14, 2, 15), (16, 4, 17)),
+             ((13, 2, 15), (13, 4, 17)), (13, 2, 16), "west", "wall", (15, 2, 16), [(2, 2, 6), (16, 2, 29)])
+    t.put(12, 1, 16, "mossy_stone_bricks")  # Dry footing in front of the cracked doorway.
     t.export((12, 2, 4), (9.5, 2, 5.5), (9.5, 2, 4.5), 2,
              [((8.5, 4, 8.5), "wall_jump", 1), ((8.5, 6, 15.5), "jump", 2), ((9.5, 5, 25.5), "dash", 1)],
              [((6, 2, 4), (10, 6, 6)), ((6, 4, 7), (10, 7, 10)), ((7, 4, 11), (10, 8, 13)),
@@ -169,6 +191,11 @@ def creek(root):
     # R59: only existing water under the glide route is corrupted at placement.
     t.features["gloom_water"] = {"from": t.shifted((6, 1, 19)), "to": t.shifted((14, 1, 26))}
     t.features["map_stone"] = t.shifted((7, 2, 4))  # R62: beside the entry.
+    # R103: optional western deck, with a room in the existing four-block foundation pad.
+    # Keep the original Bash/Glide platform floors, support pillars and corrupted creek unchanged.
+    t.secret(((1, -2, 23), (5, 2, 27)), ((2, -1, 24), (4, 1, 26)),
+             ((2, 2, 24), (4, 2, 26)), (3, 2, 25), "up", "floor", (3, -1, 25), [(2, 2, 6), (18, 2, 32)])
+    t.box((4, -1, 25), (4, 1, 25), "ladder", facing="west", waterlogged="false")  # Return without another ability.
     t.export((13, 2, 4), (10.5, 2, 5.5), (10.5, 2, 4.5), 2,
              [((10.5, 7, 16.5), "bash", 1), ((10.5, 4, 30.5), "glide", 1)],
              [((9, 2, 6), (11, 10, 13)), ((9, 7, 14), (11, 9, 18)),
@@ -215,6 +242,9 @@ def cave(root):
                  for z in range(vault_from[2] + 1, vault_to[2])]}
     t.features["map_stone"] = t.shifted((7, 2, 15))  # R62: beside the shrine.
     t.features["spirit_sand"] = [t.shifted(sand_from), t.shifted(sand_to)]
+    # R103: south of (not inside or through) the key vault; east-facing three-block-thick seal.
+    t.secret(((1, 1, 22), (7, 5, 26)), ((2, 2, 23), (4, 4, 25)),
+             ((5, 2, 23), (7, 4, 25)), (7, 2, 24), "east", "wall", (3, 2, 24), [(5, 2, 16), (18, 2, 35)])
     t.export((8, 2, 15), (11.5, 2, 17.5), (11.5, 13, 1.5), 13,
              [((11.5, 8, 23.5), "grapple", 1), ((11.5, 2, 29.5), "stomp", 1), ((11.5, 2, 32.5), "blade", 1)],
              [((10, 3, 18), (12, 8, 21)), ((10, 8, 22), (12, 10, 25)), ((10, 2, 26), (12, 11, 34))])

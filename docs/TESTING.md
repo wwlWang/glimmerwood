@@ -1,5 +1,18 @@
 # 回归测试
 
+## R103 裂壁与灵光容器
+
+全量命令：`./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK21），**916 JUnit / 498 GameTest，0 失败、0 跳过**；较R102增加31项JUnit、62项GameTest。`python3 scripts/test-summary.py` 已复核XML，最终运行日志 `/tmp/r103-full-3.log`（不入库）。Python使用 `~/.local/opt/orimod-art-venv/bin/python` 的nbtlib2.0.4；`check-ruins.py`只读模式通过（17个产物、written=0），`test_check_ruins.py`的10项回归及R103纹理脚本 `--check` 通过。
+
+- JUnit：2种裂块×6种来源完整矩阵、同类面连接/空气与斜角隔离、8格球与ceil距离延迟、64块上限和快照不扩展、下砸斜下1格/3格外/错误高度、位置种子掉落25–40全范围；新hint/line的语言键/往返、协议4拒绝v2/v3、旧v3拒绝v4。
+- `cracked_ruin.*`：12条真实能力命中矩阵；手/钻石镐挖掘、创造拆除，实际TNT与6强度苦力怕爆炸；原版PistonBaseBlock/WitherBoss判定、dragon_immune和enderman_holdable标签及实体破坏拒绝。3×3延迟坍塌、空气隔墙、重复命中不重排、新放/替换不继承旧波、64上限、块状态/计划刻保存往返、不加载缺失区块、下砸斜下与3格外、真正弹出敌人撞墙、取消/普通投射物不算猛击。
+- `spirit_vessel.*`：服务端真实手/刀点击、玩家箭和5类能力；普通灵焰敌人优先、6格边界、裂壁视线遮挡；同tick重复命中不重复掉落，first_vessel发送后记录一次；R35磁吸/拾取入账；容器高度/亮度/无物品loot；两种裂纹hint。
+- `ruin_secrets.*`：三遗迹×四旋转生成、3个容器/遗迹、封口、critical保留、地图石统计不变、piece元数据保存、世界入口/朝向、命令与devtools共同数据；旧piece无字段不迁移，外部/未加载引用返回空且不加载。Python还锁住R103之前整份路线契约（除新增secret/vessels之外）及无效秘室不能写入仓库。
+
+首轮失败原文：`cracked_ruin.bashed_enemy_real_collision_breaks_wall ... Bashed enemy collision did not break wall`。夹具设NoAI会让Minecraft 1.21.1的isEffectiveAi=false，进而不执行LivingEntity.travel；已改为清空目标、保留真实运动，不改Bash速度。第二轮旧piece用例曾报 `Legacy lookup has invented secrets`：夹具的玩家位置偶尔跨起点区块边界而未登记引用，实际是inRuin=false；已补完整引用并拆开断言，不改查询规则。
+
+尚未启动客户端；裂纹/晶罐/脉动、坍塌声音与波纹、自然遗迹秘室入口、溪谷返回梯、Iris观感待Claude验收。位置和命令见 DEVELOPMENT 的R103表格；旧能力与挑战GameTest保持原样。
+
 ## R102 同伴情境台词
 
 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK21）：885 JUnit / 436 GameTest，0 失败、0 跳过。新增 CompanionLinesTest、扩充 CompanionHintPayloadTest，以及27项 `companion_lines.*` GameTest；原提示的 GameTest 未改动。

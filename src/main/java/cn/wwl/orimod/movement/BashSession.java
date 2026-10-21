@@ -70,6 +70,7 @@ public final class BashSession {
     public void release(Vec3 launchDirection, ServerPlayer redirector) {
         Entity entity = target.entity();
         if (entity == null) return;
+        cn.wwl.orimod.combat.BashedImpact.mark(entity, launchDirection, redirector, inFlightProjectile());
         FROZEN.remove(entity.getUUID(), this);
         if (launchDirection != null && entity instanceof cn.wwl.orimod.combat.LightBurst burst) { burst.detonate(); return; }
         if (!entity.isRemoved() && launchDirection != null && redirector != null && inFlightProjectile()) {

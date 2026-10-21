@@ -87,6 +87,7 @@ public final class SpiritHammerItem extends Item {
             target.hurtMarked = true;
         }
         if (airborne) { player.setDeltaMovement(player.getDeltaMovement().multiply(.3, 0, .3).add(0, -1.2, 0)); player.hurtMarked = true; }
+        cn.wwl.orimod.block.CrackedRuin.smash(player);
         cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, at.x, at.y, at.z, null);
         level.playSound(null, at.x, at.y, at.z, SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.PLAYERS, 1, .9f);
         return hits;
