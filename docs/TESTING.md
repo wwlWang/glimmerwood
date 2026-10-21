@@ -1,5 +1,30 @@
 # 回归测试
 
+## R107 实机反馈修正
+
+JDK21 `build runGameTestServer compileDevtoolsJava --console=plain` 完整通过：**1066 JUnit / 681 GameTest，0失败、0跳过**；日志 `/tmp/r107-fixes-full.log`。本次全量无失败，较初版新增14 JUnit（11种面板1.5倍价格、台地/入口边界、中英文案契约）及9 GameTest（4朝向×±7高差的真实阶梯/净空/地基/服务可达、群系允许/排除）。原11项面板拒绝改为按新保底语义购买且重复不扣费；2项技能前置测试改为余额不足拒绝、无需技能也能按全价保底，与商人一致。
+
+自然密度使用普通世界、实际 `/locate` 代码，不用平坦GameTest地形。seed107出生点(-96,69,368)，25点为x=-2144/-1120/-96/928/1952，z=-1680/-656/368/1392/2416的笛卡尔积；不筛除海洋。最终中位 **684.83**、最大 **1856.28**；实际入口距离672.98/1826.60，满足审查修订后的1100/2000。完整坐标、289项预检记录和源码哈希在 `evidence/r107-density-v003`；复现命令见DEVELOPMENT及 `scripts/verify-outpost-density.py`（独立新普通世界、与客户端互斥）。
+
+- 旧48/20：289候选仅4个OK，拒绝前三BIOME154、TERRAIN_RELIEF80、ENTRY_HEIGHT38；地形原本起伏≤3、不能比入口高1以上、入口±1，共同压低通过率。
+- 36/14+适坡台地/阶梯：1149.44/2598.21，未达标（`r107-density-v001`）。
+- 24/10全主世界群系对照：605.68/1489.38，但观感审查要求排除沙漠/恶地/冰刺/蘑菇岛（`v002`）。
+- 最终24/10、独立陆地标签：41 OK，拒绝前三BIOME126、TERRAIN_RELIEF119、ENTRY_APPROACH3，其余0。不同spacing对应不同候选位置，拒绝率不是同坐标配对比较。保底由面板商人价×1.5提供，不强制改动世界出生点或安排必出结构。
+
+结构/纹理 `--check` 和 `git diff --check` 通过；模板尺寸及服务点位不变。原商人/指引/潮夜实机结果在 `r107-accept-v001` 与 `r107-debug-v001`；修正后的中英文UI已在llvmpipe / GL4.6 / DISPLAY=:0实拍，`evidence/r107-ui-fixes-v002`记录2语言×2职业和4张图；每个购买按钮width≥textWidth+16。实测英语苔语62/46、路路56/40，中文84/68、78/62。效果行、全文提示、路路说明可读。首个UI探针未先加载测试场地，地板fill没有完成而玩家下落，附近商人列表为空；修正夹具后通过，生产代码未因此修改。语言恢复en_us，forceload已移除、世界和客户端均已正常关闭。新的自然地形外观待Claude复验。
+
+## R107 初版林栖驿站与交易
+
+1052 JUnit / 672 GameTest，0失败、0跳过。完整命令为 JDK21 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`，用 `python3 scripts/test-summary.py`核对XML；最终日志 `/tmp/r107-full5.log`。结构与纹理复现：锁定nbtlib2.0.4的venv运行 `scripts/art/build_glades_outpost.py --check`，2产物相同；`python3 -B scripts/art/build_merchant_textures.py --check`，2张64×64PNG相同；`git diff --check`。未启动客户端，原遗迹NBT/layout/model没有变化。
+
+- JUnit新增48项（含枚举扩展）：11种碎片价格/精确付款、2048种所有权组合下库存稳定/去重/排除已拥有、游戏日边界、距离/过期/缺钱；报价包往返、未知商品/负价/多于3行/重复商品/旧版本拒绝；6种指引目标往返，旧UTF指引解析器在读取新帧体前拒绝；同伴v7/v8互拒；四旋转、模板布局/群系/48×20数据契约、空旧索引和SavedData往返。
+- `merchant.*`：11种真实服务端碎片交易只扣一次、库存已售不补抽、无余额、伪造实体ID/UUID/令牌/日期/库存、6格边界、下线清会话、存档日库存及跨日旧报价拒绝；树/腐地指引跳过已领取/已完成/缺失，查无目标明确反馈且不扣款；未加载目标不触发加载、2048边界；商人伤害/击退/推挤/拴绳/骑乘/和平/绑定；提示与台词间隔和once记录。异步遗迹查询覆盖真实Future完成付款及查询中离开、关界面、余额耗尽、跨日的取消。
+- GameTest平坦世界没有遗迹placement，因此异步查询测试在测试源码集内临时注入一个原版random_spread placement并在结束后还原，查询本身仍走生产的加票/Future/结构start/回调。生产源码不反射Minecraft内部。嵌入连接的远处玩家不依赖实体区块tick；夹具明确调用原玩家Post tick入口。
+- `outpost.*`：四旋转真实模板分块postProcess/NBT保存/继续生成/重复生成去重，双商人及旋转泉水；真实碰撞形状BFS检查人形1.8高与精灵1.2高均能从地面入口步行到两摊和泉前，外入口±1格高差净空；泉水回满、发现及与遗迹神龛往返；已加载结构引用查询不强载；ProtoChunk日志晋升LevelChunk，attachment NBT保存恢复、加载重放去重。
+- 扩展R100/R106已有成功Feature测试，确认登记实际树心偏移及核心坐标；新增驿站入场台词、24固定seed潮夜波次全部零怪（先有无庇护正对照）、32/32.01边界、泉水放置/破坏即失效缓存。原11项面板购买测试及2项技能前置购买测试改为“旧action不能绕过商人”，新增商人正向用例承接旧覆盖；既有owned/equipped兼容测试不变。
+
+中途失败与修正：首轮1052 JUnit通过，666 GameTest两项失败：`Ruin search not asynchronous`（平坦世界没有placement，合法返回找不到）；`Expected Ruin arrival ...`（新测试的目的泉前缺地板，原传送逻辑正确采用泉顶回退）。修正夹具后增加异步场景；嵌入玩家没有收到远处区块实体tick时出现`Async search did not finish`，改为与Flash等测试一致显式调用玩家tick入口。异步完成测试曾报`Missing or duplicate async guide ... was 0`：服务器已完成交易，但嵌入连接的出站队列还未排空，改用既有FxGameTests.drain并等待两tick后验证返回包。另一次全量中既有R106守卫测试偶发`Discarded defender did not free slot ... was 3`，追到同批离线奖励测试替换全局BlightData而未恢复，加入finally恢复原账本；生产净化/守卫代码未改。最终全量全部通过，新增43项GameTest（较629）。
+
 ## R106 腐化地带与净化
 
 JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**1004 JUnit / 629 GameTest，0失败、0跳过**（较R105 +46/+50；本次庇护/掉落验证较前版 +1/+6）。最终日志 `/tmp/r106-sanctuary-loot.log`，`python3 scripts/test-summary.py`复核XML；纹理脚本 `python3 -B scripts/art/build_blight_textures.py --check` 检查9张PNG及5份核心动画元数据，`python3 -B scripts/export-spirit-fx.py --check` 检查20个FX定义；`git diff --check`通过。没有运行客户端，也没有重写遗迹资产。

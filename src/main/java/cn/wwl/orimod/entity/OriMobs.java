@@ -16,6 +16,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /** R42: original spirit enemies. Natural spawns come from data/orimod/neoforge/biome_modifier. */
 public final class OriMobs {
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, OriMod.MOD_ID);
+    public static final Supplier<EntityType<GladesMerchant>> GLADES_MERCHANT=TYPES.register("glades_merchant",()->EntityType.Builder.of(GladesMerchant::new,MobCategory.CREATURE).sized(.6f,1.2f).fireImmune().clientTrackingRange(8).build("orimod:glades_merchant"));
     public static final Supplier<EntityType<GloomSpitter>> GLOOM_SPITTER = TYPES.register("gloom_spitter", () -> EntityType.Builder
             .of(GloomSpitter::new, MobCategory.MONSTER).sized(1f, 1.1f).clientTrackingRange(8).build("orimod:gloom_spitter"));
     public static final Supplier<EntityType<GloomShot>> GLOOM_SHOT = TYPES.register("gloom_shot", () -> EntityType.Builder
@@ -38,7 +39,7 @@ public final class OriMobs {
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
-        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLOOM_BEETLE.get(), GloomBeetle.attributes().build()); event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); event.put(GLOOM_HAWK.get(), GloomHawk.attributes().build()); event.put(GLOOM_MATRIARCH.get(), GloomMatriarch.attributes().build()); });
+        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLADES_MERCHANT.get(),GladesMerchant.attributes().build()); event.put(GLOOM_BEETLE.get(), GloomBeetle.attributes().build()); event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); event.put(GLOOM_HAWK.get(), GloomHawk.attributes().build()); event.put(GLOOM_MATRIARCH.get(), GloomMatriarch.attributes().build()); });
         bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_SPITTER.get(), SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE));
         bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_HAWK.get(), SpawnPlacementTypes.ON_GROUND,

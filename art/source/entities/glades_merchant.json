@@ -1,0 +1,8 @@
+{
+  "description": "Original round-eared forest traders: speckled fur, pale muzzle, moss or teal woven shawl.",
+  "size": 64,
+  "jobs": [
+    {"fur": [132, 117, 82], "cloth": [66, 101, 69], "accent": [177, 218, 170]},
+    {"fur": [103, 124, 139], "cloth": [48, 89, 112], "accent": [178, 223, 239]}
+  ]
+}

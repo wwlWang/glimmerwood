@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "orimod:block/forest_spring_shrine",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "orimod:block/forest_spring_shrine",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "orimod:block/forest_spring_shrine",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "orimod:block/forest_spring_shrine",
+      "y": 270
+    }
+  }
+}

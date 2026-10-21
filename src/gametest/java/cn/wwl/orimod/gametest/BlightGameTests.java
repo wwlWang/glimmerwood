@@ -68,7 +68,7 @@ public final class BlightGameTests {
         });
         add(tests,"feature_flat_has_all_parts_and_atomic_obstruction_rejection",(h,c)->site(h,0,base->{
             var level=h.getLevel();var check=BlightedGroundsFeature.preflight(level,base,4);h.assertValueEqual(check.reason(),BlightedGroundsFeature.Reason.OK,"Flat preflight rejected");
-            h.assertTrue(place(h,base,4),"Feature failed");h.assertTrue(level.getBlockState(base).is(OriBlocks.GLOOM_CORE),"Missing core");
+            h.assertTrue(place(h,base,4),"Feature failed");h.assertTrue(level.getBlockState(base).is(OriBlocks.GLOOM_CORE),"Missing core");h.assertTrue(level.getChunk(base).getData(FeatureSites.BLIGHTS).contains(base.asLong()),"Generated core absent from durable journal");h.assertValueEqual(FeatureSites.get(level).nearest(level,FeatureSites.Kind.BLIGHT,Vec3.atCenterOf(base),p->true).orElseThrow(),base,"Core index missing");
             for(var block:List.of(OriBlocks.BLIGHTED_SOIL,OriBlocks.GLOOM_THORNS,OriBlocks.WITHERED_SPIRIT_LOG,OriBlocks.GLOOM_WATER))h.assertTrue(check.writes().values().stream().anyMatch(s->s.is(block)),"Missing "+block.getId());
             h.assertValueEqual(BlightData.get(level).status(Vec3.atCenterOf(base)).get("state"),"active","Feature failed to register ledger");
         }));
@@ -229,7 +229,8 @@ public final class BlightGameTests {
             } finally {for(var other:others)other.close();}
         });
         add(tests,"offline_reward_load_delivers_once_and_deletes_missing_players",(h,c)->{
-            var level=h.getLevel();var center=h.absolutePos(new BlockPos(30,3,30));var tag=BlightData.get(level).save(new CompoundTag(),level.registryAccess());
+            var level=h.getLevel();var center=h.absolutePos(new BlockPos(30,3,30));var previous=BlightData.get(level);var tag=previous.save(new CompoundTag(),level.registryAccess());
+            try {
             var completed=java.util.Arrays.copyOf(tag.getLongArray("completed"),tag.getLongArray("completed").length+1);completed[completed.length-1]=center.asLong();tag.putLongArray("completed",completed);
             var entry=new CompoundTag();entry.putLong("center",center.asLong());var ids=new ListTag();ids.add(NbtUtils.createUUID(c.player().getUUID()));ids.add(NbtUtils.createUUID(UUID.randomUUID()));entry.put("players",ids);tag.getList("pending",Tag.TAG_COMPOUND).add(entry);
             var restored=BlightData.load(tag,level.registryAccess());level.getDataStorage().set("orimod_blight",restored);
@@ -238,6 +239,7 @@ public final class BlightGameTests {
             // Even replaying an old ledger cannot pay a player with a durable personal receipt twice.
             var replay=BlightData.load(tag,level.registryAccess());level.getDataStorage().set("orimod_blight",replay);BlightData.login(login);
             h.assertValueEqual(c.player().getData(SpiritData.PROGRESS).light(),light+60,"Replayed pending reward paid twice");h.assertValueEqual(replay.pendingCount(),0,"Replay not retired");
+            } finally {level.getDataStorage().set("orimod_blight",previous);}
         });
         add(tests,"online_participant_can_move_away_before_completion",(h,c)->{
             var level=h.getLevel();var center=h.absolutePos(new BlockPos(8,3,8));var data=new BlightData();c.player().setPos(Vec3.atCenterOf(center));data.register(center,new long[]{center.below().asLong()});data.begin(level,center);

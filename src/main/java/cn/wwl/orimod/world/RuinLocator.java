@@ -33,33 +33,38 @@ public final class RuinLocator {
     private static final int SEARCH_DISTANCE = ChunkLevel.byStatus(ChunkStatus.FULL) - ChunkLevel.byStatus(ChunkStatus.STRUCTURE_STARTS);
     private RuinLocator() {}
 
-    public static void request(ServerPlayer player) {
-        if (!SpiritData.isAwakened(player) || !player.isAlive()) return;
-        long now = player.server.getTickCount();
-        if (SEARCHES.containsKey(player.getUUID())) { reply(player, "guide.orimod.searching"); return; }
-        if (COOLDOWNS.getOrDefault(player.getUUID(), 0L) > now) { reply(player, "guide.orimod.cooldown"); return; }
-        COOLDOWNS.put(player.getUUID(), now + 200);
-        var level = player.serverLevel();
-        var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        var placements = new HashSet<RandomSpreadStructurePlacement>();
-        for (var kind : RuinKind.values()) {
-            var holder = registry.getHolder(net.minecraft.resources.ResourceKey.create(Registries.STRUCTURE, kind.location()));
-            if (holder.isEmpty()) continue;
-            for (var placement : level.getChunkSource().getGeneratorState().getPlacementsForStructure(holder.get()))
-                if (placement instanceof RandomSpreadStructurePlacement spread) placements.add(spread);
-        }
-        var origin = player.blockPosition();
-        var candidates = candidates(placements, level.getSeed(), origin);
-        if (candidates.positions().isEmpty()) { reply(player, "guide.orimod.no_ruins"); return; }
-        SEARCHES.put(player.getUUID(), new Search(level, origin, candidates, now));
-        reply(player, "guide.orimod.searching");
+    public enum Mode { RUINS, OUTPOST, ANY }
+    public record Found(String kind,BlockPos entry,String clearedKey) {}
+    public static void request(ServerPlayer player){request(player,Mode.ANY,null);}
+    public static boolean request(ServerPlayer player,Mode mode,java.util.function.Consumer<Optional<Found>> completion){
+        if(!SpiritData.isAwakened(player) || !player.isAlive())return false;
+        long now=player.server.getTickCount();
+        if(SEARCHES.containsKey(player.getUUID())){reply(player,"guide.orimod.searching");return false;}
+        if(COOLDOWNS.getOrDefault(player.getUUID(),0L)>now){reply(player,"guide.orimod.cooldown");return false;}
+        COOLDOWNS.put(player.getUUID(),now+200);
+        var level=player.serverLevel();var registry=level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+        var locations=new ArrayList<net.minecraft.resources.ResourceLocation>();
+        if(mode!=Mode.OUTPOST)for(var kind:RuinKind.values())locations.add(kind.location());
+        if(mode!=Mode.RUINS)locations.add(net.minecraft.resources.ResourceLocation.parse("orimod:glades_outpost"));
+        var placements=new HashSet<RandomSpreadStructurePlacement>();
+        for(var location:locations){var holder=registry.getHolder(net.minecraft.resources.ResourceKey.create(Registries.STRUCTURE,location));if(holder.isEmpty())continue;
+            for(var placement:level.getChunkSource().getGeneratorState().getPlacementsForStructure(holder.get()))if(placement instanceof RandomSpreadStructurePlacement spread)placements.add(spread);}
+        // Starts already generated during the initial R107 rollout keep their original placement grid.
+        if(mode!=Mode.RUINS && !placements.isEmpty())placements.add(new RandomSpreadStructurePlacement(48,20,RandomSpreadType.LINEAR,10721021));
+        var candidates=candidates(placements,level.getSeed(),player.blockPosition(),mode!=Mode.OUTPOST);
+        if(candidates.positions().isEmpty()){if(completion!=null)completion.accept(Optional.empty());else reply(player,"guide.orimod.no_ruins");return true;}
+        var search=new Search(level,player.blockPosition(),candidates,now);search.mode=mode;search.completion=completion;
+        SEARCHES.put(player.getUUID(),search);reply(player,"guide.orimod.searching");return true;
     }
 
     static Candidates candidates(Collection<RandomSpreadStructurePlacement> current, long seed, BlockPos origin) {
+        return candidates(current,seed,origin,true);
+    }
+    private static Candidates candidates(Collection<RandomSpreadStructurePlacement> current,long seed,BlockPos origin,boolean legacy){
         if (current.isEmpty()) return new Candidates(List.of(), false);
         var placements = new HashSet<>(current);
         // Existing worlds keep starts generated with the original spacing. Search those chunks too.
-        placements.add(LEGACY_PLACEMENT);
+        if(legacy)placements.add(LEGACY_PLACEMENT);
         var candidates = new HashSet<ChunkPos>();
         var originChunk = new ChunkPos(origin);
         int candidateRange = RANGE + MAX_ENTRY_OFFSET;
@@ -87,7 +92,7 @@ public final class RuinLocator {
         var search = SEARCHES.get(player.getUUID());
         if (search == null) return;
         if (player.serverLevel() != search.level || !player.isAlive()) { stop(player.getUUID()); return; }
-        if (player.server.getTickCount() - search.started > 60 * 20) { stop(player.getUUID()); reply(player, "guide.orimod.search_timeout"); return; }
+        if (player.server.getTickCount() - search.started > 60 * 20) { stop(player.getUUID()); if(search.completion!=null)search.completion.accept(Optional.empty()); else reply(player, "guide.orimod.search_timeout"); return; }
         // Keep at most four STRUCTURE_STARTS tickets alive. Candidate chunks are ordered,
         // but rotated entrances can change which ruin is nearest to the player.
         for (var pending : search.pending)
@@ -102,24 +107,30 @@ public final class RuinLocator {
             search.level.getChunkSource().removeRegionTicket(SEARCH_TICKET, pending.chunk(), SEARCH_DISTANCE, player.getUUID());
             search.checked++;
             if (chunk == null) search.failedChunks++;
-            if (chunk != null) for (var start : chunk.getAllStarts().values()) {
-                if (!start.isValid() || !(start.getStructure() instanceof RuinStructure structure)) continue;
-                for (var piece : start.getPieces()) if (piece instanceof RuinPiece ruin) {
-                    var shrine = ruin.placement().block(structure.kind.layout().shrine());
-                    var key = ChallengeSession.key(search.level.dimension(), shrine);
-                    if (player.getData(SpiritData.PROGRESS).rewards().getOrDefault("clear/" + key, 0) > 0) continue;
-                    var entry = BlockPos.containing(ruin.placement().point(structure.kind.layout().entry()));
-                    double distance = horizontalDistance(search.origin, entry);
-                    if (distance > RANGE * RANGE) continue;
-                    if (search.best == null || distance < horizontalDistance(search.origin, search.best.entry()))
-                        search.best = new Found(structure.kind, entry);
+            if(chunk!=null)for(var start:chunk.getAllStarts().values()){
+                if(!start.isValid())continue;
+                for(var piece:start.getPieces()){
+                    Found found=null;
+                    if(search.mode!=Mode.OUTPOST && piece instanceof RuinPiece ruin){
+                        var kind=ruin.kind();var shrine=ruin.placement().block(kind.layout().shrine());
+                        String key="clear/"+ChallengeSession.key(search.level.dimension(),shrine);
+                        if(player.getData(SpiritData.PROGRESS).rewards().getOrDefault(key,0)>0)continue;
+                        found=new Found(kind.id,BlockPos.containing(ruin.placement().point(kind.layout().entry())),key);
+                    }else if(search.mode!=Mode.RUINS && piece instanceof GladesOutpostPiece outpost){
+                        String key="discover/"+ChallengeSession.key(search.level.dimension(),outpost.placement().block(GladesOutpostPiece.WELL));
+                        if(search.mode==Mode.ANY && player.getData(SpiritData.PROGRESS).rewards().containsKey(key))continue;
+                        found=new Found("glades_outpost",outpost.placement().block(GladesOutpostPiece.ENTRY),key);
+                    }
+                    if(found!=null && horizontalDistance(search.origin,found.entry())<=RANGE*RANGE
+                            && (search.best==null || horizontalDistance(search.origin,found.entry())<horizontalDistance(search.origin,search.best.entry())))search.best=found;
                 }
             }
         }
         if (finishIfNearest(player, search)) return;
         if (search.index >= search.candidates.size() && search.pending.isEmpty()) {
             stop(player.getUUID());
-            reply(player, search.failedChunks == 0 && !search.truncated ? "guide.orimod.no_ruins" : "guide.orimod.search_timeout");
+            if(search.completion!=null)search.completion.accept(Optional.empty());
+            else reply(player, search.failedChunks == 0 && !search.truncated ? "guide.orimod.no_ruins" : "guide.orimod.search_timeout");
             return;
         }
         while (search.pending.size() < MAX_PENDING && search.index < search.candidates.size()) {
@@ -139,8 +150,11 @@ public final class RuinLocator {
         if (next != null && couldHaveCloserEntry(search.origin, next, search.best.entry())) return false;
         var found = search.best;
         stop(player.getUUID());
-        PacketDistributor.sendToPlayer(player, new RuinGuidePayload(search.level.dimension().location().toString(), found.entry(), found.kind().id));
-        reply(player, "guide.orimod.found", found.kind().title(), found.entry().getX(), found.entry().getY(), found.entry().getZ());
+        if(search.completion!=null)search.completion.accept(Optional.of(found));
+        else {
+            PacketDistributor.sendToPlayer(player,new RuinGuidePayload(search.level.dimension().location().toString(),found.entry(),found.kind()));
+            reply(player,"guide.orimod.found",RuinGuidePayload.title(found.kind()),found.entry().getX(),found.entry().getY(),found.entry().getZ());
+        }
         return true;
     }
     private static void reply(ServerPlayer player, String key, Object... args) {
@@ -179,7 +193,7 @@ public final class RuinLocator {
     }
     public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { stop(event.getEntity().getUUID()); COOLDOWNS.remove(event.getEntity().getUUID()); }
     private record Pending(ChunkPos chunk, CompletableFuture<ChunkResult<ChunkAccess>> future) {}
-    private record Found(RuinKind kind, BlockPos entry) {}
+    public static void cancel(ServerPlayer player){stop(player.getUUID());}
     private static final class Search {
         final ServerLevel level;
         final BlockPos origin;
@@ -187,6 +201,8 @@ public final class RuinLocator {
         final long started;
         final boolean truncated;
         int index, checked, failedChunks;
+        Mode mode=Mode.RUINS;
+        java.util.function.Consumer<Optional<Found>> completion;
         Found best;
         volatile boolean closed;
         final ArrayDeque<Pending> pending = new ArrayDeque<>();

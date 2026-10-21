@@ -34,6 +34,9 @@ public final class SpiritTreeGameTests {
             h.assertValueEqual(snapshot(h, base), untouched, "Successful observation wrote a tree");
             h.assertTrue(place(h, base), "Flat placement failed");
             var level = h.getLevel();
+            var heart=base.offset(SpiritTreeShape.HEART);
+            h.assertTrue(level.getChunk(heart).getData(FeatureSites.TREES).contains(heart.asLong()), "Generated heart absent from durable journal");
+            h.assertValueEqual(FeatureSites.get(level).nearest(level,FeatureSites.Kind.TREE,Vec3.atCenterOf(heart),p->true).orElseThrow(),heart,"Index recorded base instead of heart");
             h.assertTrue(level.getBlockState(base.offset(SpiritTreeShape.HEART)).is(OriBlocks.SPIRIT_TREE_HEART), "Missing root heart");
             int leaves = 0, logs = 0, vines = 0;
             for (var pos : BlockPos.betweenClosed(base.offset(-15, -4, -15), base.offset(15, 30, 15))) {

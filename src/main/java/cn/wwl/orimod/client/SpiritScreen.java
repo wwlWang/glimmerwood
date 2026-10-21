@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class SpiritScreen extends Screen {
+    private boolean outpostRequested;
+    private long outpostRevision;
     private int page, left, top, panelWidth, panelHeight, bodyTop, bodyHeight, detailX, detailWidth, detailScroll, detailOverflow;
     private String selectedId = "";
     private ChoiceList choices;
@@ -110,7 +112,7 @@ public final class SpiritScreen extends Screen {
             }
         } else if (d.kind.equals("shard")) {
             var shard = Shard.byId(d.id);
-            prerequisite = shard.prerequisite; price = Shard.COST;
+
             if ((p.ownedShards() & shard.bit) != 0) {
                 boolean equipped = (p.equippedShards() & shard.bit) != 0;
                 actionButton.setMessage(tr(equipped ? "screen.orimod.unequip" : "screen.orimod.equip"));
@@ -119,6 +121,17 @@ public final class SpiritScreen extends Screen {
                 } else requirement = tr("screen.orimod.shards_spirit_only");
                 return;
             }
+            price=cn.wwl.orimod.progression.MerchantRules.panelPrice(shard);
+            actionButton.setMessage(Component.translatable("merchant.orimod.buy",price));actionButton.active=p.light()>=price;
+            if(!outpostRequested){outpostRequested=true;outpostRevision=ProgressReplyPayload.revision;PacketDistributor.sendToServer(new ProgressActionPayload("locate_outpost",""));}
+            var guide=cn.wwl.orimod.network.RuinGuidePayload.current;
+            if(guide!=null && guide.kind().equals("glades_outpost") && guide.dimension().equals(player.level().dimension().location().toString())){
+                double dx=guide.entry().getX()+.5-player.getX(),dz=guide.entry().getZ()+.5-player.getZ();
+                float angle=net.minecraft.util.Mth.wrapDegrees((float)Math.toDegrees(Math.atan2(-dx,dz))-player.getYRot());
+                String direction=Math.abs(angle)<35?"ahead":Math.abs(angle)>145?"behind":angle>0?"right":"left";
+                requirement=Component.translatable("guide.orimod.marker",cn.wwl.orimod.network.RuinGuidePayload.title("glades_outpost"),(int)Math.round(Math.hypot(dx,dz)),tr("guide.orimod."+direction));
+            }else requirement=ProgressReplyPayload.revision>outpostRevision?ProgressReplyPayload.latest:tr("guide.orimod.searching");
+            return;
         } else if (d.kind.equals("capacity")) {
             price = SpiritProgression.capacityCost(p);
             if (p.capacityLevel() >= 3) {
@@ -187,7 +200,7 @@ public final class SpiritScreen extends Screen {
                 int learned = Integer.bitCount(minecraft.player.getData(SpiritData.ABILITIES));
                 var slots = learned >= cn.wwl.orimod.progression.ShardEffects.FOURTH_SLOT_ABILITIES
                         ? tr("screen.orimod.fourth_slot_unlocked") : Component.translatable("screen.orimod.fourth_slot", learned);
-                description = description.copy().append("\n\n").append(slots);
+                description = description.copy().append("\n\n").append(tr("merchant.orimod.panel_premium")).append("\n\n").append(slots);
             }
             var lines = font.split(description, detailWidth - 7);
             int count = Math.max(1, (bodyHeight - (page == 2 ? 24 : 66)) / 10);

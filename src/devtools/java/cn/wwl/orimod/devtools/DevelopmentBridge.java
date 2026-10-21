@@ -314,6 +314,7 @@ public final class DevelopmentBridge {
                             "noGravity", entity.isNoGravity(), "noAi", entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi(),
                             "leashHolder", entity instanceof net.minecraft.world.entity.Mob leashed && leashed.getLeashHolder() != null ? leashed.getLeashHolder().getId() : -1));
                         if(entity instanceof cn.wwl.orimod.entity.GloomBeetle beetle)data.put("state",beetle.stateName());
+                        if(entity instanceof cn.wwl.orimod.entity.GladesMerchant merchant){data.put("job",merchant.job());if(merchant.well()!=null)data.put("well",new int[]{merchant.well().getX(),merchant.well().getY(),merchant.well().getZ()});}
                         return data;
                     }).toList());
                 }).get(5, TimeUnit.SECONDS);
@@ -414,7 +415,7 @@ public final class DevelopmentBridge {
                 for (var child : mc.screen.children()) {
                     if (child instanceof net.minecraft.client.gui.components.AbstractWidget widget) {
                         var info = new LinkedHashMap<String, Object>();
-                        info.put("type", widget.getClass().getSimpleName()); info.put("text", widget.getMessage().getString());
+                        info.put("textWidth", mc.font.width(widget.getMessage())); info.put("type", widget.getClass().getSimpleName()); info.put("text", widget.getMessage().getString());
                         info.put("x", widget.getX()); info.put("y", widget.getY()); info.put("width", widget.getWidth()); info.put("height", widget.getHeight());
                         info.put("active", widget.active); info.put("visible", widget.visible); info.put("focused", widget.isFocused());
                         if (widget instanceof net.minecraft.client.gui.components.ObjectSelectionList<?> list) {
@@ -798,9 +799,17 @@ public final class DevelopmentBridge {
             state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
             state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
             state.put("line", cn.wwl.orimod.client.CompanionLineOverlay.diagnostics());
+            state.put("merchant", Minecraft.getInstance().screen instanceof cn.wwl.orimod.client.MerchantScreen screen ? screen.debug() : Map.of("open",false));
+            var guide=cn.wwl.orimod.network.RuinGuidePayload.current;
+            state.put("guide",guide==null?Map.of("active",false):Map.of("active",true,"kind",guide.kind(),"dimension",guide.dimension(),"entry",new int[]{guide.entry().getX(),guide.entry().getY(),guide.entry().getZ()}));
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
+            state.put("merchant",cn.wwl.orimod.progression.MerchantTrading.debug(serverPlayer));
+            var sites=cn.wwl.orimod.world.FeatureSites.get(serverPlayer.serverLevel());
+            state.put("featureSites",Map.of("trees",sites.count(cn.wwl.orimod.world.FeatureSites.Kind.TREE),"blights",sites.count(cn.wwl.orimod.world.FeatureSites.Kind.BLIGHT)));
+            var outpost=cn.wwl.orimod.world.GladesOutpostPiece.at(serverPlayer.serverLevel(),serverPlayer.blockPosition());
+            state.put("outpost",outpost==null?Map.of("inside",false):Map.of("inside",true,"entry",outpost.placement().block(cn.wwl.orimod.world.GladesOutpostPiece.ENTRY).toShortString(),"well",outpost.placement().block(cn.wwl.orimod.world.GladesOutpostPiece.WELL).toShortString(),"merchants",cn.wwl.orimod.world.GladesOutpostPiece.MERCHANTS.stream().map(outpost.placement()::block).map(net.minecraft.core.BlockPos::toShortString).toList()));
             var blight = new java.util.LinkedHashMap<>(cn.wwl.orimod.world.BlightData.get(serverPlayer.serverLevel()).status(player.position()));
             cn.wwl.orimod.world.BlightSearch.nearest(serverPlayer.serverLevel(), player.position(), 32).ifPresent(pos -> {
                 if (serverPlayer.serverLevel().getBlockEntity(pos) instanceof cn.wwl.orimod.block.GloomCoreBlockEntity core) blight.put("health", core.health());

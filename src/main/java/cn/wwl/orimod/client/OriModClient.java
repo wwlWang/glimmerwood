@@ -33,6 +33,7 @@ public final class OriModClient {
         modEventBus.addListener(CompanionLineOverlay::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::logout);
+        modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e)->e.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLADES_MERCHANT.get(),GladesMerchantRenderer::new));
         modEventBus.addListener(cn.wwl.orimod.client.render.PracticeTargetRenderer::register);
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) ->
                 event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.LIGHT_BURST.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));

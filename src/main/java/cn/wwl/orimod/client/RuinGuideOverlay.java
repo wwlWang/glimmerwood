@@ -21,7 +21,7 @@ public final class RuinGuideOverlay {
             int distance = (int)Math.round(Math.sqrt(dx * dx + dz * dz));
             float angle = Mth.wrapDegrees((float)(Math.toDegrees(Math.atan2(-dx, dz)) - mc.player.getYRot()));
             String direction = Math.abs(angle) < 35 ? "ahead" : Math.abs(angle) > 145 ? "behind" : angle > 0 ? "right" : "left";
-            var text = Component.translatable("guide.orimod.marker", RuinKind.byId(guide.kind()).title(), distance, Component.translatable("guide.orimod." + direction));
+            var text = Component.translatable("guide.orimod.marker", RuinGuidePayload.title(guide.kind()), distance, Component.translatable("guide.orimod." + direction));
             g.drawCenteredString(mc.font, text, g.guiWidth() / 2, 12, 0xB6F6DF);
             if (distance < 5 && Math.abs(mc.player.getY() - guide.entry().getY()) < 5) RuinGuidePayload.current = null;
         });

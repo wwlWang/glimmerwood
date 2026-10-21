@@ -15,6 +15,8 @@ public final class OriWorldgen {
     public static final Supplier<BlightedGroundsFeature> BLIGHTED_GROUNDS = FEATURES.register("blighted_grounds", BlightedGroundsFeature::new);
     private static final DeferredRegister<StructureType<?>> TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, OriMod.MOD_ID);
     private static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, OriMod.MOD_ID);
+    public static final Supplier<StructureType<GladesOutpostStructure>> OUTPOST=TYPES.register("glades_outpost",()->()->GladesOutpostStructure.CODEC);
+    public static final Supplier<StructurePieceType> OUTPOST_PIECE=PIECES.register("glades_outpost",()->(StructurePieceType.StructureTemplateType)GladesOutpostPiece::new);
     public static final Supplier<StructureType<RuinStructure>> RUIN = TYPES.register("ruin", () -> () -> RuinStructure.CODEC);
     public static final Supplier<StructurePieceType> PIECE = PIECES.register("ruin", () -> (StructurePieceType.StructureTemplateType) RuinPiece::new);
     public static final Supplier<StructurePieceType> APPROACH = PIECES.register("ruin_approach", () -> (StructurePieceType.ContextlessType) RuinApproachPiece::new);

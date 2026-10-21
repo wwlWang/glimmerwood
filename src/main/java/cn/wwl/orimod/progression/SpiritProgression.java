@@ -71,14 +71,14 @@ public final class SpiritProgression {
                 player.setData(SpiritData.ABILITIES, player.getData(SpiritData.ABILITIES) | ability.bit);
                 reply(player, "progress.orimod.unlocked", ability.title());
             }
+            case "locate_outpost" -> cn.wwl.orimod.world.RuinLocator.request(player,cn.wwl.orimod.world.RuinLocator.Mode.OUTPOST,null);
             case "shard" -> {
-                var shard = Shard.byId(target);
-                if (shard == null) return;
-                if ((p.ownedShards() & shard.bit) != 0) { reply(player, "progress.orimod.already_owned"); return; }
-                if (shard.prerequisite != null && !shard.prerequisite.unlocked(player)) { reply(player, "progress.orimod.requires", shard.prerequisite.title()); return; }
-                if (p.light() < Shard.COST) { reply(player, "progress.orimod.not_enough", Shard.COST); return; }
-                player.setData(SpiritData.PROGRESS, p.withLight(p.light() - Shard.COST).withOwned(p.ownedShards() | shard.bit));
-                reply(player, "progress.orimod.unlocked", shard.title());
+                var shard=Shard.byId(target);if(shard==null)return;
+                if((p.ownedShards()&shard.bit)!=0){reply(player,"progress.orimod.already_owned");return;}
+                int cost=MerchantRules.panelPrice(shard);
+                if(p.light()<cost){reply(player,"progress.orimod.not_enough",cost);return;}
+                player.setData(SpiritData.PROGRESS,p.withLight(p.light()-cost).withOwned(p.ownedShards()|shard.bit));
+                reply(player,"progress.orimod.unlocked",shard.title());
             }
             case "equip", "unequip" -> {
                 var shard = Shard.byId(target);

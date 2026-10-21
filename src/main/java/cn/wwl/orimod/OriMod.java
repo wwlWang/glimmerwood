@@ -30,6 +30,10 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::login);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::leave);
+        cn.wwl.orimod.world.FeatureSites.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::loadChunk);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::unload);
         cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
         cn.wwl.orimod.world.OriEntities.register(modEventBus);
         cn.wwl.orimod.fx.OriParticles.register(modEventBus);
@@ -39,6 +43,9 @@ public final class OriMod {
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopping);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopped);
+        modEventBus.addListener(cn.wwl.orimod.network.MerchantOfferPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.MerchantTrading::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.MerchantTrading::logout);
         modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
         modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
         modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);

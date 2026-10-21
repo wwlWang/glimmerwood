@@ -27,7 +27,7 @@ public final class CompanionLines {
         BOSS_START("boss_start", false, 6000), BOSS_DEFEATED("boss_defeated", false, 0),
         ESCAPE("escape", false, 0), TIDE_BEGIN("tide_begin", false, 0), TIDE_END("tide_end", false, 0),
         TREE_FOUND("tree_found", true, 0), LOW_HEALTH("low_health", false, 1200, 60), NIGHT_ONE("night_one", true, 0),
-        FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0);
+        FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0), FIRST_OUTPOST("first_outpost", true, 0);
         public final String id;
         public final boolean once;
         public final int cooldown;
@@ -51,7 +51,8 @@ public final class CompanionLines {
         public float previousHealth = Float.NaN;
         public boolean wasNight;
         public RuinKind insideRuin;
-        public void clearPending() { pending = null; previousHealth = Float.NaN; wasNight = false; insideRuin = null; }
+        public boolean insideOutpost;
+        public void clearPending() { pending = null; previousHealth = Float.NaN; wasNight = false; insideRuin = null; insideOutpost = false; }
     }
     public static boolean eligible(ServerPlayer p) {
         return p.isAlive() && !p.isSpectator() && SpiritData.isAwakened(p) && SpiritData.isSpirit(p);
@@ -93,6 +94,11 @@ public final class CompanionLines {
             var kind = ruinAt(level, p.blockPosition());
             if (kind != null && kind != session.insideRuin) offer(p, Line.ruin(kind));
             session.insideRuin = kind;
+        }
+        if (now % CompanionHints.SCAN_TICKS == 0 && !p.getData(SpiritData.PROGRESS).rewards().containsKey(PREFIX + Line.FIRST_OUTPOST.id)) {
+            boolean inside = cn.wwl.orimod.world.GladesOutpostPiece.at(level, p.blockPosition()) != null;
+            if (inside && !session.insideOutpost) offer(p, Line.FIRST_OUTPOST);
+            session.insideOutpost = inside;
         }
         boolean night = nightCondition(level.dimension() == Level.OVERWORLD,
                 surface(p), level.getDayTime());

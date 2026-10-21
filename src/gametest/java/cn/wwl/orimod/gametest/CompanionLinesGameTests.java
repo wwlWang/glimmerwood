@@ -180,6 +180,15 @@ public final class CompanionLinesGameTests {
                 s.ready();CompanionLines.observe(s.p);h.assertTrue(s.state().lines.pending==null,"Remaining in ruin repeated line");
             } finally {startChunk.setAllStarts(starts);current.setAllReferences(references);}
         });
+        add(tests,"first_outpost_enters_loaded_piece_once",(h,s)->{
+            s.alignScanTick();var level=h.getLevel();var at=GladesOutpostStructure.placement(h.absolutePos(new BlockPos(64,120,64)),Rotation.NONE);
+            var structure=level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(net.minecraft.resources.ResourceLocation.parse("orimod:glades_outpost"));
+            var origin=level.getChunkAt(at.origin());var piece=new GladesOutpostPiece(level.getStructureManager(),at);var point=at.block(GladesOutpostPiece.ENTRY);
+            var current=level.getChunkAt(point);var starts=new HashMap<>(origin.getAllStarts());var refs=copyRefs(current);
+            try{origin.setStartForStructure(structure,new StructureStart(structure,origin.getPos(),0,new PiecesContainer(List.of(piece))));current.addReferenceForStructure(structure,origin.getPos().toLong());
+                s.p.setPos(Vec3.atBottomCenterOf(point));CompanionLines.observe(s.p);s.sent(Line.FIRST_OUTPOST);h.assertTrue(s.seen(Line.FIRST_OUTPOST),"Outpost once record missing");s.ready();CompanionLines.observe(s.p);h.assertTrue(s.state().lines.pending==null,"Outpost entry repeated");
+            }finally{origin.setAllStarts(starts);current.setAllReferences(refs);}
+        });
         add(tests,"ruin_reference_does_not_load_missing_start_chunk",(h,s)->{
             var level=h.getLevel();var current=level.getChunkAt(s.p.blockPosition());var refs=copyRefs(current);
             var far=new ChunkPos(1_000_000,1_000_000);var structure=level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(RuinKind.FOREST.location());

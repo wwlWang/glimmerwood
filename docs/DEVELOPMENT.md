@@ -2,6 +2,40 @@
 
 代码按职责命名。`P1`、`P2` 等阶段编号只用于计划和验收记录，不进入包名、类名、资源 ID 或构建任务。样例使用明确的 `Preview`、`Sample` 名称；正式玩法类按实际行为命名。
 
+## R107 驿站验收
+
+- `/locate structure orimod:glades_outpost` 查自然结构；`/place structure orimod:glades_outpost ~ ~ ~` 摆放模板。后者不登记structure start，适合外观、摊位、泉水测试；`first_outpost`入场台词应在自然结构验收。
+- 模板31×18×31，局部入口脚位(15,3,0)，苔语(7,3,13)，路路(23,3,13)，灵泉方块(15,3,19)。未旋转时世界坐标等于模板原点加局部坐标。自然生成四旋转由piece处理。右键商人交易；右键灵泉回满，潜行右键传到下一个已发现泉水。
+- 独立测试商人可 `/summon orimod:glades_merchant ~ ~ ~ {Job:0}` 或 `{Job:1}`；结构生成的商人自带泉水/站位绑定及持久化。`/ori light 500`准备余额（勿先unlock all，否则所有碎片已拥有而无商品）。`/time add 24000`检查隔日换货；同一天购买一件后不补抽，重新打开仍见原3行且已售行禁用。
+- 成长面板提供商人价×1.5的保底购买（120–300），并提示去驿站可省钱、显示2048格内最近驿站的异步指引；商人仍按80–200出售。由服务端检查余额/所有权并只扣一次，已拥有碎片不变。经济调整保留商人探索价值，同时避免海洋出生或旧世界找不到驿站卡进度。
+- 价格：充盈/回流/复苏100，聚光80，轻灵/生机汲取/灵能汲取120，荆棘/吸附140，极限猛击160，三段跳200；路路遗迹40/灵树60/腐地50。未找到不扣灵光。指引默认最近水平距离≤2048：遗迹未通关，灵树未领取，腐地未净化；后两者来自持久生成索引而非视野扫描，未加载目标不强载。旧版本已生成的树/地带不会补登记；手放方块不登记；用`/place feature`成功生成可建索引。原`/ori tree nearest`、`/ori blight nearest`仍仅查已加载方块。
+- 地图石、地图碎片、普通遗迹指引额外包含未发现驿站；付费遗迹商品只搜索遗迹。泉水的32格庇护复用R101调色板/区段缓存，放置/移除即时失效；中心精灵玩家开启`/time set 18000`、`/ori tide start`可测刷怪环带。
+
+`spirit_state`新增读取字段（不改变其他实体/既有字段）：
+
+| 路径 | 字段 |
+| --- | --- |
+| `server.merchant` | `open`；打开时另有`entityId, job, day, stock, busy` |
+| `client.merchant` | 关闭时`open:false`；打开时`open:true, entityId, job, day, balance, busy, message, offers:[{id,price,available}]` |
+| `server.featureSites` | `trees, blights`，当前维度已登记数；查询会清除目标区块已加载且方块缺失的条目 |
+| `client.guide` | `active`；有目标时`kind, dimension, entry:[x,y,z]` |
+| `server.outpost` | `inside`；自然piece内另有世界`entry, well, merchants`坐标字符串 |
+| `nearby_entities.entities[]` | 仅商人追加`job:0|1`与绑定的`well:[x,y,z]`；其他实体格式不变 |
+
+`gui_state`/`gui_click`读取并点击现有Screen按钮；widget新增 `textWidth`（实际当前字体宽度），购买按钮必须 `width >= textWidth + 16`，中英文按钮分别“购买 · N 灵光”/“Buy · N”。碎片说明单行显示，过长时省略并悬停看面板同源全文，路路底部单独提示未找到不收费。`client.line`仍可验证`first_outpost`台词。商人消息id是`purchased/not_found/searching/stale/funds/refreshed/...`，余额以服务端为准。交易协议1，同伴协议8，指引协议2，客户端/服务器需同版；FX协议仍8。
+
+资源复现（与客户端/Gradle互斥规则相同，纯Python不占Gradle）：`~/.local/opt/orimod-art-venv/bin/python -B scripts/art/build_glades_outpost.py --check`；`python3 -B scripts/art/build_merchant_textures.py --check`。生成器只写自己的驿站NBT/layout，两张商人纹理读取新增源文件`art/source/entities/glades_merchant.json`；不运行旧遗迹写入模式。客户端仍须 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority` 启动；首轮商人交易/指引/庇护已由Claude实测；修正后的中英双职业UI已通过（`evidence/r107-ui-fixes-v002`），密度数据见下，台地外观待Claude复验。
+
+自然密度探针仅在gametest源码集，发行jar不包含：
+
+```sh
+JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" python3 scripts/verify-outpost-density.py r107-density-check --seed 107
+```
+
+创建全新普通噪声地形专服（不启动客户端），不能与客户端/其他Gradle同时运行。289个实际random_spread候选起点运行生产预检 `preflight()`，记录群系、地形和入口拒绝原因；25个坐标固定为实际出生点加 `(x*1024,z*1024)`、x/z∈[-2,2]，不排除海洋。查询走原版 `/locate` 的 `findNearestMapStructure`，验证真实structure start，另记入口距离；输出到 `evidence/<run_id>/seed-107.json`。入口阶梯使用保存的45个噪声地面样本，生成及读档不依赖邻区装饰先后。模板尺寸/坐标不变，台地下方最多填16格至坚实地面。
+
+最终 spacing24/separation10，独立群系标签排除沙漠/恶地/冰刺/蘑菇岛；旧48/20起点仍纳入模组异步指引。seed107同组中位数684.83、最大1856.28；实际入口672.98/1826.60。不是所有种子的距离保证，面板加价购买是进度保底。原始结果：`r107-density-baseline-v001`、`r107-density-v001/v002/v003`（v002为被否决的所有主世界群系对照，不能当最终配置）。最终拒绝前三：群系126、地形119、入口3，另有41个通过；旧版289点仅4个通过。
+
 ## 模块边界
 
 `src/main` 是交付给玩家的模组。`src/devtools` 是独立开发工具源码集，模组 ID 为 `orimod_devtools`，Java 包为 `cn.wwl.orimod.devtools`。普通 `runClient` 和发行 JAR 不加载或包含开发工具。

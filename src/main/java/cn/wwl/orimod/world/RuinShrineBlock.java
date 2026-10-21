@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public final class RuinShrineBlock extends Block {
+public final class RuinShrineBlock extends SpiritWellBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final MapCodec<RuinShrineBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.fieldOf("kind").forGetter(block -> block.kind.id), propertiesCodec()

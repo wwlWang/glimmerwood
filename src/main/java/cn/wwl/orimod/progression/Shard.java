@@ -13,7 +13,6 @@ public enum Shard {
     LIFE_HARVEST(64, null), ENERGY_HARVEST(128, null), ULTRA_BASH(256, Ability.BASH),
     THORN(512, null), STICKY(1024, Ability.CLIMB);
 
-    public static final int COST = 20;
     public final int bit;
     public final Ability prerequisite;
     Shard(int bit, Ability prerequisite) { this.bit = bit; this.prerequisite = prerequisite; }

@@ -1,0 +1,7 @@
+{
+  "type": "orimod:glades_outpost",
+  "biomes": "#orimod:has_glades_outpost",
+  "spawn_overrides": {},
+  "step": "top_layer_modification",
+  "terrain_adaptation": "none"
+}

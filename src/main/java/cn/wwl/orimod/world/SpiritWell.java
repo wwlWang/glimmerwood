@@ -59,7 +59,7 @@ public final class SpiritWell {
     /** Travel from the shrine at {@code from} to the next discovered well. */
     public static boolean travel(ServerPlayer player, BlockPos from) {
         var level = player.serverLevel();
-        if (from == null || !(level.getBlockState(from).getBlock() instanceof RuinShrineBlock)
+        if (from == null || !(level.getBlockState(from).getBlock() instanceof SpiritWellBlock)
                 || player.distanceToSqr(Vec3.atCenterOf(from)) > USE_RANGE * USE_RANGE || SpiritChallenge.session(player) != null) return false;
         BlockPos stand = destination(level, from, player.getData(SpiritData.PROGRESS).rewards().keySet());
         if (stand != null) {
@@ -88,8 +88,8 @@ public final class SpiritWell {
             if (shrine == null) continue;
             level.getChunk(shrine);
             var state = level.getBlockState(shrine);
-            if (!(state.getBlock() instanceof RuinShrineBlock)) continue;
-            BlockPos stand = shrine.relative(state.getValue(RuinShrineBlock.FACING));
+            if (!(state.getBlock() instanceof SpiritWellBlock)) continue;
+            BlockPos stand = shrine.relative(state.getValue(SpiritWellBlock.FACING));
             return cn.wwl.orimod.progression.SoulLink.usable(level, stand) ? stand : shrine.above();
         }
         return null;

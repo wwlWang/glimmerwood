@@ -11,10 +11,10 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
 import java.util.*;
 
 /** Loaded-section palette prefilter; cache positions, never the answer for a particular spawn point.
- * One shared cache serves lamps and tree hearts. Placement/removal invalidates the owning section. */
+ * One shared cache serves lamps, tree hearts and outpost wells. Placement/removal invalidates the owning section. */
 public final class GloomTideDefense {
     public static final int CACHE_TICKS = 100, MAX_SECTIONS = 4096;
-    private record Sites(long at, List<BlockPos> lamps, List<BlockPos> hearts) {}
+    private record Sites(long at, List<BlockPos> lamps, List<BlockPos> hearts, List<BlockPos> wells) {}
     private static final Map<ServerLevel, LinkedHashMap<Long, Sites>> CACHE = new IdentityHashMap<>();
 
     @FunctionalInterface public interface Query { boolean protects(ServerLevel level, Vec3 point); }
@@ -34,6 +34,7 @@ public final class GloomTideDefense {
                      sy <= Math.min(max.getY(), level.getMaxBuildHeight() - 1) >> 4; sy++) {
                     var sites = sites(level, chunk, cx, sy, cz);
                     for (var p : sites.lamps) if (GloomTideRules.within(p.distToCenterSqr(point), GloomTideRules.LANTERN_RADIUS)) return true;
+                    for (var p : sites.wells) if (GloomTideRules.within(p.distToCenterSqr(point), GloomTideRules.OUTPOST_RADIUS)) return true;
                     for (var p : sites.hearts) if (GloomTideRules.within(p.distToCenterSqr(point), GloomTideRules.TREE_RADIUS)) return true;
                 }
             }
@@ -44,15 +45,16 @@ public final class GloomTideDefense {
         long key = SectionPos.asLong(cx, sy, cz), now = level.getGameTime();
         var saved = cache.get(key);
         if (saved != null && now >= saved.at && now - saved.at < CACHE_TICKS) return saved;
-        var lamps = new ArrayList<BlockPos>(); var hearts = new ArrayList<BlockPos>();
+        var lamps = new ArrayList<BlockPos>(); var hearts = new ArrayList<BlockPos>(); var wells = new ArrayList<BlockPos>();
         var section = chunk.getSection(chunk.getSectionIndex(sy << 4));
-        if (section.maybeHas(s -> s.is(OriBlocks.BASH_ANCHOR) || s.is(OriBlocks.SPIRIT_TREE_HEART)))
+        if (section.maybeHas(s -> s.is(OriBlocks.BASH_ANCHOR) || s.is(OriBlocks.SPIRIT_TREE_HEART) || s.is(OriBlocks.GLADES_WELL)))
             for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) {
                 var state = section.getBlockState(x, y, z);
                 if (state.is(OriBlocks.BASH_ANCHOR)) lamps.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
+                else if (state.is(OriBlocks.GLADES_WELL)) wells.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
                 else if (state.is(OriBlocks.SPIRIT_TREE_HEART)) hearts.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
             }
-        saved = new Sites(now, List.copyOf(lamps), List.copyOf(hearts));
+        saved = new Sites(now, List.copyOf(lamps), List.copyOf(hearts), List.copyOf(wells));
         cache.put(key, saved);
         while (cache.size() > MAX_SECTIONS) cache.remove(cache.keySet().iterator().next());
         return saved;

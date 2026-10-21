@@ -16,6 +16,7 @@ public final class OriServerLifecycle {
     public static void stopping(ServerStoppingEvent event) {
         try {
             RuinLocator.stopAll();
+            cn.wwl.orimod.progression.MerchantTrading.clear();
             cn.wwl.orimod.world.EscapeSequence.stopAll();
             SpiritChallenge.stopAll(event.getServer());
             for (var player : event.getServer().getPlayerList().getPlayers()) {
@@ -32,7 +33,9 @@ public final class OriServerLifecycle {
         // This event also runs after an exception bypassed ServerStoppingEvent. Closed worlds
         // must not be mutated; saved challenge recovery remains available on the next login.
         cn.wwl.orimod.world.GloomTide.reset();
+        cn.wwl.orimod.world.FeatureSites.clear();
         RuinLocator.discardAll();
+        cn.wwl.orimod.progression.MerchantTrading.clear();
         SpiritChallenge.discardAll();
         BashSession.discardAll();
         cn.wwl.orimod.combat.BashedImpact.reset();

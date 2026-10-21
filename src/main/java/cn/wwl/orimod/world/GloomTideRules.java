@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /** Pure tide decisions, shared by the server and regression tests. Distances are squared. */
 public final class GloomTideRules {
-    public static final int LANTERN_RADIUS = 10, FLASH_RADIUS = 32, TREE_RADIUS = 32, NEARBY_RADIUS = 48;
+    public static final int LANTERN_RADIUS = 10, FLASH_RADIUS = 32, TREE_RADIUS = 32, OUTPOST_RADIUS = 32, NEARBY_RADIUS = 48;
     public static final int MIN_SPAWN = 16, MAX_SPAWN = 28, DAWN_KILLS = 5, DAWN_LIGHT = 50;
     public static boolean night(long time) { long t = Math.floorMod(time, 24000); return t >= 13000 && t < 23000; }
     public static long day(long time) { return Math.floorDiv(time, 24000); }

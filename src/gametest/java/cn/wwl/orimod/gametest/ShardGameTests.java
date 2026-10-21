@@ -117,12 +117,12 @@ public final class ShardGameTests {
             SpiritProgression.request(p, "unequip", "life_harvest");
             h.assertValueEqual(p.getData(SpiritData.PROGRESS).equippedShards(), 7, "Overfull equipment cannot be removed");
         });
-        for (var shard : List.of(Shard.ULTRA_BASH, Shard.STICKY)) add(tests, shard.id() + "_purchase_checks_prerequisite", h -> {
-            var p = player(h, 0); p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withLight(20));
+        for (var shard : List.of(Shard.ULTRA_BASH, Shard.STICKY)) add(tests, shard.id() + "_premium_purchase_requires_balance_not_skill", h -> {
+            var p = player(h, 0); p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withLight(cn.wwl.orimod.progression.MerchantRules.panelPrice(shard)-1));
             p.setData(SpiritData.ABILITIES, 0); SpiritProgression.request(p, "shard", shard.id());
-            h.assertValueEqual(p.getData(SpiritData.PROGRESS).ownedShards(), 0, "Prerequisite ignored");
-            p.setData(SpiritData.ABILITIES, shard.prerequisite.bit); SpiritProgression.request(p, "shard", shard.id());
-            h.assertValueEqual(p.getData(SpiritData.PROGRESS).ownedShards(), shard.bit, "Valid purchase refused");
+            h.assertValueEqual(p.getData(SpiritData.PROGRESS).ownedShards(), 0, "Unaffordable premium shard granted");
+            p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY.withLight(cn.wwl.orimod.progression.MerchantRules.panelPrice(shard))); SpiritProgression.request(p, "shard", shard.id());
+            h.assertValueEqual(p.getData(SpiritData.PROGRESS).ownedShards(), shard.bit, "Premium fallback failed without skill");
         });
 
         add(tests, "thorn_real_melee_and_per_attacker_cooldown", h -> damagePlayer(h, p -> {

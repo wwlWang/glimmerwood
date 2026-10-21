@@ -29,7 +29,7 @@ public final class CompanionHints {
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
         SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
-        CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12),
+        CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12), MERCHANT("merchant",12),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
         public final String id;
@@ -95,6 +95,9 @@ public final class CompanionHints {
         if(unseen.contains(Hint.GLOOM_BEETLE))player.level().getEntitiesOfClass(cn.wwl.orimod.entity.GloomBeetle.class,player.getBoundingBox().inflate(12),
                 beetle->beetle.isAlive() && player.distanceToSqr(beetle)<=144 && player.hasLineOfSight(beetle)).stream()
                 .min(java.util.Comparator.comparingDouble(player::distanceToSqr)).ifPresent(beetle->positions.put(Hint.GLOOM_BEETLE,beetle.blockPosition()));
+        if (unseen.contains(Hint.MERCHANT)) player.level().getEntitiesOfClass(cn.wwl.orimod.entity.GladesMerchant.class, player.getBoundingBox().inflate(12),
+                merchant -> merchant.isAlive() && player.distanceToSqr(merchant) <= 144 && player.hasLineOfSight(merchant)).stream()
+                .min(java.util.Comparator.comparingDouble(player::distanceToSqr)).ifPresent(merchant -> positions.put(Hint.MERCHANT, merchant.blockPosition()));
         var conditions = EnumSet.noneOf(Hint.class);
         conditions.addAll(positions.keySet());
         if (lowEnergy(SpiritProgression.energy(player), SpiritProgression.maxEnergy(player), now, session.lastHintSpendAt))

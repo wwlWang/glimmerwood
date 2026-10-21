@@ -64,6 +64,7 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
         if (check.reason() != Reason.OK) return false;
         for (var entry : check.writes().entrySet()) context.level().setBlock(entry.getKey(), entry.getValue(),
                 Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        FeatureSites.generated(context.level(),check.base().offset(SpiritTreeShape.HEART),FeatureSites.Kind.TREE);
         return true;
     }
 

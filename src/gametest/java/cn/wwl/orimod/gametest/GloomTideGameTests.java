@@ -109,6 +109,14 @@ public final class GloomTideGameTests {
             }
             h.assertTrue(count>0,"No unprotected control spawns");
         });
+        add(tests,"outpost_well_shelters_twenty_four_waves",(h,s)->{
+            s.floor();s.begin();int control=GloomTide.spawnWave(s.p,RandomSource.create(107),GloomTideDefense.QUERY);
+            h.assertTrue(control>0,"Unprotected control never spawned");s.mobs().forEach(Entity::discard);
+            s.set(s.base,OriBlocks.GLADES_WELL.get().defaultBlockState());
+            for(int seed=0;seed<24;seed++)h.assertValueEqual(GloomTide.spawnWave(s.p,RandomSource.create(seed),GloomTideDefense.QUERY),0,"Outpost sanctuary leaked wave "+seed);
+            h.assertTrue(GloomTideDefense.blocksProtect(s.level,Vec3.atCenterOf(s.base).add(32,0,0)),"Missing boundary shelter");
+            h.assertFalse(GloomTideDefense.blocksProtect(s.level,Vec3.atCenterOf(s.base).add(32.01,0,0)),"Beyond boundary shelter");
+        });
         add(tests,"tree_heart_shelters_entire_player_ring",(h,s)->{
             s.floor(); s.begin(); s.set(s.base,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState());
             h.assertValueEqual(GloomTide.spawnWave(s.p,RandomSource.create(1),GloomTideDefense.QUERY),0,"Tree sanctuary leaked");
@@ -138,9 +146,9 @@ public final class GloomTideGameTests {
             h.assertTrue(GloomTideDefense.protects(s.level,s.p.position().add(32,0,0)),"32-block teammate protection missing");
             h.assertFalse(GloomTideDefense.protects(s.level,s.p.position().add(32.01,0,0)),"Flash beyond radius");
         });
-        for(String type:List.of("lamp","heart")) add(tests,type+"_place_and_remove_invalidate_cached_absence_and_presence",(h,s)->{
+        for(String type:List.of("lamp","heart","well")) add(tests,type+"_place_and_remove_invalidate_cached_absence_and_presence",(h,s)->{
             var at=Vec3.atCenterOf(s.base); h.assertFalse(GloomTideDefense.blocksProtect(s.level,at),"Fixture protected");
-            s.set(s.base,(type.equals("lamp")?OriBlocks.BASH_ANCHOR:OriBlocks.SPIRIT_TREE_HEART).get().defaultBlockState());
+            s.set(s.base,(type.equals("lamp")?OriBlocks.BASH_ANCHOR:type.equals("heart")?OriBlocks.SPIRIT_TREE_HEART:OriBlocks.GLADES_WELL).get().defaultBlockState());
             h.assertTrue(GloomTideDefense.blocksProtect(s.level,at),"Placement waited for cache expiry");
             if(type.equals("lamp")) {
                 SpiritLanternBlock.ignite(s.level,s.base,40);
