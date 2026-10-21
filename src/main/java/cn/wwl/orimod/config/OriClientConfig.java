@@ -46,7 +46,7 @@ public final class OriClientConfig {
                         "Choosing another pack in Iris turns this off.")
                 .define("spiritGlow", true);
         builder.pop();
-        COMPANION_HINTS = builder.comment("Glimmer's first-encounter hints, sound and guiding flight. The server remembers hints even when hidden.")
+        COMPANION_HINTS = builder.comment("Glimmer's hints and contextual lines, sound and guiding flight. The server remembers sent messages even when hidden.")
                 .define("companionHints", true);
         builder.push("feedback");
         SCREEN_SHAKE = builder.comment("Camera shake strength in percent when hurt or landing a stomp. 0 disables it.")

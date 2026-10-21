@@ -66,6 +66,7 @@ public final class SpiritTreeHeartBlock extends Block {
             SpiritProgression.grantLight(player, SpiritTree.LIGHT_GIFT);
             player.displayClientMessage(Component.translatable("message.orimod.tree.light", SpiritTree.LIGHT_GIFT), true);
         }
+        cn.wwl.orimod.progression.CompanionLines.offer(player, cn.wwl.orimod.progression.CompanionLines.Line.TREE_FOUND);
         if (!state.getValue(BLOOMED)) level.setBlock(pos, state.setValue(BLOOMED, true), Block.UPDATE_ALL);
         SpiritFx.emit(level, SpiritFxKind.TREE_BLESSING, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, player);
         level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, .7f, 1.4f);

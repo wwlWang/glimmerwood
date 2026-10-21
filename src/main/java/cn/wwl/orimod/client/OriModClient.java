@@ -30,6 +30,9 @@ public final class OriModClient {
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
         modEventBus.addListener(RuinGuideOverlay::register);
+        modEventBus.addListener(CompanionLineOverlay::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::logout);
         modEventBus.addListener(cn.wwl.orimod.client.render.PracticeTargetRenderer::register);
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) ->
                 event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.LIGHT_BURST.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));

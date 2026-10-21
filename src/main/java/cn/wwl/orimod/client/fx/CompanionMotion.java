@@ -273,13 +273,14 @@ public final class CompanionMotion {
         if (!OriClientConfig.companionHints()) return;
         world();
         var mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || !SpiritData.isSpirit(mc.player)) return;
+        if (mc.level == null || mc.player == null || !SpiritData.isSpirit(mc.player) || !SpiritData.isAwakened(mc.player)) return;
         var state = ensure(mc.player);
         if (state != null) {
             payload.pos().ifPresent(pos -> state.seek(Vec3.atCenterOf(pos).add(0, HINT_ABOVE, 0), true));
             state.pulseTicks = PULSE_TICKS;
         }
-        mc.player.displayClientMessage(Component.translatable("hint.orimod." + payload.id()), true);
+        if (payload.kind() == CompanionHintPayload.Kind.LINE) cn.wwl.orimod.client.CompanionLineOverlay.show(payload.id());
+        else mc.player.displayClientMessage(Component.translatable("hint.orimod." + payload.id()), true);
         mc.level.playLocalSound(mc.player.getX(), mc.player.getY(), mc.player.getZ(), SoundEvents.AMETHYST_BLOCK_RESONATE,
                 SoundSource.PLAYERS, HINT_VOLUME, HINT_PITCH, false);
     }

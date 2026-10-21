@@ -41,6 +41,20 @@
 
 录制使用 `record_video` 操作指定 `name`、`fps`、`seconds`，需要 PATH 中存在 FFmpeg。画面直接来自游戏渲染目标，以 RGBA 流交给编码器；无需桌面捕获。等待状态中的 `recording=false` 且 `pending=0` 后执行 `save_video`，再将返回的 `frames.json` 路径交给 `scripts/encode-capture.py`。缺失的采集时隙保持前一帧，不加速播放；采集时间戳和重复帧数量随清单保存。录屏与性能采样分开执行。
 
+## R102「萤」台词验收
+
+`{"op":"spirit_state"}` 的 `client.line` 包含 `id`（不含line/前缀）、`text`（当前客户端语言的完整文案）、`remaining`（剩余客户端tick）。未显示时为 `{"id":"","text":"","remaining":0}`。台词显示60tick，末20tick淡出；底行位于屏幕底部以上84像素，原版actionbar在68像素处，长英文向上换行，保留功能性消息。沿用“萤的引导提示”开关，关闭时不显示/响铃/脉冲；已发送的一次性记录仍由服务端保存，与原hint行为相同。
+
+台词与hint共享200tick间隔，hint优先，只有一个待发条目，新覆盖旧；最大等待按台词设置，默认240tick（含boss_start），low_health为60tick，超过才丢弃。默认等待覆盖200tick间隔及下一次20tick扫描：新玩家第一次接近灵树收到hint后立即领取赐福，或刚收到遗迹机关hint便入场，台词应在间隔结束后的扫描说出并写记录，不必先清hint或去第二棵树。`/ori hints reset`只清hint、不清line记录；多个未读hint连续抢先仍可能令台词超时，低血量过时则有意丢弃。没有新增调试命令修改台词记录；重测一次性事件请使用新玩家/测试存档。
+
+遗迹验收请使用自然生成结构（例如 `/locate structure orimod:forest_spring` 后前往实际入口）。已核对 Minecraft 1.21.1 的 PlaceCommand.placeStructure：`/place structure` 调用 placeInChunk 放置方块，但不登记区块的 structure starts/references，因此不能作为入场检测夹具；它的坐标参数也不保证最终结构原点与高度。GameTest 则明确建立并还原真实结构起点和引用。
+
+触发点：三类自然遗迹实际包围盒首次进入；首领首次锁定玩家；翼母胜利；心脏死亡后的逃亡（escape覆盖同时排队的boss_defeated）；潮夜开始/结束；树心领取成功；生命比例由≥25%落到<25%；觉醒后主世界可见天空（同步高度图也无头顶遮挡）且日内时间进入≥13000。低血量在持续低血量时不会因为1200tick冷却结束而重说，必须恢复后再下降。首领每实例一场战斗，持久开战标记防止重锁/重载误触发；另一个新首领仍受该玩家6000tick冷却。
+
+一次性记录为 rewards `line/<id>`，实际发送后写入。排队下线不保存，登录不会回放旧队列；以后时机再次满足可以再排队。换维度/离开精灵形态会清过时队列，换维度保留会话内冷却。遗迹每20tick仅查当前区块及已加载结构引用，三类记录全齐后跳过。
+
+CompanionHintPayload协议3必须两端匹配；在协议版本握手之外，新格式也带0/3标记和kind，旧v2包、新v3包的交叉解码均明确拒绝。FX与潮夜协议不变。客户端仍用llvmpipe + `DISPLAY=:0`，和全量Gradle互斥；台词布局与实际触发由 `scripts/verify-r102.py` 实拍验收。
+
 ## R101 腐光潮夜验收
 
 服务器配置文件为世界 `serverconfig/orimod-server.toml`，仅 `[gloomTide]` 下三个项目：`enabled=true`、`waveInterval=200`（20..24000）、`maxNearby=8`（1..64）。改配置不会改变 R98 普通自然刷怪的 16 格灵闪压制；潮夜防御单独采用灵闪/树心 32 格、灵灯 10 格。

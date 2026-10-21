@@ -791,6 +791,7 @@ public final class DevelopmentBridge {
             state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
             state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
             state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
+            state.put("line", cn.wwl.orimod.client.CompanionLineOverlay.diagnostics());
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));

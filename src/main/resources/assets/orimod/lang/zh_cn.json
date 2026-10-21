@@ -329,7 +329,7 @@
   "hint.orimod.low_energy": "萤：能量快空了，停手两秒就会回复。",
   "hint.orimod.shard_slot": "萤：按G打开面板，把新碎片装上吧。",
   "orimod.configuration.companionHints": "萤的引导提示",
-  "orimod.configuration.companionHints.tooltip": "首次遇到机关时，萤会说话、响铃并飞去引路。关闭后仍记录已读。",
+  "orimod.configuration.companionHints.tooltip": "萤的首次引导与情境台词、响铃和引导飞行。关闭后，服务端发送过的一次性提示和台词仍记录已读。",
   "commands.orimod.hints.list": "已读萤的提示：%s",
   "key.orimod.flash": "灵闪（按住）",
   "ability.orimod.flash": "灵闪",
@@ -370,5 +370,16 @@
   "commands.orimod.tide.disabled": "需要非和平难度、doMobSpawning 和腐光潮配置开启",
   "commands.orimod.tide.started": "本夜腐光潮已开始（忽略月相）",
   "commands.orimod.tide.stopped": "本夜腐光潮已停止",
-  "commands.orimod.tide.status": "潮夜：%s；48 格内潮汐怪：%s；本夜击杀：%s；下波：%s tick"
+  "commands.orimod.tide.status": "潮夜：%s；48 格内潮汐怪：%s；本夜击杀：%s；下波：%s tick",
+  "line.orimod.first_ruin_forest_spring": "萤：泉水在低语，这里曾经满是灵光。",
+  "line.orimod.first_ruin_creek_ruins": "萤：溪水冲出了旧石阶，小心脚下。",
+  "line.orimod.first_ruin_cave_altar": "萤：好深的黑暗……别怕，我会一直亮着。",
+  "line.orimod.boss_start": "萤：它来了！盯住它的动作，我们能赢。",
+  "line.orimod.boss_defeated": "萤：做到了！森林又能呼吸了。",
+  "line.orimod.escape": "萤：快跑！别回头，跟着我的光！",
+  "line.orimod.tide_begin": "萤：月亮不见了……腐光要涨潮了，挂起灵灯！",
+  "line.orimod.tide_end": "萤：天亮了，潮水退了。你守住了。",
+  "line.orimod.tree_found": "萤：是灵树！它记得你，把力量借给了你。",
+  "line.orimod.low_health": "萤：你伤得很重！先退开，找机会回复。",
+  "line.orimod.night_one": "萤：天黑了。别离我太远，我会照亮路。"
 }

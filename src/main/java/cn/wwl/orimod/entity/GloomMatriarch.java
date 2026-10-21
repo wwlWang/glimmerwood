@@ -53,6 +53,11 @@ public final class GloomMatriarch extends Monster {
         super(type, level); setNoGravity(true); setPersistenceRequired(); xpReward = 80;
     }
 
+    @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        super.setTarget(target);
+        cn.wwl.orimod.progression.CompanionLines.bossStarted(this, ARENA);
+    }
+
     public static AttributeSupplier.Builder attributes() {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, MAX_HEALTH).add(Attributes.FOLLOW_RANGE, ARENA)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1).add(Attributes.FLYING_SPEED, .6);
@@ -241,6 +246,7 @@ public final class GloomMatriarch extends Monster {
 
     /** First defeat per player: Spirit Light and a life and energy cell; later defeats only the light chime. */
     public static boolean victory(ServerPlayer player) {
+        cn.wwl.orimod.progression.CompanionLines.offer(player, cn.wwl.orimod.progression.CompanionLines.Line.BOSS_DEFEATED);
         boolean first = cn.wwl.orimod.progression.SpiritProgression.reward(player, "boss/gloom_matriarch", REWARD_LIGHT, 5);
         if (first) cn.wwl.orimod.progression.SpiritCells.grantFirstClear(player);
         player.displayClientMessage(Component.translatable(first ? "message.orimod.matriarch.victory" : "message.orimod.matriarch.again"), false);

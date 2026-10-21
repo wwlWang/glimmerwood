@@ -83,6 +83,7 @@ public final class GloomTide {
                 var ledger = p.getData(SpiritData.ENERGY_STATE).tide;
                 if (ledger.participating) {
                     int reward = SpiritProgression.grantLight(p, ledger.finish());
+                    cn.wwl.orimod.progression.CompanionLines.offer(p, cn.wwl.orimod.progression.CompanionLines.Line.TIDE_END);
                     p.displayClientMessage(Component.translatable("message.orimod.tide.end", ledger.kills, reward), true);
                 }
             }
@@ -106,6 +107,7 @@ public final class GloomTide {
             if (!ledger.participating || ledger.day != day) {
                 if (!eligible(p)) continue;
                 ledger.begin(day, now);
+                cn.wwl.orimod.progression.CompanionLines.offer(p, cn.wwl.orimod.progression.CompanionLines.Line.TIDE_BEGIN);
                 p.displayClientMessage(Component.translatable("message.orimod.tide.begin"), true);
                 p.playNotifySound(SoundEvents.AMBIENT_CAVE.value(), SoundSource.AMBIENT, .6f, .65f);
             }

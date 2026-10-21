@@ -46,6 +46,11 @@ public final class GloomHeart extends Monster {
         super(type, level); setNoGravity(true); setPersistenceRequired(); xpReward = 60;
     }
 
+    @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        super.setTarget(target);
+        cn.wwl.orimod.progression.CompanionLines.bossStarted(this, ARENA);
+    }
+
     public static AttributeSupplier.Builder attributes() {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, MAX_HEALTH).add(Attributes.FOLLOW_RANGE, ARENA)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1).add(Attributes.ARMOR, 4);
@@ -221,7 +226,10 @@ public final class GloomHeart extends Monster {
             // R54: the corruption breaks loose; the reward waits outside (EscapeSequence).
             bar.removeAllPlayers();
             var origin = Vec3.atBottomCenterOf(home()).add(0, 1, 0);
-            for (var player : escapees(server)) cn.wwl.orimod.world.EscapeSequence.start(player, origin);
+            for (var player : escapees(server)) {
+                cn.wwl.orimod.progression.CompanionLines.offer(player, cn.wwl.orimod.progression.CompanionLines.Line.BOSS_DEFEATED);
+                cn.wwl.orimod.world.EscapeSequence.start(player, origin);
+            }
         }
     }
 }

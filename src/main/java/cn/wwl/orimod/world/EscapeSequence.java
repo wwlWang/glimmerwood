@@ -47,6 +47,7 @@ public final class EscapeSequence {
 
     public static void start(ServerPlayer player, Vec3 origin) {
         stop(player);
+        cn.wwl.orimod.progression.CompanionLines.offer(player, cn.wwl.orimod.progression.CompanionLines.Line.ESCAPE);
         var bar = new ServerBossEvent(Component.translatable("bossbar.orimod.escape"), BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
         bar.addPlayer(player);
         ACTIVE.put(player.getUUID(), new Session(player.level().dimension().location().toString(), origin, player.level().getGameTime(), bar));

@@ -22,7 +22,7 @@ class CompanionHintPayloadTest {
     @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked"})
     void roundTripLockedVariants(String id) { roundTrip(new CompanionHintPayload(id, Optional.of(BlockPos.ZERO))); }
 
-    @Test void explicitChannelVersion() { assertEquals("2", CompanionHintPayload.VERSION); }
+    @Test void explicitChannelVersion() { assertEquals("3", CompanionHintPayload.VERSION); }
 
     @ParameterizedTest @ValueSource(strings = {"", "unknown", "low_energy_locked", "hint/updraft", "../updraft"})
     void rejectsUnknownIds(String id) { rejected(b -> { b.writeUtf(id); b.writeByte(0); }); }
@@ -49,6 +49,45 @@ class CompanionHintPayloadTest {
         assertEquals(new BlockPos(1, 2, 3), payload.pos().orElseThrow());
     }
 
+    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(3); b.writeByte(kind); }
+    @ParameterizedTest @EnumSource(cn.wwl.orimod.progression.CompanionLines.Line.class)
+    void roundTripEveryLine(cn.wwl.orimod.progression.CompanionLines.Line line) { roundTrip(CompanionHintPayload.line(line)); }
+    @ParameterizedTest @ValueSource(ints={2,127,255})
+    void rejectsUnknownKind(int kind) { rejectedRaw(b -> { header(b,kind); b.writeUtf("tree_found"); b.writeByte(0); }); }
+    @ParameterizedTest @ValueSource(ints={0,1,2,4,255})
+    void rejectsOtherWireVersions(int version) { rejectedRaw(b -> { b.writeByte(0); b.writeByte(version); }); }
+    @Test void rejectsOldVersionTwoPacketWithClearMessage() {
+        var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try {
+            b.writeUtf("low_energy"); b.writeByte(0);
+            var error=assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b));
+            assertTrue(error.getMessage().contains("expected protocol 3"));
+        } finally { b.release(); }
+    }
+    @Test void versionTwoDecoderRejectsEveryNewPacketBeforeReadingItsBody() {
+        for(var packet:new CompanionHintPayload[]{new CompanionHintPayload("low_energy",Optional.empty()),
+                CompanionHintPayload.line(cn.wwl.orimod.progression.CompanionLines.Line.TREE_FOUND)}) {
+            var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+            try {
+                CompanionHintPayload.CODEC.encode(b,packet);
+                // The v2 decoder reads UTF id then a strict 0/1 position flag. Preserve that old parser here.
+                assertThrows(DecoderException.class,()->{
+                    b.readUtf(32);int flag=b.readUnsignedByte();
+                    if(flag>1)throw new DecoderException("Invalid companion hint position flag "+flag);
+                });
+            } finally { b.release(); }
+        }
+    }
+    @Test void rejectsLineIdInHintKind() { rejected(b->{b.writeUtf("tree_found");b.writeByte(0);}); }
+    @Test void rejectsHintIdInLineKind() { rejectedRaw(b->{header(b,1);b.writeUtf("low_energy");b.writeByte(0);}); }
+    @Test void rejectsCoordinatesOnLine() { rejectedRaw(b->{header(b,1);b.writeUtf("tree_found");b.writeByte(1);b.writeBlockPos(BlockPos.ZERO);}); }
+    @Test void rejectsTruncatedVersionHeader() { rejectedRaw(b->b.writeByte(0)); }
+    private static void rejectedRaw(Consumer<RegistryFriendlyByteBuf> write) {
+        var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try { write.accept(b);assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)); }
+        finally { b.release(); }
+    }
+
     private static void roundTrip(CompanionHintPayload payload) {
         var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {
@@ -59,7 +98,7 @@ class CompanionHintPayloadTest {
     }
     private static void rejected(Consumer<RegistryFriendlyByteBuf> write) {
         var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        try { write.accept(buffer); assertThrows(DecoderException.class, () -> CompanionHintPayload.CODEC.decode(buffer)); }
+        try { header(buffer, 0); write.accept(buffer); assertThrows(DecoderException.class, () -> CompanionHintPayload.CODEC.decode(buffer)); }
         finally { buffer.release(); }
     }
 }

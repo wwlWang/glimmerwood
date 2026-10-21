@@ -329,7 +329,7 @@
   "hint.orimod.low_energy": "Glimmer: Energy’s low. Rest your abilities for two seconds to recover.",
   "hint.orimod.shard_slot": "Glimmer: Press G to open your panel and equip that new shard.",
   "orimod.configuration.companionHints": "Glimmer’s guidance",
-  "orimod.configuration.companionHints.tooltip": "Glimmer speaks, chimes and flies toward new discoveries. Hints are still marked as seen when disabled.",
+  "orimod.configuration.companionHints.tooltip": "Glimmer’s guidance, contextual lines, chimes and guiding flight. Sent once-only hints and lines are still recorded when hidden.",
   "commands.orimod.hints.list": "Seen Glimmer hints: %s",
   "key.orimod.flash": "Flash (hold)",
   "ability.orimod.flash": "Flash",
@@ -370,5 +370,16 @@
   "commands.orimod.tide.disabled": "Requires non-Peaceful difficulty, doMobSpawning and gloomTide.enabled",
   "commands.orimod.tide.started": "Gloom Tide started for this night (moon phase bypassed)",
   "commands.orimod.tide.stopped": "Gloom Tide stopped for this night",
-  "commands.orimod.tide.status": "Tide: %s; tide mobs within 48: %s; kills this night: %s; next wave: %s ticks"
+  "commands.orimod.tide.status": "Tide: %s; tide mobs within 48: %s; kills this night: %s; next wave: %s ticks",
+  "line.orimod.first_ruin_forest_spring": "Glimmer: The spring is whispering. This place was once full of light.",
+  "line.orimod.first_ruin_creek_ruins": "Glimmer: The creek has carved out old steps. Mind your footing.",
+  "line.orimod.first_ruin_cave_altar": "Glimmer: It's so dark down here... Don't worry, I'll keep shining.",
+  "line.orimod.boss_start": "Glimmer: Here it comes! Watch how it moves. We can win this.",
+  "line.orimod.boss_defeated": "Glimmer: We did it! The forest can breathe again.",
+  "line.orimod.escape": "Glimmer: Run! Don't look back. Follow my light!",
+  "line.orimod.tide_begin": "Glimmer: The moon is gone... The gloom is rising. Hang your lanterns!",
+  "line.orimod.tide_end": "Glimmer: Dawn at last. The tide has gone. You held on.",
+  "line.orimod.tree_found": "Glimmer: A Spirit Tree! It remembers you and lends you its strength.",
+  "line.orimod.low_health": "Glimmer: You're badly hurt! Back off and find a moment to heal.",
+  "line.orimod.night_one": "Glimmer: Night is falling. Stay close; I'll light the way."
 }

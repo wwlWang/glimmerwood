@@ -1,6 +1,7 @@
 package cn.wwl.orimod.network;
 
 import cn.wwl.orimod.progression.CompanionHints.Hint;
+import cn.wwl.orimod.progression.CompanionLines.Line;
 import io.netty.handler.codec.DecoderException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -11,28 +12,41 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.Optional;
 
-/** R97/R100: server-selected Glimmer guidance. Version 2 adds spirit_tree to the strictly validated ids. */
-public record CompanionHintPayload(String id, Optional<BlockPos> pos) implements CustomPacketPayload {
-    public static final String VERSION = "2";
+/** R102 protocol 3: tagged hints/lines. A zero-length sentinel also makes every v3 packet fail v2 decoding. */
+public record CompanionHintPayload(Kind kind, String id, Optional<BlockPos> pos) implements CustomPacketPayload {
+    public static final String VERSION = "3";
+    public enum Kind { HINT, LINE }
+    public static final int WIRE_VERSION = 3;
+    public CompanionHintPayload(String id, Optional<BlockPos> pos) { this(Kind.HINT, id, pos); }
+    public static CompanionHintPayload line(Line line) { return new CompanionHintPayload(Kind.LINE, line.id, Optional.empty()); }
     public static final int MAX_ID_LENGTH = 32, WORLD_LIMIT = 30_000_000;
     public static final Type<CompanionHintPayload> TYPE = new Type<>(ResourceLocation.parse("orimod:companion_hint"));
     public static final StreamCodec<RegistryFriendlyByteBuf, CompanionHintPayload> CODEC = StreamCodec.of(
-            (buf, v) -> { buf.writeUtf(v.id, MAX_ID_LENGTH); buf.writeByte(v.pos.isPresent() ? 1 : 0); v.pos.ifPresent(buf::writeBlockPos); },
+            (buf, v) -> { buf.writeByte(0); buf.writeByte(WIRE_VERSION); buf.writeByte(v.kind.ordinal()); buf.writeUtf(v.id, MAX_ID_LENGTH); buf.writeByte(v.pos.isPresent() ? 1 : 0); v.pos.ifPresent(buf::writeBlockPos); },
             buf -> {
                 try {
+                    if (buf.readUnsignedByte() != 0 || buf.readUnsignedByte() != WIRE_VERSION)
+                        throw new DecoderException("Incompatible companion payload: expected protocol 3");
+                    int kind = buf.readUnsignedByte();
+                    if (kind >= Kind.values().length) throw new DecoderException("Unknown companion payload kind " + kind);
                     String id = buf.readUtf(MAX_ID_LENGTH);
                     int flag = buf.readUnsignedByte();
                     if (flag > 1) throw new DecoderException("Invalid companion hint position flag " + flag);
-                    return new CompanionHintPayload(id, flag == 1 ? Optional.of(buf.readBlockPos()) : Optional.empty());
+                    return new CompanionHintPayload(Kind.values()[kind], id, flag == 1 ? Optional.of(buf.readBlockPos()) : Optional.empty());
                 } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                     throw new DecoderException("Invalid companion hint", e);
                 }
             });
 
     public CompanionHintPayload {
-        var hint = Hint.byWireId(id);
-        if (hint == null) throw new IllegalArgumentException("Unknown companion hint " + id);
-        if (pos == null || pos.isPresent() != (hint.radius > 0)) throw new IllegalArgumentException("Wrong companion hint position");
+        if (kind == null || pos == null) throw new IllegalArgumentException("Missing companion payload kind/position");
+        if (kind == Kind.HINT) {
+            var hint = Hint.byWireId(id);
+            if (hint == null) throw new IllegalArgumentException("Unknown companion hint " + id);
+            if (pos.isPresent() != (hint.radius > 0)) throw new IllegalArgumentException("Wrong companion hint position");
+        } else if (Line.byId(id) == null || pos.isPresent()) {
+            throw new IllegalArgumentException("Unknown companion line or unexpected line position: " + id);
+        }
         if (pos.isPresent()) {
             var p = pos.get();
             if (Math.abs((long) p.getX()) > WORLD_LIMIT || Math.abs((long) p.getZ()) > WORLD_LIMIT || p.getY() < -2048 || p.getY() > 2047)

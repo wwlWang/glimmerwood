@@ -1,5 +1,15 @@
 # 回归测试
 
+## R102 同伴情境台词
+
+`./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK21）：885 JUnit / 436 GameTest，0 失败、0 跳过。新增 CompanionLinesTest、扩充 CompanionHintPayloadTest，以及27项 `companion_lines.*` GameTest；原提示的 GameTest 未改动。
+
+纯函数覆盖11类一次/可重复规则、6000/1200冷却边界、每条台词的最大等待边界（默认240/241、low_health60/61，含boss_start默认240）、低血量下降沿、夜间日内时间、三遗迹记录短路、清队列保留冷却、60tick显示/20tick淡出、中文含前缀≤30字与英文键。协议3覆盖全部hint/line往返、非法kind/id/坐标/布尔/版本、截断包、v2旧包被新解码器拒绝与v3包被旧解析规则拒绝。
+
+GameTest覆盖两个首领真实setTarget开场、同战重锁/保存重载不重复、不同首领受6000tick冷却，真实翼母胜利/心脏逃亡/树心赠礼/潮夜开始结束钩子，功能actionbar包仍发送，最新覆盖/共享间隔/超时无记录，提示在实际PlayerTick→LevelTick顺序中优先，人形/未觉醒/死亡/旁观双重门控，下线不补说和换维度清队列，低血量恢复后再次下降与冷却，首次地表夜晚只说一次/地下不说，三类真实RuinPiece及已加载结构引用、缺失起点不加载、全部记录后的检测短路。新增首棵树/森林遗迹两条用例：实际提示先发送，随后真实claim/入场触发台词；在真实世界时间经过200tick间隔前断言台词仍排队且未记录，200–220tick由LevelTick监听器发送一次并写line/记录。另测low_health在60tick边界保留、61tick后丢弃且不消耗冷却。旧统一过期测试改为241tick。夹具等待真实20tick扫描时刻，不修改游戏计时。
+
+实现中地下夜晚用例曾报 `Underground night speech`，检查发现高度兜底过宽且canSeeSky读取异步天光；改为可见天空并用同步高度图排除遮挡；最终复验结果以上述汇总为准。遗迹实拍需自然生成结构：原版 `/place structure` 不登记区块结构引用，不能验证此检测路径（源码依据见 DEVELOPMENT）。Claude首轮实机12项中9项通过（`evidence/r102-accept-v001/`）；独立行布局、功能消息共存与night_one/tide/low_health/boss_start/人形门控已通过。灵树和遗迹的3项因100tick队列比200tick间隔短而丢失，`evidence/r102-ruin-debug-v001/`补证入场检测正常；修为默认240tick、low_health60tick，等待新世界复验。`scripts/verify-r102.py` 由 Claude 维护；通过 `client.line` 验证文本、剩余tick与功能actionbar共存，截图检查中文/英文和小窗口换行、光球脉冲。只发送网络包不等同于真实客户端观感验收。
+
 ## R101 腐光潮夜
 
 最终命令：`./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK 21）。结果：811 JUnit / 409 GameTest，0 失败、0 跳过；报告 `build/test-results/test/`、`build/test-results/gametest.xml`，用 `python3 scripts/test-summary.py` 汇总。
