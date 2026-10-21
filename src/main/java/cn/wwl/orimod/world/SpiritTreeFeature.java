@@ -38,7 +38,7 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     public enum Reason {
-        RUIN_GUARD, RELIEF, NOT_DRY, FOOT_UNGROUNDED, FOOT_BLOCKED,
+        RUIN_GUARD, BLIGHT_GUARD, RELIEF, NOT_DRY, FOOT_UNGROUNDED, FOOT_BLOCKED,
         CLEARANCE_LOG, CLEARANCE_OTHER, BUILD_HEIGHT, OK
     }
 
@@ -87,6 +87,8 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
         // Preserve terrainAllowed's dry-first short circuit when both checks fail.
         if (badFloor != null) return Preflight.rejected(Reason.NOT_DRY, base, badFloor, minY, maxY);
         if (!terrainAllowed(heights, true)) return Preflight.rejected(Reason.RELIEF, base, base, minY, maxY);
+        if (BlightedGroundsFeature.nearBlock(level, base, 12, OriBlocks.GLOOM_CORE.get()))
+            return Preflight.rejected(Reason.BLIGHT_GUARD, base, base, minY, maxY);
         var plan = SpiritTreeShape.plan(base);
         var writes = new LinkedHashMap<BlockPos, BlockState>();
         for (var entry : plan.blocks().entrySet()) writes.put(base.offset(entry.getKey()), state(entry.getValue()));

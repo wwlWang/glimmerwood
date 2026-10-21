@@ -238,3 +238,31 @@ git diff -- src/main/resources
 实际路线使用 `verify-ruin-routes.py`，边界使用 `verify-ruin-boundaries.py`，自然生成使用 `verify-natural-ruins.py <构建标识> <orimod_dev_世界名> <种子>`。这些游戏内验证脚本会修改专用测试世界；不能用于用户生存存档。上述纯 Python 校验与回归测试不启动 Minecraft 或 Gradle。
 
 这些接口只在开发模组中存在。正式入口使用核心、V/C/R/G 按键、鼠标和原版物品栏，不依赖开发命令。具体已验证范围分别见移动、成长和战斗检查记录。
+
+## R106 腐化地带与净化验收
+
+客户端与Gradle互斥；启动仍用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient`。本轮实现期间没有启动客户端。
+
+- `/place feature orimod:blighted_grounds ~ ~ ~`：在开阔、干燥的泥土/草地/沙/黏土地面生成；整片预检失败则无写入。放置原点的Y取该XZ地表高度，不用于悬空放置；周围±14区块必须已加载。既有森林可能因原木拒绝，自然生成采用 `local_modifications` 在本区块原版植被之前。
+- `/ori blight nearest [radius]`：默认256，允许1–1024，只查加载区块、区段调色板预筛，返回最近尚存核心坐标/距离；点击建议tp到核心北侧3格，地形是否安全需自行确认。没有核心时 result=0；devtools command 的 success 不能代替 result。
+- `/ori unlock all`、`/give @s orimod:spirit_hammer`、`/ori awaken`、`/ori form on`及正常能力输入可用于战斗验收；核心准确血量40，蓄力灵焰12、灵锤10、光爆8、灵矛6、灵闪每20持续tick4。灵闪持续保活由现有按键实现，不能只发一次包就期待一直净化。
+- 荆棘复验：开启精灵形态和同伴，在玩家3格内放 `gloom_thorns`，等待后仍应存在；走入荆棘30tick内掉血（2原始伤害/15tick，护甲可能减伤）。自动灵焰只在无敌人时选取可见的灵光容器，命中敌人也不清荆棘；主动灵刀、普通箭/灵弧箭、蓄力灵焰、光爆、灵锤、灵矛、下砸可清除，剪刀采集掉自身。徒手/普通挖掘、猛击和灵闪不能清除荆棘；核心依旧只吃上述五种有效能力。
+- 核心摧毁后观察约30秒：土变草、枯木保留轴向变发光灵木、荆棘变短草/白花/空气、腐光水变清水。已有蓄力灵焰/光爆/灵闪也可能先净掉局部腐光水，这是原机制。
+
+`spirit_state` 的 **server.blight** 查询玩家256格内最近的已登记地带，返回：
+
+| 字段 | 含义 |
+| --- | --- |
+| `state` | `none` / `active` / `purifying` / `completed` |
+| `center` | 核心世界坐标 `[x,y,z]`，none时不带 |
+| `health` | 32格内最近尚存核心的精确血量；没有核心不带 |
+| `elapsed` | 本波有效tick，0–600；全部待办区块都卸载时暂停 |
+| `processed` / `total` | 已检查/总生成坐标；完成后旧坐标表已清理，两值为0 |
+| `participants` | 本波固定参与者数，≤16；完成后清理为0 |
+| `defenders` | 当前所属喷吐者UUID数，≤3，含未加载者 |
+| `pendingRewards` | 当前维度尚待补发人数总计；领取/删除玩家后条目删除 |
+| `lastReads` / `lastWrites` | 本维度最近tick的检查/写入数，分别≤128/32 |
+
+完成中心独立按区块索引提供32格球形潮夜庇护，核心消失后仍有效；不依赖原灵灯/树心缓存。`/ori tide start` 仍要求夜间、非和平和doMobSpawning，站在已净化中心观察多波应为0；32格边界包含，超出不保护。核心注册已有noLootTable，能力摧毁使用removeBlock不掉物品，创造栏物品保留；截图里的旋转紫色立方体也可能是存活的喷吐者，可用nearby_entities区分实体类型后判断。参与者取触发时32格内存活、非旁观者，最多最近16人；奖励不要求继续留在范围内。离线登录补发，不在该世界playerdata中的离线UUID跳过。补发使用个人回执防重复，完成记录仅保留中心；创造模式重新放核心不能刷地带奖励。手放核心没有生成地带元数据，只做战斗测试。
+
+纹理复现：`python3 -B scripts/art/build_blight_textures.py --check`；9张PNG，其中5种核心裂纹各由12个16×16帧及mcmeta组成，48tick循环插值，光照恒定不引发重算。`python3 -B scripts/export-spirit-fx.py --check`校验PURIFY源文件与发行定义。未新增结构资产，不需要重写遗迹。

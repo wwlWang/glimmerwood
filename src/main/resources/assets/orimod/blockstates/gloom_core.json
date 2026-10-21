@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "damage=0": {
+      "model": "orimod:block/gloom_core_0"
+    },
+    "damage=1": {
+      "model": "orimod:block/gloom_core_1"
+    },
+    "damage=2": {
+      "model": "orimod:block/gloom_core_2"
+    },
+    "damage=3": {
+      "model": "orimod:block/gloom_core_3"
+    },
+    "damage=4": {
+      "model": "orimod:block/gloom_core_4"
+    }
+  }
+}

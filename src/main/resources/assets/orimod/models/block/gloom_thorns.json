@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "orimod:block/gloom_thorns"
+  },
+  "render_type": "minecraft:cutout"
+}

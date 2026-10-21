@@ -30,6 +30,7 @@ public record SpiritSoundCue(String sound, float volume, float pitch, boolean lo
         TABLE.put(SpiritFxKind.LANTERN_IGNITE, new SpiritSoundCue("minecraft:block.amethyst_block.chime", .6f, 1.5f, false));
         TABLE.put(SpiritFxKind.BASH_AIM, new SpiritSoundCue("minecraft:block.beacon.ambient", .25f, 1.6f, true));
         TABLE.put(SpiritFxKind.FLASH, new SpiritSoundCue("minecraft:block.beacon.ambient", .3f, 1.6f, true));
+        TABLE.put(SpiritFxKind.PURIFY, new SpiritSoundCue("minecraft:block.beacon.activate", .8f, 1.5f, false));
         TABLE.put(SpiritFxKind.TREE_BLESSING, new SpiritSoundCue("minecraft:block.amethyst_block.resonate", 1f, 1.4f, false));
     }
 

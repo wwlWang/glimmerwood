@@ -1,5 +1,25 @@
 # 回归测试
 
+## R106 腐化地带与净化
+
+JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**1004 JUnit / 629 GameTest，0失败、0跳过**（较R105 +46/+50；本次庇护/掉落验证较前版 +1/+6）。最终日志 `/tmp/r106-sanctuary-loot.log`，`python3 scripts/test-summary.py`复核XML；纹理脚本 `python3 -B scripts/art/build_blight_textures.py --check` 检查9张PNG及5份核心动画元数据，`python3 -B scripts/export-spirit-fx.py --check` 检查20个FX定义；`git diff --check`通过。没有运行客户端，也没有重写遗迹资产。
+
+- `BlightRulesTest`：五种有效来源及六种拒绝来源的矩阵；荆棘七种主动清除来源/四种拒绝来源白名单；精确血量的视觉裂纹；水平径向时刻/600tick边界；32格球边界及正负区块边缘索引、守卫100tick冷却和3只上限；64种子重复性、全部10/11/12/13半径、±14范围、1–3池/8–20荆棘/2–4枯树（3–6高）以及避开水/荆棘/树干的入口到核心路径。实测地表273–485格。保存恢复区块游标和有效时间，完成中心不再登记、完成记录紧凑及16人读取上限；worldgen local_modifications、rarity160断言。
+- `blight.*` **48项**：11个来源的真实核心/BE血量与保存；真实蓄力灵焰/灵锤/光爆适配，真正飞行的灵矛只伤一次，40tick真实灵闪周期伤8且前18tick无伤。完整Feature内容、五类障碍失败零写、反向灵树互斥；600有效tick全地带复原、每tick读128/写32上限、保留玩家金块、60奖励/个人回执/拆放核心不重奖、完成中心32格潮夜庇护；轴向/光照与复原映射；未加载分区不强载和NBT续跑；四波共享预算；手放核心不凭空给地带奖励；手/箭/工具/活塞/凋灵/龙免疫；剪刀掉自身、荆棘无碰撞和能力清除、精灵接触伤害与跨丛15tick间隔；nearest半径1/1024、越界拒绝、未加载区块零加载、命令找到/未找到；hint与台词入队。
+- 荆棘实机反馈回归（本次新增6项GameTest / 11项JUnit）：无敌人时连续30tick真实自动灵焰只打容器，荆棘/裂壁/裂地板/核心保持；真实敌人受灵焰伤害但相邻荆棘保留；精灵站在实际放置的荆棘中，同伴开启并走实体接触检测，30tick内掉血；普通箭、灵弧箭、灵矛真实飞行穿过无碰撞荆棘时清除。既有剪刀用例扩展为主动来源白名单、徒手不能挖和灵刀点击清除。
+- 庇护/掉落复验新增：JUnit锁住32格球边界，以及正负区块边缘不能保留旧24格搜索窗口。真实完成净化后，中心玩家24个固定seed波次全部零刷怪；同场旧24格距离查询作为正对照，实际刷出65只，新版为0，防止夹具不可刷怪造成空通过。五种有效来源分别打碎核心，均无任何ItemEntity；运行时空掉落表、原版显式请求掉落的destroyBlock、创造物品仍注册同时断言。
+- 后补的真实生命周期用例：18人场景仅快照16且重复begin不扩容；旧账本恢复时离线待发登录即领、已无playerdata者删除、旧待发回放不二次发奖；参与者离开32格后仍按原快照结算；非能力删除核心回收活跃账本；防守者100tick/3只上限、卸载UUID仍占槽、保存后重载并discard腾槽；**真实区块在150有效tick后无票卸载**，账本从NBT恢复且不主动加载，测试模拟玩家再次访问加载该区块后再推进450tick，完成并复原远端。
+- 新hint/line和PURIFY自动加入既有枚举往返/资源/质量预算参数化测试（较原套件另增加1个清晰拒绝版本的参数样本等），FX通道8，旧v7解码器拒绝id19；同伴通道/帧头7，v6/v7在读新id前明确互拒。原贴图测试对5种核心动画严格检查12个16×16帧、4tick帧时和插值，其余贴图仍要求单张16×16。
+
+中途失败原文及修正：
+- 荆棘回归先跑旧生产逻辑，620项中恰有2项失败：`Automatic flame cleared nearby thorns`、`Companion erased contact hazard`（`/tmp/r106-thorns-before.log`）。删除自动荆棘选择分支，并将范围/单点清除统一收紧为主动来源白名单；接触伤害规则本身没有形态豁免，不需要修改，真实接触回归锁住精灵伤害。
+- 协议/新FX资源接入时旧断言报 `expected: <6> but was: <7>`、`expected: <7> but was: <8>`、旧unknown-kind=19被接受，以及PURIFY源文件缺失；同步版本边界、增加旧解析器拒绝用例和源文件后通过。核心改用动画纹理后，旧单帧断言 `expected: <16> but was: <192>`，改为仅对5个核心验证12个16×16帧和mcmeta，没有放宽其他资源。
+- 新夹具初次编译 `cannot find symbol: method hold(ServerPlayer)`，应调用现有 `Flash.keepAlive`；实体重建夹具的 `unsetRemoved() has protected access in Entity` 已去掉，多余调用并非生产需求（新建实体本就未删除）。
+- `Expected Flash cadence or damage wrong to be 32, but was 40`：嵌入连接夹具只发保活没执行Flash玩家tick，按原FlashGameTests补真实tick入口。后续 `Flash refused` 来自每tick回调和第42tick关闭连接回调同tick无序执行；改为明确排1–40tick输入与tick，第42tick断言并关闭，生产租约/释放规则均未修改。
+- `Expected Third defender missing to be 3, but was 2`：测试目标仍在距外摆核心160格以外，防守怪会按原版规则消失，提前腾槽；夹具将目标放回核心旁并让测试守卫持久化来单独验证冷却/占槽。生产守卫不强制持久化，自然消失照常腾槽。
+
+首轮客户端（`evidence/r106-accept-v001`、`evidence/r106-debug-v001/v002`）已通过生成、核心刀免疫/蓄力伤害/持续灵闪摧毁和守卫≤3；灵闪原失败为验收脚本反复松键引发冷却。复验 `evidence/r106-accept-v002` 已通过9/10项：荆棘20→17.2、核心/守卫、渐进净化（土中途剩54，最终清零）、枯木/水恢复、60灵光与外观；24格庇护漏出24–28环带，已改32待专项复验。核心已配置noLootTable且移除路径不产物品；只读检查关闭后的orimod_dev_r106b存档，验收区未见gloom_core物品，截图形状与喷吐者旋转紫晶模型相符，但未在拍照当刻记录实体ID，因此不把目测当作确证。R105此前8项实机检查已由Claude通过（8d954c2），不再列为待验收。
+
 ## R105 腐光甲虫
 
 JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**958 JUnit / 579 GameTest，0失败、0跳过**（较R104 +25/+41）。最终日志 `/tmp/r105-full-5.log`，用 `python3 scripts/test-summary.py`核对XML。锁定nbtlib2.0.4运行只读 `scripts/check-ruins.py`：passed、17产物、written=0；`scripts/test_check_ruins.py` **12 tests OK**；`build_beetle_texture.py --check`通过。遗迹生成仅两份layout新增点位，三份NBT相对HEAD字节无差异；原路线hash断言排除新增beetles契约后仍通过。

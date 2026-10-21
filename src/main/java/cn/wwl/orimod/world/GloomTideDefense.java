@@ -20,7 +20,7 @@ public final class GloomTideDefense {
     @FunctionalInterface public interface Query { boolean protects(ServerLevel level, Vec3 point); }
     public static final Query QUERY = GloomTideDefense::protects;
     public static boolean protects(ServerLevel level, Vec3 point) {
-        return Flash.protectsSpawn(level, point, GloomTideRules.FLASH_RADIUS) || blocksProtect(level, point);
+        return BlightData.get(level).protects(point) || Flash.protectsSpawn(level, point, GloomTideRules.FLASH_RADIUS) || blocksProtect(level, point);
     }
     public static boolean blocksProtect(ServerLevel level, Vec3 point) {
         int r = Math.max(GloomTideRules.TREE_RADIUS, GloomTideRules.LANTERN_RADIUS);

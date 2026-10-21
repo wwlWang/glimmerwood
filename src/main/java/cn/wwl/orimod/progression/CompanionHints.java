@@ -28,7 +28,7 @@ public final class CompanionHints {
         UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), SPIRIT_PLATFORM("spirit_platform", 8), GRAPPLE_FLOWER("grapple_flower", 10),
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
-        SPIRIT_TREE("spirit_tree", 24),
+        SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
         CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
@@ -128,7 +128,7 @@ public final class CompanionHints {
         var level = player.serverLevel();
         var centre = player.blockPosition();
         // Only an unseen tree hint expands the loaded-section scan; ordinary hints keep their original radii.
-        int range = unseen.contains(Hint.SPIRIT_TREE) ? Hint.SPIRIT_TREE.radius : RANGE;
+        int range = unseen.contains(Hint.SPIRIT_TREE) ? Hint.SPIRIT_TREE.radius : unseen.contains(Hint.GLOOM_CORE) ? 16 : RANGE;
         int minX = centre.getX() - range, maxX = centre.getX() + range;
         int minZ = centre.getZ() - range, maxZ = centre.getZ() + range;
         int minY = Math.max(level.getMinBuildHeight(), centre.getY() - range);
@@ -157,6 +157,7 @@ public final class CompanionHints {
     }
 
     private static Hint blockHint(BlockState state) {
+        if (state.is(OriBlocks.GLOOM_CORE)) return Hint.GLOOM_CORE;
         if (state.is(OriBlocks.UPDRAFT.get())) return Hint.UPDRAFT;
         if (state.is(OriBlocks.BASH_ANCHOR.get())) return Hint.BASH_ANCHOR;
         if (state.is(OriBlocks.SPIRIT_PLATFORM)) return Hint.SPIRIT_PLATFORM;
@@ -171,6 +172,14 @@ public final class CompanionHints {
         if (state.is(OriBlocks.CRACKED_RUIN_WALL.get())) return Hint.CRACKED_WALL;
         if (state.is(OriBlocks.CRACKED_RUIN_FLOOR.get())) return Hint.CRACKED_FLOOR;
         return null;
+    }
+
+    public static void core(ServerPlayer player,BlockPos pos) {
+        if (!SpiritData.isSpirit(player) || !SpiritData.isAwakened(player) || !player.isAlive() || player.isSpectator()) return;
+        var progress=player.getData(SpiritData.PROGRESS);var session=player.getData(SpiritData.ENERGY_STATE);long now=player.level().getGameTime();
+        if (progress.rewards().containsKey(PREFIX+Hint.GLOOM_CORE.id) || !ready(now,session.lastCompanionHintAt)) return;
+        var rewards=new HashMap<>(progress.rewards());rewards.put(PREFIX+Hint.GLOOM_CORE.id,1);player.setData(SpiritData.PROGRESS,progress.withRewards(rewards));
+        session.lastCompanionHintAt=now;PacketDistributor.sendToPlayer(player,new CompanionHintPayload(Hint.GLOOM_CORE.id,Optional.of(pos)));
     }
 
     public static boolean reset(ServerPlayer player) {

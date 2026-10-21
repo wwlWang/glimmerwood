@@ -115,6 +115,7 @@ public final class AirMovement {
         if (s.mode != STOMP) return;
         s.stompImpacts++;
         cn.wwl.orimod.block.CrackedRuin.stomp(player);
+        cn.wwl.orimod.block.BlightInteractions.area(player,player.position(),3,cn.wwl.orimod.world.BlightRules.Source.STOMP);
         // Partial block landings can be observed before the final movement packet's fall check.
         player.fallDistance = 0;
         for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(3, 1, 3),

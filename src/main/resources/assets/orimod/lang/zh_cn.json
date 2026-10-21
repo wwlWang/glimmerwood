@@ -395,5 +395,13 @@
   "hint.orimod.spirit_platform": "萤：这些虚影需要光……点亮附近的灵灯！",
   "entity.orimod.gloom_beetle": "腐光甲虫",
   "hint.orimod.gloom_beetle": "萤：正面打不动！跳到它背上下砸！",
-  "item.orimod.gloom_beetle_spawn_egg": "腐光甲虫刷怪蛋"
+  "item.orimod.gloom_beetle_spawn_egg": "腐光甲虫刷怪蛋",
+  "block.orimod.blighted_soil": "腐化之土",
+  "block.orimod.gloom_thorns": "腐光荆棘",
+  "block.orimod.withered_spirit_log": "枯死灵木",
+  "block.orimod.gloom_core": "腐化之核",
+  "hint.orimod.gloom_core": "萤：那颗核心在吸走生机……用灵焰或灵锤击碎它！",
+  "line.orimod.first_purify": "萤：你听，森林在呼吸了。",
+  "commands.orimod.blight.nearest": "腐化之核 %s，距离 %s 格（已加载区域，半径 %s）。",
+  "commands.orimod.blight.none": "已加载区域 %s 格内没有腐化之核。"
 }

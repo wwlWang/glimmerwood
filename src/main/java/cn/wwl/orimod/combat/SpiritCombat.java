@@ -164,6 +164,7 @@ public final class SpiritCombat {
     private static void hitBlade(ServerPlayer player, CombatState s) {
         Vec3 origin = player.getEyePosition(), direction = player.getLookAngle();
         double reach = s.stage == 3 ? 3.2 : 2.8;
+        cn.wwl.orimod.block.BlightInteractions.melee(player,reach);
         for (var target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach),
                 entity -> CombatTargets.canHit(player, entity))) {
             var box = target.getBoundingBox();

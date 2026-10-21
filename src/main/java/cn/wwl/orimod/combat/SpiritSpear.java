@@ -59,6 +59,7 @@ public final class SpiritSpear extends ThrowableProjectile {
         super.onHitBlock(result);
         if (!level().isClientSide) {
             cn.wwl.orimod.block.CrackedRuin.spear(this, result);
+            if (getOwner() instanceof ServerPlayer p) cn.wwl.orimod.block.BlightInteractions.hit(p,result.getBlockPos(),cn.wwl.orimod.world.BlightRules.Source.SPEAR);
             level().playSound(null, getX(), getY(), getZ(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, .8f, 1.6f);
             discard();
         }

@@ -25,6 +25,10 @@ public final class OriBlocks {
                     .lightLevel(SpiritPlatformBlock::light).sound(SoundType.AMETHYST)
                     .isSuffocating((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))
                     .isViewBlocking((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))));
+    public static final DeferredBlock<Block> BLIGHTED_SOIL=BLOCKS.registerSimpleBlock("blighted_soil",BlockBehaviour.Properties.of().strength(.6f).sound(SoundType.GRAVEL));
+    public static final DeferredBlock<GloomThornsBlock> GLOOM_THORNS=BLOCKS.register("gloom_thorns",()->new GloomThornsBlock(BlockBehaviour.Properties.of().strength(-1,1200).noCollission().noOcclusion().sound(SoundType.SWEET_BERRY_BUSH)));
+    public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> WITHERED_SPIRIT_LOG=BLOCKS.register("withered_spirit_log",()->new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of().strength(2).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GloomCoreBlock> GLOOM_CORE=BLOCKS.register("gloom_core",()->new GloomCoreBlock(BlockBehaviour.Properties.of().strength(-1,3600000).noLootTable().noOcclusion().lightLevel(s->6).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).sound(SoundType.AMETHYST)));
     /** R100: original luminous spirit wood, permanent foliage and a per-player blessing heart. */
     public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SPIRIT_LOG = BLOCKS.register("spirit_log",
             () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of()
@@ -90,7 +94,7 @@ public final class OriBlocks {
         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
-                GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
+                BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
                 SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);

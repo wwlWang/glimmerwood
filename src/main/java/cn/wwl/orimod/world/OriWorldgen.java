@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 public final class OriWorldgen {
     private static final DeferredRegister<net.minecraft.world.level.levelgen.feature.Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, OriMod.MOD_ID);
     public static final Supplier<SpiritTreeFeature> SPIRIT_TREE = FEATURES.register("spirit_tree", SpiritTreeFeature::new);
+    public static final Supplier<BlightedGroundsFeature> BLIGHTED_GROUNDS = FEATURES.register("blighted_grounds", BlightedGroundsFeature::new);
     private static final DeferredRegister<StructureType<?>> TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, OriMod.MOD_ID);
     private static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, OriMod.MOD_ID);
     public static final Supplier<StructureType<RuinStructure>> RUIN = TYPES.register("ruin", () -> () -> RuinStructure.CODEC);

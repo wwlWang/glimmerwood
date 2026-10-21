@@ -6,7 +6,7 @@ import com.google.gson.JsonParser;
 import java.nio.file.*;
 import org.junit.jupiter.api.Test;
 
-/** R76: every block/item model draws only original orimod textures, and each referenced texture exists as 16x16. */
+/** R76: every block/item model draws only original orimod textures, and each referenced texture has 16x16 frames (R106 cores animate). */
 class OriginalTexturesTest {
     private static final Path ASSETS = Path.of(System.getProperty("orimod.projectDir", ".")).resolve("src/main/resources/assets/orimod");
 
@@ -23,7 +23,12 @@ class OriginalTexturesTest {
                     var png = ASSETS.resolve("textures/" + ref.substring(7) + ".png");
                     assertTrue(Files.exists(png), f + " -> missing " + png);
                     var img = javax.imageio.ImageIO.read(png.toFile());
-                    assertEquals(16, img.getWidth(), png.toString()); assertEquals(16, img.getHeight(), png.toString());
+                    assertEquals(16, img.getWidth(), png.toString());
+                    if (ref.matches("orimod:block/gloom_core_[0-4]")) {
+                        assertEquals(16 * 12, img.getHeight(), png.toString());
+                        var meta = JsonParser.parseString(Files.readString(Path.of(png + ".mcmeta"))).getAsJsonObject().getAsJsonObject("animation");
+                        assertEquals(4, meta.get("frametime").getAsInt()); assertTrue(meta.get("interpolate").getAsBoolean());
+                    } else assertEquals(16, img.getHeight(), png.toString());
                     checked++;
                 }
             }

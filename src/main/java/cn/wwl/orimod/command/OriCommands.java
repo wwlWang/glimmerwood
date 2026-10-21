@@ -65,6 +65,10 @@ public final class OriCommands {
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
                 .then(Commands.literal("ruin").then(Commands.literal("secrets").executes(OriCommands::secrets)))
+                .then(Commands.literal("blight").then(Commands.literal("nearest")
+                        .executes(c -> nearestBlight(c, 256))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, 1024))
+                                .executes(c -> nearestBlight(c, IntegerArgumentType.getInteger(c, "radius"))))))
                 .then(Commands.literal("tree").then(Commands.literal("nearest")
                         .executes(c -> nearestTree(c, SpiritTreeSearch.DEFAULT_RADIUS))
                         .then(Commands.argument("radius", IntegerArgumentType.integer(1, SpiritTreeSearch.MAX_RADIUS))
@@ -241,6 +245,24 @@ public final class OriCommands {
                                 "/tp @s " + p.getX() + " " + p.getY() + " " + (p.getZ() - 3))));
         String distance = String.format(java.util.Locale.ROOT, "%.1f", Math.sqrt(p.distToCenterSqr(source.getPosition())));
         source.sendSuccess(() -> Component.translatable("commands.orimod.tree.nearest", coords, distance, radius), false);
+        return 1;
+    }
+
+    private static int nearestBlight(CommandContext<CommandSourceStack> c, int radius) {
+        var source = c.getSource();
+        var found = cn.wwl.orimod.world.BlightSearch.nearest(source.getLevel(), source.getPosition(), radius);
+        if (found.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.orimod.blight.none", radius));
+            return 0;
+        }
+        var p = found.orElseThrow();
+        var coords = Component.literal("[" + p.getX() + ", " + p.getY() + ", " + p.getZ() + "]")
+                .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.AQUA)
+                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(
+                                net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND,
+                                "/tp @s " + p.getX() + " " + p.getY() + " " + (p.getZ() - 3))));
+        String distance = String.format(java.util.Locale.ROOT, "%.1f", Math.sqrt(p.distToCenterSqr(source.getPosition())));
+        source.sendSuccess(() -> Component.translatable("commands.orimod.blight.nearest", coords, distance, radius), false);
         return 1;
     }
 

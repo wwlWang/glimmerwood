@@ -139,6 +139,7 @@ public final class Flash {
             SpiritLanternBlock.igniteAround(level, player.position(), RADIUS, LANTERN_TICKS);
             cn.wwl.orimod.block.PlatformLight.push(level,player.position(),cn.wwl.orimod.block.PlatformRules.Source.FLASH);
         }
+        if (age % 20 == 0) cn.wwl.orimod.block.BlightInteractions.area(player, player.position(), RADIUS, cn.wwl.orimod.world.BlightRules.Source.FLASH);
         if (cleanseDue(age)) GloomWaterBlock.cleanse(level, player.blockPosition(), CLEANSE_RADIUS);
     }
 

@@ -1,0 +1,36 @@
+package cn.wwl.orimod.block;
+import cn.wwl.orimod.world.*;
+import net.minecraft.core.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+
+/** Exact health survives unload; DAMAGE is only the visual crack stage. No BE ticker. */
+public final class GloomCoreBlockEntity extends BlockEntity {
+    private int health=BlightRules.HEALTH;
+    long lastRefused=Long.MIN_VALUE;
+    private long[] terrain=new long[0];
+    public GloomCoreBlockEntity(BlockPos pos,BlockState state){super(OriBlockEntities.GLOOM_CORE.get(),pos,state);}
+    public int health(){return health;}
+    public void terrain(long[] positions){terrain=positions.clone();setChanged();}
+    @Override public void onLoad(){super.onLoad();if(level instanceof ServerLevel server && server.getServer().isSameThread() && terrain.length>0)BlightData.get(server).register(worldPosition,terrain);}
+    public boolean hit(ServerPlayer player,BlightRules.Source source){
+        if(!(level instanceof ServerLevel server) || health<=0)return false;
+        int amount=BlightRules.damage(source);
+        if(amount==0){GloomCoreBlock.reject(server,worldPosition,player);return false;}
+        if(terrain.length>0)BlightData.get(server).register(worldPosition,terrain);
+        health=Math.max(0,health-amount);setChanged();
+        if(health==0){
+            BlightData.get(server).begin(server,worldPosition);
+            server.removeBlock(worldPosition,false);
+        }else{
+            server.setBlock(worldPosition,getBlockState().setValue(GloomCoreBlock.DAMAGE,BlightRules.crack(health)),2);
+            BlightData.get(server).defend(server,worldPosition,player);
+        }
+        return true;
+    }
+    @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.putInt("health",health);tag.putLongArray("terrain",terrain);}
+    @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);health=tag.contains("health")?Math.max(0,Math.min(40,tag.getInt("health"))):40;terrain=tag.getLongArray("terrain");}
+}

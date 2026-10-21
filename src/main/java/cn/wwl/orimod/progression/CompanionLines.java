@@ -27,7 +27,7 @@ public final class CompanionLines {
         BOSS_START("boss_start", false, 6000), BOSS_DEFEATED("boss_defeated", false, 0),
         ESCAPE("escape", false, 0), TIDE_BEGIN("tide_begin", false, 0), TIDE_END("tide_end", false, 0),
         TREE_FOUND("tree_found", true, 0), LOW_HEALTH("low_health", false, 1200, 60), NIGHT_ONE("night_one", true, 0),
-        FIRST_VESSEL("first_vessel", true, 0);
+        FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0);
         public final String id;
         public final boolean once;
         public final int cooldown;

@@ -46,6 +46,7 @@ public final class BashedImpact {
         if (player != null) {
             ACTIVE.remove(projectile.getUUID());
             CrackedRuin.hit(player.serverLevel(),hit.getBlockPos(),CrackedRuin.Source.BASHED_IMPACT);
+            cn.wwl.orimod.block.BlightInteractions.area(player,hit.getLocation(),1,cn.wwl.orimod.world.BlightRules.Source.BASHED_IMPACT);
             SpiritLightVesselBlock.burst(player,hit.getBlockPos());
         }
     }

@@ -22,7 +22,7 @@ class CompanionHintPayloadTest {
     @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked"})
     void roundTripLockedVariants(String id) { roundTrip(new CompanionHintPayload(id, Optional.of(BlockPos.ZERO))); }
 
-    @Test void explicitChannelVersion() { assertEquals("6", CompanionHintPayload.VERSION); }
+    @Test void explicitChannelVersion() { assertEquals("7", CompanionHintPayload.VERSION); }
 
     @ParameterizedTest @ValueSource(strings = {"", "unknown", "low_energy_locked", "hint/updraft", "../updraft"})
     void rejectsUnknownIds(String id) { rejected(b -> { b.writeUtf(id); b.writeByte(0); }); }
@@ -49,19 +49,19 @@ class CompanionHintPayloadTest {
         assertEquals(new BlockPos(1, 2, 3), payload.pos().orElseThrow());
     }
 
-    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(6); b.writeByte(kind); }
+    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(7); b.writeByte(kind); }
     @ParameterizedTest @EnumSource(cn.wwl.orimod.progression.CompanionLines.Line.class)
     void roundTripEveryLine(cn.wwl.orimod.progression.CompanionLines.Line line) { roundTrip(CompanionHintPayload.line(line)); }
     @ParameterizedTest @ValueSource(ints={2,127,255})
     void rejectsUnknownKind(int kind) { rejectedRaw(b -> { header(b,kind); b.writeUtf("tree_found"); b.writeByte(0); }); }
-    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,7,255})
+    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,8,255})
     void rejectsOtherWireVersions(int version) { rejectedRaw(b -> { b.writeByte(0); b.writeByte(version); }); }
     @Test void rejectsOldVersionTwoPacketWithClearMessage() {
         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             b.writeUtf("low_energy"); b.writeByte(0);
             var error=assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b));
-            assertTrue(error.getMessage().contains("expected protocol 6"));
+            assertTrue(error.getMessage().contains("expected protocol 7"));
         } finally { b.release(); }
     }
     @Test void versionTwoDecoderRejectsEveryNewPacketBeforeReadingItsBody() {
@@ -78,16 +78,16 @@ class CompanionHintPayloadTest {
             } finally { b.release(); }
         }
     }
-    @Test void versionFiveAndSixRejectEachOtherBeforeAnyNewIdIsRead() {
+    @Test void versionSixAndSevenRejectEachOtherBeforeAnyNewIdIsRead() {
         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
-            b.writeByte(0);b.writeByte(5);b.writeByte(0);b.writeUtf("updraft");b.writeByte(1);b.writeBlockPos(BlockPos.ZERO);
-            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 6"));
-            for(var packet:new CompanionHintPayload[]{new CompanionHintPayload("gloom_beetle",Optional.of(BlockPos.ZERO)),
-                    CompanionHintPayload.line(cn.wwl.orimod.progression.CompanionLines.Line.FIRST_VESSEL)}) {
+            b.writeByte(0);b.writeByte(6);b.writeByte(0);b.writeUtf("updraft");b.writeByte(1);b.writeBlockPos(BlockPos.ZERO);
+            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 7"));
+            for(var packet:new CompanionHintPayload[]{new CompanionHintPayload("gloom_core",Optional.of(BlockPos.ZERO)),
+                    CompanionHintPayload.line(cn.wwl.orimod.progression.CompanionLines.Line.FIRST_PURIFY)}) {
                 b.clear();CompanionHintPayload.CODEC.encode(b,packet);
                 assertThrows(DecoderException.class,()->{
-                    if(b.readUnsignedByte()!=0 || b.readUnsignedByte()!=5)throw new DecoderException("Incompatible companion payload: expected protocol 5");
+                    if(b.readUnsignedByte()!=0 || b.readUnsignedByte()!=6)throw new DecoderException("Incompatible companion payload: expected protocol 6");
                 });
             }
         } finally {b.release();}

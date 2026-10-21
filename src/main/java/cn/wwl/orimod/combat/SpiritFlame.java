@@ -32,6 +32,7 @@ public final class SpiritFlame {
         long now = player.level().getGameTime();
         if (!ready(SpiritData.isSpirit(player) && SpiritData.isAwakened(player), player.isAlive(), player.isSpectator(), now, state.flameReadyAt)) return;
         var target = target(player);
+        // The companion may only auto-target vessels among blocks; hazards require deliberate attacks.
         if (target == null) { cn.wwl.orimod.block.SpiritLightVesselBlock.flame(player); return; }
         state.flameReadyAt = now + COOLDOWN_TICKS;
         fire(player, target);

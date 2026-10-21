@@ -113,6 +113,24 @@ public final class GloomTideGameTests {
             s.floor(); s.begin(); s.set(s.base,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState());
             h.assertValueEqual(GloomTide.spawnWave(s.p,RandomSource.create(1),GloomTideDefense.QUERY),0,"Tree sanctuary leaked");
         });
+        add(tests,"purified_centre_shelters_twenty_four_waves_and_rejects_old_radius",(h,s)->{
+            var previous=BlightData.get(s.level);var data=new BlightData();s.level.getDataStorage().set("orimod_blight",data);
+            try {
+                s.floor();s.begin();int oldSpawns=0,protectedSpawns=0;var centre=Vec3.atCenterOf(s.base);
+                // Same real ground, player and fixed seeds: the former radius leaks through the outer ring.
+                for(int seed=0;seed<24;seed++){
+                    oldSpawns+=GloomTide.spawnWave(s.p,RandomSource.create(seed),(level,point)->point.distanceToSqr(centre)<=24*24);
+                    s.mobs().forEach(Entity::discard);
+                }
+                h.assertTrue(oldSpawns>0,"Old-radius control never spawned; fixture would hide the regression");
+                s.set(s.base.below(),OriBlocks.BLIGHTED_SOIL.get().defaultBlockState());
+                data.register(s.base,new long[]{s.base.below().asLong()});h.assertTrue(data.begin(s.level,s.base),"Purification did not begin");
+                for(int i=0;i<600;i++)data.advance(s.level);h.assertTrue(data.completed(s.base),"Purification did not finish");
+                for(int seed=0;seed<24;seed++)protectedSpawns+=GloomTide.spawnWave(s.p,RandomSource.create(seed),GloomTideDefense.QUERY);
+                h.assertValueEqual(protectedSpawns,0,"Purified centre leaked tide waves");h.assertTrue(s.mobs().isEmpty(),"Tide mobs spawned beside protected player");
+                com.mojang.logging.LogUtils.getLogger().info("R106 sanctuary / 24 fixed-seed waves: old radius={}, purified radius={}",oldSpawns,protectedSpawns);
+            } finally {s.level.getDataStorage().set("orimod_blight",previous);}
+        });
         add(tests,"active_flash_skips_own_wave_and_protects_teammate",(h,s)->{
             s.floor();s.begin();s.p.setData(SpiritData.ABILITIES,Ability.FLASH.bit);
             h.assertTrue(Flash.keepAlive(s.p),"Flash refused");

@@ -32,7 +32,8 @@ public enum SpiritFxKind {
     /** R98: sustained Flash light with sparse outward motes; lifecycle owns the beacon loop. */
     FLASH(17, 2, 1, .1, .1, .1, .01, true),
     /** R100: an upward root-heart column and motes gathering toward the blessed player. */
-    TREE_BLESSING(18, 40, 10, .1, .1, .1, .01);
+    TREE_BLESSING(18, 40, 10, .1, .1, .1, .01),
+    PURIFY(19, 48, 12, .1, .1, .1, .01);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

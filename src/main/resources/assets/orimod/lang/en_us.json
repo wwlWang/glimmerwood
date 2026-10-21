@@ -395,5 +395,13 @@
   "hint.orimod.spirit_platform": "Glimmer: These outlines need light... Ignite a nearby Spirit Lantern!",
   "entity.orimod.gloom_beetle": "Gloom Beetle",
   "hint.orimod.gloom_beetle": "Glimmer: Its front is armored! Jump behind it and Stomp!",
-  "item.orimod.gloom_beetle_spawn_egg": "Gloom Beetle Spawn Egg"
+  "item.orimod.gloom_beetle_spawn_egg": "Gloom Beetle Spawn Egg",
+  "block.orimod.blighted_soil": "Blighted Soil",
+  "block.orimod.gloom_thorns": "Gloom Thorns",
+  "block.orimod.withered_spirit_log": "Withered Spirit Log",
+  "block.orimod.gloom_core": "Gloom Core",
+  "hint.orimod.gloom_core": "Glimmer: That core is draining life... Break it with Charge Flame or Spirit Hammer!",
+  "line.orimod.first_purify": "Glimmer: Listen. The forest is breathing.",
+  "commands.orimod.blight.nearest": "Gloom Core %s, %s blocks away (loaded area, radius %s).",
+  "commands.orimod.blight.none": "No Gloom Core within %s blocks in loaded chunks."
 }

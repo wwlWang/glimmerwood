@@ -799,8 +799,14 @@ public final class DevelopmentBridge {
             state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
             state.put("line", cn.wwl.orimod.client.CompanionLineOverlay.diagnostics());
         }
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
+            var blight = new java.util.LinkedHashMap<>(cn.wwl.orimod.world.BlightData.get(serverPlayer.serverLevel()).status(player.position()));
+            cn.wwl.orimod.world.BlightSearch.nearest(serverPlayer.serverLevel(), player.position(), 32).ifPresent(pos -> {
+                if (serverPlayer.serverLevel().getBlockEntity(pos) instanceof cn.wwl.orimod.block.GloomCoreBlockEntity core) blight.put("health", core.health());
+            });
+            state.put("blight", blight);
+        }
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
                 "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),
