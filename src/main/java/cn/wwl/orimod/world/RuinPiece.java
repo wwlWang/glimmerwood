@@ -22,6 +22,7 @@ public final class RuinPiece extends TemplateStructurePiece {
         this.kind = kind;
         this.secret = kind.layout().secret();
         this.bridges = kind.layout().bridges();
+        this.beetles = kind.layout().beetles();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, ignored -> settings(RuinPlacement.readRotation(tag.getString("Rot"))));
@@ -33,7 +34,12 @@ public final class RuinPiece extends TemplateStructurePiece {
         var list=new java.util.ArrayList<RuinKind.Bridge>();
         for(var value:tag.getList("OriBridges",net.minecraft.nbt.Tag.TAG_COMPOUND))list.add(RuinKind.Bridge.load((CompoundTag)value));
         this.bridges=java.util.List.copyOf(list); // Never infer bridges from updated templates for older pieces.
+        this.beetles=java.util.Arrays.stream(tag.getLongArray("OriBeetles")).mapToObj(BlockPos::of).toList();
+        for(long point:tag.getLongArray("OriBeetlesSpawned"))if(beetles.contains(BlockPos.of(point)))spawnedBeetles.add(point);
     }
+    private final java.util.List<BlockPos> beetles;
+    private final java.util.Set<Long> spawnedBeetles=new java.util.HashSet<>();
+    public java.util.List<BlockPos> beetles(){return beetles;}
     private final java.util.List<RuinKind.Bridge> bridges;
     public java.util.List<RuinKind.Bridge> bridges() { return bridges; }
     private final RuinKind kind;
@@ -51,6 +57,10 @@ public final class RuinPiece extends TemplateStructurePiece {
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
+        if(!beetles.isEmpty()){
+            tag.putLongArray("OriBeetles",beetles.stream().mapToLong(BlockPos::asLong).toArray());
+            synchronized(spawnedBeetles){tag.putLongArray("OriBeetlesSpawned",spawnedBeetles.stream().mapToLong(Long::longValue).toArray());}
+        }
         if(!bridges.isEmpty()) {
             var list=new net.minecraft.nbt.ListTag();bridges.forEach(b->list.add(b.save()));tag.put("OriBridges",list);
         }
@@ -68,6 +78,23 @@ public final class RuinPiece extends TemplateStructurePiece {
             for (int z = Math.max(boundingBox.minZ(), chunkBounds.minZ()); z <= Math.min(boundingBox.maxZ(), chunkBounds.maxZ()); z++)
                 RuinApproachPiece.clearCanopy(level, chunkBounds, x, z, boundingBox.maxY() + 1, boundingBox.maxY() + 48);
         if (kind != null) placeCells(level, kind, placement(), chunkBounds);
+        spawnBeetles(level,chunkBounds);
+    }
+
+    /** Like monument guardians, use the generation accessor to publish into the correct protochunk.
+     * Consume each point before spawning; canceled/peaceful spawns and killed guards never respawn. */
+    private void spawnBeetles(ServerLevelAccessor level,BoundingBox bounds){
+        synchronized(spawnedBeetles){
+            for(var local:beetles){
+                var pos=placement().block(local);
+                if(!bounds.isInside(pos) || !spawnedBeetles.add(local.asLong()))continue;
+                var beetle=cn.wwl.orimod.entity.OriMobs.GLOOM_BEETLE.get().create(level.getLevel());
+                if(beetle==null)continue;
+                beetle.moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+.5,0,0);beetle.setPersistenceRequired();
+                net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(beetle,level,level.getCurrentDifficultyAt(pos),net.minecraft.world.entity.MobSpawnType.STRUCTURE,null);
+                level.addFreshEntity(beetle);
+            }
+        }
     }
 
     /** R44: put the layout's cell pedestals into the ruin (only the parts inside the chunk being generated). */

@@ -141,7 +141,7 @@ class RuinCheckTest(unittest.TestCase):
             "cave_altar": "7a5038c68ba893ff855be2e165ec370bf25e61b79b635b94726c8d5bcd28582d"}
         for name,digest in expected.items():
             layout=json.loads(self.assets[Path(f"src/main/resources/orimod/ruin_layout/{name}.json")])
-            del layout["secret"];del layout["vessels"];del layout["bridges"]
+            del layout["secret"];del layout["vessels"];del layout["bridges"];layout.pop("beetles",None)
             self.assertEqual(hashlib.sha256(json.dumps(layout,sort_keys=True,separators=(",",":")).encode()).hexdigest(),digest,name)
 
     def test_invalid_secret_seal_cannot_be_published(self):
@@ -164,6 +164,19 @@ class RuinCheckTest(unittest.TestCase):
                 before=snapshot(self.root)
                 with patch("subprocess.run",side_effect=invalid_generator):
                     with self.assertRaisesRegex(ValueError,"bridge|escape"):self.check(write=True)
+                self.assertEqual(snapshot(self.root),before)
+
+    def test_invalid_beetle_points_cannot_be_published(self):
+        layout_path=Path("src/main/resources/orimod/ruin_layout/creek_ruins.json")
+        for points in ([],[[15,6,5],[15,6,5]],[[0,0,0],[1,6,20]]):
+            with self.subTest(points=points):
+                def invalid_generator(command, **kwargs):
+                    destination=Path(command[-1]);shutil.copytree(self.generated,destination,dirs_exist_ok=True)
+                    layout=json.loads(self.assets[layout_path]);layout["beetles"]=points
+                    (destination/layout_path).write_text(json.dumps(layout),encoding="utf-8")
+                before=snapshot(self.root)
+                with patch("subprocess.run",side_effect=invalid_generator):
+                    with self.assertRaisesRegex(ValueError,"beetle"):self.check(write=True)
                 self.assertEqual(snapshot(self.root),before)
 
 

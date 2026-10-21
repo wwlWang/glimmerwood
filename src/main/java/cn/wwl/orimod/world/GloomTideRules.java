@@ -59,5 +59,13 @@ public final class GloomTideRules {
             owners.put(chunk, player);
         }
     }
+    public enum WaveMob { SPITTER, BEETLE, HAWK }
+    public static java.util.List<WaveMob> wave(int extraSpitter,float beetleRoll,float hawkRoll){
+        var mobs=new java.util.ArrayList<WaveMob>();mobs.add(WaveMob.SPITTER);
+        if(extraSpitter==1)mobs.add(WaveMob.SPITTER);
+        if(beetleRoll<.35f)mobs.add(WaveMob.BEETLE);
+        if(hawkRoll<.3f)mobs.add(WaveMob.HAWK);
+        return java.util.List.copyOf(mobs);
+    }
     private GloomTideRules() {}
 }

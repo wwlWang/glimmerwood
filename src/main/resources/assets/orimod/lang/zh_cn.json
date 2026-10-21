@@ -392,5 +392,8 @@
   "commands.orimod.ruin.no_secrets": "此遗迹没有秘室记录（旧版遗迹）。",
   "commands.orimod.ruin.secret": "%s 秘室入口：[%s, %s, %s]，朝向 %s，封口 %s。",
   "block.orimod.spirit_platform": "光敏灵台",
-  "hint.orimod.spirit_platform": "萤：这些虚影需要光……点亮附近的灵灯！"
+  "hint.orimod.spirit_platform": "萤：这些虚影需要光……点亮附近的灵灯！",
+  "entity.orimod.gloom_beetle": "腐光甲虫",
+  "hint.orimod.gloom_beetle": "萤：正面打不动！跳到它背上下砸！",
+  "item.orimod.gloom_beetle_spawn_egg": "腐光甲虫刷怪蛋"
 }

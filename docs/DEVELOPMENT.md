@@ -41,6 +41,26 @@
 
 录制使用 `record_video` 操作指定 `name`、`fps`、`seconds`，需要 PATH 中存在 FFmpeg。画面直接来自游戏渲染目标，以 RGBA 流交给编码器；无需桌面捕获。等待状态中的 `recording=false` 且 `pending=0` 后执行 `save_video`，再将返回的 `frames.json` 路径交给 `scripts/encode-capture.py`。缺失的采集时隙保持前一帧，不加速播放；采集时间戳和重复帧数量随清单保存。录屏与性能采样分开执行。
 
+## R105 腐光甲虫验收
+
+准备 `/difficulty normal`、`/ori awaken`、`/ori form on`、`/ori unlock all`、`/ori giveall`，然后 `/ori spawn beetle`（或原创配色的腐光甲虫刷怪蛋）。在开阔地拉到3–8格：预警15tick期间不移动，方向在预警开始锁定；侧闪可避开，随后沿锁定方向以0.6格/tick冲最多7格。墙碰撞眩晕30tick，撞任何可碰撞实体都停下、不自晕，只对玩家造成6伤害和击退；结束后冷却60tick。甲虫有18生命、移速0.24、检测16格，浅水中寻岸步行，没有游泳/浮力目标，陆地恢复高水域寻路代价。
+
+正面以**身体朝向 yBodyRot**的水平±60°判断，不跟头部转向；近战用直接伤害源位置，投射物用速度反方向，零速度才回退位置，因此从侧后射入的箭不会因射手站在前方而减伤。上方45°锥内正常受伤；正面×0.2伴随叮声/火花，背面正常。下砸真正命中的目标、猛击真正弹出的目标进入60tick掀翻；撞墙眩晕期间只有正数实际伤害才触发掀翻。翻倒时无AI移动但保留外力、重力，伤害×2且不再吃正面护甲；重复触发不续期，恢复后40tick免翻。下砸先翻再伤，因此触发那一下6伤害成为12；眩晕受击先结算该次伤害，之后掀翻。灵闪对甲虫无特殊效果。状态、剩余时间、免翻/冷却、锁定方向与已冲距离保存在实体NBT里，卸载暂停、重载继续。
+
+devtools `{"op":"nearby_entities"}` 仍返回顶层 `entities` 列表，**只给甲虫追加** `state`，取值 `idle / windup / charging / stunned / flipped`。原有id/uuid/type/alive/position/velocity/health/noGravity/noAi/leashHolder字段和其他实体格式保持不变；该读取在服务端线程，24格范围。比如可筛选 `type` 中含 `gloom_beetle` 的条目，再按id连续采样state、position和health。客户端从entityData同步阶段/剩余tick，翻身用6tick滚转过渡；预警背甲满亮度、腿部刨动与烟尘，裂紫背甲/暗腹纹理为原创64×64。`python3 -B scripts/art/build_beetle_texture.py --check`校验PNG。
+
+| 新遗迹 | 甲虫点位（NBT模板局部脚位） |
+| --- | --- |
+| creek_ruins | (15,6,5)、(1,6,20)，已含4格垫层 |
+| cave_altar | (15,2,18)、(6,2,30) |
+| forest_spring | 无甲虫 |
+
+点位随piece旋转/原点变换，世界脚位为目标方块的底面中心。`/place structure orimod:creek_ruins`、`/place structure orimod:cave_altar`可摆放验证（仍不登记自然结构引用）。布局JSON新增beetles契约，**三份NBT字节未改**，原路线/检查点/桥/秘室均不变。实际现有喷吐者/鸦走群系生成，没有可复用的遗迹固定点，因此本轮新增piece生成路径：通过WorldGenLevel/ServerLevelAccessor添加实体，STRUCTURE初始化并setPersistenceRequired；OriBeetles存点位、OriBeetlesSpawned逐点记录已处理位置，重新postProcess、死亡后再处理和读档均不补刷。旧piece缺字段即无甲虫；和平难度仍由原版清除。没有甲虫自然刷怪modifier。
+
+潮夜验收用 `/time set 18000`、`/gamerule doMobSpawning true`、`/ori tide start`，结束用 `/ori tide stop`。波次改为1–2喷吐者、独立35%一只甲虫、独立30%一只鸦，上限/16–28环带/防御/同tick区块波次归属不变；固定种子105的200波实测73甲虫、61鸦、296喷吐者。击杀甲虫掉2颗R35灵光，潮汐标记时3颗。
+
+首次12格内有视线的甲虫触发gloom_beetle提示（仍按原有提示顺序、200tick间隔、觉醒精灵门控与客户端同伴开关）；记hint/gloom_beetle。同伴通道与包内版本均升6，v5/v6明确互拒，FX保持7。客户端验收继续使用llvmpipe + DISPLAY=:0，且与Gradle互斥；当前未启动客户端，外观/声音/侧闪与翻身手感待Claude实拍。
+
 ## R104 光敏灵台验收
 
 准备：`/ori awaken`、`/ori form on`、`/ori unlock all`、`/ori energy fill`。`/setblock ~ ~ ~3 orimod:spirit_platform`放虚影，`/setblock ~ ~ ~5 orimod:bash_anchor`放灵灯，用真实猛击、蓄力灵焰或光爆点灯；灵闪H按住，每10tick推送7格球，光爆爆点5格球。`/setblock ~ ~ ~5 orimod:spirit_tree_heart`可验证树心10格常亮，拆除后保留100tick。灵灯半径6，从实际熄灭后再留100tick；无光平台亮度2、无碰撞，点亮亮度12、完整碰撞。预警只换模型和粒子，12亮度保持到熄灭。

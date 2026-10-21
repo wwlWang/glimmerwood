@@ -44,9 +44,20 @@ public final class GloomTideGameTests {
                 var d=mob.position().subtract(s.p.position());
                 h.assertTrue(GloomTideRules.spawnDistance(d.x*d.x+d.z*d.z),"Outside horizontal ring");
                 h.assertTrue(GloomTide.validGround(s.level,mob.blockPosition()),"Invalid ground");
-                var copy=OriMobs.GLOOM_SPITTER.get().create(s.level); copy.load(mob.saveWithoutId(new CompoundTag()));
+                var copy=mob.getType().create(s.level); copy.load(mob.saveWithoutId(new CompoundTag()));
                 h.assertTrue(GloomTide.tagged(copy),"Tag not persisted"); copy.discard();
             }
+        });
+        add(tests,"fixed_seed_mixed_waves_include_beetles_with_expected_frequency",(h,s)->{
+            s.floor();s.begin();var random=RandomSource.create(105);int beetles=0,hawks=0,spitters=0;
+            for(int wave=0;wave<200;wave++){
+                int n=GloomTide.spawnWave(s.p,random,GloomTideDefense.QUERY);h.assertTrue(n>=1 && n<=4,"Wave size");
+                var mobs=s.mobs();int b=0,ha=0,sp=0;
+                for(var mob:mobs){if(mob instanceof GloomBeetle)b++;else if(mob instanceof GloomHawk)ha++;else if(mob instanceof GloomSpitter)sp++;else h.fail("Unexpected tide mob");mob.discard();}
+                h.assertTrue(b<=1 && ha<=1 && sp>=1 && sp<=2,"Wave composition");beetles+=b;hawks+=ha;spitters+=sp;
+            }
+            h.assertTrue(beetles>=50 && beetles<=90,"Beetle frequency "+beetles);h.assertTrue(hawks>=40 && hawks<=80,"Hawk frequency "+hawks);h.assertTrue(spitters>=270 && spitters<=330,"Spitter frequency "+spitters);
+            com.mojang.logging.LogUtils.getLogger().info("R105 fixed seed 105 / 200 waves: {} beetles, {} hawks, {} spitters",beetles,hawks,spitters);
         });
         add(tests,"scheduler_enrolls_once_and_honors_wave_interval",(h,s)->{
             s.floor();s.p.setData(SpiritData.FORM,true);

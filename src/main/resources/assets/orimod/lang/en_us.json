@@ -392,5 +392,8 @@
   "commands.orimod.ruin.no_secrets": "This ruin has no recorded secret chamber (legacy ruin).",
   "commands.orimod.ruin.secret": "%s secret entrance: [%s, %s, %s], facing %s, sealed by %s.",
   "block.orimod.spirit_platform": "Light Platform",
-  "hint.orimod.spirit_platform": "Glimmer: These outlines need light... Ignite a nearby Spirit Lantern!"
+  "hint.orimod.spirit_platform": "Glimmer: These outlines need light... Ignite a nearby Spirit Lantern!",
+  "entity.orimod.gloom_beetle": "Gloom Beetle",
+  "hint.orimod.gloom_beetle": "Glimmer: Its front is armored! Jump behind it and Stomp!",
+  "item.orimod.gloom_beetle_spawn_egg": "Gloom Beetle Spawn Egg"
 }

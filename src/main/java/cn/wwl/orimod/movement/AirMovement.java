@@ -120,6 +120,7 @@ public final class AirMovement {
         for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(3, 1, 3),
                 entity -> entity instanceof Enemy && entity.isAlive())) {
             if (player.distanceToSqr(target) > 9 || !SpiritTargets.visible(player, target.getBoundingBox().getCenter())) continue;
+            cn.wwl.orimod.entity.GloomBeetle.flip(target);
             target.hurt(player.damageSources().playerAttack(player), 6);
             Vec3 away = target.position().subtract(player.position()).normalize();
             target.push(away.x * .35, .3, away.z * .35);

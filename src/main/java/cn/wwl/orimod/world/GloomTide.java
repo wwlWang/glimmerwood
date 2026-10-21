@@ -136,8 +136,9 @@ public final class GloomTide {
     public static int spawnWave(ServerPlayer p, RandomSource random, GloomTideDefense.Query defense) {
         var level = p.serverLevel();
         if (!isActive(level) || !eligible(p) || Flash.active(p)) return 0;
-        int spitters = 1 + random.nextInt(3), total = spitters + (random.nextFloat() < .3f ? 1 : 0), spawned = 0;
-        for (int i = 0; i < total; i++) {
+        var wave=GloomTideRules.wave(random.nextInt(2),random.nextFloat(),random.nextFloat());
+        int spawned=0;
+        for (var kind:wave) {
             if (!GloomTideRules.roomForMob(nearby(p), OriServerConfig.maxNearby())) break;
             for (int attempt = 0; attempt < 10; attempt++) {
                 double angle = random.nextDouble() * Math.PI * 2;
@@ -150,7 +151,7 @@ public final class GloomTide {
                 long chunk = ChunkPos.asLong(x >> 4, z >> 4), now = level.getGameTime();
                 if (!GloomTideRules.spawnDistance(dx * dx + dz * dz) || !validGround(level, pos)
                         || !state(level).claims.available(now, chunk, p.getUUID()) || defense.protects(level, point)) continue;
-                Mob mob = i < spitters ? OriMobs.GLOOM_SPITTER.get().create(level) : OriMobs.GLOOM_HAWK.get().create(level);
+                Mob mob = switch(kind){case SPITTER -> OriMobs.GLOOM_SPITTER.get().create(level);case BEETLE -> OriMobs.GLOOM_BEETLE.get().create(level);case HAWK -> OriMobs.GLOOM_HAWK.get().create(level);};
                 if (mob == null) continue;
                 mob.moveTo(point.x, point.y, point.z, random.nextFloat() * 360, 0);
                 mob.getPersistentData().putBoolean(TAG, true);

@@ -25,6 +25,7 @@ public final class OriItems {
     public static final DeferredItem<SpiritSpearItem> SPIRIT_SPEAR = ITEMS.register("spirit_spear", () -> new SpiritSpearItem(new Item.Properties().stacksTo(1)));
     /** R83: spawn eggs for the original enemies and bosses (vanilla template egg, our colours). */
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_SPITTER_SPAWN_EGG = egg("gloom_spitter", cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER, 0x2A1238, 0xB060FF);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_BEETLE_SPAWN_EGG = egg("gloom_beetle", cn.wwl.orimod.entity.OriMobs.GLOOM_BEETLE, 0x292039, 0xA65CE0);
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HAWK_SPAWN_EGG = egg("gloom_hawk", cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK, 0x1C1430, 0x8A3AD8);
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HEART_SPAWN_EGG = egg("gloom_heart", cn.wwl.orimod.entity.OriMobs.GLOOM_HEART, 0x3A0A2C, 0xFF3A8A);
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_MATRIARCH_SPAWN_EGG = egg("gloom_matriarch", cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH, 0x141A3A, 0x5A7BD8);

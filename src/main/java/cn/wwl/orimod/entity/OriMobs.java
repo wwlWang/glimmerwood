@@ -21,6 +21,9 @@ public final class OriMobs {
     public static final Supplier<EntityType<GloomShot>> GLOOM_SHOT = TYPES.register("gloom_shot", () -> EntityType.Builder
             .<GloomShot>of(GloomShot::new, MobCategory.MISC).sized(.3f, .3f).clientTrackingRange(8).updateInterval(2).build("orimod:gloom_shot"));
 
+    public static final Supplier<EntityType<GloomBeetle>> GLOOM_BEETLE = TYPES.register("gloom_beetle", () -> EntityType.Builder
+            .of(GloomBeetle::new, MobCategory.MONSTER).sized(1.1f,.7f).clientTrackingRange(8).build("orimod:gloom_beetle"));
+
     /** R50: first original boss. */
     public static final Supplier<EntityType<GloomHeart>> GLOOM_HEART = TYPES.register("gloom_heart", () -> EntityType.Builder
             .of(GloomHeart::new, MobCategory.MONSTER).sized(2.4f, 2.4f).fireImmune().clientTrackingRange(10).build("orimod:gloom_heart"));
@@ -35,7 +38,7 @@ public final class OriMobs {
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
-        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); event.put(GLOOM_HAWK.get(), GloomHawk.attributes().build()); event.put(GLOOM_MATRIARCH.get(), GloomMatriarch.attributes().build()); });
+        bus.addListener((EntityAttributeCreationEvent event) -> { event.put(GLOOM_BEETLE.get(), GloomBeetle.attributes().build()); event.put(GLOOM_SPITTER.get(), GloomSpitter.attributes().build()); event.put(GLOOM_HEART.get(), GloomHeart.attributes().build()); event.put(GLOOM_HAWK.get(), GloomHawk.attributes().build()); event.put(GLOOM_MATRIARCH.get(), GloomMatriarch.attributes().build()); });
         bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_SPITTER.get(), SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE));
         bus.addListener((RegisterSpawnPlacementsEvent event) -> event.register(GLOOM_HAWK.get(), SpawnPlacementTypes.ON_GROUND,

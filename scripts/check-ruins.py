@@ -131,6 +131,12 @@ def validate_contracts(root):
                 require(within((x,y,z)), f"{name}: escape outside template")
                 require(all(blocks.get((x,yy,z),"minecraft:air") in empty|{"orimod:spirit_platform","minecraft:water"} for yy in (y,y+1)), f"{name}: blocked unlit escape")
                 require(blocks.get((x,y,z))=="minecraft:ladder" or blocks.get((x,y-1,z),"minecraft:air") not in empty|{"orimod:spirit_platform","minecraft:water"}, f"{name}: unsupported escape")
+        beetles=layout.get("beetles",[])
+        require(len(beetles)==(0 if name=="forest_spring" else 2),f"{name}: wrong beetle count")
+        require(len({tuple(p) for p in beetles})==len(beetles),f"{name}: duplicate beetle point")
+        for x,y,z in beetles:
+            require(within((x,y,z)) and blocks.get((x,y,z))=="minecraft:air" and blocks.get((x,y+1,z))=="minecraft:air",f"{name}: blocked beetle point")
+            require(blocks.get((x,y-1,z),"minecraft:air") not in ("minecraft:air","minecraft:water","orimod:spirit_platform"),f"{name}: unsupported beetle point")
         print(name, "contract passed")
 
 

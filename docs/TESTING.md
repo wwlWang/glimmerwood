@@ -1,5 +1,24 @@
 # 回归测试
 
+## R105 腐光甲虫
+
+JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**958 JUnit / 579 GameTest，0失败、0跳过**（较R104 +25/+41）。最终日志 `/tmp/r105-full-5.log`，用 `python3 scripts/test-summary.py`核对XML。锁定nbtlib2.0.4运行只读 `scripts/check-ruins.py`：passed、17产物、written=0；`scripts/test_check_ruins.py` **12 tests OK**；`build_beetle_texture.py --check`通过。遗迹生成仅两份layout新增点位，三份NBT相对HEAD字节无差异；原路线hash断言排除新增beetles契约后仍通过。
+
+- `BeetleRulesTest`：身体yaw旋转后的正前/±59/±60/±61/背后扇区，上方与未知/非有限向量，5状态伤害表；15预警、30墙晕/60冷却独立时间轴，60翻倒不续期、恢复40免翻；3/8格边界。潮夜独立概率边界及固定seed105的10000波纯函数统计。
+- `gloom_beetle.*` **28项**：真实灵刀前甲/背面（头转向相反仍以身体判定）；箭的速度来自正/后/侧而非射手或当前箭位置；上方伤害。真实Stomp触发、60恢复/40免翻、暴露腹部×2、Bash真实输入和取消/反冲物理；真实Goal开始预警并逐tick检查不移动、目标侧闪后方向不变；7格实际位移、60冷却；实体物理撞墙30晕，正伤害触发翻倒/拒绝伤害不触发；玩家6伤害与击退，羊/喷吐者/掉落物截停但不受伤、不自晕。进水取消预警、最多80tick内从浅水步行出来并恢复水域代价；保存/恢复翻倒、免翻、预警、方向/已冲距离；持久守卫调用原版checkDespawn仍在和平移除。灵闪无特殊效果，12格可见hint边界/人形/一次性/隔墙拒绝，R35普通2/潮汐3颗灵光，调试命令生成。
+- `ruin_beetles.*` **12项**：三类×四旋转，旧piece无契约不刷；先处理首点所在区块，再保存恢复并完成全模板，所有点恰好一次。实体宽高不与遗迹碰撞、脚下干燥、位置正确、持久化；重复postProcess不增员，移除守卫后保存/重放也不补刷。采用64×48×64模板隔离遗迹和实体，防止小room模板之外的重叠。
+- R101新增1项200波真实spawnWave固定seed105统计：**73甲虫、61鸦、296喷吐者**；每波1–2喷吐者且最多1甲虫/1鸦，1–4总数；已有环带/防御/上限/同tick区块共享/清场全部继续通过。原持久标签往返测试按实际mob.getType()重建，覆盖新组成。
+- 同伴payload协议6；新hint中英资源与编解码往返由已有参数化测试覆盖，v5/v6在读取新id之前明确互拒，旧v2也拒绝。devtools仅甲虫新增state，原10个字段和其他实体保持；compileDevtoolsJava通过。
+- Python新增无效甲虫契约拒绝：空点、重复点、埋在实体块里的点不可发布，失败仍不改文件；沿用默认只读和显式write幂等/字节复现测试。
+
+中途失败原文和修正：
+- 首次JUnit `expected: <UPDRAFT> but was: <GLOOM_BEETLE>`：甲虫枚举插到最前改变了原提示优先级，已移到既有空间提示之后，旧测试保持原断言。
+- 首轮 `Flipped movement erased external recoil`、`Never reached IDLE ... travel=0.0 ... CHARGING`：移动夹具使用NoAI，原版连travel也不执行；移动用例改开真实AI，伤害隔离仍用NoAI。`Missing or duplicate generated guards` / `Old piece invented guards`来自room间距小于外摆遗迹尺寸，改用大模板隔离，未改生产去重。
+- `Contact damage player: expected 14.0, got 20.0`：新连接真实玩家还有独立的60tick登录无敌，按已有DamageGameTests走61次普通player.tick后再测，并明确NORMAL难度。`Persistent beetle survived peaceful difficulty`来自手动mob.tick没有执行ServerLevel负责调用的checkDespawn，测试补走原版该入口。
+- `Beetle failed to walk out of shallow water ... water=true path=Path(length=1)`是真实寻路问题：高水域代价妨碍第一步，离水Goal临时允许水中步行、结束恢复。随后路径虽标记reachable/done，但moveTo的默认1格到达容差让宽甲虫仍停水里，改为createPath(destination,0)。边界测试曾在物理移出水格的同tick读取旧浸水标志，改逐tick等实际isInWater变false（最多80），再检查避水恢复；没有删掉离水断言或开启浮游。
+
+本轮未启动客户端；原模型/纹理预警、翻身插值、音色、真实侧闪与遗迹战斗节奏待Claude实机。坐标、命令和nearby_entities.state用法见DEVELOPMENT。R104最后的围墙水庭/中央猛击/亮桥落脚/出口容器已在evidence/r104-accept-v003通过并提交a06ece7。
+
 ## R104 光敏灵台
 
 JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=plain`：**933 JUnit / 538 GameTest，0失败、0跳过**，较R103增加17/40；`python3 scripts/test-summary.py`复核XML。光桥防绕行修正后的全量日志 `/tmp/r104-no-bypass-full-5.log`（不入库）。锁定nbtlib2.0.4运行只读 `check-ruins.py`（passed、17个产物、written=0）及 `test_check_ruins.py`（11 tests OK）；`build_platform_textures.py --check`验证3张PNG与6个JSON产物。

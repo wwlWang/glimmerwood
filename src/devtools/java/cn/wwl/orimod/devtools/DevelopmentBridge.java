@@ -307,12 +307,15 @@ public final class DevelopmentBridge {
                 return mc.getSingleplayerServer().submit(() -> {
                     var player = mc.getSingleplayerServer().getPlayerList().getPlayer(id);
                     var entities = player.level().getEntities(player, player.getBoundingBox().inflate(24), entity -> true);
-                    return Map.<String, Object>of("entities", entities.stream().map(entity -> Map.of("id", entity.getId(), "uuid", entity.getUUID().toString(),
+                    return Map.<String, Object>of("entities", entities.stream().map(entity -> { var data=new java.util.LinkedHashMap<String,Object>(Map.of("id", entity.getId(), "uuid", entity.getUUID().toString(),
                             "type", entity.getType().toString(), "alive", entity.isAlive(), "position", new double[]{entity.getX(), entity.getY(), entity.getZ()},
                             "velocity", new double[]{entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z},
                             "health", entity instanceof net.minecraft.world.entity.LivingEntity living ? living.getHealth() : -1,
                             "noGravity", entity.isNoGravity(), "noAi", entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi(),
-                            "leashHolder", entity instanceof net.minecraft.world.entity.Mob leashed && leashed.getLeashHolder() != null ? leashed.getLeashHolder().getId() : -1)).toList());
+                            "leashHolder", entity instanceof net.minecraft.world.entity.Mob leashed && leashed.getLeashHolder() != null ? leashed.getLeashHolder().getId() : -1));
+                        if(entity instanceof cn.wwl.orimod.entity.GloomBeetle beetle)data.put("state",beetle.stateName());
+                        return data;
+                    }).toList());
                 }).get(5, TimeUnit.SECONDS);
             }
             case "progress_state" -> {

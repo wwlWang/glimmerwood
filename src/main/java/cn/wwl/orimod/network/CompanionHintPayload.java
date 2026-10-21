@@ -12,11 +12,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.Optional;
 
-/** R104 protocol 5: tagged hints/lines. A zero-length sentinel also makes every v5 packet fail v2 decoding. */
+/** R105 protocol 6: tagged hints/lines. A zero-length sentinel also makes every v6 packet fail v2 decoding. */
 public record CompanionHintPayload(Kind kind, String id, Optional<BlockPos> pos) implements CustomPacketPayload {
-    public static final String VERSION = "5";
+    public static final String VERSION = "6";
     public enum Kind { HINT, LINE }
-    public static final int WIRE_VERSION = 5;
+    public static final int WIRE_VERSION = 6;
     public CompanionHintPayload(String id, Optional<BlockPos> pos) { this(Kind.HINT, id, pos); }
     public static CompanionHintPayload line(Line line) { return new CompanionHintPayload(Kind.LINE, line.id, Optional.empty()); }
     public static final int MAX_ID_LENGTH = 32, WORLD_LIMIT = 30_000_000;
@@ -26,7 +26,7 @@ public record CompanionHintPayload(Kind kind, String id, Optional<BlockPos> pos)
             buf -> {
                 try {
                     if (buf.readUnsignedByte() != 0 || buf.readUnsignedByte() != WIRE_VERSION)
-                        throw new DecoderException("Incompatible companion payload: expected protocol 5");
+                        throw new DecoderException("Incompatible companion payload: expected protocol 6");
                     int kind = buf.readUnsignedByte();
                     if (kind >= Kind.values().length) throw new DecoderException("Unknown companion payload kind " + kind);
                     String id = buf.readUtf(MAX_ID_LENGTH);

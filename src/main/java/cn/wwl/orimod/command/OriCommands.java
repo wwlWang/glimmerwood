@@ -40,7 +40,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 public final class OriCommands {
     public static final int PERMISSION = 2;
     public static final Map<String, Supplier<? extends EntityType<?>>> SPAWNS = Map.of(
-            "spitter", OriMobs.GLOOM_SPITTER, "hawk", OriMobs.GLOOM_HAWK, "heart", OriMobs.GLOOM_HEART,
+            "beetle", OriMobs.GLOOM_BEETLE, "spitter", OriMobs.GLOOM_SPITTER, "hawk", OriMobs.GLOOM_HAWK, "heart", OriMobs.GLOOM_HEART,
             "matriarch", OriMobs.GLOOM_MATRIARCH, "target", OriEntities.PRACTICE_TARGET);
     private static final DynamicCommandExceptionType UNKNOWN = new DynamicCommandExceptionType(v -> Component.translatable("commands.orimod.unknown", v));
     private OriCommands() {}

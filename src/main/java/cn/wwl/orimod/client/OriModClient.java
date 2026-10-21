@@ -37,6 +37,7 @@ public final class OriModClient {
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) ->
                 event.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.LIGHT_BURST.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) -> {
+            event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_BEETLE.get(), GloomBeetleRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get(), GloomSpitterRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HEART.get(), GloomHeartRenderer::new);
             event.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK.get(), GloomHawkRenderer::new);

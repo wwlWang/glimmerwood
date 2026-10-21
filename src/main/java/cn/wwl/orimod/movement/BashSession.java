@@ -89,6 +89,7 @@ public final class BashSession {
             return;
         }
         if (!entity.isRemoved()) {
+            if (launchDirection != null && redirector != null) cn.wwl.orimod.entity.GloomBeetle.flip(entity);
             if (launchDirection != null && redirector != null) cn.wwl.orimod.progression.ShardEffects.bashHit(redirector, entity);
             entity.setDeltaMovement(launchDirection == null ? targetVelocity : launchDirection.scale(-0.8));
             entity.fallDistance = launchDirection == null ? targetFallDistance : 0;

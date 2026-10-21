@@ -85,7 +85,7 @@ public enum RuinKind {
             layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
-                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret, List.copyOf(bridges));
+                    List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret, List.copyOf(bridges), root.has("beetles")?positions(root.getAsJsonArray("beetles")):List.of());
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }
@@ -95,7 +95,7 @@ public enum RuinKind {
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
                          List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts, BlockPos bossAltar,
-                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret, List<Bridge> bridges) {}
+                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret, List<Bridge> bridges, List<BlockPos> beetles) {}
     private static List<BlockPos> positions(com.google.gson.JsonArray array) {
         var out = new ArrayList<BlockPos>(); for (var p : array) out.add(BlockPos.containing(vector(p.getAsJsonArray()))); return List.copyOf(out);
     }
