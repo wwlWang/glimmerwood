@@ -1,0 +1,728 @@
+diff --git a/src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java b/src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java
+index a6c8b1a..0679532 100644
+--- a/src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java
++++ b/src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java
+@@ -814,6 +814,7 @@ public final class DevelopmentBridge {
+         }
+         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
++            state.put("shrine", cn.wwl.orimod.world.ShrineTrials.status(serverPlayer));
+             var restoration=cn.wwl.orimod.world.RestorationData.get(serverPlayer.server);
+             state.put("restoration",Map.of("active",cn.wwl.orimod.progression.Restoration.active(serverPlayer),"remaining",cn.wwl.orimod.progression.Restoration.remaining(serverPlayer),"restored",restoration.restored(),"completed",cn.wwl.orimod.progression.Restoration.completed(serverPlayer),"epoch",restoration.epoch(),"pending",cn.wwl.orimod.progression.WillWisps.pending(serverPlayer),"bloomChunks",cn.wwl.orimod.world.RestorationBloom.pending(),"bloomWrites",cn.wwl.orimod.world.RestorationBloom.lastWrites(),"bloomMs",cn.wwl.orimod.world.RestorationBloom.lastMillis()));
+             state.put("merchant",cn.wwl.orimod.progression.MerchantTrading.debug(serverPlayer));
+diff --git a/src/gametest/java/cn/wwl/orimod/gametest/MerchantGameTests.java b/src/gametest/java/cn/wwl/orimod/gametest/MerchantGameTests.java
+index 401927e..6ae3299 100644
+--- a/src/gametest/java/cn/wwl/orimod/gametest/MerchantGameTests.java
++++ b/src/gametest/java/cn/wwl/orimod/gametest/MerchantGameTests.java
+@@ -51,11 +51,12 @@ public final class MerchantGameTests {
+         });
+         for(var kind:FeatureSites.Kind.values())add(tests,"guide_"+kind.name().toLowerCase()+"_skips_claimed_and_missing",(h,s)->{
+             BlockPos first=s.p.blockPosition().east(10), second=first.east(3),missing=first.west(2);
+-            var block=kind==FeatureSites.Kind.TREE?OriBlocks.SPIRIT_TREE_HEART:OriBlocks.GLOOM_CORE;s.set(first,block.get().defaultBlockState());s.set(second,block.get().defaultBlockState());s.set(missing,Blocks.AIR.defaultBlockState());
++            var block=switch(kind){case TREE->OriBlocks.SPIRIT_TREE_HEART;case BLIGHT->OriBlocks.GLOOM_CORE;case SHRINE->OriBlocks.SPIRIT_SHRINE_ALTAR;};s.set(first,block.get().defaultBlockState());s.set(second,block.get().defaultBlockState());s.set(missing,Blocks.AIR.defaultBlockState());
+             s.data.add(kind,missing);s.data.add(kind,first);s.data.add(kind,second);
+             if(kind==FeatureSites.Kind.TREE)s.p.setData(SpiritData.PROGRESS,s.p.getData(SpiritData.PROGRESS).withRewards(Map.of(SpiritTreeHeartBlock.siteKey(h.getLevel(),first),1)));
++            else if(kind==FeatureSites.Kind.SHRINE)s.p.setData(SpiritData.PROGRESS,s.p.getData(SpiritData.PROGRESS).withRewards(Map.of(ShrineTrials.receipt(h.getLevel(),first),1)));
+             else {var tag=new CompoundTag();tag.putLongArray("completed",new long[]{first.asLong()});h.getLevel().getDataStorage().set("orimod_blight",BlightData.load(tag,h.getLevel().registryAccess()));}
+-            String id=kind==FeatureSites.Kind.TREE?"tree":"blight";var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,id));s.balance(500-MerchantRules.price(id));
++            String id=kind.name().toLowerCase(java.util.Locale.ROOT);var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,id));s.balance(500-MerchantRules.price(id));
+             var guide=s.packets(RuinGuidePayload.class).getLast();h.assertValueEqual(guide.entry(),second,"Guide selected invalid/claimed target");h.assertValueEqual(guide.dimension(),h.getLevel().dimension().location().toString(),"Guide dimension");
+         });
+         add(tests,"no_feature_target_no_charge_and_clear_feedback",(h,s)->{var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,"tree"));s.balance(500);h.assertTrue(s.packets(RuinGuidePayload.class).isEmpty(),"Invented guide");h.assertValueEqual(s.quote().message(),"not_found","Missing not-found message");});
+diff --git a/src/gametest/java/cn/wwl/orimod/gametest/RuinBridgeNavigationGameTests.java b/src/gametest/java/cn/wwl/orimod/gametest/RuinBridgeNavigationGameTests.java
+index bcb9c68..2b541ab 100644
+--- a/src/gametest/java/cn/wwl/orimod/gametest/RuinBridgeNavigationGameTests.java
++++ b/src/gametest/java/cn/wwl/orimod/gametest/RuinBridgeNavigationGameTests.java
+@@ -71,7 +71,7 @@ public final class RuinBridgeNavigationGameTests {
+      * Retreat requires drops <=3 blocks or water; bypass detection allows even unsafe drops.
+      * Exterior variants include a five-block terrain ring.
+      */
+-    private static final class WalkGraph {
++    static final class WalkGraph {
+         private final Map<BlockPos,List<AABB>> boxes=new HashMap<>();
+         private final Set<BlockPos> water=new HashSet<>();
+         private final Map<Long,List<Vec3>> columns=new HashMap<>();
+diff --git a/src/gametest/java/cn/wwl/orimod/gametest/WorldgenAudit.java b/src/gametest/java/cn/wwl/orimod/gametest/WorldgenAudit.java
+index 92ea28a..71d948b 100644
+--- a/src/gametest/java/cn/wwl/orimod/gametest/WorldgenAudit.java
++++ b/src/gametest/java/cn/wwl/orimod/gametest/WorldgenAudit.java
+@@ -23,6 +23,7 @@ final class WorldgenAudit {
+     private WorldgenAudit() {}
+ 
+     static void started(ServerStartedEvent event) {
++        if ("shrine".equals(System.getProperty("orimod.worldgen.audit.mode"))) { shrines(event); return; }
+         if (System.getProperty("orimod.worldgen.audit.mode", "").startsWith("outpost")) { outposts(event); return; }
+         if ("site".equals(System.getProperty("orimod.worldgen.audit.mode"))) { sites(event); return; }
+         var server = event.getServer();
+@@ -190,6 +191,50 @@ final class WorldgenAudit {
+         finally{report.put("elapsedSeconds",(System.nanoTime()-began)/1e9);write(output,report);server.halt(false);}
+     }
+ 
++    private static void shrines(ServerStartedEvent event) {
++        var server=event.getServer();var level=server.overworld();var spawn=level.getSharedSpawnPos();
++        var report=new LinkedHashMap<String,Object>();var rows=new ArrayList<Map<String,Object>>();
++        var probes=new ArrayList<Map<String,Object>>();var histogram=new java.util.TreeMap<String,Integer>();
++        report.put("seed",level.getSeed());report.put("spawn",coordinates(spawn));report.put("grid","5 x 5; 1024 blocks; centered on actual spawn; no biome filtering");
++        report.put("rows",rows);report.put("probes",probes);report.put("rejections",histogram);
++        var output=Path.of("shrine-audit.json");long began=System.nanoTime();
++        try {
++            var key=ResourceKey.create(Registries.STRUCTURE,net.minecraft.resources.ResourceLocation.parse("orimod:glades_shrine"));
++            var holder=level.registryAccess().registryOrThrow(Registries.STRUCTURE).getHolderOrThrow(key);
++            var structure=(cn.wwl.orimod.world.SpiritShrineStructure)holder.value();var source=level.getChunkSource();var generator=source.getGenerator();
++            var spread=(net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement)source.getGeneratorState().getPlacementsForStructure(holder).getFirst();
++            report.put("spacing",spread.spacing());report.put("separation",spread.separation());
++            for(int rz=-8;rz<=8;rz++)for(int rx=-8;rx<=8;rx++) {
++                var chunk=spread.getPotentialStructureChunk(level.getSeed(),rx*spread.spacing(),rz*spread.spacing());
++                var context=new net.minecraft.world.level.levelgen.structure.Structure.GenerationContext(level.registryAccess(),generator,generator.getBiomeSource(),source.randomState(),level.getStructureManager(),level.getSeed(),chunk,level,structure.biomes()::contains);
++                var site=structure.preflight(context);var p=site.placement().block(cn.wwl.orimod.world.SpiritShrinePiece.ENTRY);
++                var biome=generator.getBiomeSource().getNoiseBiome(p.getX()>>2,p.getY()>>2,p.getZ()>>2,source.randomState().sampler());
++                String reason=structure.biomes().contains(biome)?site.reason().name():"BIOME";
++                histogram.merge(reason,1,Integer::sum);probes.add(Map.of("chunk",new int[]{chunk.x,chunk.z},"reason",reason,"preflight",site.reason().name(),"biome",biome.unwrapKey().orElseThrow().location().toString()));
++            }
++            write(output,report);OriMod.LOGGER.info("Shrine audit rejections: {}",histogram);
++            if(!System.getProperty("orimod.worldgen.audit.mode").equals("shrine_baseline")) {
++                for(int z=-2;z<=2;z++)for(int x=-2;x<=2;x++) {
++                    var origin=spawn.offset(x*1024,0,z*1024);var row=new LinkedHashMap<String,Object>();row.put("origin",coordinates(origin));
++                    var found=generator.findNearestMapStructure(level,HolderSet.direct(holder),origin,100,false);
++                    row.put("found",found!=null);
++                    if(found!=null){var p=found.getFirst();row.put("position",coordinates(p));row.put("distance",Math.hypot(p.getX()-origin.getX(),p.getZ()-origin.getZ()));
++                        var cp=new ChunkPos(p);var start=level.getChunk(cp.x,cp.z,ChunkStatus.STRUCTURE_STARTS).getStartForStructure(structure);
++                        if(start==null || !start.isValid())throw new IllegalStateException("No real shrine start at locate result");
++                        var piece=start.getPieces().stream().filter(cn.wwl.orimod.world.SpiritShrinePiece.class::isInstance).map(cn.wwl.orimod.world.SpiritShrinePiece.class::cast).findFirst().orElseThrow();
++                        var door=piece.placement().block(cn.wwl.orimod.world.SpiritShrinePiece.ENTRY);row.put("entry",coordinates(door));row.put("entryDistance",Math.hypot(door.getX()-origin.getX(),door.getZ()-origin.getZ()));
++                    }
++                    rows.add(row);write(output,report);OriMod.LOGGER.info("Shrine locate {}/25: {}",rows.size(),row);
++                    source.tick(()->true,false);
++                }
++                var distances=rows.stream().mapToDouble(r->((Number)r.getOrDefault("distance",Double.POSITIVE_INFINITY)).doubleValue()).sorted().toArray();
++                report.put("median",distances[12]);report.put("maximum",distances[24]);report.put("passes",distances[12]<=1500);
++            }
++            report.put("status","complete");
++        }catch(Exception ex){report.put("status","failed");report.put("error",ex.toString());OriMod.LOGGER.error("Shrine audit failed",ex);}
++        finally{report.put("elapsedSeconds",(System.nanoTime()-began)/1e9);write(output,report);server.halt(false);}
++    }
++
+     private static int[] coordinates(BlockPos pos) { return new int[]{pos.getX(), pos.getY(), pos.getZ()}; }
+     private static void write(Path path, Map<String, Object> data) {
+         try { Files.writeString(path, new GsonBuilder().setPrettyPrinting().create().toJson(data) + "\n"); }
+diff --git a/src/main/java/cn/wwl/orimod/OriMod.java b/src/main/java/cn/wwl/orimod/OriMod.java
+index 2205300..3bb0446 100644
+--- a/src/main/java/cn/wwl/orimod/OriMod.java
++++ b/src/main/java/cn/wwl/orimod/OriMod.java
+@@ -16,6 +16,17 @@ public final class OriMod {
+         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
+         modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
+         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
++        cn.wwl.orimod.world.ShrineTrials.register(modEventBus);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::tick);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::loadChunk);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::unloadChunk);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::unload);
++        bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,cn.wwl.orimod.world.ShrineTrials::death);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::join);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::leave);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::logout);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::dimension);
++        bus.addListener(cn.wwl.orimod.world.ShrineTrials::natural);
+         bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
+         bus.addListener(cn.wwl.orimod.progression.WillWisps::login);
+         bus.addListener(cn.wwl.orimod.progression.Restoration::tick);
+diff --git a/src/main/java/cn/wwl/orimod/OriServerLifecycle.java b/src/main/java/cn/wwl/orimod/OriServerLifecycle.java
+index 3a1e36a..9ec96c7 100644
+--- a/src/main/java/cn/wwl/orimod/OriServerLifecycle.java
++++ b/src/main/java/cn/wwl/orimod/OriServerLifecycle.java
+@@ -15,6 +15,7 @@ public final class OriServerLifecycle {
+ 
+     public static void stopping(ServerStoppingEvent event) {
+         try {
++            cn.wwl.orimod.world.ShrineTrials.stopping(event.getServer());
+             RuinLocator.stopAll();
+             cn.wwl.orimod.progression.MerchantTrading.clear();
+             cn.wwl.orimod.world.EscapeSequence.stopAll();
+@@ -37,6 +38,7 @@ public final class OriServerLifecycle {
+         cn.wwl.orimod.world.RestorationBloom.clear();
+         cn.wwl.orimod.world.GloomTide.reset();
+         cn.wwl.orimod.world.FeatureSites.clear();
++        cn.wwl.orimod.world.ShrineTrials.clear();
+         RuinLocator.discardAll();
+         cn.wwl.orimod.progression.MerchantTrading.clear();
+         SpiritChallenge.discardAll();
+diff --git a/src/main/java/cn/wwl/orimod/block/OriBlocks.java b/src/main/java/cn/wwl/orimod/block/OriBlocks.java
+index 4f48dea..d56cc57 100644
+--- a/src/main/java/cn/wwl/orimod/block/OriBlocks.java
++++ b/src/main/java/cn/wwl/orimod/block/OriBlocks.java
+@@ -11,6 +11,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
+ 
+ public final class OriBlocks {
+     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(OriMod.MOD_ID);
++    public static final DeferredBlock<SpiritShrineAltarBlock> SPIRIT_SHRINE_ALTAR=BLOCKS.register("spirit_shrine_altar",()->new SpiritShrineAltarBlock(BlockBehaviour.Properties.of().strength(-1,3600000).noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).sound(SoundType.AMETHYST).lightLevel(state->state.getValue(SpiritShrineAltarBlock.COMPLETED)?12:5)));
++    public static final DeferredBlock<ShrineWardBlock> SHRINE_WARD=BLOCKS.register("shrine_ward",()->new ShrineWardBlock(BlockBehaviour.Properties.of().strength(-1,3600000).noLootTable().noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK).sound(SoundType.AMETHYST).lightLevel(state->3).emissiveRendering((s,l,p)->true).isViewBlocking((s,l,p)->false)));
+     public static final DeferredBlock<CrackedRuinBlock> CRACKED_RUIN_WALL = cracked("cracked_ruin_wall", CrackedRuin.Kind.WALL);
+     public static final DeferredBlock<CrackedRuinBlock> CRACKED_RUIN_FLOOR = cracked("cracked_ruin_floor", CrackedRuin.Kind.FLOOR);
+     private static DeferredBlock<CrackedRuinBlock> cracked(String id, CrackedRuin.Kind kind) {
+@@ -95,7 +97,7 @@ public final class OriBlocks {
+         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
+         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
+         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
+-                GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
++                SPIRIT_SHRINE_ALTAR, SHRINE_WARD, GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
+                 SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+             OriItems.ITEMS.registerSimpleBlockItem(block);
+         BLOCKS.register(bus);
+diff --git a/src/main/java/cn/wwl/orimod/client/MerchantScreen.java b/src/main/java/cn/wwl/orimod/client/MerchantScreen.java
+index 32fbb04..3df3560 100644
+--- a/src/main/java/cn/wwl/orimod/client/MerchantScreen.java
++++ b/src/main/java/cn/wwl/orimod/client/MerchantScreen.java
+@@ -10,6 +10,7 @@ import java.util.*;
+ 
+ public final class MerchantScreen extends Screen {
+     private MerchantOfferPayload offer;private int left,top,panelWidth,panelHeight,buyWidth;
++    private int rowHeight(){return offer.job()==1?30:42;}
+     public MerchantScreen(MerchantOfferPayload offer){super(Component.translatable(offer.job()==0?"merchant.orimod.mosswhisper":"merchant.orimod.lulu"));this.offer=offer;}
+     public static void receive(MerchantOfferPayload packet){
+         var mc=Minecraft.getInstance();
+@@ -21,7 +22,7 @@ public final class MerchantScreen extends Screen {
+         panelWidth=Math.min(360,width-20);panelHeight=Math.min(252,height-12);left=(width-panelWidth)/2;top=(height-panelHeight)/2;clearWidgets();
+         buyWidth=offer.offers().stream().mapToInt(row->font.width(Component.translatable("merchant.orimod.buy",row.price()))+16).max().orElse(80);
+         for(int i=0;i<offer.offers().size();i++){
+-            var row=offer.offers().get(i);var button=addRenderableWidget(new SpiritButton(left+panelWidth-12-buyWidth,top+48+i*42,buyWidth,20,Component.translatable("merchant.orimod.buy",row.price()),b->purchase(row.id())));
++            var row=offer.offers().get(i);var button=addRenderableWidget(new SpiritButton(left+panelWidth-12-buyWidth,top+48+i*rowHeight(),buyWidth,20,Component.translatable("merchant.orimod.buy",row.price()),b->purchase(row.id())));
+             button.active=!offer.busy() && row.available() && offer.balance()>=row.price();
+         }
+         addRenderableWidget(new SpiritButton(left+panelWidth-80,top+panelHeight-28,70,20,Component.translatable("gui.done"),b->onClose()));
+@@ -36,17 +37,17 @@ public final class MerchantScreen extends Screen {
+         g.drawString(font,title,left+12,top+10,0xB6F6DF,false);g.drawString(font,Component.translatable("screen.orimod.light",offer.balance()),left+12,top+25,0xF2D892,false);
+         for(int i=0;i<offer.offers().size();i++){
+             var row=offer.offers().get(i);var shard=Shard.byId(row.id());var name=shard==null?Component.translatable("merchant.orimod.guide."+row.id()):shard.title();
+-            g.drawWordWrap(font,name,left+12,top+48+i*42,panelWidth-36-buyWidth,row.available()?0xD7EBEC:0x7E999E);
++            g.drawWordWrap(font,name,left+12,top+48+i*rowHeight(),panelWidth-36-buyWidth,row.available()?0xD7EBEC:0x7E999E);
+             if(shard!=null){
+                 String description=shard.description().getString();int available=panelWidth-24;
+                 String brief=font.width(description)<=available?description:font.plainSubstrByWidth(description,available-font.width("…"))+"…";
+-                g.drawString(font,brief,left+12,top+72+i*42,0x9CBEC2,false);
++                g.drawString(font,brief,left+12,top+72+i*rowHeight(),0x9CBEC2,false);
+             }
+-            if(!row.available())g.drawString(font,Component.translatable("progress.orimod.already_owned"),left+12,top+62+i*42,0x7E999E,false);
++            if(!row.available())g.drawString(font,Component.translatable("progress.orimod.already_owned"),left+12,top+62+i*rowHeight(),0x7E999E,false);
+         }
+         String message=offer.message().isEmpty()?(offer.job()==1?"cartography":offer.offers().isEmpty()?"empty":"daily"):offer.message();
+         g.drawWordWrap(font,Component.translatable("merchant.orimod."+message),left+12,top+176,panelWidth-24,0xD8C69B);super.render(g,x,y,partial);
+-        for(int i=0;i<offer.offers().size();i++)if(x>=left+12 && x<left+panelWidth-12 && y>=top+72+i*42 && y<top+83+i*42){
++        for(int i=0;i<offer.offers().size();i++)if(x>=left+12 && x<left+panelWidth-12 && y>=top+72+i*rowHeight() && y<top+83+i*rowHeight()){
+             var shard=Shard.byId(offer.offers().get(i).id());if(shard!=null)g.renderTooltip(font,font.split(shard.description(),Math.min(300,width-30)),x,y);
+         }
+     }
+diff --git a/src/main/java/cn/wwl/orimod/command/OriCommands.java b/src/main/java/cn/wwl/orimod/command/OriCommands.java
+index e367762..8c2db26 100644
+--- a/src/main/java/cn/wwl/orimod/command/OriCommands.java
++++ b/src/main/java/cn/wwl/orimod/command/OriCommands.java
+@@ -85,6 +85,11 @@ public final class OriCommands {
+                         .executes(c -> nearestTree(c, SpiritTreeSearch.DEFAULT_RADIUS))
+                         .then(Commands.argument("radius", IntegerArgumentType.integer(1, SpiritTreeSearch.MAX_RADIUS))
+                                 .executes(c -> nearestTree(c, IntegerArgumentType.getInteger(c, "radius"))))))
++                .then(Commands.literal("shrine")
++                        .then(Commands.literal("start").executes(c->shrine(c,"start")))
++                        .then(Commands.literal("stop").executes(c->shrine(c,"stop")))
++                        .then(Commands.literal("status").executes(c->shrine(c,"status")))
++                        .then(Commands.literal("nearest").executes(c->shrine(c,"nearest"))))
+                 .then(Commands.literal("tide")
+                         .then(Commands.literal("start").executes(c -> tide(c, "start")))
+                         .then(Commands.literal("stop").executes(c -> tide(c, "stop")))
+@@ -115,6 +120,18 @@ public final class OriCommands {
+                 .then(players("status", OriCommands::status));
+     }
+ 
++    private static int shrine(CommandContext<CommandSourceStack> c,String action)throws CommandSyntaxException{
++        var source=c.getSource();var p=source.getPlayerOrException();var data=cn.wwl.orimod.world.ShrineTrials.get(p.serverLevel());cn.wwl.orimod.world.ShrineTrials.merge(p.serverLevel());
++        if(action.equals("nearest")){
++            var found=cn.wwl.orimod.world.FeatureSites.get(p.serverLevel()).nearest(p.serverLevel(),cn.wwl.orimod.world.FeatureSites.Kind.SHRINE,p.position(),pos->true);
++            if(found.isEmpty()){source.sendFailure(Component.translatable("commands.orimod.shrine.none"));return 0;}
++            var pos=found.get();source.sendSuccess(()->Component.translatable("commands.orimod.shrine.nearest",pos.getX(),pos.getY(),pos.getZ()),false);return 1;
++        }
++        if(action.equals("status")){source.sendSuccess(()->Component.literal(cn.wwl.orimod.world.ShrineTrials.status(p).toString()),false);return 1;}
++        var site=data.nearest(p.position(),24);if(site==null){source.sendFailure(Component.translatable("message.orimod.shrine.missing"));return 0;}
++        if(action.equals("start"))return data.start(p,site.contract.altar()).isEmpty()?1:0;
++        data.stop(p.serverLevel(),site,"command");return 1;
++    }
+     private static int tide(CommandContext<CommandSourceStack> c, String action) throws CommandSyntaxException {
+         var source = c.getSource();
+         if (action.equals("start")) {
+diff --git a/src/main/java/cn/wwl/orimod/entity/GladesMerchant.java b/src/main/java/cn/wwl/orimod/entity/GladesMerchant.java
+index 2b18213..0b14f80 100644
+--- a/src/main/java/cn/wwl/orimod/entity/GladesMerchant.java
++++ b/src/main/java/cn/wwl/orimod/entity/GladesMerchant.java
+@@ -31,7 +31,7 @@ public final class GladesMerchant extends PathfinderMob {
+     public void bind(int job,BlockPos well,BlockPos anchor,float yaw){entityData.set(JOB,job==1?1:0);this.well=well.immutable();this.anchor=anchor.immutable();facing=yaw;moveTo(anchor.getX()+.5,anchor.getY(),anchor.getZ()+.5,yaw,0);}
+     @Override public Component getName(){return Component.translatable(job()==0?"merchant.orimod.mosswhisper":"merchant.orimod.lulu");}
+     public List<String> stock(ServerPlayer player){
+-        if(job()==1)return List.of("ruin","tree","blight");
++        if(job()==1)return List.of("ruin","tree","blight","shrine");
+         long day=MerchantRules.day(level().getDayTime());if(day!=stockDay){stocks.clear();stockDay=day;}
+         return stocks.computeIfAbsent(player.getUUID(),id->MerchantRules.stock(getUUID().getMostSignificantBits()^getUUID().getLeastSignificantBits()^id.getMostSignificantBits()^id.getLeastSignificantBits()^day*0x9E3779B97F4A7C15L,player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).ownedShards()));
+     }
+diff --git a/src/main/java/cn/wwl/orimod/network/ChallengeActionPayload.java b/src/main/java/cn/wwl/orimod/network/ChallengeActionPayload.java
+index 8d65a55..2b801fe 100644
+--- a/src/main/java/cn/wwl/orimod/network/ChallengeActionPayload.java
++++ b/src/main/java/cn/wwl/orimod/network/ChallengeActionPayload.java
+@@ -18,6 +18,6 @@ public record ChallengeActionPayload(BlockPos shrine, boolean start) implements
+         var registrar = event.registrar("1");
+         registrar.playToServer(TYPE, CODEC, (request, context) -> { if (context.player() instanceof ServerPlayer player) SpiritChallenge.request(player, request.shrine, request.start); });
+         registrar.playToClient(RuinOfferPayload.TYPE, RuinOfferPayload.CODEC, (reply, context) -> RuinOfferPayload.pending = reply);
+-        event.registrar("2").playToClient(RuinGuidePayload.TYPE, RuinGuidePayload.CODEC, (reply, context) -> RuinGuidePayload.current = reply);
++        event.registrar("3").playToClient(RuinGuidePayload.TYPE, RuinGuidePayload.CODEC, (reply, context) -> RuinGuidePayload.current = reply);
+     }
+ }
+diff --git a/src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java b/src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java
+index 27b7780..2fe28f5 100644
+--- a/src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java
++++ b/src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java
+@@ -12,11 +12,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+ 
+ import java.util.Optional;
+ 
+-/** R108 protocol 9: tagged hints/lines. A zero-length sentinel also makes every v9 packet fail v2 decoding. */
++/** R108 protocol 10: tagged hints/lines. A zero-length sentinel also makes every v10 packet fail v2 decoding. */
+ public record CompanionHintPayload(Kind kind, String id, Optional<BlockPos> pos) implements CustomPacketPayload {
+-    public static final String VERSION = "9";
++    public static final String VERSION = "10";
+     public enum Kind { HINT, LINE }
+-    public static final int WIRE_VERSION = 9;
++    public static final int WIRE_VERSION = 10;
+     public CompanionHintPayload(String id, Optional<BlockPos> pos) { this(Kind.HINT, id, pos); }
+     public static CompanionHintPayload line(Line line) { return new CompanionHintPayload(Kind.LINE, line.id, Optional.empty()); }
+     public static final int MAX_ID_LENGTH = 32, WORLD_LIMIT = 30_000_000;
+@@ -26,7 +26,7 @@ public record CompanionHintPayload(Kind kind, String id, Optional<BlockPos> pos)
+             buf -> {
+                 try {
+                     if (buf.readUnsignedByte() != 0 || buf.readUnsignedByte() != WIRE_VERSION)
+-                        throw new DecoderException("Incompatible companion payload: expected protocol 9");
++                        throw new DecoderException("Incompatible companion payload: expected protocol 10");
+                     int kind = buf.readUnsignedByte();
+                     if (kind >= Kind.values().length) throw new DecoderException("Unknown companion payload kind " + kind);
+                     String id = buf.readUtf(MAX_ID_LENGTH);
+diff --git a/src/main/java/cn/wwl/orimod/network/MerchantOfferPayload.java b/src/main/java/cn/wwl/orimod/network/MerchantOfferPayload.java
+index e445269..9ada6b8 100644
+--- a/src/main/java/cn/wwl/orimod/network/MerchantOfferPayload.java
++++ b/src/main/java/cn/wwl/orimod/network/MerchantOfferPayload.java
+@@ -11,16 +11,16 @@ public record MerchantOfferPayload(int entityId,UUID merchant,long day,UUID toke
+     public record Offer(String id,int price,boolean available){public Offer{if(price<0 || cn.wwl.orimod.progression.MerchantRules.price(id)!=price)throw new IllegalArgumentException("Invalid offer price");}}
+     public static final Type<MerchantOfferPayload> TYPE=new Type<>(ResourceLocation.parse("orimod:merchant_offer"));
+     public static final StreamCodec<RegistryFriendlyByteBuf,MerchantOfferPayload> CODEC=StreamCodec.of((b,p)->{
+-        b.writeByte(1);b.writeVarInt(p.entityId);b.writeUUID(p.merchant);b.writeLong(p.day);b.writeUUID(p.token);b.writeByte(p.job);b.writeVarInt(p.balance);b.writeByte(p.offers.size());
++        b.writeByte(2);b.writeVarInt(p.entityId);b.writeUUID(p.merchant);b.writeLong(p.day);b.writeUUID(p.token);b.writeByte(p.job);b.writeVarInt(p.balance);b.writeByte(p.offers.size());
+         for(var o:p.offers){b.writeUtf(o.id,32);b.writeVarInt(o.price);b.writeBoolean(o.available);}b.writeUtf(p.message,32);b.writeBoolean(p.busy);
+     },b->{
+-        if(b.readUnsignedByte()!=1)throw new DecoderException("Incompatible merchant protocol: expected 1");
+-        try{int id=b.readVarInt();var merchant=b.readUUID();long day=b.readLong();var token=b.readUUID();int job=b.readUnsignedByte(),balance=b.readVarInt(),n=b.readUnsignedByte();if(n>3)throw new DecoderException("Too many merchant offers");var offers=new ArrayList<Offer>();for(int i=0;i<n;i++)offers.add(new Offer(b.readUtf(32),b.readVarInt(),b.readBoolean()));return new MerchantOfferPayload(id,merchant,day,token,job,balance,offers,b.readUtf(32),b.readBoolean());}catch(IllegalArgumentException e){throw new DecoderException("Invalid merchant offer",e);}
++        if(b.readUnsignedByte()!=2)throw new DecoderException("Incompatible merchant protocol: expected 2");
++        try{int id=b.readVarInt();var merchant=b.readUUID();long day=b.readLong();var token=b.readUUID();int job=b.readUnsignedByte(),balance=b.readVarInt(),n=b.readUnsignedByte();if(n>4)throw new DecoderException("Too many merchant offers");var offers=new ArrayList<Offer>();for(int i=0;i<n;i++)offers.add(new Offer(b.readUtf(32),b.readVarInt(),b.readBoolean()));return new MerchantOfferPayload(id,merchant,day,token,job,balance,offers,b.readUtf(32),b.readBoolean());}catch(IllegalArgumentException e){throw new DecoderException("Invalid merchant offer",e);}
+     });
+-    public MerchantOfferPayload{if(entityId<0 || job<0 || job>1 || balance<0 || offers.size()>3 || offers.stream().map(Offer::id).distinct().count()!=offers.size() || message.length()>32)throw new IllegalArgumentException("Invalid offer");offers=List.copyOf(offers);}
++    public MerchantOfferPayload{if(entityId<0 || job<0 || job>1 || balance<0 || offers.size()>(job==1?4:3) || offers.stream().map(Offer::id).distinct().count()!=offers.size() || message.length()>32)throw new IllegalArgumentException("Invalid offer");offers=List.copyOf(offers);}
+     @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+     public static void register(RegisterPayloadHandlersEvent event){
+-        var r=event.registrar("1");r.playToServer(MerchantBuyPayload.TYPE,MerchantBuyPayload.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)cn.wwl.orimod.progression.MerchantTrading.buy(player,p);});
++        var r=event.registrar("2");r.playToServer(MerchantBuyPayload.TYPE,MerchantBuyPayload.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)cn.wwl.orimod.progression.MerchantTrading.buy(player,p);});
+         r.playToClient(TYPE,CODEC,(p,c)->{if(net.neoforged.fml.loading.FMLEnvironment.dist.isClient())cn.wwl.orimod.client.MerchantScreen.receive(p);});
+     }
+ }
+diff --git a/src/main/java/cn/wwl/orimod/network/RuinGuidePayload.java b/src/main/java/cn/wwl/orimod/network/RuinGuidePayload.java
+index 8d1271c..77b2685 100644
+--- a/src/main/java/cn/wwl/orimod/network/RuinGuidePayload.java
++++ b/src/main/java/cn/wwl/orimod/network/RuinGuidePayload.java
+@@ -9,18 +9,18 @@ import net.minecraft.resources.ResourceLocation;
+ public record RuinGuidePayload(String dimension, BlockPos entry, String kind) implements CustomPacketPayload {
+     // v1 began with a UTF dimension capped at 128 chars (384 encoded bytes).
+     // This length sentinel rejects v2 in that exact old decoder before reading a body.
+-    public static final int VERSION=2;
++    public static final int VERSION=3;
+     public static net.minecraft.network.chat.Component title(String kind){
+-        return switch(kind){case "glades_outpost","spirit_tree","blighted_grounds"->net.minecraft.network.chat.Component.translatable("guide.orimod.target."+kind);default->cn.wwl.orimod.world.RuinKind.byId(kind).title();};
++        return switch(kind){case "glades_outpost","spirit_tree","blighted_grounds","spirit_shrine"->net.minecraft.network.chat.Component.translatable("guide.orimod.target."+kind);default->cn.wwl.orimod.world.RuinKind.byId(kind).title();};
+     }
+     public RuinGuidePayload {
+-        if(!java.util.Set.of("forest_spring","creek_ruins","cave_altar","glades_outpost","spirit_tree","blighted_grounds").contains(kind)
++        if(!java.util.Set.of("forest_spring","creek_ruins","cave_altar","glades_outpost","spirit_tree","blighted_grounds","spirit_shrine").contains(kind)
+                 || ResourceLocation.tryParse(dimension)==null || Math.abs((long)entry.getX())>30000000 || Math.abs((long)entry.getZ())>30000000)throw new IllegalArgumentException("Invalid guide target");
+     }
+     public static final Type<RuinGuidePayload> TYPE = new Type<>(ResourceLocation.parse("orimod:ruin_guide"));
+     public static final StreamCodec<RegistryFriendlyByteBuf, RuinGuidePayload> CODEC = StreamCodec.of(
+             (buf, v) -> { buf.writeVarInt(385); buf.writeByte(VERSION); buf.writeUtf(v.dimension, 128); buf.writeBlockPos(v.entry); buf.writeUtf(v.kind, 32); },
+-            buf -> {if(buf.readVarInt()!=385 || buf.readUnsignedByte()!=VERSION)throw new io.netty.handler.codec.DecoderException("Incompatible guide protocol: expected 2");try{return new RuinGuidePayload(buf.readUtf(128),buf.readBlockPos(),buf.readUtf(32));}catch(IllegalArgumentException e){throw new io.netty.handler.codec.DecoderException("Invalid guide target",e);}});
++            buf -> {if(buf.readVarInt()!=385 || buf.readUnsignedByte()!=VERSION)throw new io.netty.handler.codec.DecoderException("Incompatible guide protocol: expected 3");try{return new RuinGuidePayload(buf.readUtf(128),buf.readBlockPos(),buf.readUtf(32));}catch(IllegalArgumentException e){throw new io.netty.handler.codec.DecoderException("Invalid guide target",e);}});
+     public static RuinGuidePayload current;
+     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+ }
+diff --git a/src/main/java/cn/wwl/orimod/progression/CompanionHints.java b/src/main/java/cn/wwl/orimod/progression/CompanionHints.java
+index 9378f35..71ee5bb 100644
+--- a/src/main/java/cn/wwl/orimod/progression/CompanionHints.java
++++ b/src/main/java/cn/wwl/orimod/progression/CompanionHints.java
+@@ -28,7 +28,7 @@ public final class CompanionHints {
+         UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), SPIRIT_PLATFORM("spirit_platform", 8), GRAPPLE_FLOWER("grapple_flower", 10),
+         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
+         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
+-        SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
++        SHRINE("shrine",16), SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
+         CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12), MERCHANT("merchant",12),
+         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
+ 
+@@ -132,7 +132,7 @@ public final class CompanionHints {
+         var level = player.serverLevel();
+         var centre = player.blockPosition();
+         // Only an unseen tree hint expands the loaded-section scan; ordinary hints keep their original radii.
+-        int range = unseen.contains(Hint.SPIRIT_TREE) ? Hint.SPIRIT_TREE.radius : unseen.contains(Hint.GLOOM_CORE) ? 16 : RANGE;
++        int range = unseen.contains(Hint.SPIRIT_TREE) ? Hint.SPIRIT_TREE.radius : (unseen.contains(Hint.GLOOM_CORE) || unseen.contains(Hint.SHRINE)) ? 16 : RANGE;
+         int minX = centre.getX() - range, maxX = centre.getX() + range;
+         int minZ = centre.getZ() - range, maxZ = centre.getZ() + range;
+         int minY = Math.max(level.getMinBuildHeight(), centre.getY() - range);
+@@ -161,6 +161,7 @@ public final class CompanionHints {
+     }
+ 
+     private static Hint blockHint(BlockState state) {
++        if (state.is(OriBlocks.SPIRIT_SHRINE_ALTAR)) return Hint.SHRINE;
+         if (state.is(OriBlocks.GLOOM_CORE)) return Hint.GLOOM_CORE;
+         if (state.is(OriBlocks.UPDRAFT.get())) return Hint.UPDRAFT;
+         if (state.is(OriBlocks.BASH_ANCHOR.get())) return Hint.BASH_ANCHOR;
+diff --git a/src/main/java/cn/wwl/orimod/progression/CompanionLines.java b/src/main/java/cn/wwl/orimod/progression/CompanionLines.java
+index 82c0b72..f9f3271 100644
+--- a/src/main/java/cn/wwl/orimod/progression/CompanionLines.java
++++ b/src/main/java/cn/wwl/orimod/progression/CompanionLines.java
+@@ -27,7 +27,7 @@ public final class CompanionLines {
+         BOSS_START("boss_start", false, 6000), BOSS_DEFEATED("boss_defeated", false, 0),
+         ESCAPE("escape", false, 0), TIDE_BEGIN("tide_begin", false, 0), TIDE_END("tide_end", false, 0),
+         TREE_FOUND("tree_found", true, 0), LOW_HEALTH("low_health", false, 1200, 60), NIGHT_ONE("night_one", true, 0),
+-        FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0), FIRST_OUTPOST("first_outpost", true, 0), RESTORATION("restoration",true,0);
++        FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0), FIRST_OUTPOST("first_outpost", true, 0), RESTORATION("restoration",true,0), SHRINE_START("shrine_start",true,0), SHRINE_COMPLETE("shrine_complete",true,0);
+         public final String id;
+         public final boolean once;
+         public final int cooldown;
+diff --git a/src/main/java/cn/wwl/orimod/progression/MerchantRules.java b/src/main/java/cn/wwl/orimod/progression/MerchantRules.java
+index 5c5ca3b..726b2c9 100644
+--- a/src/main/java/cn/wwl/orimod/progression/MerchantRules.java
++++ b/src/main/java/cn/wwl/orimod/progression/MerchantRules.java
+@@ -11,7 +11,7 @@ public final class MerchantRules {
+             case GATHERING->80;case CAPACITY,RECOVERY,RESILIENCE->100;case AIR_CONTROL,LIFE_HARVEST,ENERGY_HARVEST->120;
+             case THORN,STICKY->140;case ULTRA_BASH->160;case TRIPLE_JUMP->200;
+         };
+-        return switch(id){case "ruin"->40;case "tree"->60;case "blight"->50;default->-1;};
++        return switch(id){case "ruin"->40;case "tree"->60;case "blight"->50;case "shrine"->55;default->-1;};
+     }
+     /** Progression fallback when no accessible outpost exists; merchant remains one third cheaper. */
+     public static int panelPrice(Shard shard){return (price(shard.id())*3+1)/2;}
+diff --git a/src/main/java/cn/wwl/orimod/progression/MerchantTrading.java b/src/main/java/cn/wwl/orimod/progression/MerchantTrading.java
+index 5626b19..91a8376 100644
+--- a/src/main/java/cn/wwl/orimod/progression/MerchantTrading.java
++++ b/src/main/java/cn/wwl/orimod/progression/MerchantTrading.java
+@@ -39,9 +39,9 @@ public final class MerchantTrading {
+             }});
+             if(!started)refresh(p,s,"search_busy");
+         }else{
+-            var kind=id.equals("tree")?FeatureSites.Kind.TREE:FeatureSites.Kind.BLIGHT;
++            var kind=switch(id){case "tree"->FeatureSites.Kind.TREE;case "shrine"->FeatureSites.Kind.SHRINE;default->FeatureSites.Kind.BLIGHT;};
+             var found=FeatureSites.get(p.serverLevel()).nearest(p,kind);
+-            if(found.isEmpty())refresh(p,s,"not_found");else pay(p,s,id,new RuinGuidePayload(p.level().dimension().location().toString(),found.get(),id.equals("tree")?"spirit_tree":"blighted_grounds"));
++            if(found.isEmpty())refresh(p,s,"not_found");else pay(p,s,id,new RuinGuidePayload(p.level().dimension().location().toString(),found.get(),switch(id){case "tree"->"spirit_tree";case "shrine"->"spirit_shrine";default->"blighted_grounds";}));
+         }
+     }
+     private static String refusal(ServerPlayer p,Session s,String id,long day){var progress=p.getData(SpiritData.PROGRESS);return MerchantRules.refusal(valid(p,s.merchant),p.distanceToSqr(s.merchant),day,MerchantRules.day(p.level().getDayTime()),s.stock.contains(id) && day==s.day,progress.light(),id,progress.ownedShards());}
+diff --git a/src/main/java/cn/wwl/orimod/world/FeatureSites.java b/src/main/java/cn/wwl/orimod/world/FeatureSites.java
+index 988dae6..1cc0a58 100644
+--- a/src/main/java/cn/wwl/orimod/world/FeatureSites.java
++++ b/src/main/java/cn/wwl/orimod/world/FeatureSites.java
+@@ -20,10 +20,11 @@ import java.util.function.*;
+ 
+ /** Generated sites only. Durable chunk journals survive promotion/restart; SavedData is server-thread owned. */
+ public final class FeatureSites extends SavedData {
+-    public enum Kind { TREE, BLIGHT }
++    public enum Kind { TREE, BLIGHT, SHRINE }
+     public static final int RANGE=2048;
+     private static final DeferredRegister<AttachmentType<?>> TYPES=DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES,"orimod");
+-    public static final Supplier<AttachmentType<List<Long>>> TREES=journal("generated_trees"), BLIGHTS=journal("generated_blights");
++    public static final Supplier<AttachmentType<List<Long>>> TREES=journal("generated_trees"), BLIGHTS=journal("generated_blights"), SHRINES=journal("generated_shrines");
++    private static Supplier<AttachmentType<List<Long>>> journalFor(Kind kind){return switch(kind){case TREE->TREES;case BLIGHT->BLIGHTS;case SHRINE->SHRINES;};}
+     private static Supplier<AttachmentType<List<Long>>> journal(String name){return TYPES.register(name,()->AttachmentType.<List<Long>>builder(() -> List.of()).serialize(Codec.LONG.listOf()).build());}
+     private record Journal(Kind kind,List<Long> positions){}
+     private static final Map<ServerLevel,ConcurrentLinkedQueue<Journal>> PENDING=new ConcurrentHashMap<>();
+@@ -37,7 +38,7 @@ public final class FeatureSites extends SavedData {
+     public int count(Kind kind){return sites.get(kind).size();}
+     /** Called only after a successful complete Feature placement, including /place. */
+     public static void generated(WorldGenLevel level,BlockPos pos,Kind kind){
+-        var chunk=level.getChunk(pos);var type=kind==Kind.TREE?TREES:BLIGHTS;
++        var chunk=level.getChunk(pos);var type=journalFor(kind);
+         synchronized(chunk){var values=new HashSet<>(chunk.getData(type));values.add(pos.asLong());chunk.setData(type,List.copyOf(values));chunk.setUnsaved(true);}
+         if(level instanceof ServerLevel server)get(server).add(kind,pos);
+         else {
+@@ -50,7 +51,7 @@ public final class FeatureSites extends SavedData {
+         if(!(event.getLevel() instanceof ServerLevel level))return;
+         var chunk=event.getChunk();
+         for(var kind:Kind.values()){
+-            var type=kind==Kind.TREE?TREES:BLIGHTS;
++            var type=journalFor(kind);
+             if(chunk.hasData(type))PENDING.computeIfAbsent(level,k->new ConcurrentLinkedQueue<>()).add(new Journal(kind,List.copyOf(chunk.getData(type))));
+         }
+     }
+@@ -62,7 +63,7 @@ public final class FeatureSites extends SavedData {
+     private static boolean valid(ServerLevel level,Kind kind,BlockPos pos){
+         if(kind==Kind.BLIGHT && BlightData.get(level).completed(pos))return false;
+         var chunk=level.getChunkSource().getChunkNow(pos.getX()>>4,pos.getZ()>>4);
+-        return chunk==null || chunk.getBlockState(pos).is(kind==Kind.TREE?OriBlocks.SPIRIT_TREE_HEART:OriBlocks.GLOOM_CORE);
++        return chunk==null || chunk.getBlockState(pos).is(switch(kind){case TREE->OriBlocks.SPIRIT_TREE_HEART;case BLIGHT->OriBlocks.GLOOM_CORE;case SHRINE->OriBlocks.SPIRIT_SHRINE_ALTAR;});
+     }
+     public Optional<BlockPos> nearest(ServerLevel level,Kind kind,Vec3 origin,Predicate<BlockPos> eligible){
+         BlockPos best=null;double limit=(double)RANGE*RANGE;
+@@ -75,7 +76,7 @@ public final class FeatureSites extends SavedData {
+         }
+         return Optional.ofNullable(best);
+     }
+-    public Optional<BlockPos> nearest(ServerPlayer p,Kind kind){return nearest(p.serverLevel(),kind,p.position(),pos->kind!=Kind.TREE || !p.getData(SpiritData.PROGRESS).rewards().containsKey(SpiritTreeHeartBlock.siteKey(p.level(),pos)));}
++    public Optional<BlockPos> nearest(ServerPlayer p,Kind kind){return nearest(p.serverLevel(),kind,p.position(),pos->switch(kind){case TREE->!p.getData(SpiritData.PROGRESS).rewards().containsKey(SpiritTreeHeartBlock.siteKey(p.level(),pos));case SHRINE->!p.getData(SpiritData.PROGRESS).rewards().containsKey(ShrineTrials.receipt(p.level(),pos));case BLIGHT->true;});}
+     public static void unload(net.neoforged.neoforge.event.level.LevelEvent.Unload event){if(event.getLevel() instanceof ServerLevel level)PENDING.remove(level);}
+     public static void clear(){PENDING.clear();}
+ }
+diff --git a/src/main/java/cn/wwl/orimod/world/GloomTide.java b/src/main/java/cn/wwl/orimod/world/GloomTide.java
+index 58a734f..82b5da3 100644
+--- a/src/main/java/cn/wwl/orimod/world/GloomTide.java
++++ b/src/main/java/cn/wwl/orimod/world/GloomTide.java
+@@ -150,7 +150,7 @@ public final class GloomTide {
+                 double dx = point.x - p.getX(), dz = point.z - p.getZ();
+                 long chunk = ChunkPos.asLong(x >> 4, z >> 4), now = level.getGameTime();
+                 if (!GloomTideRules.spawnDistance(dx * dx + dz * dz) || !validGround(level, pos)
+-                        || !state(level).claims.available(now, chunk, p.getUUID()) || defense.protects(level, point)) continue;
++                        || ShrineTrials.contains(level, point) || !state(level).claims.available(now, chunk, p.getUUID()) || defense.protects(level, point)) continue;
+                 Mob mob = switch(kind){case SPITTER -> OriMobs.GLOOM_SPITTER.get().create(level);case BEETLE -> OriMobs.GLOOM_BEETLE.get().create(level);case HAWK -> OriMobs.GLOOM_HAWK.get().create(level);};
+                 if (mob == null) continue;
+                 mob.moveTo(point.x, point.y, point.z, random.nextFloat() * 360, 0);
+diff --git a/src/main/java/cn/wwl/orimod/world/OriWorldgen.java b/src/main/java/cn/wwl/orimod/world/OriWorldgen.java
+index 1096cbd..8fb6f2b 100644
+--- a/src/main/java/cn/wwl/orimod/world/OriWorldgen.java
++++ b/src/main/java/cn/wwl/orimod/world/OriWorldgen.java
+@@ -15,6 +15,8 @@ public final class OriWorldgen {
+     public static final Supplier<BlightedGroundsFeature> BLIGHTED_GROUNDS = FEATURES.register("blighted_grounds", BlightedGroundsFeature::new);
+     private static final DeferredRegister<StructureType<?>> TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, OriMod.MOD_ID);
+     private static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, OriMod.MOD_ID);
++    public static final Supplier<StructureType<SpiritShrineStructure>> SHRINE=TYPES.register("spirit_shrine",()->()->SpiritShrineStructure.CODEC);
++    public static final Supplier<StructurePieceType> SHRINE_PIECE=PIECES.register("spirit_shrine",()->(StructurePieceType.StructureTemplateType)SpiritShrinePiece::new);
+     public static final Supplier<StructureType<GladesOutpostStructure>> OUTPOST=TYPES.register("glades_outpost",()->()->GladesOutpostStructure.CODEC);
+     public static final Supplier<StructurePieceType> OUTPOST_PIECE=PIECES.register("glades_outpost",()->(StructurePieceType.StructureTemplateType)GladesOutpostPiece::new);
+     public static final Supplier<StructureType<RuinStructure>> RUIN = TYPES.register("ruin", () -> () -> RuinStructure.CODEC);
+diff --git a/src/main/java/cn/wwl/orimod/world/RuinLocator.java b/src/main/java/cn/wwl/orimod/world/RuinLocator.java
+index 00b83d9..4d122a7 100644
+--- a/src/main/java/cn/wwl/orimod/world/RuinLocator.java
++++ b/src/main/java/cn/wwl/orimod/world/RuinLocator.java
+@@ -45,6 +45,7 @@ public final class RuinLocator {
+         var level=player.serverLevel();var registry=level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+         var locations=new ArrayList<net.minecraft.resources.ResourceLocation>();
+         if(mode!=Mode.OUTPOST)for(var kind:RuinKind.values())locations.add(kind.location());
++        if(mode==Mode.ANY)locations.add(net.minecraft.resources.ResourceLocation.parse("orimod:spirit_shrine"));
+         if(mode!=Mode.RUINS)locations.add(net.minecraft.resources.ResourceLocation.parse("orimod:glades_outpost"));
+         var placements=new HashSet<RandomSpreadStructurePlacement>();
+         for(var location:locations){var holder=registry.getHolder(net.minecraft.resources.ResourceKey.create(Registries.STRUCTURE,location));if(holder.isEmpty())continue;
+@@ -121,6 +122,10 @@ public final class RuinLocator {
+                         if(search.mode==Mode.ANY && player.getData(SpiritData.PROGRESS).rewards().containsKey(key))continue;
+                         found=new Found("glades_outpost",outpost.placement().block(GladesOutpostPiece.ENTRY),key);
+                     }
++                    if(search.mode==Mode.ANY && piece instanceof SpiritShrinePiece shrine && shrine.contract()!=null){
++                        String key=ShrineTrials.receipt(search.level,shrine.contract().altar());
++                        if(!player.getData(SpiritData.PROGRESS).rewards().containsKey(key))found=new Found("spirit_shrine",shrine.contract().entry(),key);
++                    }
+                     if(found!=null && horizontalDistance(search.origin,found.entry())<=RANGE*RANGE
+                             && (search.best==null || horizontalDistance(search.origin,found.entry())<horizontalDistance(search.origin,search.best.entry())))search.best=found;
+                 }
+diff --git a/src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java b/src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java
+index 1a493df..ed20211 100644
+--- a/src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java
++++ b/src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java
+@@ -28,7 +28,7 @@ public final class RuinVegetationGuard {
+                 // saved bounds are immutable here; no block, heightmap or neighbor feature is read.
+                 var chunk = region.getChunk(x, z, ChunkStatus.STRUCTURE_STARTS);
+                 for (var start : chunk.getAllStarts().values())
+-                    if (start.isValid() && (start.getStructure() instanceof RuinStructure || start.getStructure() instanceof GladesOutpostStructure) && protects(start.getBoundingBox(), tree, margin)) return true;
++                    if (start.isValid() && (start.getStructure() instanceof RuinStructure || start.getStructure() instanceof GladesOutpostStructure || start.getStructure() instanceof SpiritShrineStructure) && protects(start.getBoundingBox(), tree, margin)) return true;
+             }
+         return false;
+     }
+diff --git a/src/main/resources/assets/orimod/lang/en_us.json b/src/main/resources/assets/orimod/lang/en_us.json
+index b47f5b7..c6bfa45 100644
+--- a/src/main/resources/assets/orimod/lang/en_us.json
++++ b/src/main/resources/assets/orimod/lang/en_us.json
+@@ -457,5 +457,39 @@
+   "commands.orimod.restoration.reset": "Restoration and personal receipts reset; loaded leaves are returning to their original state.",
+   "advancement.orimod.restoration.title": "Lightkeeper",
+   "advancement.orimod.restoration.description": "Return the three Wisps of Will and let the forest breathe again.",
+-  "line.orimod.restoration": "Glimmer: The light is back. The forest will remember you."
++  "line.orimod.restoration": "Glimmer: The light is back. The forest will remember you.",
++  "block.orimod.spirit_shrine_altar": "Spirit Combat Altar",
++  "block.orimod.shrine_ward": "Shrine Ward",
++  "guide.orimod.target.spirit_shrine": "Spirit Combat Shrine",
++  "merchant.orimod.guide.shrine": "Unfinished combat shrine",
++  "hint.orimod.shrine": "Glimmer: Touch the altar. Let’s test our strength!",
++  "line.orimod.shrine_start": "Glimmer: Back to back. We can hold this ground!",
++  "line.orimod.shrine_complete": "Glimmer: We won! We earned this strength together.",
++  "commands.orimod.shrine.none": "No registered combat shrine within 2048 blocks.",
++  "commands.orimod.shrine.nearest": "Combat shrine: %s, %s, %s",
++  "message.orimod.shrine.begin": "Trial begun: three waves, five minutes. Going too far interrupts the trial; leaving forfeits your reward.",
++  "message.orimod.shrine.form": "Touch the altar as an awakened spirit.",
++  "message.orimod.shrine.missing": "No registered combat shrine here.",
++  "message.orimod.shrine.peaceful": "Combat trials require a non-Peaceful difficulty.",
++  "message.orimod.shrine.busy": "A trial or ward cleanup is in progress. Please wait.",
++  "message.orimod.shrine.outside": "Enter the arena first.",
++  "message.orimod.shrine.too_many": "At most eight participants may enter.",
++  "message.orimod.shrine.unloaded": "Wait for the entire arena to load.",
++  "message.orimod.shrine.blocked": "A reserved ward position is blocked. Clear it before retrying.",
++  "message.orimod.shrine.occupied": "An entity occupies the ward boundary. Move clear before retrying.",
++  "message.orimod.shrine.wave": "Combat Shrine · Wave %s / 3",
++  "message.orimod.shrine.failed": "Trial interrupted: %s. Retry once the wards are gone.",
++  "message.orimod.shrine.reward": "Trial complete: %s, plus %s Spirit Light.",
++  "message.orimod.shrine.no_shard": "Spirit Light reward",
++  "message.orimod.shrine.reason.restart": "server restarted",
++  "message.orimod.shrine.reason.shutdown": "server stopped",
++  "message.orimod.shrine.reason.unloaded": "arena chunk unloaded",
++  "message.orimod.shrine.reason.altar_removed": "altar removed",
++  "message.orimod.shrine.reason.peaceful": "Peaceful difficulty",
++  "message.orimod.shrine.reason.timeout": "five-minute limit reached",
++  "message.orimod.shrine.reason.all_out": "no living teammate remains",
++  "message.orimod.shrine.reason.enemy_lost": "a trial enemy left or was removed",
++  "message.orimod.shrine.reason.spawn_blocked": "enemy spawn positions blocked",
++  "message.orimod.shrine.reason.blocked": "ward boundary blocked",
++  "message.orimod.shrine.reason.command": "stopped by command"
+ }
+diff --git a/src/main/resources/assets/orimod/lang/zh_cn.json b/src/main/resources/assets/orimod/lang/zh_cn.json
+index 592c82d..796c93a 100644
+--- a/src/main/resources/assets/orimod/lang/zh_cn.json
++++ b/src/main/resources/assets/orimod/lang/zh_cn.json
+@@ -457,5 +457,39 @@
+   "commands.orimod.restoration.reset": "复苏状态和个人回执已重置；已加载的灵叶正在恢复。",
+   "advancement.orimod.restoration.title": "守光者",
+   "advancement.orimod.restoration.description": "归还三道意志之光，让森林重新呼吸。",
+-  "line.orimod.restoration": "萤：光回来了。森林会记得你。"
++  "line.orimod.restoration": "萤：光回来了。森林会记得你。",
++  "block.orimod.spirit_shrine_altar": "灵战祭台",
++  "block.orimod.shrine_ward": "祭坛屏障",
++  "guide.orimod.target.spirit_shrine": "灵战祭坛",
++  "merchant.orimod.guide.shrine": "未完成的灵战祭坛",
++  "hint.orimod.shrine": "萤：碰一碰祭台，我们来试试身手！",
++  "line.orimod.shrine_start": "萤：背靠背，我们一起守住这里！",
++  "line.orimod.shrine_complete": "萤：赢了！这份力量是我们一起争来的。",
++  "commands.orimod.shrine.none": "2048 格内没有已登记的灵战祭坛。",
++  "commands.orimod.shrine.nearest": "灵战祭坛：%s, %s, %s",
++  "message.orimod.shrine.begin": "试炼开始：三波敌人，限时五分钟。离开太远会中断试炼；主动退出不获奖励。",
++  "message.orimod.shrine.form": "觉醒后以精灵形态触碰祭台。",
++  "message.orimod.shrine.missing": "这里没有已登记的灵战祭坛。",
++  "message.orimod.shrine.peaceful": "和平难度下不能开始战斗试炼。",
++  "message.orimod.shrine.busy": "祭坛正在试炼或撤除屏障，请稍候。",
++  "message.orimod.shrine.outside": "请先走进竞技场。",
++  "message.orimod.shrine.too_many": "场内最多允许八位参与者。",
++  "message.orimod.shrine.unloaded": "竞技场尚未完全加载，请稍候。",
++  "message.orimod.shrine.blocked": "屏障预留位置被改建；清空后再试。",
++  "message.orimod.shrine.occupied": "屏障位置有实体，请让开后再试。",
++  "message.orimod.shrine.wave": "灵战祭坛 · 第 %s / 3 波",
++  "message.orimod.shrine.failed": "试炼中断：%s。屏障撤除后可以重试。",
++  "message.orimod.shrine.reward": "试炼完成：%s，获得 %s 灵光。",
++  "message.orimod.shrine.no_shard": "灵光奖励",
++  "message.orimod.shrine.reason.restart": "服务器重启",
++  "message.orimod.shrine.reason.shutdown": "服务器关闭",
++  "message.orimod.shrine.reason.unloaded": "竞技场区块卸载",
++  "message.orimod.shrine.reason.altar_removed": "祭台被移除",
++  "message.orimod.shrine.reason.peaceful": "难度改为和平",
++  "message.orimod.shrine.reason.timeout": "五分钟时限已到",
++  "message.orimod.shrine.reason.all_out": "没有留场的存活队友",
++  "message.orimod.shrine.reason.enemy_lost": "试炼敌人离场或异常移除",
++  "message.orimod.shrine.reason.spawn_blocked": "敌人生成位置受阻",
++  "message.orimod.shrine.reason.blocked": "屏障位置受阻",
++  "message.orimod.shrine.reason.command": "调试命令停止"
+ }
+diff --git a/src/main/resources/data/minecraft/tags/block/dragon_immune.json b/src/main/resources/data/minecraft/tags/block/dragon_immune.json
+index fe1a71d..c7061fe 100644
+--- a/src/main/resources/data/minecraft/tags/block/dragon_immune.json
++++ b/src/main/resources/data/minecraft/tags/block/dragon_immune.json
+@@ -3,6 +3,8 @@
+   "values": [
+     "orimod:cracked_ruin_wall",
+     "orimod:cracked_ruin_floor",
+-    "orimod:gloom_core"
++    "orimod:gloom_core",
++    "orimod:shrine_ward",
++    "orimod:spirit_shrine_altar"
+   ]
+ }
+diff --git a/src/main/resources/data/minecraft/tags/block/wither_immune.json b/src/main/resources/data/minecraft/tags/block/wither_immune.json
+index fe1a71d..c7061fe 100644
+--- a/src/main/resources/data/minecraft/tags/block/wither_immune.json
++++ b/src/main/resources/data/minecraft/tags/block/wither_immune.json
+@@ -3,6 +3,8 @@
+   "values": [
+     "orimod:cracked_ruin_wall",
+     "orimod:cracked_ruin_floor",
+-    "orimod:gloom_core"
++    "orimod:gloom_core",
++    "orimod:shrine_ward",
++    "orimod:spirit_shrine_altar"
+   ]
+ }
+diff --git a/src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java b/src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java
+index 3a0a9a2..f4abedd 100644
+--- a/src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java
++++ b/src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java
+@@ -22,7 +22,7 @@ class CompanionHintPayloadTest {
+     @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked"})
+     void roundTripLockedVariants(String id) { roundTrip(new CompanionHintPayload(id, Optional.of(BlockPos.ZERO))); }
+ 
+-    @Test void explicitChannelVersion() { assertEquals("9", CompanionHintPayload.VERSION); }
++    @Test void explicitChannelVersion() { assertEquals("10", CompanionHintPayload.VERSION); }
+ 
+     @ParameterizedTest @ValueSource(strings = {"", "unknown", "low_energy_locked", "hint/updraft", "../updraft"})
+     void rejectsUnknownIds(String id) { rejected(b -> { b.writeUtf(id); b.writeByte(0); }); }
+@@ -49,19 +49,19 @@ class CompanionHintPayloadTest {
+         assertEquals(new BlockPos(1, 2, 3), payload.pos().orElseThrow());
+     }
+ 
+-    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(9); b.writeByte(kind); }
++    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(10); b.writeByte(kind); }
+     @ParameterizedTest @EnumSource(cn.wwl.orimod.progression.CompanionLines.Line.class)
+     void roundTripEveryLine(cn.wwl.orimod.progression.CompanionLines.Line line) { roundTrip(CompanionHintPayload.line(line)); }
+     @ParameterizedTest @ValueSource(ints={2,127,255})
+     void rejectsUnknownKind(int kind) { rejectedRaw(b -> { header(b,kind); b.writeUtf("tree_found"); b.writeByte(0); }); }
+-    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,7,8,10,255})
++    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,7,8,9,11,255})
+     void rejectsOtherWireVersions(int version) { rejectedRaw(b -> { b.writeByte(0); b.writeByte(version); }); }
+     @Test void rejectsOldVersionTwoPacketWithClearMessage() {
+         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+         try {
+             b.writeUtf("low_energy"); b.writeByte(0);
+             var error=assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b));
+-            assertTrue(error.getMessage().contains("expected protocol 9"));
++            assertTrue(error.getMessage().contains("expected protocol 10"));
+         } finally { b.release(); }
+     }
+     @Test void versionTwoDecoderRejectsEveryNewPacketBeforeReadingItsBody() {
+@@ -82,7 +82,7 @@ class CompanionHintPayloadTest {
+         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+         try {
+             b.writeByte(0);b.writeByte(7);b.writeByte(0);b.writeUtf("updraft");b.writeByte(1);b.writeBlockPos(BlockPos.ZERO);
+-            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 9"));
++            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 10"));
+             for(var packet:new CompanionHintPayload[]{new CompanionHintPayload("merchant",Optional.of(BlockPos.ZERO)),
+                     CompanionHintPayload.line(cn.wwl.orimod.progression.CompanionLines.Line.FIRST_OUTPOST)}) {
+                 b.clear();CompanionHintPayload.CODEC.encode(b,packet);
+diff --git a/src/test/java/cn/wwl/orimod/network/MerchantPayloadTest.java b/src/test/java/cn/wwl/orimod/network/MerchantPayloadTest.java
+index 9a3cfa8..413e093 100644
+--- a/src/test/java/cn/wwl/orimod/network/MerchantPayloadTest.java
++++ b/src/test/java/cn/wwl/orimod/network/MerchantPayloadTest.java
+@@ -14,12 +14,12 @@ class MerchantPayloadTest {
+     static <T> void roundTrip(StreamCodec<RegistryFriendlyByteBuf,T> codec,T value){var b=buffer();try{codec.encode(b,value);assertEquals(value,codec.decode(b));assertEquals(0,b.readableBytes());}finally{b.release();}}
+     @Test void requestHasNoPriceAndRoundTrips(){roundTrip(MerchantBuyPayload.CODEC,new MerchantBuyPayload(42,UUID.randomUUID(),12,UUID.randomUUID(),"tree"));assertEquals(List.of("entityId","merchant","day","token","product"),Arrays.stream(MerchantBuyPayload.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());}
+     @Test void offerRoundTrip(){roundTrip(MerchantOfferPayload.CODEC,new MerchantOfferPayload(42,UUID.randomUUID(),12,UUID.randomUUID(),1,200,List.of(new MerchantOfferPayload.Offer("ruin",40,true),new MerchantOfferPayload.Offer("tree",60,true),new MerchantOfferPayload.Offer("blight",50,true)),"",false));}
+-    @ParameterizedTest @ValueSource(ints={0,2,255}) void rejectsOtherMerchantVersions(int version){for(var codec:List.of(MerchantBuyPayload.CODEC,MerchantOfferPayload.CODEC)){var b=buffer();try{b.writeByte(version);assertTrue(assertThrows(DecoderException.class,()->codec.decode(b)).getMessage().contains("expected 1"));}finally{b.release();}}}
++    @ParameterizedTest @ValueSource(ints={0,3,255}) void rejectsOtherMerchantVersions(int version){for(var codec:List.of(MerchantBuyPayload.CODEC,MerchantOfferPayload.CODEC)){var b=buffer();try{b.writeByte(version);assertTrue(assertThrows(DecoderException.class,()->codec.decode(b)).getMessage().contains("expected "));}finally{b.release();}}}
+     @ParameterizedTest @ValueSource(strings={"","unknown","../tree"}) void badProductRejectedOnWire(String product){var b=buffer();try{b.writeByte(1);b.writeVarInt(1);b.writeUUID(UUID.randomUUID());b.writeLong(0);b.writeUUID(UUID.randomUUID());b.writeUtf(product);assertThrows(DecoderException.class,()->MerchantBuyPayload.CODEC.decode(b));}finally{b.release();}}
+     @ParameterizedTest @ValueSource(ints={-1,0,59,61}) void offerRejectsForgedPrice(int price){var b=offerHeader(1);try{b.writeUtf("tree");b.writeVarInt(price);b.writeBoolean(true);b.writeUtf("");b.writeBoolean(false);assertThrows(DecoderException.class,()->MerchantOfferPayload.CODEC.decode(b));}finally{b.release();}}
+-    @Test void tooManyOffersRejected(){var b=offerHeader(4);try{assertThrows(DecoderException.class,()->MerchantOfferPayload.CODEC.decode(b));}finally{b.release();}}
++    @Test void tooManyOffersRejected(){var b=offerHeader(5);try{assertThrows(DecoderException.class,()->MerchantOfferPayload.CODEC.decode(b));}finally{b.release();}}
+     @Test void unknownNegativeOfferAndDuplicateIdsRejected(){assertThrows(IllegalArgumentException.class,()->new MerchantOfferPayload.Offer("oops",-1,true));var o=new MerchantOfferPayload.Offer("tree",60,true);assertThrows(IllegalArgumentException.class,()->new MerchantOfferPayload(1,UUID.randomUUID(),0,UUID.randomUUID(),1,0,List.of(o,o),"",false));}
+-    private static RegistryFriendlyByteBuf offerHeader(int count){var b=buffer();b.writeByte(1);b.writeVarInt(1);b.writeUUID(UUID.randomUUID());b.writeLong(0);b.writeUUID(UUID.randomUUID());b.writeByte(1);b.writeVarInt(100);b.writeByte(count);return b;}
+-    @ParameterizedTest @ValueSource(strings={"forest_spring","creek_ruins","cave_altar","glades_outpost","spirit_tree","blighted_grounds"}) void guideRoundTrip(String kind){roundTrip(RuinGuidePayload.CODEC,new RuinGuidePayload("minecraft:overworld",new BlockPos(-100,64,50),kind));}
+-    @Test void guideRejectsOldProtocolAndOldDecoderRejectsNew(){var b=buffer();try{b.writeUtf("minecraft:overworld");b.writeBlockPos(BlockPos.ZERO);b.writeUtf("forest_spring");assertTrue(assertThrows(DecoderException.class,()->RuinGuidePayload.CODEC.decode(b)).getMessage().contains("expected 2"));b.clear();RuinGuidePayload.CODEC.encode(b,new RuinGuidePayload("minecraft:overworld",BlockPos.ZERO,"glades_outpost"));assertThrows(RuntimeException.class,()->{b.readUtf(128);b.readBlockPos();b.readUtf(32);});}finally{b.release();}}
++    private static RegistryFriendlyByteBuf offerHeader(int count){var b=buffer();b.writeByte(2);b.writeVarInt(1);b.writeUUID(UUID.randomUUID());b.writeLong(0);b.writeUUID(UUID.randomUUID());b.writeByte(1);b.writeVarInt(100);b.writeByte(count);return b;}
++    @ParameterizedTest @ValueSource(strings={"forest_spring","creek_ruins","cave_altar","glades_outpost","spirit_tree","blighted_grounds","spirit_shrine"}) void guideRoundTrip(String kind){roundTrip(RuinGuidePayload.CODEC,new RuinGuidePayload("minecraft:overworld",new BlockPos(-100,64,50),kind));}
++    @Test void guideRejectsOldProtocolAndOldDecoderRejectsNew(){var b=buffer();try{b.writeUtf("minecraft:overworld");b.writeBlockPos(BlockPos.ZERO);b.writeUtf("forest_spring");assertTrue(assertThrows(DecoderException.class,()->RuinGuidePayload.CODEC.decode(b)).getMessage().contains("expected 3"));b.clear();RuinGuidePayload.CODEC.encode(b,new RuinGuidePayload("minecraft:overworld",BlockPos.ZERO,"glades_outpost"));assertThrows(RuntimeException.class,()->{b.readUtf(128);b.readBlockPos();b.readUtf(32);});}finally{b.release();}}
+ }

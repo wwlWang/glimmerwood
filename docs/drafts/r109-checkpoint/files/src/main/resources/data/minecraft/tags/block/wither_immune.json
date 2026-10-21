@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "orimod:cracked_ruin_wall",
+    "orimod:cracked_ruin_floor",
+    "orimod:gloom_core",
+    "orimod:shrine_ward",
+    "orimod:spirit_shrine_altar"
+  ]
+}

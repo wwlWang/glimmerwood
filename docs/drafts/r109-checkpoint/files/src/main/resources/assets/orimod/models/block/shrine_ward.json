@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "orimod:block/shrine_ward"
+  },
+  "render_type": "minecraft:translucent"
+}

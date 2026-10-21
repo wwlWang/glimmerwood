@@ -1,0 +1,138 @@
+package cn.wwl.orimod;
+
+import com.mojang.logging.LogUtils;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import org.slf4j.Logger;
+
+@Mod(OriMod.MOD_ID)
+public final class OriMod {
+    public static final String MOD_ID = "orimod";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
+        container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
+        container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
+        modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
+        var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        cn.wwl.orimod.world.ShrineTrials.register(modEventBus);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::tick);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::loadChunk);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::unloadChunk);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::unload);
+        bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,cn.wwl.orimod.world.ShrineTrials::death);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::join);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::leave);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::logout);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::dimension);
+        bus.addListener(cn.wwl.orimod.world.ShrineTrials::natural);
+        bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
+        bus.addListener(cn.wwl.orimod.progression.WillWisps::login);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::tick);
+        bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST,cn.wwl.orimod.progression.Restoration::hurt);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::death);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::logout);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::dimension);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::load);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::unload);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::tick);
+        modEventBus.addListener(cn.wwl.orimod.network.GloomTidePayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::join);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.world.GloomTide::death);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::login);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::unload);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTideDefense::unloadChunk);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.block.PlatformLight::load);
+        cn.wwl.orimod.block.OriBlocks.register(modEventBus);
+        cn.wwl.orimod.block.OriBlockEntities.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.block.BlightInteractions::projectile);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::login);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::leave);
+        cn.wwl.orimod.world.FeatureSites.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::loadChunk);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.FeatureSites::unload);
+        cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
+        cn.wwl.orimod.world.OriEntities.register(modEventBus);
+        cn.wwl.orimod.fx.OriParticles.register(modEventBus);
+        cn.wwl.orimod.entity.OriMobs.register(modEventBus);
+        cn.wwl.orimod.item.OriItems.register(modEventBus);
+        cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
+        cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopping);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopped);
+        modEventBus.addListener(cn.wwl.orimod.network.MerchantOfferPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.MerchantTrading::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.MerchantTrading::logout);
+        modEventBus.addListener(cn.wwl.orimod.network.ToggleSpiritPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.movement.SpiritMovement::register);
+        modEventBus.addListener(cn.wwl.orimod.network.ProgressActionPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.CombatInputPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.ChallengeActionPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.SpiritFxPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.CompanionHintPayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.recipe.OriRecipes::difficultyChanged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.EscapeSequence::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.SpiritChallenge::death);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.RuinLocator::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.RuinLocator::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::attackEntity);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritCombat::tickArrow);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionHints::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionLines::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionLines::flushLevel);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionLines::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.CompanionLines::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SoulLink::respawn);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.SpiritFlame::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritCells::login);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritCells::respawn);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::drops);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::pickup);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.entity.GloomBeetle::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.spirit.SpiritForm::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.SpiritMovement::tick);
+        // Registered after movement so persistent effects follow this tick's authoritative state.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::spawn);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::unload);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::opening);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::damaged);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.fx.SpiritFxLifecycle::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.fx.SpiritFxLifecycle::death);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.fx.SpiritFxLifecycle::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.fx.SpiritFxLifecycle::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.fx.SpiritFxLifecycle::respawn);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.AirMovement::fall);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::tickTarget);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.BashSession::changedDimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.combat.BashedImpact::projectile);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.BashedImpact::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.BashedImpact::leave);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.BashedImpact::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.BashedImpact::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.BashedImpact::unload);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.command.OriCommands::onRegisterCommands);
+        modEventBus.addListener(this::onCommonSetup);
+    }
+
+    private void onCommonSetup(FMLCommonSetupEvent event) {
+        LOGGER.info("OriMod common setup ready");
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "completed=false": {
+      "model": "orimod:block/spirit_shrine_altar"
+    },
+    "completed=true": {
+      "model": "orimod:block/spirit_shrine_altar_completed"
+    }
+  }
+}

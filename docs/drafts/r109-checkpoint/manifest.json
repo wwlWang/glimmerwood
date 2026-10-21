@@ -1,0 +1,275 @@
+{
+  "base": "02dcb0b2f3743def883135d4e6970f18c21f7116",
+  "files": [
+    {
+      "path": "src/devtools/java/cn/wwl/orimod/devtools/DevelopmentBridge.java",
+      "kind": "modified",
+      "sha256": "f8ab1c306968860946b34386c02f5d681e781032fd20758da98eb976012c7f7b"
+    },
+    {
+      "path": "src/gametest/java/cn/wwl/orimod/gametest/MerchantGameTests.java",
+      "kind": "modified",
+      "sha256": "edfe35b417f145521e389af276aa07c28dbddcf19085a73003dc9ac3ec7ef079"
+    },
+    {
+      "path": "src/gametest/java/cn/wwl/orimod/gametest/RuinBridgeNavigationGameTests.java",
+      "kind": "modified",
+      "sha256": "8f32954a1d32bc91a32e82e675cd6359b88c9c3752ffde35847eb514f314e1de"
+    },
+    {
+      "path": "src/gametest/java/cn/wwl/orimod/gametest/WorldgenAudit.java",
+      "kind": "modified",
+      "sha256": "40c95619810bc0a7592b422ca26e0837a2566ecaba61ccc467a1837708fd6eb9"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/OriMod.java",
+      "kind": "modified",
+      "sha256": "7c217db7b5a5ff49518b86f703b4421b35203698570c5f4a5c9b1c51812cef31"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/OriServerLifecycle.java",
+      "kind": "modified",
+      "sha256": "4243b4c099b1ae91ae757cbdace739954389f6d2097db357e7e7224a2222a643"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/block/OriBlocks.java",
+      "kind": "modified",
+      "sha256": "4126e1bd7df80b96f3cec25dee943ffa683cccd138c65ab0a07cff90e2be79ec"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/client/MerchantScreen.java",
+      "kind": "modified",
+      "sha256": "211a405a6c007ea1bafdd5fa6f05fffb711bbcccf410cbcdc593352e44308ef7"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/command/OriCommands.java",
+      "kind": "modified",
+      "sha256": "0abd92750d5806fcabf667f39740f66febca30a78dcaa2ed23e71e027db8de1c"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/entity/GladesMerchant.java",
+      "kind": "modified",
+      "sha256": "5e950b524998bdc2f4c6b399993587bccf73649cd10d4762d811e71afeb3d23f"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/network/ChallengeActionPayload.java",
+      "kind": "modified",
+      "sha256": "3e97d495c0aa3c9981c10b9e7736c721782fba7e1b7181bf9db79310955b5195"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/network/CompanionHintPayload.java",
+      "kind": "modified",
+      "sha256": "b678bd66300d1861c424edd169e9e38a8a90dbb2c1e5af76076282d6b0180cdc"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/network/MerchantOfferPayload.java",
+      "kind": "modified",
+      "sha256": "1d42bc55f208956dc29425f3b7eee702d7ac629d542d82e29c47c1f9fe2ce6f5"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/network/RuinGuidePayload.java",
+      "kind": "modified",
+      "sha256": "04085ad117ef4ca49efc160d37b8ae60300918d1ef6d9f069e004c9b7319a438"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/progression/CompanionHints.java",
+      "kind": "modified",
+      "sha256": "eff8558a70747c35f1754c2caf79bff0b13ed3c134fd78c2f3633f4677f16844"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/progression/CompanionLines.java",
+      "kind": "modified",
+      "sha256": "5d1aa59eb511779a25d39ba88e55eeb591b375ee7fa306310c3da90518a3f9b1"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/progression/MerchantRules.java",
+      "kind": "modified",
+      "sha256": "73030751d56112f2d36312488150012cdb4e3ad1786c9e80240c66ba89a1c4bf"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/progression/MerchantTrading.java",
+      "kind": "modified",
+      "sha256": "4271918b1984aff8afd2d2d77a4cbd47ad8c9f67f18299831fd35a7ae4f44a23"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/FeatureSites.java",
+      "kind": "modified",
+      "sha256": "a43772b07b57b7fe91c232d5950e4be72b6d4a2f78e9b8de0be8e3e349b70158"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/GloomTide.java",
+      "kind": "modified",
+      "sha256": "bdde6536527f20e1e4a02fbc3fc5161bf1bbe546811b441ddf5b533134af4982"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/OriWorldgen.java",
+      "kind": "modified",
+      "sha256": "7082c8a97f8e7ffc8af743b849ce9a3c77e3b6a76a6063a9b932bc1946a71c8a"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/RuinLocator.java",
+      "kind": "modified",
+      "sha256": "6004349ccafe316a116373dce39181caa00a8bbdd6c7e91199674ddaa7cf338b"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/RuinVegetationGuard.java",
+      "kind": "modified",
+      "sha256": "6df6ef0afa57417069fb946bfccbaaedcab16a46fd239577ae22b9bc5d4f538f"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/lang/en_us.json",
+      "kind": "modified",
+      "sha256": "2f06f9118d1051b89aa8a7f0a6ce9414557d7a670c7985a8c580995fc73cc456"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/lang/zh_cn.json",
+      "kind": "modified",
+      "sha256": "e3d4dc36325c4c3dac74acba6143eb8bfc5f8c467863dbbe9080c8d85a2ef72c"
+    },
+    {
+      "path": "src/main/resources/data/minecraft/tags/block/dragon_immune.json",
+      "kind": "modified",
+      "sha256": "6807e7855a2ea72e0695bd099dc79f8f8848dac73b19cf13ad8b29cc5ca54881"
+    },
+    {
+      "path": "src/main/resources/data/minecraft/tags/block/wither_immune.json",
+      "kind": "modified",
+      "sha256": "6807e7855a2ea72e0695bd099dc79f8f8848dac73b19cf13ad8b29cc5ca54881"
+    },
+    {
+      "path": "src/test/java/cn/wwl/orimod/fx/CompanionHintPayloadTest.java",
+      "kind": "modified",
+      "sha256": "c58bc4cb30c7f594d5fb82f5084c16d9d90b50e17552509608ca9838bfefbee0"
+    },
+    {
+      "path": "src/test/java/cn/wwl/orimod/network/MerchantPayloadTest.java",
+      "kind": "modified",
+      "sha256": "148f27b185887d2ee1d8e2f0df78375bd7ea00908390cb26c2628ae853c0b0fe"
+    },
+    {
+      "path": "scripts/art/build_spirit_shrine.py",
+      "kind": "new",
+      "sha256": "66da0c4fd9e59cf4f8a16927d33a87fdde06d42f5232a9593ac420c1f6b9ce04"
+    },
+    {
+      "path": "scripts/verify-shrine-density.py",
+      "kind": "new",
+      "sha256": "033ee1a28e3a025b634661f67d6c6c28abeeccae7bcb9e2589c9f3868867d2a3"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/block/ShrineWardBlock.java",
+      "kind": "new",
+      "sha256": "e46a2017cb01f77d67706146351168ff8a983c7ce422b1ef4ebc66c42af04021"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/block/SpiritShrineAltarBlock.java",
+      "kind": "new",
+      "sha256": "a2819f25e852f4076d8cd0094afca0deeb78b3a158de96640d56f7d5f479006e"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/ShrineContract.java",
+      "kind": "new",
+      "sha256": "c41679ff244a3308b1f78072f6ca7ff860ec0a31407e7b2d84c1d6c0f68d2424"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/ShrineRules.java",
+      "kind": "new",
+      "sha256": "e8c31ecbdd248755bf1f11fcc5d5e4c2572bd7295dc7a3adeb9ca49b17bc4e20"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/ShrineTrials.java",
+      "kind": "new",
+      "sha256": "f9b5e4500145443aaebb5b860606b6e199acf27395b590d568144019dac76e64"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/SpiritShrinePiece.java",
+      "kind": "new",
+      "sha256": "e0fce64686ec15f1469627119cccbc21ff6089465f4f8cada80cc7342098e986"
+    },
+    {
+      "path": "src/main/java/cn/wwl/orimod/world/SpiritShrineStructure.java",
+      "kind": "new",
+      "sha256": "595015053343c5f398a088165861286c219df4129d795575bd08661e0c1fc4c1"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/blockstates/shrine_ward.json",
+      "kind": "new",
+      "sha256": "23c41b1ad55b236b1ac375707e857a8048ba44f6d467b69f4c5224da2443b002"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/blockstates/spirit_shrine_altar.json",
+      "kind": "new",
+      "sha256": "40409eb561cad7a094c89da2e7bd40a48d8889648c3ef0ec26a0c850475ae779"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/models/block/shrine_ward.json",
+      "kind": "new",
+      "sha256": "96e4e44aea246233ba2d448161323581765864adced0049e181fb1d49f97a8c2"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/models/block/spirit_shrine_altar.json",
+      "kind": "new",
+      "sha256": "b7c4b2f08fdd1042347254fae5ac5b38d67ee73bc9f5792a825f089e88166f8f"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/models/block/spirit_shrine_altar_completed.json",
+      "kind": "new",
+      "sha256": "744e948859002cd368a4f9256cd563e2e987b9bd28d281dfb9ab506920187705"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/models/item/shrine_ward.json",
+      "kind": "new",
+      "sha256": "4cb3464b29d7e2a12ee461806c536622f2eddc5fbd0a97d561cc4ec5c16b24d2"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/models/item/spirit_shrine_altar.json",
+      "kind": "new",
+      "sha256": "dc7859be1a6806dc2bf2a17c6404d565f86b1caaba3910ba86e8b4593e37212d"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/textures/block/shrine_ward.png",
+      "kind": "new",
+      "sha256": "3d482ca93b0d94eca560f3a2c0bbe521fb9d4b14775eb6a27b5f2c0aa54a1003"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/textures/block/spirit_shrine_altar.png",
+      "kind": "new",
+      "sha256": "8c7554ec31bf54d70ef61f170ee0923874ea6224af0db2712b6898c2aef6d441"
+    },
+    {
+      "path": "src/main/resources/assets/orimod/textures/block/spirit_shrine_altar_completed.png",
+      "kind": "new",
+      "sha256": "ee5001f0bcee6d4141c6a345ebc6804ced65ab5b05d0a0b7a7c4f6588bd7ffcf"
+    },
+    {
+      "path": "src/main/resources/data/orimod/structure/spirit_shrine.nbt",
+      "kind": "new",
+      "sha256": "abe1ad70e12b55e9c5592defc74abcd03dcf82a29a4bf8237c30f00df9374278"
+    },
+    {
+      "path": "src/main/resources/data/orimod/tags/worldgen/biome/has_spirit_shrine.json",
+      "kind": "new",
+      "sha256": "eceb232f9bfacbe0fe789dd787bbb2823806444ec95702e3285867f606feaa1e"
+    },
+    {
+      "path": "src/main/resources/data/orimod/worldgen/structure/spirit_shrine.json",
+      "kind": "new",
+      "sha256": "37e2d454aedc8565de7d256d2cc0fa342a76a3038ea47b7855d688da5ae27b6a"
+    },
+    {
+      "path": "src/main/resources/data/orimod/worldgen/structure_set/spirit_shrine.json",
+      "kind": "new",
+      "sha256": "d79b9824b8d360b8605a9ed602cf90ed80b2ba37d524c8da2680e21c5ebb1c38"
+    },
+    {
+      "path": "src/main/resources/orimod/spirit_shrine.json",
+      "kind": "new",
+      "sha256": "e2b44345821b1aa8e4ad550d9796d473f4308ca1d8fcbd4d28cfd046e3effcac"
+    },
+    {
+      "path": "src/test/java/cn/wwl/orimod/world/ShrineRulesTest.java",
+      "kind": "new",
+      "sha256": "8dad69f94d6d5a3e59786114a332bad8ad4032a2f694fd627539c7fc7fd70312"
+    }
+  ]
+}
