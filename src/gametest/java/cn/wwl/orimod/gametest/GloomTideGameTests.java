@@ -59,6 +59,12 @@ public final class GloomTideGameTests {
             h.assertTrue(beetles>=50 && beetles<=90,"Beetle frequency "+beetles);h.assertTrue(hawks>=40 && hawks<=80,"Hawk frequency "+hawks);h.assertTrue(spitters>=270 && spitters<=330,"Spitter frequency "+spitters);
             com.mojang.logging.LogUtils.getLogger().info("R105 fixed seed 105 / 200 waves: {} beetles, {} hawks, {} spitters",beetles,hawks,spitters);
         });
+        add(tests,"restored_world_real_waves_only_spitters_at_half_cap",(h,s)->{
+            var data=cn.wwl.orimod.world.RestorationData.get(s.p.server);boolean was=data.restored();
+            try{data.complete();s.floor();s.begin();var random=RandomSource.create(108);
+                for(int wave=0;wave<40;wave++){int n=GloomTide.spawnWave(s.p,random,GloomTideDefense.QUERY);h.assertTrue(n>=1 && n<=2,"Restored wave exceeded half cap");for(var mob:s.mobs()){h.assertTrue(mob instanceof GloomSpitter,"Restored tide spawned beetle/hawk");mob.discard();}}
+            }finally{if(!was)data.reset();}
+        });
         add(tests,"scheduler_enrolls_once_and_honors_wave_interval",(h,s)->{
             s.floor();s.p.setData(SpiritData.FORM,true);
             h.assertTrue(GloomTide.start(s.level)==null,"Start failed");

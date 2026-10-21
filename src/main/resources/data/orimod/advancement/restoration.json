@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "orimod:spirit_tree_heart"
+    },
+    "title": {
+      "translate": "advancement.orimod.restoration.title"
+    },
+    "description": {
+      "translate": "advancement.orimod.restoration.description"
+    },
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "restored": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -20,6 +20,7 @@ public final class OriServerLifecycle {
             cn.wwl.orimod.world.EscapeSequence.stopAll();
             SpiritChallenge.stopAll(event.getServer());
             for (var player : event.getServer().getPlayerList().getPlayers()) {
+                cn.wwl.orimod.progression.Restoration.cancel(player);
                 SpiritCombat.cancel(player, "shutdown");
                 var movement = player.getData(SpiritData.MOVEMENT);
                 movement.active = false;
@@ -32,6 +33,8 @@ public final class OriServerLifecycle {
     public static void stopped(ServerStoppedEvent event) {
         // This event also runs after an exception bypassed ServerStoppingEvent. Closed worlds
         // must not be mutated; saved challenge recovery remains available on the next login.
+        cn.wwl.orimod.progression.Restoration.clear();
+        cn.wwl.orimod.world.RestorationBloom.clear();
         cn.wwl.orimod.world.GloomTide.reset();
         cn.wwl.orimod.world.FeatureSites.clear();
         RuinLocator.discardAll();

@@ -34,10 +34,10 @@ public final class OriBlocks {
     public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SPIRIT_LOG = BLOCKS.register("spirit_log",
             () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .strength(2).lightLevel(s -> 4).sound(SoundType.WOOD)));
-    public static final DeferredBlock<Block> SPIRIT_LEAVES = BLOCKS.registerSimpleBlock("spirit_leaves", BlockBehaviour.Properties.of()
-            .strength(.2f).noOcclusion().lightLevel(s -> 9).sound(SoundType.AZALEA_LEAVES)
+    public static final DeferredBlock<SpiritLeavesBlock> SPIRIT_LEAVES = BLOCKS.register("spirit_leaves", () -> new SpiritLeavesBlock(BlockBehaviour.Properties.of()
+            .strength(.2f).noOcclusion().lightLevel(s -> s.getValue(SpiritLeavesBlock.BLOOMED) ? 12 : 9).sound(SoundType.AZALEA_LEAVES)
             .emissiveRendering((s, l, p) -> true)
-            .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false));
+            .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
     public static final DeferredBlock<SpiritVineBlock> SPIRIT_VINE = BLOCKS.register("spirit_vine",
             () -> new SpiritVineBlock(BlockBehaviour.Properties.of().instabreak().noCollission().noOcclusion()
                     .lightLevel(s -> 10).sound(SoundType.CAVE_VINES).emissiveRendering((s, l, p) -> true)));

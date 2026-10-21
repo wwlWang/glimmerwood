@@ -19,7 +19,7 @@ public record CombatInputPayload(boolean cancel) implements CustomPacketPayload 
         event.registrar("1").playToServer(TYPE, CODEC, (request, context) -> {
             if (context.player() instanceof ServerPlayer player) {
                 if (request.cancel) SpiritCombat.cancel(player, "input");
-                else SpiritCombat.attack(player);
+                else if(!cn.wwl.orimod.progression.Restoration.active(player)) SpiritCombat.attack(player);
             }
         });
     }

@@ -1,5 +1,28 @@
 # 回归测试
 
+## R108 意志之光与复苏
+
+最终 **1124 JUnit / 711 GameTest，0失败、0跳过**。锁位修正后的首轮全量通过（`evidence/r108-final-validation-v001`）；修正R106测试场地加载票并移除临时诊断后，`cleanTest build runGameTestServer compileDevtoolsJava --console=plain`再次完整通过。由于cleanTest后的JUnit命中了构建缓存，又单独执行`test --rerun`，1124项实际重跑通过。最终完整日志、JUnit重跑日志、XML、计数、资源检查和文件清单在 **`evidence/r108-final-validation-v002/`**。
+
+覆盖：旧NBT默认位/所有组合往返及既有进度更新不丢三光；两位真实首领死亡的多人独立实体/拾取/重复领取、实体NBT与待领身份恢复、不加载远处祭坛；三次真实净化逐人触发、离线第三次补发；七种未满位拒绝、未领树/人形拒绝；会话令牌、防重复结算、已复苏世界的其他玩家结局；真实移动包锁位而保留转头、伤害事件保护、取消后恢复受伤；断线/死亡/维度/拆树/清三光取消；旧回执登录清理、OP命令拒绝普通玩家；300tick自然完成、演出途中低/高冠层先后BLOOMED；新放叶片与区块加载初始化、整树写入预算与reset反向；实际40波复苏潮夜仅喷吐者且每波≤2；客户端显示策略锁住会话外Esc、结束、断线无结束包、超时恢复；FX/同伴旧解码器拒绝及复苏包版本、数量、范围、非法枚举/坐标/浮点值拒绝。
+
+性能在GameTest中放置SpiritTreeShape的完整树，等待30tick让初始光照落稳，再开始永久BLOOMED。使用ServerTickEvent.Pre/Post计时，记录有写入的服务器tick以及写入批次自身时间；每tick预算是全维度总量，不是每树256。最后一轮：**1151片叶 / 5tick，最大批次1.410464ms，最大服务器tick2.174345ms，最终光照12**。锁位修正后首轮1441叶/6tick的服务器峰值1.928026ms；此前1109/1406叶的服务器峰值1.318834/1.903848ms；均未触发5ms降级条件，保留9→12和256上限，另有约2ms软时间片。异步光线程CPU时间未单独测量，这些是本机GameTest实测，不代表所有机器的5ms硬保证。reset回退所有测试叶为未BLOOMED/光9；区块不加载邻块。演出真实画面与声音尚未实机验收。
+
+复现检查：`python3 -B scripts/art/build_spirit_tree_textures.py --check`（8张）、`python3 -B scripts/art/build_wisp_textures.py --check`（6张）、`python3 -B scripts/export-spirit-fx.py --check`（22定义），均通过；本轮不运行遗迹生成器、没有遗迹资产变更。
+
+中途失败原文及处理：
+
+- `Cannot get property BooleanProperty{name=bloomed, clazz=class java.lang.Boolean, values=[true, false]} as it does not exist in Block{orimod:spirit_tree_heart}`：新灵叶与树心同名属性不是同一对象；改用共同的BLOOMED属性，后续整树/既有灵树测试通过。
+- `new kinds need a new id and test entry ==> expected: <20> but was: <22>`；`expected: <60> but was: <48>`；`sound table misses WISP_COLLECT/RESTORATION`：新增固定ID表及音效登记，RESTORATION粒子基础数量收至既有balanced上限48。
+- `Ceremony did not end`：embedded连接测试不自行驱动玩家tick，按既有夹具模式逐tick调用生产PlayerTick处理；没有缩短300tick条件。
+- `Purification refused`：新夹具误传空区域，生产代码正确拒绝；改用实际腐化土坐标。
+- `Cancellation left invulnerability`：真实新登录玩家有原版出生保护；改用可穿过原版出生保护的虚空伤害，验证仪式自己的事件保护及取消后实际掉血。
+- 原R106 `blight.defender_cooldown_cap_and_unload_ownership` 曾报 `Expected 100 tick cooldown too long to be 2, but was 1`。原归档日志已保存在 `evidence/r108-defender-diagnosis-v001/2026-10-21-3.log.gz`。后续已定位并修正夹具，见下段；没有放宽断言。
+
+R106守卫偶发失败的根因与对照实验：测试场地在模板外160格，`snapshot`/`setBlock`临时加载区块，但嵌入连接玩家的`setPos`不建立玩家加载票。隔离原用例8次，**8次全部在100tick失败**：日志记录`now == nextDefender`，说明冷却已到期；±11范围所有区块`getChunkNow == null`，合计**96次候选全部因区块缺失跳过**，首守卫以`UNLOADED_TO_CHUNK`移除、生命仍为12，且按设计保留名额。全量偶发通过依赖外围模板/区块加载布局，不能证明夹具可靠；自动灵焰已由原夹具禁用，与本次失败无关。
+
+修法只在`BlightGameTests.defenderCooldown`：为`base ±13`涉及的全部区块调用`setChunkForced`，覆盖完整守卫搜索框；仅记录本测试新取得的票，成功、初始化异常和100/200/300tick回调异常都走幂等清理，恢复地形/难度、释放自己的票、关闭连接。生成前额外断言区块已加载，原100tick冷却、三只上限、卸载仍占名额、真正销毁可补位断言保持不变。修后隔离**8/8通过**，32次实际生成、0次区块拒绝。产品侧仍保留失败尝试后的100tick节流，防止无合法地面时逐tick反复搜索；本轮不改变守卫玩法语义。证据：`evidence/r108-defender-diagnosis-v001/{unforced,forced}.log`、对应XML、`summary.json`与临时诊断patch；临时日志代码、重复用例和专用命名空间均已移除。
+
 ## R107 实机反馈修正
 
 JDK21 `build runGameTestServer compileDevtoolsJava --console=plain` 完整通过：**1066 JUnit / 681 GameTest，0失败、0跳过**；日志 `/tmp/r107-fixes-full.log`。本次全量无失败，较初版新增14 JUnit（11种面板1.5倍价格、台地/入口边界、中英文案契约）及9 GameTest（4朝向×±7高差的真实阶梯/净空/地基/服务可达、群系允许/排除）。原11项面板拒绝改为按新保底语义购买且重复不扣费；2项技能前置测试改为余额不足拒绝、无需技能也能按全价保底，与商人一致。

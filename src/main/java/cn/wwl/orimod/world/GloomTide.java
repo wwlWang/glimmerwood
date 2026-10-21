@@ -136,7 +136,7 @@ public final class GloomTide {
     public static int spawnWave(ServerPlayer p, RandomSource random, GloomTideDefense.Query defense) {
         var level = p.serverLevel();
         if (!isActive(level) || !eligible(p) || Flash.active(p)) return 0;
-        var wave=GloomTideRules.wave(random.nextInt(2),random.nextFloat(),random.nextFloat());
+        var wave=GloomTideRules.wave(random.nextInt(2),random.nextFloat(),random.nextFloat(),RestorationData.get(p.server).restored());
         int spawned=0;
         for (var kind:wave) {
             if (!GloomTideRules.roomForMob(nearby(p), OriServerConfig.maxNearby())) break;

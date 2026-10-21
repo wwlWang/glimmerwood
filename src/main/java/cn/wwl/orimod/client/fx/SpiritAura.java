@@ -220,7 +220,7 @@ public final class SpiritAura {
                     level.getBrightness(net.minecraft.world.level.LightLayer.SKY, orbBlock)) < CompanionMotion.DARK_LIGHT_LIMIT;
             // R97: this is intentionally outside the first-person orb guard.
             if (dark) groundLight(out, pose, player, orb, cam, b, CompanionMotion.POOL_RADIUS, false);
-            if (!self) {
+            if (!self || player == mc.player && cn.wwl.orimod.client.RestorationClient.active()) {
                 var c = new Vector3f((float) (orb.x - cam.x), (float) (orb.y - cam.y), (float) (orb.z - cam.z));
                 // Project the exact centre sent to SpiritEnergy, so a screenshot light can be
                 // attributed to its draw path instead of estimating its world distance by eye.

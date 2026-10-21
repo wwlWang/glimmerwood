@@ -29,6 +29,7 @@ public final class SpiritMovement {
     }
 
     public static boolean canMove(Player player) {
+        if(player instanceof ServerPlayer s && cn.wwl.orimod.progression.Restoration.active(s))return false;
         return SpiritData.isSpirit(player) && player.isAlive() && !player.isSpectator() && !player.isSleeping()
                 && !player.isPassenger() && !player.isInWaterOrBubble() && !player.isInLava()
                 && !player.onClimbable() && !player.isFallFlying() && !player.getAbilities().flying;

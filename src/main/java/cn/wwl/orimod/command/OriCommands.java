@@ -52,6 +52,14 @@ public final class OriCommands {
         dispatcher.register(Commands.literal("ori").requires(s -> s.hasPermission(PERMISSION)).redirect(root));
     }
 
+    private static LiteralArgumentBuilder<CommandSourceStack> wispCommands(){
+        var give=Commands.literal("give");
+        for(String kind:java.util.List.of("heart","wing","earth","all")){
+            int mask=kind.equals("all")?7:cn.wwl.orimod.progression.WillWisp.byId(kind).bit;
+            give.then(players(kind,p->{cn.wwl.orimod.progression.WillWisps.give(p,mask);return true;}));
+        }
+        return Commands.literal("wisp").then(give).then(players("clear",cn.wwl.orimod.progression.WillWisps::clear));
+    }
     static LiteralArgumentBuilder<CommandSourceStack> tree(String name) {
         return Commands.literal(name).requires(s -> s.hasPermission(PERMISSION))
                 .then(players("awaken", OriCommands::awaken))
@@ -64,6 +72,10 @@ public final class OriCommands {
                                 .executes(c -> unlock(c, java.util.List.of(c.getSource().getPlayerOrException())))
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
+                .then(wispCommands())
+                .then(Commands.literal("restoration")
+                        .then(Commands.literal("status").executes(c->{var d=cn.wwl.orimod.world.RestorationData.get(c.getSource().getServer());c.getSource().sendSuccess(()->Component.translatable("commands.orimod.restoration.status",d.restored(),d.epoch(),cn.wwl.orimod.world.RestorationBloom.pending()),false);return 1;}))
+                        .then(Commands.literal("reset").executes(c->{cn.wwl.orimod.progression.Restoration.reset(c.getSource().getServer());c.getSource().sendSuccess(()->Component.translatable("commands.orimod.restoration.reset"),true);return 1;})))
                 .then(Commands.literal("ruin").then(Commands.literal("secrets").executes(OriCommands::secrets)))
                 .then(Commands.literal("blight").then(Commands.literal("nearest")
                         .executes(c -> nearestBlight(c, 256))

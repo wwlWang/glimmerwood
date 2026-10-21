@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "kind": "wisp_collect",
+  "layers": [
+    {
+      "particle": "orimod:spirit_mote",
+      "shape": "column",
+      "length": 2,
+      "radius": 0.4,
+      "color": "#d8f6ff",
+      "size": 0.3,
+      "lifetime": 45,
+      "share": 0.6,
+      "spread": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "speed": 0.01,
+      "outward": 0.08
+    },
+    {
+      "particle": "orimod:spirit_spark",
+      "shape": "ring",
+      "radius": 1,
+      "outward": 0.2,
+      "color": "#baf1ff",
+      "size": 0.25,
+      "lifetime": 35,
+      "share": 0.4,
+      "spread": [
+        0.02,
+        0.02,
+        0.02
+      ],
+      "speed": 0
+    }
+  ]
+}

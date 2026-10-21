@@ -16,6 +16,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /** R42: original spirit enemies. Natural spawns come from data/orimod/neoforge/biome_modifier. */
 public final class OriMobs {
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, OriMod.MOD_ID);
+    public static final Supplier<EntityType<WillWispEntity>> WILL_WISP=TYPES.register("will_wisp",()->EntityType.Builder.<WillWispEntity>of(WillWispEntity::new,MobCategory.MISC).sized(.5f,.5f).fireImmune().clientTrackingRange(10).updateInterval(20).build("orimod:will_wisp"));
     public static final Supplier<EntityType<GladesMerchant>> GLADES_MERCHANT=TYPES.register("glades_merchant",()->EntityType.Builder.of(GladesMerchant::new,MobCategory.CREATURE).sized(.6f,1.2f).fireImmune().clientTrackingRange(8).build("orimod:glades_merchant"));
     public static final Supplier<EntityType<GloomSpitter>> GLOOM_SPITTER = TYPES.register("gloom_spitter", () -> EntityType.Builder
             .of(GloomSpitter::new, MobCategory.MONSTER).sized(1f, 1.1f).clientTrackingRange(8).build("orimod:gloom_spitter"));

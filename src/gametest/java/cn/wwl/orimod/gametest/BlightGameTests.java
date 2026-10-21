@@ -250,26 +250,7 @@ public final class BlightGameTests {
             var p=core(h,new BlockPos(8,3,8));var data=BlightData.get(h.getLevel());data.register(p,new long[]{p.below().asLong()});h.getLevel().removeBlock(p,false);
             h.assertTrue(data.save(new CompoundTag(),h.getLevel().registryAccess()).getList("regions",Tag.TAG_COMPOUND).stream().noneMatch(e->((CompoundTag)e).getLong("center")==p.asLong()),"Removed core retained active work");
         });
-        timed(tests,"defender_cooldown_cap_and_unload_ownership",(h,c)->{
-            var level=h.getLevel();var base=h.absolutePos(new BlockPos(160,100,0));var old=snapshot(h,base);var difficulty=level.getDifficulty();
-            for(var p:old.keySet())level.setBlock(p,p.getY()<base.getY()?Blocks.DIRT.defaultBlockState():Blocks.AIR.defaultBlockState(),18);
-            level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL,true);c.player().setPos(Vec3.atCenterOf(base).add(0,1,-2));level.setBlock(base,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);
-            var data=BlightData.get(level);data.register(base,new long[]{base.below().asLong()});var guards=new ArrayList<net.minecraft.world.entity.Mob>();
-            Runnable spawn=()->{data.defend(level,base,c.player());for(var m:level.getEntitiesOfClass(cn.wwl.orimod.entity.GloomSpitter.class,new AABB(base).inflate(13))){m.setNoAi(true);m.setPersistenceRequired();if(!guards.contains(m))guards.add(m);}};
-            spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),1,"First defender missing");spawn.run();h.assertValueEqual(guards.size(),1,"Cooldown ignored");
-            h.runAfterDelay(100,()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"100 tick cooldown too long");});
-            h.runAfterDelay(200,()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Third defender missing");});
-            h.runAfterDelay(300,()->{
-                try {
-                    spawn.run();h.assertValueEqual(guards.size(),3,"More than three defenders");
-                    var first=guards.getFirst();var saved=first.saveWithoutId(new CompoundTag());first.setRemoved(Entity.RemovalReason.UNLOADED_TO_CHUNK);
-                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Unloading freed a guard slot");
-                    var restored=cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get().create(level);restored.load(saved);level.addFreshEntity(restored);guards.add(restored);restored.discard();
-                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"Discarded defender did not free slot");
-                    spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Freed slot cannot refill");h.succeed();
-                } finally {for(var m:guards)m.discard();old.forEach((p,b)->level.setBlock(p,b,18));level.getServer().setDifficulty(difficulty,true);c.close();}
-            });
-        });
+        timed(tests,"defender_cooldown_cap_and_unload_ownership",BlightGameTests::defenderCooldown);
         timed(tests,"actual_chunk_unload_preserves_wave_and_reload_resumes",(h,c)->{
             var level=h.getLevel();var center=new BlockPos(2300000,180,2300000);var positions=new ArrayList<Long>();
             for(int x=0;x<=10;x++){var p=center.offset(x,0,0);level.setBlock(p,OriBlocks.BLIGHTED_SOIL.get().defaultBlockState(),2);positions.add(p.asLong());}
@@ -290,6 +271,62 @@ public final class BlightGameTests {
             });
         });
         return tests;
+    }
+    private static void defenderCooldown(GameTestHelper h, Fixtures.ConnectedPlayer c) {
+        var level=h.getLevel();
+        var base=h.absolutePos(new BlockPos(160,100,0));
+        var old=snapshot(h,base);
+        var difficulty=level.getDifficulty();
+        var guards=new ArrayList<net.minecraft.world.entity.Mob>();
+        var pinned=new ArrayList<ChunkPos>();
+        // setPos on an embedded player does not establish player chunk tickets. This arena is
+        // outside the GameTest template's forced area; keep the entire inflate(13) search loaded.
+        // Only release tickets acquired here, preserving any already-forced neighbouring tests.
+        var cleaned=new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable cleanup=()->{
+            if(!cleaned.compareAndSet(false,true))return;
+            try {
+                for(var mob:guards)mob.discard();
+                old.forEach((p,state)->level.setBlock(p,state,18));
+            } finally {
+                try {for(var chunk:pinned)level.setChunkForced(chunk.x,chunk.z,false);}
+                finally {try {level.getServer().setDifficulty(difficulty,true);}finally {c.close();}}
+            }
+        };
+        java.util.function.Consumer<Runnable> checked=action->{
+            try {action.run();}catch(RuntimeException|Error failure){cleanup.run();throw failure;}
+        };
+        checked.accept(()->{
+            for(int x=(base.getX()-13)>>4;x<=(base.getX()+13)>>4;x++)
+                for(int z=(base.getZ()-13)>>4;z<=(base.getZ()+13)>>4;z++)
+                    if(level.setChunkForced(x,z,true))pinned.add(new ChunkPos(x,z));
+            for(var p:old.keySet())level.setBlock(p,p.getY()<base.getY()?Blocks.DIRT.defaultBlockState():Blocks.AIR.defaultBlockState(),18);
+            level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL,true);
+            c.player().setPos(Vec3.atCenterOf(base).add(0,1,-2));
+            level.setBlock(base,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);
+            var data=BlightData.get(level);data.register(base,new long[]{base.below().asLong()});
+            Runnable spawn=()->{
+                for(var chunk:pinned)h.assertTrue(level.getChunkSource().getChunkNow(chunk.x,chunk.z)!=null,"Defender arena unloaded");
+                data.defend(level,base,c.player());
+                for(var mob:level.getEntitiesOfClass(cn.wwl.orimod.entity.GloomSpitter.class,new AABB(base).inflate(13))){
+                    mob.setNoAi(true);mob.setPersistenceRequired();if(!guards.contains(mob))guards.add(mob);
+                }
+            };
+            spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),1,"First defender missing");
+            spawn.run();h.assertValueEqual(guards.size(),1,"Cooldown ignored");
+            h.runAfterDelay(100,()->checked.accept(()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"100 tick cooldown too long");}));
+            h.runAfterDelay(200,()->checked.accept(()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Third defender missing");}));
+            h.runAfterDelay(300,()->{
+                try {
+                    spawn.run();h.assertValueEqual(guards.size(),3,"More than three defenders");
+                    var first=guards.getFirst();var saved=first.saveWithoutId(new CompoundTag());first.setRemoved(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Unloading freed a guard slot");
+                    var restored=cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get().create(level);restored.load(saved);level.addFreshEntity(restored);guards.add(restored);restored.discard();
+                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"Discarded defender did not free slot");
+                    spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Freed slot cannot refill");h.succeed();
+                } finally {cleanup.run();}
+            });
+        });
     }
     private static int hp(GameTestHelper h,BlockPos pos){return ((GloomCoreBlockEntity)h.getLevel().getBlockEntity(pos)).health();}
     private static BlockPos core(GameTestHelper h,BlockPos local){var p=h.absolutePos(local);h.getLevel().setBlock(p,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);return p;}

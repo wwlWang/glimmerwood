@@ -180,6 +180,7 @@ public final class CompanionMotion {
     }
 
     public static Vec3 position(Player player, float partial) {
+        if(player==Minecraft.getInstance().player && cn.wwl.orimod.client.RestorationClient.active())return cn.wwl.orimod.client.RestorationClient.companion(partial);
         var state = state(player);
         if (state != null) return state.position(partial);
         var old = SpiritFxClient.companion(player, player.level().getGameTime());

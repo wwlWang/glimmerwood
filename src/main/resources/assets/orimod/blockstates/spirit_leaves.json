@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "bloomed=false": {
       "model": "orimod:block/spirit_leaves"
+    },
+    "bloomed=true": {
+      "model": "orimod:block/spirit_leaves_bloomed"
     }
   }
 }

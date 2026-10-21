@@ -30,6 +30,11 @@ public final class OriModClient {
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
         modEventBus.addListener(RuinGuideOverlay::register);
+        modEventBus.addListener(RestorationClient::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::render);
+        modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e)->e.registerEntityRenderer(cn.wwl.orimod.entity.OriMobs.WILL_WISP.get(),WillWispRenderer::new));
         modEventBus.addListener(CompanionLineOverlay::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(CompanionLineOverlay::logout);

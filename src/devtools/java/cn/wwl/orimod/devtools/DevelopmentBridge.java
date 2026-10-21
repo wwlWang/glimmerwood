@@ -454,6 +454,14 @@ public final class DevelopmentBridge {
                 mc.screen.keyPressed(key, 0, action.has("modifiers") ? action.get("modifiers").getAsInt() : 0);
                 if (mc.screen != null) mc.screen.keyReleased(key, 0, 0);
             }
+            case "raw_key" -> {
+                // Goes through KeyboardHandler.keyPress like a GLFW callback, so key mixins see it (e.g. ritual Esc).
+                int key = action.get("key").getAsInt();
+                long window = mc.getWindow().getWindow();
+                mc.keyboardHandler.keyPress(window, key, 0, GLFW.GLFW_PRESS, 0);
+                mc.keyboardHandler.keyPress(window, key, 0, GLFW.GLFW_RELEASE, 0);
+                return Map.of("accepted", operation, "screen", mc.screen == null ? "gameplay" : mc.screen.getClass().getName());
+            }
             case "language" -> {
                 String language = action.get("code").getAsString();
                 require(mc.getLanguageManager().getLanguage(language) != null, "Unknown language");
@@ -799,12 +807,15 @@ public final class DevelopmentBridge {
             state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
             state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
             state.put("line", cn.wwl.orimod.client.CompanionLineOverlay.diagnostics());
+            state.put("restoration",cn.wwl.orimod.client.RestorationClient.diagnostics());
             state.put("merchant", Minecraft.getInstance().screen instanceof cn.wwl.orimod.client.MerchantScreen screen ? screen.debug() : Map.of("open",false));
             var guide=cn.wwl.orimod.network.RuinGuidePayload.current;
             state.put("guide",guide==null?Map.of("active",false):Map.of("active",true,"kind",guide.kind(),"dimension",guide.dimension(),"entry",new int[]{guide.entry().getX(),guide.entry().getY(),guide.entry().getZ()}));
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
+            var restoration=cn.wwl.orimod.world.RestorationData.get(serverPlayer.server);
+            state.put("restoration",Map.of("active",cn.wwl.orimod.progression.Restoration.active(serverPlayer),"remaining",cn.wwl.orimod.progression.Restoration.remaining(serverPlayer),"restored",restoration.restored(),"completed",cn.wwl.orimod.progression.Restoration.completed(serverPlayer),"epoch",restoration.epoch(),"pending",cn.wwl.orimod.progression.WillWisps.pending(serverPlayer),"bloomChunks",cn.wwl.orimod.world.RestorationBloom.pending(),"bloomWrites",cn.wwl.orimod.world.RestorationBloom.lastWrites(),"bloomMs",cn.wwl.orimod.world.RestorationBloom.lastMillis()));
             state.put("merchant",cn.wwl.orimod.progression.MerchantTrading.debug(serverPlayer));
             var sites=cn.wwl.orimod.world.FeatureSites.get(serverPlayer.serverLevel());
             state.put("featureSites",Map.of("trees",sites.count(cn.wwl.orimod.world.FeatureSites.Kind.TREE),"blights",sites.count(cn.wwl.orimod.world.FeatureSites.Kind.BLIGHT)));
@@ -816,6 +827,7 @@ public final class DevelopmentBridge {
             });
             state.put("blight", blight);
         }
+        state.put("wisps",Map.of("mask",player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).wisps(),"purifications",cn.wwl.orimod.progression.WillWisp.purifications(player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS))));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
                 "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),

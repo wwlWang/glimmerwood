@@ -241,7 +241,7 @@ public final class GloomMatriarch extends Monster {
         bar.removeAllPlayers();
         cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, getX(), getY(), getZ(), null);
         spawnAtLocation(new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get()));
-        for (var player : victors(server)) victory(player);
+        for (var player : victors(server)) { victory(player); cn.wwl.orimod.progression.WillWisps.offer(player,cn.wwl.orimod.progression.WillWisp.WING,server,home()); }
     }
 
     /** First defeat per player: Spirit Light and a life and energy cell; later defeats only the light chime. */

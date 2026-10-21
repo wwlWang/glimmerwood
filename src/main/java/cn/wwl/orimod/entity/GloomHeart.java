@@ -227,6 +227,7 @@ public final class GloomHeart extends Monster {
             bar.removeAllPlayers();
             var origin = Vec3.atBottomCenterOf(home()).add(0, 1, 0);
             for (var player : escapees(server)) {
+                cn.wwl.orimod.progression.WillWisps.offer(player,cn.wwl.orimod.progression.WillWisp.HEART,server,home());
                 cn.wwl.orimod.progression.CompanionLines.offer(player, cn.wwl.orimod.progression.CompanionLines.Line.BOSS_DEFEATED);
                 cn.wwl.orimod.world.EscapeSequence.start(player, origin);
             }

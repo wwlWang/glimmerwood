@@ -33,9 +33,9 @@ class SpiritFxPayloadTest {
         assertEquals(SpiritFxPhase.BURST, new SpiritFxPayload(SpiritFxKind.DASH, 0, 0, 0, 1).phase());
     }
 
-    @Test void channelVersionBumpedForPurify() { assertEquals("8", SpiritFxPayload.VERSION); }
+    @Test void channelVersionBumpedForRestoration() { assertEquals("9", SpiritFxPayload.VERSION); }
 
-    @ParameterizedTest @ValueSource(ints = {-1, 20, 99})
+    @ParameterizedTest @ValueSource(ints = {-1, 22, 99})
     void unknownKindRejected(int id) {
         assertRejected(buffer -> { buffer.writeVarInt(id); buffer.writeByte(0); body(buffer); });
     }
@@ -62,6 +62,13 @@ class SpiritFxPayloadTest {
             // Preserve the v7 fixed id range; handshake separately rejects channel version 7.
             assertThrows(DecoderException.class,()->{int id=b.readVarInt();if(id<0 || id>18)throw new DecoderException("Unknown spirit effect kind "+id);});
         } finally {b.release();}
+    }
+    @ParameterizedTest @ValueSource(ints={20,21})
+    void versionEightDecoderRejectsNewKinds(int id){
+        var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try{SpiritFxPayload.CODEC.encode(b,new SpiritFxPayload(SpiritFxKind.byWireId(id),0,0,0,-1));
+            assertThrows(DecoderException.class,()->{int oldId=b.readVarInt();if(oldId<0||oldId>19)throw new DecoderException("Unknown spirit effect kind "+oldId);});
+        }finally{b.release();}
     }
     private static void body(RegistryFriendlyByteBuf buffer) { buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeVarInt(-1); }
 

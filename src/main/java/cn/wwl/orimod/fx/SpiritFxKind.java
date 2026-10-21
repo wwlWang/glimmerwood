@@ -33,7 +33,9 @@ public enum SpiritFxKind {
     FLASH(17, 2, 1, .1, .1, .1, .01, true),
     /** R100: an upward root-heart column and motes gathering toward the blessed player. */
     TREE_BLESSING(18, 40, 10, .1, .1, .1, .01),
-    PURIFY(19, 48, 12, .1, .1, .1, .01);
+    PURIFY(19, 48, 12, .1, .1, .1, .01),
+    WISP_COLLECT(20,24,8,.2,.4,.2,.02),
+    RESTORATION(21,48,16,.3,.5,.3,.03);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

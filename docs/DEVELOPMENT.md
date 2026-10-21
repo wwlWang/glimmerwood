@@ -300,3 +300,42 @@ git diff -- src/main/resources
 完成中心独立按区块索引提供32格球形潮夜庇护，核心消失后仍有效；不依赖原灵灯/树心缓存。`/ori tide start` 仍要求夜间、非和平和doMobSpawning，站在已净化中心观察多波应为0；32格边界包含，超出不保护。核心注册已有noLootTable，能力摧毁使用removeBlock不掉物品，创造栏物品保留；截图里的旋转紫色立方体也可能是存活的喷吐者，可用nearby_entities区分实体类型后判断。参与者取触发时32格内存活、非旁观者，最多最近16人；奖励不要求继续留在范围内。离线登录补发，不在该世界playerdata中的离线UUID跳过。补发使用个人回执防重复，完成记录仅保留中心；创造模式重新放核心不能刷地带奖励。手放核心没有生成地带元数据，只做战斗测试。
 
 纹理复现：`python3 -B scripts/art/build_blight_textures.py --check`；9张PNG，其中5种核心裂纹各由12个16×16帧及mcmeta组成，48tick循环插值，光照恒定不引发重算。`python3 -B scripts/export-spirit-fx.py --check`校验PURIFY源文件与发行定义。未新增结构资产，不需要重写遗迹。
+
+
+## R108 意志之光与复苏验收
+
+客户端与 Gradle 互斥；图形启动固定为 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient`。本轮实现期间未启动客户端。
+
+仅 OP（权限 2）调试命令：
+
+```text
+/ori wisp give heart [player]
+/ori wisp give wing [player]
+/ori wisp give earth [player]
+/ori wisp give all [player]
+/ori wisp clear [player]
+/ori restoration status
+/ori restoration reset
+```
+
+省略玩家时作用于自己；沿用 `/ori` 的玩家选择器支持。give 直接设置收集位，用于仪式验收；clear 取消该玩家当前会话并清空三道光/待领实体资格。reset 清世界复苏标志、取消会话、递增回执版本，在线玩家立即清个人完成/结局台词记录与成就，离线玩家登录后清理；保留已收集的三道光、已得灵光和原灵树赐福记录。已加载灵叶渐进恢复未 BLOOMED 与光照 9，未加载灵叶下次加载时恢复。树心原有 BLOOMED 同时代表 R100 赐福，reset 不撤销树心的赐福外观，避免把合法已领树恢复为未领观感；不影响仪式重试或个人回执。新生成和新放置灵叶也遵守当前世界标志。
+
+普通流程：击败两位首领后，在祭坛上方各出现属于参与者自己的光实体；心之光仍留在祭坛，R54 逃离后可返回拾取。每次击败按原首领结算范围内存活、非旁观玩家发放，已收集不再出现，已有待领保留原祭坛而不转移。第三片净化按 R106 固定参与者快照逐人计数，离线补奖时同样计数，光留在第三片核心处。实体不掉物品、不自动消失、不受伤，个人待领账本可恢复缺失实体；只在实体已经加载的区块修复，绝不为待领光加载区块。面板第四页显示三道光的剪影/已收集图标、来源、个人净化计数与待领维度/坐标，不覆盖指引 HUD。
+
+集齐后，精灵形态右键已向自己赐福过的树心（未领过先领一次）。15 秒/300 tick 仪式保留鼠标视角，开始包携带服务端会话原点的 double 坐标，客户端立即采用同一原点锁位（不自行记录预测位置）；Esc 仅在会话内截获并立即走同一结算。结束包、断线及客户端会话租约失效均解除截获；普通状态 Esc 仍打开暂停菜单。断线、死亡、换维度、树心消失取消仪式，不消耗三道光，不发奖励，可回来重试。称号成就「守光者」、500 灵光及「萤：光回来了。森林会记得你。」每人只结算一次；之后其他玩家也可完成自己的结局。
+
+分镜：0 秒树回应/锁位；1–2 秒三光显现并环绕；3/4/5 秒心、翼、地之光依次飞向树心；6 秒根部扩散光环；7–11 秒树冠从低到高实际 BLOOMED、「萤」绕树；12 秒收束；13–14 秒冲天光柱与轻微屏幕提亮；15 秒结算/淡出。Esc 不打开新 Screen，不强制摄像机方向。仪式途中局部灵叶变化取消时可回退，首位完成后全世界的已加载树逐批 BLOOMED，未加载树在加载时处理。
+
+世界效果存在主世界 SavedData（覆盖整个存档的各维度）：潮夜每波数量 `ceil(原波数量 / 2)`，只出现喷吐者，`maxNearby` 配置不变。加载事件只记区块，服务端按区段 `maybeHas` 预筛；所有维度共享每 tick 最多 256 次方块写入、32768 格扫描和约 2ms 软时间片。叶片切换使用 UPDATE_CLIENTS，亮度 9→12，reset 反向 12→9；树心原本已是光照15，不进一步提高。所有待办只保存运行时加载区块坐标，存档里的世界标志保证重启恢复，不扫未加载世界。
+
+`spirit_state`：
+
+| 路径 | 字段 |
+| --- | --- |
+| `server.wisps` / `client.wisps` | `mask`（心1/翼2/地4）、`purifications`（个人0–3） |
+| `server.restoration` | `active`、`remaining`（0–300）、`completed`（个人当前回执）、`restored`（全存档）、`epoch` |
+| `server.restoration.pending` | `[{kind, dimension, position:[x,y,z]}]`；待领实体来源坐标，最多三条 |
+| `server.restoration` 更新预算 | `bloomChunks`、`bloomWrites`、`bloomMs`（最近批次实耗时） |
+| `client.restoration` | `active`、`remaining`、`restored`、`completed`、`session`、`second`（演出秒数） |
+
+复现资源：`python3 -B scripts/art/build_spirit_tree_textures.py --check`、`python3 -B scripts/art/build_wisp_textures.py --check`、`python3 -B scripts/export-spirit-fx.py --check`。新增源文件 `art/source/effects/spirit/wisp_collect.json`、`art/source/effects/spirit/restoration.json` 必须与导出定义一起提交。FX 通道9、同伴通道9、新复苏通道1；ProgressAction 仍1，Esc 的目标使用32字符会话令牌，不增加原字段长度。

@@ -97,6 +97,7 @@ def main():
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     images = {"spirit_log": bark, "spirit_log_top": end, "spirit_leaves": leaves,
+              "spirit_leaves_bloomed": lambda x,y: tuple(min(255,c+34) if i<3 else c for i,c in enumerate(leaves(x,y))),
               "spirit_vine": lambda x, y: vine(x, y, False),
               "spirit_vine_tip": lambda x, y: vine(x, y, True),
               "spirit_tree_heart": lambda x, y: heart(x, y, False),

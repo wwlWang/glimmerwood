@@ -49,6 +49,7 @@ public final class SpiritControls {
         var player = event.getEntity();
         if (player != mc.player) return;
         var input = event.getInput();
+        if(RestorationClient.active()){input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=input.shiftKeyDown=false;player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);return;}
         boolean active = mc.screen == null && mc.isWindowActive() && SpiritMovement.canMove(player);
         if (!SpiritData.isSpirit(player) && !sentActive) return;
         if (!input.jumping) blockJumpUntilReleased = false;
@@ -281,6 +282,7 @@ public final class SpiritControls {
     }
 
     public static void tick(ClientTickEvent.Post event) {
+        if(RestorationClient.active()){net.minecraft.client.KeyMapping.releaseAll();return;}
         var mc = Minecraft.getInstance();
         boolean spirit = mc.player != null && SpiritData.isSpirit(mc.player);
         if (mc.player == null) {

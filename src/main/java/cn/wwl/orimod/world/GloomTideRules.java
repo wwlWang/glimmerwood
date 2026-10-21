@@ -60,6 +60,10 @@ public final class GloomTideRules {
         }
     }
     public enum WaveMob { SPITTER, BEETLE, HAWK }
+    public static java.util.List<WaveMob> wave(int extraSpitter,float beetleRoll,float hawkRoll,boolean restored){
+        var original=wave(extraSpitter,beetleRoll,hawkRoll);
+        return restored ? java.util.Collections.nCopies(cn.wwl.orimod.progression.RestorationRules.waveSize(original.size()),WaveMob.SPITTER) : original;
+    }
     public static java.util.List<WaveMob> wave(int extraSpitter,float beetleRoll,float hawkRoll){
         var mobs=new java.util.ArrayList<WaveMob>();mobs.add(WaveMob.SPITTER);
         if(extraSpitter==1)mobs.add(WaveMob.SPITTER);

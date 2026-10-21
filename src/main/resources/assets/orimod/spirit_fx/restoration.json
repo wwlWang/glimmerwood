@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "kind": "restoration",
+  "layers": [
+    {
+      "color": "#e8ffff",
+      "length": 6,
+      "lifetime": 45,
+      "outward": 0.08,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.4,
+      "shape": "column",
+      "share": 0.6,
+      "size": 0.3,
+      "speed": 0.01,
+      "spread": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "color": "#baf1ff",
+      "lifetime": 35,
+      "outward": 0.2,
+      "particle": "orimod:spirit_spark",
+      "radius": 1,
+      "shape": "ring",
+      "share": 0.4,
+      "size": 0.25,
+      "speed": 0,
+      "spread": [
+        0.02,
+        0.02,
+        0.02
+      ]
+    }
+  ]
+}

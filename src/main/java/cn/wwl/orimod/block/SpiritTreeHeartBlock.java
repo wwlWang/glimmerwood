@@ -30,6 +30,7 @@ public final class SpiritTreeHeartBlock extends Block {
         super.onPlace(state, level, pos, old, moving);
         if (!old.is(this) && level instanceof net.minecraft.server.level.ServerLevel server) {
             cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+            cn.wwl.orimod.world.RestorationBloom.changed(server,pos);
             PlatformLight.push(server,net.minecraft.world.phys.Vec3.atCenterOf(pos),PlatformRules.Source.TREE);
         }
     }
@@ -55,6 +56,7 @@ public final class SpiritTreeHeartBlock extends Block {
         var progress = player.getData(SpiritData.PROGRESS);
         String key = siteKey(level, pos);
         if (progress.rewards().containsKey(key)) {
+            if (progress.wisps()==7) return cn.wwl.orimod.progression.Restoration.start(player,pos);
             player.displayClientMessage(Component.translatable("message.orimod.tree.taken"), true);
             return false;
         }

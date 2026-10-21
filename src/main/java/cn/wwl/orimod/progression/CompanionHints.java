@@ -82,6 +82,7 @@ public final class CompanionHints {
 
     /** Also used by server integration tests; never sends more than one payload in an eligible scan. */
     public static void check(ServerPlayer player) {
+        if(Restoration.active(player))return;
         if (!SpiritData.isSpirit(player) || !player.isAlive() || player.isSpectator()) return;
         var session = player.getData(SpiritData.ENERGY_STATE);
         long now = player.level().getGameTime();

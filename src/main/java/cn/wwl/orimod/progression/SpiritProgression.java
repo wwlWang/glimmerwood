@@ -41,6 +41,8 @@ public final class SpiritProgression {
     }
 
     public static void request(ServerPlayer player, String action, String target) {
+        if(action.equals("restoration_skip")){Restoration.skip(player,target);return;}
+        if(Restoration.active(player))return;
         // Releasing must remain possible even if eligibility changed after the last hold packet.
         if (action.equals("flash_stop")) { cn.wwl.orimod.combat.Flash.stop(player); return; }
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }

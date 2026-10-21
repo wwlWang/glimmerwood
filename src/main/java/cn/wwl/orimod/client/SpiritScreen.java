@@ -36,8 +36,8 @@ public final class SpiritScreen extends Screen {
         int listWidth = Math.max(104, panelWidth / 3);
         detailX = left + listWidth + 22;
         detailWidth = panelWidth - listWidth - 34;
-        int tabWidth = (panelWidth - 28) / 3;
-        String[] tabs = {"abilities", "shards", "guide"};
+        int tabWidth = (panelWidth - 32) / 4;
+        String[] tabs = {"abilities", "shards", "guide", "wisps"};
         for (int i = 0; i < tabs.length; i++) {
             int tab = i;
             var button = addRenderableWidget(new SpiritButton(left + 10 + i * (tabWidth + 4), top + 34, tabWidth, 20,
@@ -64,6 +64,8 @@ public final class SpiritScreen extends Screen {
         } else if (page == 1) {
             for (var shard : Shard.values()) entries.add(new Definition("shard", shard.id(), shard.title(), shard.description()));
             entries.add(new Definition("capacity", "capacity_upgrade", tr("screen.orimod.energy_capacity"), tr("guide.orimod.capacity")));
+        } else if(page==3) {
+            for(var w:cn.wwl.orimod.progression.WillWisp.values())entries.add(new Definition("wisp",w.id(),tr("wisp.orimod."+w.id()),tr("wisp.orimod."+w.id()+".source")));
         } else {
             entries.add(new Definition("locate", "ruins", tr("guide.orimod.ruins.title"), tr("guide.orimod.ruins")));
             entries.add(new Definition("exit_challenge", "exit_challenge", tr("challenge.orimod.exit"), tr("guide.orimod.exit_challenge")));
@@ -86,7 +88,8 @@ public final class SpiritScreen extends Screen {
         var player = minecraft.player;
         var p = player.getData(SpiritData.PROGRESS);
         var d = choices.getSelected().definition;
-        actionButton.visible = !d.kind.equals("guide");
+        actionButton.visible = !d.kind.equals("guide") && !d.kind.equals("wisp");
+        if(d.kind.equals("wisp")){requirement=Component.empty();return;}
         actionButton.active = SpiritData.isAwakened(player);
         requirement = Component.empty();
         if (!SpiritData.isAwakened(player) && !d.kind.equals("guide")) {
@@ -202,8 +205,15 @@ public final class SpiritScreen extends Screen {
                         ? tr("screen.orimod.fourth_slot_unlocked") : Component.translatable("screen.orimod.fourth_slot", learned);
                 description = description.copy().append("\n\n").append(tr("merchant.orimod.panel_premium")).append("\n\n").append(slots);
             }
+            if(page==3 && minecraft.player!=null){
+                var w=cn.wwl.orimod.progression.WillWisp.byId(d.id);boolean owned=(minecraft.player.getData(SpiritData.PROGRESS).wisps()&w.bit)!=0;
+                description=description.copy().append("\n\n").append(tr(owned?"wisp.orimod.collected":"wisp.orimod.missing"));
+                for(var pending:RestorationClient.state().pending())if(pending.kind()==w)description=description.copy().append("\n\n").append(Component.translatable("wisp.orimod.pending",pending.dimension(),pending.pos().getX(),pending.pos().getY(),pending.pos().getZ()));
+                if(w==cn.wwl.orimod.progression.WillWisp.EARTH)description=description.copy().append("\n").append(Component.translatable("wisp.orimod.purifications",cn.wwl.orimod.progression.WillWisp.purifications(minecraft.player.getData(SpiritData.PROGRESS))));
+                description=description.copy().append("\n\n").append(tr(RestorationClient.state().completed()?"message.orimod.restoration.complete":"wisp.orimod.ritual"));
+            }
             var lines = font.split(description, detailWidth - 7);
-            int count = Math.max(1, (bodyHeight - (page == 2 ? 24 : 66)) / 10);
+            int count = Math.max(1, (bodyHeight - (page >= 2 ? 24 : 66)) / 10);
             detailOverflow = Math.max(0, lines.size() - count);
             detailScroll = Math.clamp(detailScroll, 0, detailOverflow);
             for (int i = 0; i < count && i + detailScroll < lines.size(); i++)
@@ -215,7 +225,7 @@ public final class SpiritScreen extends Screen {
                 g.fill(detailX + detailWidth - 3, bodyTop + 22, detailX + detailWidth - 1, bodyTop + 22 + barHeight, 0xFF355357);
                 g.fill(detailX + detailWidth - 3, bodyTop + 22 + offset, detailX + detailWidth - 1, bodyTop + 22 + offset + thumb, 0xFF9AC4B8);
             }
-            if (page != 2) g.drawWordWrap(font, requirement, detailX, bodyTop + bodyHeight - 44, detailWidth, 0xD8C69B);
+            if (page < 2) g.drawWordWrap(font, requirement, detailX, bodyTop + bodyHeight - 44, detailWidth, 0xD8C69B);
         }
         if (ProgressReplyPayload.revision > openedRevision) g.drawWordWrap(font, ProgressReplyPayload.latest,
                 left + 10, top + panelHeight - 25, panelWidth - 100, SpiritButton.ACCENT);
@@ -246,7 +256,12 @@ public final class SpiritScreen extends Screen {
             boolean selected = choices.getSelected() == this;
             g.fill(x, y, x + width, y + height, selected ? 0xFF29494D : hovered ? 0xFF1D393F : 0xFF142D33);
             if (selected) g.fill(x, y + 3, x + 2, y + height - 3, 0xFFADE4D1);
-            g.drawString(font, definition.title, x + 6, y + 7, selected ? SpiritButton.TEXT : SpiritButton.MUTED, false);
+            if(definition.kind.equals("wisp") && minecraft.player!=null){
+                var w=cn.wwl.orimod.progression.WillWisp.byId(definition.id);boolean owned=(minecraft.player.getData(SpiritData.PROGRESS).wisps()&w.bit)!=0;
+                var icon=net.minecraft.resources.ResourceLocation.parse("orimod:textures/gui/wisp_"+w.id()+(owned?"":"_missing")+".png");
+                g.blit(icon,x+5,y+4,0,0,16,16,16,16);
+            }
+            g.drawString(font, definition.title, x + (definition.kind.equals("wisp")?25:6), y + 7, selected ? SpiritButton.TEXT : SpiritButton.MUTED, false);
         }
     }
 }

@@ -23,6 +23,7 @@ public final class SpiritCombatClient {
     public static void input(InputEvent.InteractionKeyMappingTriggered event) {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
+        if(RestorationClient.active()){event.setCanceled(true);event.setSwingHand(false);return;}
         if (event.isAttack() && mc.player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) {
             event.setCanceled(true); event.setSwingHand(false);
             if (mc.screen == null && mc.isWindowActive()) {

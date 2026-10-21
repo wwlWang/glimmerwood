@@ -14,6 +14,18 @@ public final class OriMod {
     public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
+        modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
+        var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
+        bus.addListener(cn.wwl.orimod.progression.WillWisps::login);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::tick);
+        bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST,cn.wwl.orimod.progression.Restoration::hurt);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::death);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::logout);
+        bus.addListener(cn.wwl.orimod.progression.Restoration::dimension);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::load);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::unload);
+        bus.addListener(cn.wwl.orimod.world.RestorationBloom::tick);
         modEventBus.addListener(cn.wwl.orimod.network.GloomTidePayload::register);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::join);
