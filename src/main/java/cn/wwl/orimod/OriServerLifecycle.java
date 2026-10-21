@@ -31,6 +31,7 @@ public final class OriServerLifecycle {
     public static void stopped(ServerStoppedEvent event) {
         // This event also runs after an exception bypassed ServerStoppingEvent. Closed worlds
         // must not be mutated; saved challenge recovery remains available on the next login.
+        cn.wwl.orimod.world.GloomTide.reset();
         RuinLocator.discardAll();
         SpiritChallenge.discardAll();
         BashSession.discardAll();

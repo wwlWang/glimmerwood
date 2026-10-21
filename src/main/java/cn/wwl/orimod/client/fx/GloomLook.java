@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 
 /** R42: particle "models" for the Gloom Spitter and its shots (no model or texture assets). */
 public final class GloomLook {
+    public static final int MIST = 0x8A3AD8;
     public static void body(Entity e) {
         var level = e.level(); var r = level.random;
         try {
@@ -17,7 +18,7 @@ public final class GloomLook {
                 }
             level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xF4ECFF, .7f, 3), true, e.getX(), e.getY() + .6, e.getZ(), 0, 0, 0);
             for (int i = 0; i < 2; i++)
-                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? 0x8A3AD8 : 0xC060FF, .55f, 8), true,
+                level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? MIST : 0xC060FF, .55f, 8), true,
                         e.getX() + (r.nextDouble() - .5) * .7, e.getY() + .15 + r.nextDouble() * .65, e.getZ() + (r.nextDouble() - .5) * .7, 0, .005, 0);
         } catch (Throwable ignored) { }
     }

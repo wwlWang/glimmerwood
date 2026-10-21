@@ -4,6 +4,6 @@
   "package":"cn.wwl.orimod.mixin",
   "compatibilityLevel":"JAVA_21",
   "mixins":["PlayerDimensionsMixin", "PlayerAirControlMixin", "MovementTeleportMixin", "RuinTreeFeatureMixin", "ServerFloatingAccessor", "SpiritLandingParticlesMixin", "SpiritSprintParticlesMixin"],
-  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin", "SpiritAutoJumpMixin", "SpiritPlayerLayersMixin", "SpiritStuckLayerAccessor", "SpiritRenderLayersAccessor", "SpiritFishingLineMixin", "SpiritCameraMixin", "SpiritLocalSprintParticlesMixin"],
+  "client":["SpiritHeldHandMixin", "SpiritInventoryMixin", "SpiritAutoJumpMixin", "SpiritPlayerLayersMixin", "SpiritStuckLayerAccessor", "SpiritRenderLayersAccessor", "SpiritFishingLineMixin", "SpiritCameraMixin", "SpiritLocalSprintParticlesMixin", "GloomTideSkyMixin"],
   "injectors":{"defaultRequire":1}
 }

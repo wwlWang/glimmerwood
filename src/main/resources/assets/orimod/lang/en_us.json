@@ -362,5 +362,13 @@
   "hint.orimod.spirit_tree": "Glimmer: That tree is glowing... Let’s look by its roots.",
   "block.orimod.spirit_vine": "Spirit Vine",
   "commands.orimod.tree.nearest": "Nearest spirit tree heart: %s, %s blocks away (radius %s; loaded chunks only).",
-  "commands.orimod.tree.none": "No spirit tree heart found in loaded chunks within %s blocks."
+  "commands.orimod.tree.none": "No spirit tree heart found in loaded chunks within %s blocks.",
+  "message.orimod.tide.begin": "The Gloom Tide is rising… protect your light.",
+  "message.orimod.tide.end": "The tide recedes: %s defeated, %s Spirit Light earned",
+  "commands.orimod.tide.overworld": "Gloom tides only occur in the Overworld",
+  "commands.orimod.tide.night": "Night is required (try /time set 18000 first)",
+  "commands.orimod.tide.disabled": "Requires non-Peaceful difficulty, doMobSpawning and gloomTide.enabled",
+  "commands.orimod.tide.started": "Gloom Tide started for this night (moon phase bypassed)",
+  "commands.orimod.tide.stopped": "Gloom Tide stopped for this night",
+  "commands.orimod.tide.status": "Tide: %s; tide mobs within 48: %s; kills this night: %s; next wave: %s ticks"
 }

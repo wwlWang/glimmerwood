@@ -1,5 +1,13 @@
 # 当前工作状态
 
+2026-10-21 R101 腐光潮夜（811 JUnit / 409 GameTest，0 失败、0 跳过；待 Claude 客户端验收）：
+- **服务端：** 主世界新月、夜间 [13000,23000)、非和平、doMobSpawning 与服务端开关共同控制。觉醒精灵生存/冒险玩家每 200 tick 一波 1–3 喷吐者 + 30% 一只鸦；水平 16–28 环带、坚固顶面、两格净空、不落在灵木/灵叶上；挑战/逃亡/正在战斗的首领附近不生成。48 格球上限逐只检查，同 tick 每区块仅归属一个玩家波次。
+- **防御：** 灵灯 10、灵闪 32、树心 32 格；灵闪使用现有 ACTIVE 集合并跳过自身波次。灯/心共用 loaded-section palette maybeHas 预筛与 100 tick 位置缓存，最多 4096 区段；方块 onPlace/onRemove 立即失效，区块/世界卸载清理。R98 普通 NATURAL 压制仍为 16 格。
+- **生命周期：** 潮汐怪 persistentData `orimod:tide`；普通掉落不改，灵光 ×1.5 四舍五入至整数。黎明加载实体 discard 无掉落，未加载怪在 EntityJoinLevelEvent 非潮夜时丢弃。ENERGY_STATE 存未归档的日序号/击杀/结算记录，≥5 杀给 50 灵光；同日回拨不重复，更早日回拨开始新夜。`grantLight(p,0)` 立即返回，没有进度写入或包副作用。
+- **表现与联网：** 独立 GloomTidePayload 协议 1，FX 协议不变；雾/天空向 0x2A1638 混合 0.35，100 tick 渐变，星光略减；FxBudget 限制 2/3/4 微粒每秒，关闭 advancedParticles 仅留雾色。夜空混色会略提亮紫色，按审查意见保留待实拍判断。NeoForge MAIN handler 与 Respawn→换维度事件包序已核对；客户端仍保留最后服务端状态，换 ClientLevel 只清渐变，单测覆盖状态先到/后到和断开清理。
+- **验收接口：** `/ori tide start|stop|status`；start 仅忽略月相，白天返回失败；stop 抑制当夜自然重启。devtools `spirit_state.server.tide` 为 active/nearby/kills/nextWaveIn，`client.tide` 为 intensity/target。只有 enabled/waveInterval/maxNearby 三个 SERVER 配置。
+- **验证与范围：** `build runGameTestServer compileDevtoolsJava`、严格解码、真实生成/掉落/黎明/重载/防御/回拨/维度包测试及 git diff --check。没有启动客户端，雾/星空/声音/真实网络视觉仍待验收；未改 R102、遗迹生成资源、Claude 的 verify-r101.py，未做 git 写操作。
+
 2026-10-20 R100 冠底二次修订与生成阶段调整（762 JUnit / 375 GameTest，Claude 实拍验收通过，待提交）：
 - **冠底与回归：** 外围冠中心交错 ±2/±3 格、相邻至少差2，下半径比上半径多1。64种子保留冠高/锥度/半径/边界/连通/藤避让约束；新增全冠最低叶片众数≤35%和外圈半径≥6众数≤30%。截图基座 `(3000,120,3000)` 旧全冠24.44%漏检，旧外圈31.85%被新测试拒绝，新外圈24.05%；旧形状替换运行得到预期失败后恢复。五棵逐层统计和投影见 `build/reports/spirit-tree-shapes.md` 与 [TESTING](TESTING.md#r100冠底回归只读诊断与提前生成)。
 - **诊断：** 提取只读 Preflight 和9个原因，不改变原有放置条件；devtools 区域网格探针只查已加载区块、按原因/群系统计，并用调色板精确列出区域树心。seed100100密网格29个合格群系点：原版原木13、水3、起伏2、其他6、通过5。原木不仅阻挡冠部，也提前阻挡地基/补根；原验收存档69个文件哈希不变，探针使用副本。

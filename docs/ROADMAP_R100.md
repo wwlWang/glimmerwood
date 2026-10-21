@@ -76,35 +76,38 @@
 
 **MC 适配：** 新月之夜（`moonPhase == 4`）在主世界地表掀起腐光潮。腐光生物在觉醒玩家周围成波出现，直到天亮。灵灯 10 格内不刷潮汐怪，灵闪照着时也不刷，所以“在营地挂一圈灵灯”成了真正的防御手段。
 
+**2026-10-21 修正：灵闪/灵树半径 → 32**；灵灯仍为 10 格。以下同步最终调度约定。
+
 ### 规则（服务端，`world/GloomTide`）
 
 - **潮夜判定（纯函数）：** `isTideNight(dayTime, moonPhase, difficulty, doMobSpawning, configEnabled)`：主世界、`dayTime % 24000` 在 [13000, 23000)、`moonPhase == 4`、难度非和平、`doMobSpawning` 为 true、配置开启。
 - **配置：** 新增服务端配置（`ModConfigSpec`，SERVER 类型）：`gloomTide.enabled`（默认 true）、`gloomTide.waveInterval`（默认 200 tick）、`gloomTide.maxNearby`（默认 8）。如果项目目前没有服务端配置，就照 `OriClientConfig` 新建 `OriServerConfig`。
-- **谁会被潮汐找上：** 已觉醒、生存或冒险模式、在主世界、头顶能看到天空（`level.canSeeSky(blockPosition)`，或 Y ≥ 海平面 − 5），没在挑战/首领战中（如果有现成判断就复用）。
-- **波次：** 每个合格玩家每 `waveInterval` tick 一波：1–3 只喷吐者，30% 概率再加 1 只腐光鸦。刷在玩家 16–28 格外的地表（`Heightmap.MOTION_BLOCKING_NO_LEAVES`，脚下是实心方块，不在液体里，光照不限），尝试 10 次找不到合法位置就跳过本只。
-- **上限：** 玩家 48 格内已有 `maxNearby` 只潮汐怪就不再刷。
+- **谁会被潮汐找上：** 已觉醒且处于精灵形态、生存或冒险模式、在主世界、头顶能看到天空（`level.canSeeSky(blockPosition)`，或 Y ≥ 海平面 − 5），没在挑战/首领战中（如果有现成判断就复用）。
+- **波次：** 每个合格玩家每 `waveInterval` tick 一波：1–3 只喷吐者，30% 概率再加 1 只腐光鸦。刷在玩家水平距离 16–28 格的环带地表（`Heightmap.MOTION_BLOCKING_NO_LEAVES`，脚下有坚固顶面，生成位置两格高空间且无液体，不在灵树原木或叶片上，光照不限），尝试 10 次找不到合法位置就跳过本只。
+- **上限：** 每个玩家 48 格球内已有 `maxNearby` 只潮汐怪就不再刷，同一只可以同时计入相邻玩家的数量。每生成一只重新检查上限。同一 tick 的每个 16×16 区块最多归属一个玩家的波次，避免多人波次在同一区块叠加。
 - **防御：**
-  - 刷怪点 10 格内有任意灵灯（亮灭都算），就不刷。用 R96 的区段调色板预筛；结果按区段缓存 100 tick，避免每次刷怪都扫描；
-  - 刷怪点 16 格内有正在灵闪的玩家，就不刷（复用 R98 的 ACTIVE 集合）。
-  - 两条判定都抽成纯函数 + 小的查询接口，JUnit 和 GameTest 都能测。
-- **潮汐怪：** `getPersistentData().putBoolean("orimod:tide", true)`；不掉落普通战利品以外的东西，但击杀时灵光掉落 ×1.5（`SpiritProgression` 里的掉落计算按标签判断）。天亮（`dayTime` 离开潮夜区间）时，所有已加载的潮汐怪化作一阵微粒消失（`discard`，不掉落）。
-- **黎明奖励：** 一个潮夜里击杀 ≥ 5 只潮汐怪的玩家，天亮时得到 50 灵光。计数存在 `ENERGY_STATE`（瞬时）里，按“第几天”区分，下线重连不保留，这可以接受。
+  - 刷怪点 10 格内有任意灵灯（亮灭都算），就不刷。用 R96 的区段调色板预筛；灯和树心位置共用区段缓存 100 tick；放置/移除时立即失效，区块/世界卸载清理，只查询已加载区块；
+  - 刷怪点 32 格内有正在灵闪的玩家，就不刷（复用 R98 的 ACTIVE 集合）；正在灵闪的玩家直接跳过自己的波次。R98 普通 NATURAL 刷怪抑制仍为 16 格。
+  - 刷怪点 32 格内有灵树树心，就不刷；与灵灯共用调色板预筛和缓存。
+  - 三种防御的距离判定都抽成纯函数 + 小的查询接口，JUnit 和 GameTest 都能测。
+- **潮汐怪：** `getPersistentData().putBoolean("orimod:tide", true)`；不掉落普通战利品以外的东西，但击杀时灵光掉落 ×1.5（`SpiritProgression` 里的掉落计算按标签判断）。天亮（`dayTime` 离开潮夜区间）时，所有已加载的潮汐怪化作一阵微粒消失（`discard`，不掉落）。未加载的潮汐怪在 `EntityJoinLevelEvent` 中检查，若当前不是潮夜则取消加入并 discard。
+- **黎明奖励：** 一个潮夜里击杀 ≥ 5 只潮汐怪的玩家，天亮时得到 50 灵光。计数存在 `ENERGY_STATE`（瞬时）里，按“第几天”区分，下线重连不保留，这可以接受。同一天回拨到夜晚不能再次结算；回拨到更早天序号视为新的一夜。
 - **广播（每个合格玩家）：** 潮夜开始时，快捷栏上方提示 + 原版 `ambient.cave` 低音高；天亮结束时提示结果（击杀数、奖励）。
 
 ### 表现（客户端）
 
-- 新网络包 `GloomTidePayload(boolean active, float intensity)`（单独的通道版本号）。服务端在开始/结束、玩家登录、换维度时发送。
+- 新网络包 `GloomTidePayload(boolean active, float intensity)`（独立通道版本 1，严格布尔和有限 [0,1] 强度解码）。服务端在开始/结束、玩家登录、换维度时发送。
 - 潮夜期间：天空和雾色向暗紫偏移（`ViewportEvent.ComputeFogColor` 混合 `0x2A1638`，强度 0.35，渐入/渐出 5 秒）；星星稍暗。关闭特效画质时只做雾色，不做额外粒子。
 - 远处（雾边缘附近）偶尔飘过腐光微粒（复用 `GloomLook` 的颜色），每秒 ≤ 4 个，跟随 `FxBudget` 画质档。
 
 ### 调试
 
-- `/ori tide start|stop|status`：强制开始或结束当前潮夜（忽略月相，但仍然遵守和平难度与 `doMobSpawning`），`status` 输出是否潮夜、本玩家附近潮汐怪数、本夜击杀数。
-- devtools `spirit_state` 的服务端部分加 `tide` 字段：`active`、`nearby`、`kills`、`nextWaveIn`。
+- `/ori tide start|stop|status`：强制开始或结束当前潮夜（仅忽略月相，仍需主世界夜间 [13000,23000)、非和平、`doMobSpawning` 和配置开启；白天失败并提示可先 `/time set 18000`；强制只持续至 stop 或离开本夜，跳时间同样结束清场结算），`status` 输出是否潮夜、本玩家附近潮汐怪数、本夜击杀数。
+- devtools `spirit_state` 的服务端部分加 `tide` 字段：`active`、`nearby`、`kills`、`nextWaveIn`；客户端部分 `tide.intensity` / `target` 用于观察 100 tick 渐变与换维度恢复。
 
 ### 测试
 
-- JUnit：`isTideNight` 的边界（13000/22999/23000、月相、和平、开关）；生成距离与上限规则；灵灯/灵闪防御的纯函数。
+- JUnit：`isTideNight` 的边界（13000/22999/23000、月相、和平、开关）；生成距离与上限规则；灵灯/灵闪/灵树防御的纯函数、多人区块归属、同日/早日回拨结算和客户端状态先后包序。
 - GameTest：
   1. 强制潮夜后，一波之内在玩家 16–28 格出现潮汐怪，带 tide 标签；
   2. 玩家 10 格内放一盏灵灯、并在四周放满可用地面时，10 格范围内永远不刷（多波统计）；

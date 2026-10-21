@@ -41,6 +41,35 @@
 
 录制使用 `record_video` 操作指定 `name`、`fps`、`seconds`，需要 PATH 中存在 FFmpeg。画面直接来自游戏渲染目标，以 RGBA 流交给编码器；无需桌面捕获。等待状态中的 `recording=false` 且 `pending=0` 后执行 `save_video`，再将返回的 `frames.json` 路径交给 `scripts/encode-capture.py`。缺失的采集时隙保持前一帧，不加速播放；采集时间戳和重复帧数量随清单保存。录屏与性能采样分开执行。
 
+## R101 腐光潮夜验收
+
+服务器配置文件为世界 `serverconfig/orimod-server.toml`，仅 `[gloomTide]` 下三个项目：`enabled=true`、`waveInterval=200`（20..24000）、`maxNearby=8`（1..64）。改配置不会改变 R98 普通自然刷怪的 16 格灵闪压制；潮夜防御单独采用灵闪/树心 32 格、灵灯 10 格。
+
+已觉醒的精灵生存/冒险玩家在地表且不在挑战/首领战中时生成。验收可按以下顺序执行（operator 权限 2）：
+
+```text
+/difficulty normal
+/gamerule doMobSpawning true
+/ori awaken
+/ori form on
+/time set 18000
+/ori tide start
+/ori tide status
+/ori tide stop
+```
+
+`start` 只忽略月相，白天失败并返回 0（可先 `/time set 18000`）；仍要求 Overworld、非和平、doMobSpawning 和配置 enabled。强制持续到 stop 或离开本夜（包括 `/time set day`，或跳到另一天夜晚）。`stop` 同时抑制当夜自然重新开始，再执行 start 可解除。离开本夜照常清场结算。自然新月验收可设 `/time set 114000`（第 4 天夜晚）并不调用 start。
+
+`{"op":"spirit_state"}` 返回：
+- `server.tide`: `active`（世界潮夜状态）、`nearby`（本玩家 48 格球内活着的潮汐怪数）、`kills`（本天计数）、`nextWaveIn`（距该玩家下次尝试波次的服务端 tick 数，无当前参与时 0）。
+- `client.tide`: `intensity`（当前 partialTick 插值值）、`target`（维度门控后的目标，0 或正常潮夜 0.35）。用它观测 100 tick 渐入/渐出，以及下界→主世界恢复。`active=true` 不保证此玩家合格；灵闪/树心/灯也可能让所有候选位置被防御。
+
+客户端网络依据：锁定 NeoForge 21.1.248 的 PayloadRegistrar 默认 HandlerThread.MAIN，MainThreadPayloadHandler 通过 context.enqueueWork 执行；ServerPlayer.changeDimension 先发送 ClientboundRespawnPacket，之后触发 PlayerChangedDimensionEvent，客户端 Respawn 也经 PacketUtils 主线程处理。同一连接的正常包序先建立目标 ClientLevel 再处理 tide。为兼容不同交付时序，客户端额外保留最后 active/intensity，ClientLevel 更换只清渐变、按新维度重新应用；断开连接才丢弃最后状态。
+
+防御查询只用已加载区块的调色板预筛；区段缓存灯/心位置 100 tick，方块 onPlace/onRemove 立即失效，卸载清理，缓存上限 4096 区段。潮汐怪以 persistentData 的 `orimod:tide=true` 识别，普通喷吐者不计入 nearby。普通战利品照旧，灵光 ×1.5 向最近整数取整（半数向上）。
+
+启动继续使用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" ./gradlew runDevtoolsClient --console=plain`，先在命令环境设置 JDK21。客户端和全量构建互斥。视觉仅由实拍确认；夜空向暗紫混色可能比原夜空更亮，当前按审查要求保留。
+
 ## 角色变形样例
 
 运行 `scripts/art/build_deformation_sample.py` 时使用全新的后台 Blender 进程和 `--factory-startup`。脚本验证输入模型哈希，生成独立的 `.blend` 修订文件和 GLB，不修改下载原件。

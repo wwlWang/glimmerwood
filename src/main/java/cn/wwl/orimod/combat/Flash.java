@@ -10,6 +10,7 @@ import cn.wwl.orimod.progression.SpiritProgression;
 import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -61,6 +62,12 @@ public final class Flash {
     public static boolean active(ServerPlayer player) {
         return ACTIVE.contains(player) && leased(player.level().getGameTime(), player.getData(SpiritData.ENERGY_STATE).flashUntil)
                 && SpiritCombat.available(player);
+    }
+    /** R101 uses a wider defense radius; R98's natural-spawn rule remains unchanged. */
+    public static boolean protectsSpawn(ServerLevel level, Vec3 point, double radius) {
+        for (var player : ACTIVE)
+            if (player.serverLevel() == level && active(player) && player.distanceToSqr(point) <= radius * radius) return true;
+        return false;
     }
     public static int activeCount() { return ACTIVE.size(); }
 

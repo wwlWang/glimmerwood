@@ -790,7 +790,10 @@ public final class DevelopmentBridge {
             state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
             state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
             state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
+            state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
         }
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+            state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),
                 "inWater", player.isInWaterOrBubble(), "wet", player.isInWaterOrRain(), "fireTicks", player.getRemainingFireTicks(),

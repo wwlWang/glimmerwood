@@ -29,6 +29,16 @@ public final class SpiritLanternBlock extends Block {
 
     public static int lightLevel(boolean lit) { return lit ? LIT_LIGHT : DIM_LIGHT; }
 
+    @Override protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState old, boolean moving) {
+        super.onPlace(state, level, pos, old, moving);
+        if (!old.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+            cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+    }
+    @Override protected void onRemove(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState next, boolean moving) {
+        super.onRemove(state, level, pos, next, moving);
+        if (!next.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+            cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+    }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(LIT); }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return SHAPE; }
 

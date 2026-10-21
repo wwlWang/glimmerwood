@@ -26,6 +26,16 @@ public final class SpiritTreeHeartBlock extends Block {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(BLOOMED, false));
     }
+    @Override protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState old, boolean moving) {
+        super.onPlace(state, level, pos, old, moving);
+        if (!old.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+            cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+    }
+    @Override protected void onRemove(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState next, boolean moving) {
+        super.onRemove(state, level, pos, next, moving);
+        if (!next.is(this) && level instanceof net.minecraft.server.level.ServerLevel server)
+            cn.wwl.orimod.world.GloomTideDefense.invalidate(server, pos);
+    }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(BLOOMED); }
     public static String siteKey(Level level, BlockPos pos) {
         return "tree/" + level.dimension().location() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();

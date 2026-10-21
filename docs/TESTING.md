@@ -1,5 +1,17 @@
 # 回归测试
 
+## R101 腐光潮夜
+
+最终命令：`./gradlew build runGameTestServer compileDevtoolsJava --console=plain`（JDK 21）。结果：811 JUnit / 409 GameTest，0 失败、0 跳过；报告 `build/test-results/test/`、`build/test-results/gametest.xml`，用 `python3 scripts/test-summary.py` 汇总。
+
+新增 `GloomTideRulesTest` / `GloomTidePayloadTest` 覆盖夜间/月相/开关、水平环带、10/32/32 防御球边界、逐玩家上限、每 tick 区块波次归属、同日与早日回拨结算、1.5 倍灵光取整、100 tick 渐变和画质粒子预算。独立协议 1 拒绝非 0/1 布尔、NaN/Infinity/越界强度、inactive 非零强度和截断包。客户端 Fade 单测包含 payload 先于/晚于 ClientLevel 变更、同维度换实例和 disconnect 清理。
+
+新增 `gloom_tide.*` 34 项 GameTest 使用真实连接玩家、世界和事件：实际 scheduler 首波/间隔，1–4 怪组成与环带/tide NBT，逐只上限与多人同 tick 区块去重，多波灯球排除、树心覆盖环带、灵闪本人及队友防护，灯/心放置移除缓存即时失效、区块卸载与不加载缺失区块，两格净空/水/树冠拒绝，和平/开关/人形/未觉醒/创造/旁观拒绝，地下/首领战排除，命令白天失败与 stop 抑制自然重启，实际击杀与黎明奖励、同日/早日回拨、取消死亡/普通怪不计数、真实额外灵光掉落，保存潮汐怪在非潮夜重载丢弃/潮夜保留，登录/结束/换维度网络包与 devtools 字段。零奖励直接调用验证进度对象不变、无发包；结束摘要由潮夜生命周期单独发送。
+
+夹具还原时间/难度/gamerules/三个 server config 和临时高空地面。首轮代码编译发现 Flash 新方法缺少 ServerLevel import，已补齐；没有测试断言失败。正式 jar 不含 devtools/GameTest。
+
+客户端待 Claude 使用 `scripts/verify-r101.py` 验收（本轮未启动客户端）；用 llvmpipe + `DISPLAY=:0` 启动，客户端运行期间不跑其他 Gradle。观察 `client.tide.intensity` 在约 100 client tick 达到 target=0.35；下界 target=0，回主世界恢复。夜空紫色混合可能提亮原本近黑的天空，按实拍决定是否进一步调整。详细调试命令见 DEVELOPMENT。
+
 需要 JDK 21、Git LFS 中的两个锁定依赖、`sync-dependencies.py` 下载的 Iris 编译接口，以及首次下载 Gradle / Minecraft 依赖的网络连接。
 
 ```sh

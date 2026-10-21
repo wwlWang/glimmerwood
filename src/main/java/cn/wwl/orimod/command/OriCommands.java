@@ -68,6 +68,10 @@ public final class OriCommands {
                         .executes(c -> nearestTree(c, SpiritTreeSearch.DEFAULT_RADIUS))
                         .then(Commands.argument("radius", IntegerArgumentType.integer(1, SpiritTreeSearch.MAX_RADIUS))
                                 .executes(c -> nearestTree(c, IntegerArgumentType.getInteger(c, "radius"))))))
+                .then(Commands.literal("tide")
+                        .then(Commands.literal("start").executes(c -> tide(c, "start")))
+                        .then(Commands.literal("stop").executes(c -> tide(c, "stop")))
+                        .then(Commands.literal("status").executes(c -> tide(c, "status"))))
                 .then(Commands.literal("hints")
                         .then(players("reset", cn.wwl.orimod.progression.CompanionHints::reset))
                         .then(players("list", p -> {
@@ -92,6 +96,23 @@ public final class OriCommands {
                         p.sendSystemMessage(Component.translatable(p.getAbilities().invulnerable ? "commands.orimod.god.on" : "commands.orimod.god.off")); return true; }))
                 .then(players("reset", OriCommands::reset))
                 .then(players("status", OriCommands::status));
+    }
+
+    private static int tide(CommandContext<CommandSourceStack> c, String action) throws CommandSyntaxException {
+        var source = c.getSource();
+        if (action.equals("start")) {
+            String failure = cn.wwl.orimod.world.GloomTide.start(source.getLevel());
+            if (failure != null) { source.sendFailure(Component.translatable(failure)); return 0; }
+            source.sendSuccess(() -> Component.translatable("commands.orimod.tide.started"), false);
+        } else if (action.equals("stop")) {
+            cn.wwl.orimod.world.GloomTide.stop(source.getLevel());
+            source.sendSuccess(() -> Component.translatable("commands.orimod.tide.stopped"), false);
+        } else {
+            var status = cn.wwl.orimod.world.GloomTide.status(source.getPlayerOrException());
+            source.sendSuccess(() -> Component.translatable("commands.orimod.tide.status", status.get("active"), status.get("nearby"),
+                    status.get("kills"), status.get("nextWaveIn")), false);
+        }
+        return 1;
     }
 
     // ---- actions (public for GameTests) --------------------------------------------------------------------------

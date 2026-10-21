@@ -7,6 +7,10 @@ public final class FxBudget {
     /** Hard ceiling per burst so DETAILED cannot turn a stomp into a frame spike. */
     public static final int MAX_PER_BURST = 48;
 
+    /** Tide motes per second: FLUENT 2, BALANCED 3, DETAILED 4; off retains only fog. */
+    public static int tideParticles(VisualQuality quality, boolean advanced) {
+        return advanced ? Math.min(4, (int) Math.round(3 * quality.particleScale())) : 0;
+    }
     private FxBudget() {}
 
     /**

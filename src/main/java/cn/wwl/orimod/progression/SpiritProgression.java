@@ -150,6 +150,12 @@ public final class SpiritProgression {
         return Float.isFinite(maxHealth) ? Math.clamp(Math.round(maxHealth / 10), 1, 8) : 1;
     }
 
+    /** R101: integer Spirit Light orbs, nearest whole orb (half rounds up). Ordinary drops are untouched. */
+    public static int lightFor(float maxHealth, boolean tide) {
+        int base = lightFor(maxHealth);
+        return tide ? Math.round(base * 1.5f) : base;
+    }
+
     /** R35: radius in which Spirit Light flies to the player: spirit form always pulls nearby orbs, Gathering reaches further. */
     public static double magnetRadius(boolean spirit, boolean gathering) { return gathering ? 4 : spirit ? 2.5 : 0; }
 
@@ -170,7 +176,7 @@ public final class SpiritProgression {
         if (event.getEntity() instanceof Enemy && event.getSource().getEntity() instanceof ServerPlayer player && SpiritData.isAwakened(player)) {
             // R35: Ori-style burst of single orbs, more for tougher enemies (a zombie still gives 2).
             var victim = event.getEntity(); var random = victim.getRandom();
-            for (int i = lightFor(victim.getMaxHealth()); i > 0; i--) {
+            for (int i = lightFor(victim.getMaxHealth(), cn.wwl.orimod.world.GloomTide.tagged(victim)); i > 0; i--) {
                 var orb = new ItemEntity(player.level(), victim.getX(), victim.getY() + .4, victim.getZ(), new ItemStack(OriItems.SPIRIT_LIGHT.get()));
                 orb.setDeltaMovement((random.nextDouble() - .5) * .3, .25 + random.nextDouble() * .15, (random.nextDouble() - .5) * .3);
                 event.getDrops().add(orb);

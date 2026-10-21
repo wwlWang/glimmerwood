@@ -13,6 +13,16 @@ public final class OriMod {
 
     public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
+        container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
+        modEventBus.addListener(cn.wwl.orimod.network.GloomTidePayload::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::join);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.world.GloomTide::death);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::login);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::dimension);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::unload);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTideDefense::unloadChunk);
         cn.wwl.orimod.block.OriBlocks.register(modEventBus);
         cn.wwl.orimod.world.OriWorldgen.register(modEventBus);
         cn.wwl.orimod.world.OriEntities.register(modEventBus);
