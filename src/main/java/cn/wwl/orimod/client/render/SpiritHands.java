@@ -82,6 +82,7 @@ public final class SpiritHands {
         // GemRender's standalone direct shader is not part of Iris's hand pass.
         var min = new Vector3f(Float.POSITIVE_INFINITY);
         var max = new Vector3f(Float.NEGATIVE_INFINITY);
+        int alpha = SpiritSelfLight.handAlpha(SpiritGlow.active());
         for (int pass = 0; pass < 2; pass++) for (var part : model.model().meshes()) {
             if (!(part.mesh() instanceof GltfMesh mesh)) continue;
             var vertices = buffers.getBuffer(pass == 0 ? SpiritHandRenderType.triangles(part.material().texture())
@@ -103,7 +104,7 @@ public final class SpiritHands {
                     }
                     if (pass == 0 && geometry.position(i,1) > -.1f) { min.min(point); max.max(point); }
                     vertices.addVertex(point.x, point.y, point.z)
-                            .setColor(1f, 1f, 1f, 1f)
+                            .setColor(255, 255, 255, alpha)
                             .setUv(geometry.texCoord(i,0), geometry.texCoord(i,1) + (pass == 0 ? 0 : SpiritSelfLight.EMISSION_UV_OFFSET))
                             .setOverlay(OverlayTexture.NO_OVERLAY).setLight(SpiritSelfLight.packed(light))
                             .setNormal(normal.x, normal.y, normal.z);

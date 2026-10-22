@@ -69,6 +69,7 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
                 var next = SpiritWeaponShape.bowLimb(to);
                 var side0 = SpiritWeaponShape.bowSide(from);
                 var side1 = SpiritWeaponShape.bowSide(to);
+                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .34f * w, OUTER, .18f * a);
                 curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .18f * w, MID, .30f * a + stage * .15f);
                 curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .065f * w, CORE, .88f + stage * .12f);
                 previous = next;
@@ -103,6 +104,7 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             }
         } else if (stack.is(OriItems.SPIRIT_HAMMER)) {
             // Shaft, then a broad crossbar head of denser light with a halo that swells while charging.
+            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .44f * w, ACROSS, OUTER, .18f * a);
             SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .26f * w, ACROSS, MID, .32f * a);
             SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .10f * w, ACROSS, CORE, .95f);
             SpiritEnergy.beam(streakS.get(), pose, p(.48f, 1.0f), p(1.0f, .48f), .52f * w, new Vector3f(1, 1, 0), OUTER, .30f * a);
@@ -111,6 +113,7 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             SpiritEnergy.orb(glowS.get(), pose, p(.12f, .12f), .08f, CORE, .7f);
             motes(glowS.get(), pose, t, .12f, .74f, 3, .05f + .03f * charge, a);
         } else if (stack.is(OriItems.SPIRIT_SPEAR)) {
+            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .38f * w, ACROSS, OUTER, .16f * a);
             SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .20f * w, ACROSS, MID, .30f * a);
             SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .07f * w, ACROSS, CORE, .95f);
             SpiritEnergy.beam(streakS.get(), pose, p(.70f, .70f), p(1.0f, 1.0f), .17f * w, ACROSS, CORE, .95f);

@@ -63,6 +63,8 @@ JAVA_HOME="$HOME/.local/opt/jdk-21" PATH="$HOME/.local/opt/jdk-21/bin:$PATH" pyt
 
 启动任务先按 `dependencies/lock.json` 校验依赖哈希。新实例自动安装 Mellow 及 `dependencies/shader-settings/mellow.properties`，已有配置不覆盖。兼容基线必须打开动态阴影；原始预设关闭了这一项。开发接口切换光影后调用 Photon 的缓存失效接口，避免继续向旧帧缓冲合成；正式设置界面及外部 Iris 设置变化仍须接入相同生命周期。
 
+Spirit Glow 的 Ori 自发光材质使用显式标记：手臂顶点 alpha=254（hand 中恢复 255），身体 packed block-light 坐标=241（Colorwheel 中恢复 240）。仅实时选中并开启 `Spirit Glow.zip` 时写入，其他光影/无光影保持原顶点。Java `SpiritSelfLight` 与 GLSL `global/lighting/spirit_self_light.glsl` 的契约有 JUnit 校验。GemRender atlas 第三带是 emission RGB + paint coverage alpha，不可把 alpha 当发光不透明度；Colorwheel 的 `clrwl_computeFragment` 材质输出不可丢弃，也不可重复乘 vertex color/AO。固定暗室回归脚本为 `python3 -B scripts/capture-hand-shader.py <唯一证据名>`，需要已启动的专用 `orimod_dev_feedback_r108` 开发世界；旧包以独立的 `Ori Hand Before.zip` 安装，不能覆盖工作区资源。脚本完成只留客户端供检查，交接前另行 `forceload remove all`、`leave_world`、`quit`。实拍、颜色数据与根因见 TESTING 的反馈 C 节。
+
 客户端就绪后，以下命令读取状态，不会输出访问令牌：
 
 ```powershell

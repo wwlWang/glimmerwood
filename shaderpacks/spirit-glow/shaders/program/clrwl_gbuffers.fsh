@@ -1,6 +1,7 @@
 #include "/lib/all_the_libs.glsl"
 
 #include "/global/lighting/gbuffers.fsh"
+#include "/global/lighting/spirit_self_light.glsl"
 #include "/global/seasons.glsl"
 
 /* DRAWBUFFERS:0 */
@@ -11,9 +12,16 @@ void main() {
     vec2 lmcoord;
     float ao;
     vec4 overlayColor;
-    vec4 _void;
+    vec4 materialColor;
+    bool orimodBodyMaterial = abs(clrwl_vertexLight.x * 256.0 - ORIMOD_BODY_LIGHT) < 0.25;
 
-    clrwl_computeFragment(Color, _void, lmcoord, ao, overlayColor);
+    clrwl_computeFragment(Color, materialColor, lmcoord, ao, overlayColor);
+    if (orimodBodyMaterial) {
+        // This output contains GemRender's PBR shade, highlights AND emission.
+        // Discarding it left Ori with only its raw base texture and warm lightmap.
+        Color = materialColor;
+        lmcoord.x = 240.0 / 256.0 + 1.0 / 32.0;
+    }
     lmcoord = max(lmcoord * 1.06667 - 0.0625, 0);
     lmcoord.x = pow(lmcoord.x, 4.0001 - LM_FALLOFF_CURVE);
 
@@ -32,11 +40,11 @@ void main() {
     #ifdef SEASONS
         glcolor = get_seasons_color(glcolor); 
     #endif
-    Color.rgb *= glcolor.rgb;
+    if (!orimodBodyMaterial) Color.rgb *= glcolor.rgb;
 
     Color.rgb = mix(Color.rgb, overlayColor.rgb, overlayColor.a);
 
-    Color.rgb *= ao;
+    if (!orimodBodyMaterial) Color.rgb *= ao;
 
     vec3 ScreenPos = vec3(gl_FragCoord.xy*resolutionInv, gl_FragCoord.z);
     vec3 PlayerPos = view_player(ViewPos, false);
@@ -52,5 +60,11 @@ void main() {
 
         mat3 TBN = tbn_decode(Normal, Tangent);
     vec3 TweakedLM = tweak_lightmap(Color.rgb, PlayerPos, lmcoord, texcoord, ScreenPos, TBN, Dither, 1);
-    Color.xyz = TweakedLM;
+    if (orimodBodyMaterial) {
+        vec3 emission = texture(gtexture, texcoord + vec2(0, ORIMOD_EMISSION_OFFSET)).rgb;
+        // The material output above already includes emission. Do not add it twice.
+        Color.rgb = orimod_neutral_light(Color.rgb, TweakedLM, emission);
+    } else {
+        Color.xyz = TweakedLM;
+    }
 }

@@ -166,6 +166,21 @@ class Dresser:
                     n = self.noise(x, z, 3, 2)
                     self.put((x, y, z), "rooted_dirt" if k < int(lift) - 1 else ("moss_block" if n > .5 else "grass_block"))
 
+    def bank(self, deck):
+        """The foundation's outer faces read as an earthen bank (moss and grass on top), not a stone plinth, wherever
+        the land outside sits lower than the deck."""
+        for x in range(self.W):
+            for z in range(self.D):
+                if 0 < x < self.W - 1 and 0 < z < self.D - 1: continue
+                for y in range(0, deck):
+                    p = (x, y, z)
+                    if self.t.blocks.get(p, ("",))[0] != "minecraft:stone" or p in self.anchors or p in self.protected: continue
+                    n = self.noise(x + y * 3, z, 2.2, 6)
+                    self.t.blocks[p] = ("minecraft:" + ("rooted_dirt" if n < .3 else "coarse_dirt" if n < .45 else "dirt"), ())
+                top = (x, deck, z)
+                if self.t.blocks.get(top, ("",))[0] in ("minecraft:moss_block", "minecraft:stone") and top not in self.protected:
+                    self.t.blocks[top] = ("minecraft:grass_block", (("snowy", "false"),))
+
     def regrind(self, deck):
         """The deck floor reads as heaved flagstones, moss and soil instead of one moss slab."""
         for x in range(self.W):
@@ -253,7 +268,7 @@ def protected_cells(t, shrine, safe, entry, clearances, checkpoints):
 def forest(t, protected):
     d = Dresser(t, protected, 101); deck = t.pad + 1
     d.anchors = {tuple(a["position"]) for a in t.critical}
-    d.regrind(deck)
+    d.regrind(deck); d.bank(deck)
     # The shrine: side walls in pieces, a tall back wall the tree burst through, a broken colonnade.
     d.wall((0, 2), (0, 30), deck + 1, deck + 7, thick=1, ruin=.55)
     d.wall((18, 2), (18, 30), deck + 1, deck + 6, thick=1, ruin=.55)
@@ -270,7 +285,7 @@ def forest(t, protected):
 def creek(t, protected):
     d = Dresser(t, protected, 202); deck = t.pad + 1
     d.anchors = {tuple(a["position"]) for a in t.critical}
-    d.regrind(deck)
+    d.regrind(deck); d.bank(deck)
     d.wall((0, 2), (0, 34), deck + 1, deck + 8, thick=1, ruin=.6)
     d.wall((20, 2), (20, 34), deck + 1, deck + 7, thick=1, ruin=.6)
     d.wall((1, 34), (19, 34), deck + 1, deck + 11, thick=1, ruin=.4)

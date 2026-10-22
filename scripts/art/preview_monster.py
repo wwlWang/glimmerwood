@@ -1,6 +1,6 @@
 """Render a frame strip per clip from an exported creature GLB (round-trips the runtime file, not the .blend).
 
-Run: blender -b --factory-startup --python scripts/art/preview_monster.py -- <creature.glb> <out_dir> [frames_per_clip] [extent] [front|three_quarter]
+Run: blender -b --factory-startup --python scripts/art/preview_monster.py -- <creature.glb> <out_dir> [frames_per_clip] [extent] [front|three_quarter|side] [clip,clip,...]
 Writes <out_dir>/<clip>.png strips (left to right through the clip) and textured.png (a still with the baked textures).
 """
 import bpy
@@ -30,11 +30,13 @@ for loc, e in (((-3, -4, 5), 500), ((4, 2, 3), 200)):
     L.rotation_euler = (Vector((0, 0, extent * .4)) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); bpy.context.collection.objects.link(cam); scene.camera = cam
 target = Vector((0, 0, extent * .42))
-view = Vector((0, -1, .35)) if len(args) > 4 and args[4] == 'front' else Vector((1.1, -1.5, .7))
+view = {'front': Vector((0, -1, .35)), 'side': Vector((1, 0, .15))}.get(args[4] if len(args) > 4 else '', Vector((1.1, -1.5, .7)))
+only = set(args[5].split(',')) if len(args) > 5 else None
 cam.location = target + view.normalized() * extent * 2.6
 cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
 fps = scene.render.fps
 for action in bpy.data.actions:
+    if only and action.name not in only: continue
     rig.animation_data.action = action
     if hasattr(rig.animation_data, 'action_slot') and action.slots: rig.animation_data.action_slot = action.slots[0]
     start, end = action.frame_range

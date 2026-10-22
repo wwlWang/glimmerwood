@@ -1,5 +1,19 @@
 # 回归测试
 
+## R108 反馈 C：Spirit Glow 手臂米黄（根因与修复）
+
+根因有三层：`SpiritSelfLight` 的 block-light 15 在光影的 `lighting.glsl` 被解释为火把色（默认方案6为1/.78/.55）；GemRender第三带的alpha为paint coverage，Ori没有paint贴图所以为0，`gbuffers_spidereyes`按`alphaTestRef`将其丢弃（Iris默认eyes混合还是SRC_ALPHA/ONE，即使只放开alpha test，alpha=0也没有加色贡献）；第三人称的`clrwl_gbuffers.fsh`原先丢弃`clrwl_computeFragment`的材质结果，只给原始base贴图加光。这不是手部没有提交eyes，也不是输出到另一张emission缓冲：hand与eyes都写colortex0，Iris的HandWater程序回退到Hand。此前强制红色eyes探针能画出手臂，只能证明程序可执行，不能说明原材质的alpha通过了测试。源码与反编译依据存于`evidence/r108-hand-shader-source-v001/`；Colorwheel材质输出契约见[官方接口说明](https://djefrey.github.io/colorwheel/reference/miscellaneous/functions/)。
+
+修复仅对显式标记的Ori材质生效：手部在hand pass按base透明度读取emission RGB并一次合成，跳过同材质的重复eyes；身体使用Colorwheel已计算的PBR材质色，不重复乘vertex color/AO。两条路径对发光像素保留原光照亮度和法线明暗，去掉暖色火把染色，普通眼睛、原版手/物品及其他Colorwheel实例不改。标记只在当前Iris配置启用本包时写入；其他包和无光影使用原顶点值。新增两项JUnit覆盖标记与GLSL常量契约、256种环境光组合、原路径alpha/light精确不变。完整`test --rerun build runGameTestServer compileDevtoolsJava --console=plain`：**1214 JUnit / 736 GameTest，0失败、0跳过**，BUILD SUCCESSFUL（3分45秒）；`r108-hand-shader-source-v001/full.log`、`final-counts.json`、`final-junit/`及`final-gametest.xml`保存原始报告。四维度hand/eyes共16个GLSL阶段离线语法通过；实际Iris/Colorwheel编译见client-2.log，包内7个相关文件与源码逐字节一致。
+
+实拍统一llvmpipe / OpenGL4.6 / DISPLAY=:0、角色v013，包含Claude的持握和武器外晕改动。`scripts/capture-hand-shader.py`在固定暗室、午夜、FOV60、1920×1015下取空手/原版剑/四武器、第三人称持刀和原版人形。旧包由df7984a构建产物另存为`Ori Hand Before.zip`（baseline.json校验hand/eyes与HEAD一致），未临时替换主工作区文件。最终`evidence/r108-hand-shader-capture-v003/`共36张，对照与ROI完整数值在`colour.json`：
+
+- 内侧前臂固定ROI [1370,800,1400,840]，持刀RGB=(228.75,216.35,178.16)→(216.93,225.70,224.63)；其余四种持物均从暖黄转冷白。第三人称胸部ROI [967,520,975,555]为(219.13,225.84,223.26)，不要求不同法线/材质部位逐像素相同。
+- `before/after-human-empty.png`及`before/after-human-iron_sword.png`两组整帧RGB绝对差严格为0。无光影五种持物的前臂ROI，与body修复前的`r108-hand-shader-none-before-v001`逐像素一致；整帧存在非同步光晕/待机动画差异，不以此声称整帧一致。开启/关闭往返截图也一并保留。
+- `after-third-blade.png`是要求的Spirit Glow第三人称持刀近景。hand-only中间版本v002仍显示身体偏黄，因此继续修正Colorwheel输出，v003才是最终对照。
+
+编译与客户端日志在`r108-hand-shader-source-v001`。采样v001因读取Gson省略的null字段irisError而中止，脚本改为get后完成；client-2完成全部取图后退出143，无Java崩溃栈，不归为正常退出或确认OOM。另启动client-3清理测试区块票、恢复自动灵焰，再离开世界退出；结果在`r108-hand-shader-final-cleanup-v002/results.json`。本轮未改GLB/动画/怪物美术，无新增art/source文件；未做git写操作。硬件GPU及第三方光影没有实测，不把软件Mesa验证外推为全驱动兼容保证。
+
 ## R108 反馈第四批：五种腐光怪 glTF 运行时
 
 `GloomCreatureVisual` 按实体类型选择五份 GLB，原版躯体渲染仅在该实例已有有效 GPU pose 时让位；关闭 visual、模型缺失/片段契约失败/资源重载时走旧躯体。保留实体原有预警粒子、俯冲落点与地面标记；喷吐者的旧白球/紫雾粒子属于旧躯体，仅在回退时绘制，蓄力聚光仍保留。GemRender PBR 原生读取 emission band，不提高躯体 lightmap；明暗随世界光照，白核和腐光纹路独立自发光。
@@ -24,7 +38,7 @@
 
 手臂修前 `r108-body-after-v004/none-arm-sword.png` / `Spirit-arm-sword.png`，本轮首采样 `r108-feedback-followup-v001`；最终 `r108-followup-final-captures-v001/{none,Spirit}-spirit_{blade,spear,bow,hammer}.png`。持物与前臂末端必须先从视图坐标变回 ModelView 输入空间：原版 GameRenderer 把相机逆旋转留在手部 PoseStack，Iris HandRenderer 使用另一条路径，直接写视图坐标会使两边位置不同。纯矩阵测试覆盖左右手、多 yaw/pitch 和 identity（Iris）；前臂末端藏到屏幕下方而掌心与武器完整可见。最终截图运行时含只打印所选 shader 名的临时诊断 supplier，截图之后移除；无其他渲染行为变化。
 
-**仍未修复：Spirit 光影手臂米黄。** 固定暗室取景的内侧前臂 ROI [1370,800,1400,840]，无光影平均 RGB=(179.49,194.64,200.39)，Spirit=(228.75,216.35,178.16)，见最终目录 arm-colour.json。`r108-hand-isolation-v002/v003/v004`、`r108-hands-after-v001/Ori-Probe-*`、`r108-emission-combined-v001`、`r108-emission-atlas-v001` 保存独立光影包实验：关闭 eyes 对米黄底色影响很小，hand 底色置黑则手臂变黑；实际 shader 选择为 hand_cutout_diffuse 与 entities_eyes（`r108-feedback-followup-build/client-3-probe.log`）。强制 eyes 颜色/alpha/深度及去掉底色仍不足以区别缓冲顺序、深度与输出目标问题，故不声称已定位最终根因，不合入改光影包或改 emission 的推测。GemRender SurfaceBake 的第三带 alpha 为 paint coverage，不能直接当不透明度，但仅此不能解释全部探针结果。各独立探针相对原始 Spirit Glow.zip 的补丁和 SHA 位于 `r108-feedback-followup-build/shader-probes/`；运行目录里的临时探针包已移除，生产光影未变。
+**历史记录：当时尚未修复的米黄问题已在上方反馈 C 节解决。** 固定暗室取景的内侧前臂 ROI [1370,800,1400,840]，无光影平均 RGB=(179.49,194.64,200.39)，Spirit=(228.75,216.35,178.16)，见最终目录 arm-colour.json。`r108-hand-isolation-v002/v003/v004`、`r108-hands-after-v001/Ori-Probe-*`、`r108-emission-combined-v001`、`r108-emission-atlas-v001` 保存独立光影包实验：关闭 eyes 对米黄底色影响很小，hand 底色置黑则手臂变黑；实际 shader 选择为 hand_cutout_diffuse 与 entities_eyes（`r108-feedback-followup-build/client-3-probe.log`）。强制 eyes 颜色/alpha/深度及去掉底色仍不足以区别缓冲顺序、深度与输出目标问题，故不声称已定位最终根因，不合入改光影包或改 emission 的推测。GemRender SurfaceBake 的第三带 alpha 为 paint coverage，不能直接当不透明度，但仅此不能解释全部探针结果。各独立探针相对原始 Spirit Glow.zip 的补丁和 SHA 位于 `r108-feedback-followup-build/shader-probes/`；运行目录里的临时探针包已移除，生产光影未变。
 
 本轮最终全量曾遇到另一处 defender 夹具初始化竞态，原文 `Expected Cooldown ignored to be 1, but was 0`（`evidence/r108-defender-visibility-v001/full-before.log/xml`）。守卫账本已登记1，但紧接着的 AABB 实体查询为空。原全量没有区段可见性日志；自然隔离8次全部通过，同时记录了“已有方块数据/强制票、实体尚未加载且不可 ticking”的窗口。控制实验将实体区段暂时保持 HIDDEN，旧夹具8/8重现同一错误：原版 addFreshEntity 可以成功加入隐藏区段，AABB查询只查可见区段。修法仅限夹具：覆盖 base±13 的全部区块等待 areEntitiesLoaded 与 isNaturalSpawningAllowed，再从0开始原0/100/200/300tick断言；等待100tick失败时也走清理，保留原finally清票/实体/地形恢复。生产 BlightData 与失败后100tick节流不变，原断言全部保留。控制复现和修后结果见同目录 delayed-visibility/ready.log与XML；诊断用的反射、临时测试命名空间及输出全部移除。修后控制实验8/8通过（均等3tick），随后合并全量中本条通过；仅上述三条光桥测试失败。
 

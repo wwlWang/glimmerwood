@@ -36,3 +36,12 @@
    full of lava or nether fog no longer becomes a flat saturated sheet.
 9. Torch light range (oriMod R26): block light falloff curve 1.6 → 2.4 (menu values extended to 2.8),
    so torches and lanterns light a wider warm pool; caves stay deep blue away from the light.
+10. Ori self-light (R108 feedback C): hand/eyes vertex alpha 254 explicitly identifies Ori's
+    arms, restored to opaque in the hand program. Read the GemRender emission RGB band there;
+    its alpha is paint coverage, not opacity. Composite once and skip the tagged eyes pass.
+    Ori body instances use packed block-light coordinate 241 as a material tag, decoded back
+    to 240 before lighting. For these instances consume `clrwl_computeFragment`'s material
+    colour (including PBR shade/emission), without applying vertex colour/AO twice.
+    Both paths retain lighting brightness but neutralize the torch tint on emissive pixels.
+    Ordinary hands, items, eyes and other Colorwheel instances retain their original paths.
+    The mod emits neither tag when this pack is disabled or another pack is selected.

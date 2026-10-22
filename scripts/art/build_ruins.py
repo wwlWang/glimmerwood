@@ -142,11 +142,13 @@ def write(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def surface(root, name, size):
+def surface(root, name, size, clear_height=None):
     t = Template(root, name, size, pad=4)
     w, h, d = size
     t.box((0, -4, 0), (w - 1, 0, d - 1), "stone")
-    t.box((0, 1, 0), (w - 1, h - 1, d - 1), "air")
+    # Batch 5: the template grew taller for the tree crown, but only the old route volume is cleared. Cells above it are
+    # left out of the template, so a hillside keeps its shape instead of being carved into a box.
+    t.box((0, 1, 0), (w - 1, (clear_height or h) - 1, d - 1), "air")
     t.box((0, 1, 0), (w - 1, 1, d - 1), "moss_block")
     # Contained shallow spring with a dry entry, exits along both edges.
     t.box((3, 1, 7), (w - 4, 1, d - 4), "water", level="0")
@@ -162,7 +164,7 @@ def surface(root, name, size):
 
 
 def forest(root):
-    t = surface(root, "forest_spring", (19, 24, 31))  # batch 5: headroom for the great tree's crown
+    t = surface(root, "forest_spring", (19, 24, 31), clear_height=13)  # batch 5: headroom for the great tree's crown
     # Two root arches frame the route; the inner face is the wall-jump surface.
     # Batch 5: the arch is the great spirit tree's buttress roots (it stands just east of it).
     t.box((5, 2, 4), (5, 8, 12), "orimod:spirit_log", axis="y")
@@ -213,7 +215,7 @@ def forest(root):
 
 
 def creek(root):
-    t = surface(root, "creek_ruins", (21, 26, 35))
+    t = surface(root, "creek_ruins", (21, 26, 35), clear_height=17)
     for x in (3, 17):
         for z, height in ((8, 5), (18, 9), (30, 6)):
             t.box((x, 2, z), (x + 1, height, z + 1), "mossy_stone_bricks")

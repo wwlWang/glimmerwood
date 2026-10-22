@@ -20,8 +20,11 @@ final class SpiritItemGrip {
     }
 
     static boolean lowered(ItemStack item) {
+        // Only small things are cradled at the chest; weapons (hammer and bows included) hang in one hand, which keeps the
+        // weapon on the hand instead of floating in front of the face, and leaves aiming to the authored pose.
         return item.getItem() instanceof SwordItem || item.getItem() instanceof DiggerItem
-                || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR);
+                || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR) || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)
+                || item.getUseAnimation() == UseAnim.BOW || item.getUseAnimation() == UseAnim.CROSSBOW;
     }
 
     static void local(ItemStack item, Vector3f point, Vector3f axis) {

@@ -191,9 +191,10 @@ def author(rig, mesh):
                 stride=2.0 if run else .80
                 bounce=.05*abs(math.sin(phase)) if run else .012*(1-math.cos(phase*2))
                 shift('root',(0,0,(-.095 if run else -.058)+bounce))
-                rotate('root',.10 if run else .03)
-                rotate('spine',.38 if run else .12)
-                rotate('head',-.34 if run else -.10)
+                # v013: Ori runs low and leaning into the stride (in game the v012 run read upright at a close camera).
+                rotate('root',.22 if run else .03)
+                rotate('spine',.50 if run else .12)
+                rotate('head',-.52 if run else -.10)
                 rotate('spine',math.sin(phase)*(.16 if run else .07),(0,0,1))
                 rotate('head',-math.sin(phase)*(.10 if run else .04),(0,0,1))
                 arms(.26 if run else .16,0,-1.05 if run else -.25)
@@ -210,7 +211,7 @@ def author(rig, mesh):
                     target.y=.036+y
                     target.z+=z
                     leg(side,target)
-                    rotate('upper_arm_'+side,-math.sin(p*math.tau)*(1.0 if run else .40))
+                    rotate('upper_arm_'+side,-math.sin(p*math.tau)*(1.3 if run else .40))
                 if frame in (0,length//2):
                     contacts.append({'frame':frame,'foot':'l' if frame==0 else 'r'})
             elif name=='crouch':

@@ -28,6 +28,9 @@ public final class SpiritGlow {
 
     public static boolean available() { return IRIS; }
 
+    /** Read the live Iris selection: the settings toggle may lag a pack switch by ten ticks. */
+    static boolean active() { return IRIS && SpiritGlowIris.state().ours(); }
+
     public static void tick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         if (!IRIS || !OriClientConfig.SPEC.isLoaded() || ++ticks % CHECK_INTERVAL != 0) return;
         try {

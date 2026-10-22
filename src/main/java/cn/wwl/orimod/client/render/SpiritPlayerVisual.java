@@ -191,8 +191,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         /** R88: a spirit is faintly self-lit: never darker than {@link #SELF_LIGHT} block light, so it glows softly at night. */
         @Override protected int computePackedLight(float partialTick) {
             int packed = super.computePackedLight(partialTick);
-            return net.minecraft.client.renderer.LightTexture.pack(Math.max(net.minecraft.client.renderer.LightTexture.block(packed), SELF_LIGHT),
-                    net.minecraft.client.renderer.LightTexture.sky(packed));
+            return SpiritSelfLight.bodyLight(packed, SpiritGlow.active());
         }
 
         @Override protected boolean blend(float partialTick, AnimationBlend blend) {

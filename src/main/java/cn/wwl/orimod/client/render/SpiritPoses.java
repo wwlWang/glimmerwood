@@ -71,15 +71,21 @@ final class SpiritPoses {
         }
     }
 
+    /** Arm drop from the T-pose and elbow bend for the one-handed carry: the arm stands a little off the body so the
+     *  weapon clears Ori's bent legs (at 1.42 / .15 it hugged the thigh and the blade crossed the knee). */
+    static final float LOWERED_DROP = 1.22f, LOWERED_ELBOW = .4f;
+    /** The wrist gives back the extra elbow bend, so the weapon still points forward and down. */
+    static final float LOWERED_WRIST = -(LOWERED_ELBOW - .15f) - .2f;
+
     /** One-handed weapons rest beside the thigh, with a soft elbow and a small forward reach. */
     static void lowered(SpiritPoseLayer l, int side, float bob, float w) {
         if (w <= 0) return;
         if (side == 0) {
-            l.add(UPPER_ARM_L, -.12f + bob * .3f, 0, 1.42f, w);
-            l.add(FOREARM_L, 0, .15f, 0, w); l.add(HAND_L, 0, 0, 0, w);
+            l.add(UPPER_ARM_L, -.2f + bob * .3f, 0, LOWERED_DROP, w);
+            l.add(FOREARM_L, 0, LOWERED_ELBOW, 0, w); l.add(HAND_L, 0, LOWERED_WRIST, 0, w);
         } else {
-            l.addMirrored(UPPER_ARM_R, -.12f + bob * .3f, 0, 1.42f, w);
-            l.addMirrored(FOREARM_R, 0, .15f, 0, w); l.addMirrored(HAND_R, 0, 0, 0, w);
+            l.addMirrored(UPPER_ARM_R, -.2f + bob * .3f, 0, LOWERED_DROP, w);
+            l.addMirrored(FOREARM_R, 0, LOWERED_ELBOW, 0, w); l.addMirrored(HAND_R, 0, LOWERED_WRIST, 0, w);
         }
     }
 

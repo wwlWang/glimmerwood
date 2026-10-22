@@ -1,5 +1,10 @@
 # 当前工作状态
 
+2026-10-22 R108 反馈 C：Spirit Glow 手臂米黄修复（1214 JUnit / 736 GameTest全过，客户端与Gradle已交回）：
+- 根因闭合：Ori block-light 15 被光影解释成暖色火把光；手臂 emission atlas 的 alpha 是 paint coverage=0，被 spidereyes 的 alpha test 丢弃；第三人称 Colorwheel 程序还丢掉了 GemRender 材质计算结果。仅 Ori 材质在手部一次合成 emission、身体消费原 PBR 材质输出，并在发光像素保留亮度/法线明暗、去掉暖色自照明。
+- 同机位旧/新包与无光影共36图：`evidence/r108-hand-shader-capture-v003/`。持刀前臂 RGB 228.75/216.35/178.16 → 216.93/225.70/224.63，身体胸部 219.13/225.84/223.26；原版空手/铁剑全帧修前修后差0。无光影五武器前臂区域与修前逐像素一致，整帧动态光晕/动画不声称相同。第三人称持刀近景为 `after-third-blade.png`。
+- 带上 Claude 的 v013/下垂持握/武器外晕，未修改角色资产、动画或其代码。新增材质标记两条JUnit与采样脚本；无新增 art/source 文件。源码/编译/客户端日志及全量证据在 `evidence/r108-hand-shader-source-v001/`，详细限制见 TESTING。
+
 2026-10-22 R108 反馈第三～五批美术与 Claude 侧修复（审查、实拍完成，随本次提交）：
 - **动画（第三批）：** 角色 v012（v011 动作 + 循环片段首尾闭合），已 promote；`art/source/character/` 改为只跟踪当前源 v012。
 - **斩击光弧：** `BladeSlash` 在 Ori 自己的第一人称视角下改为贴近眼下、半径减半的扫弧并加强外晕（原弧在胸高处近乎侧视，只剩一条细线）；第三人称/他人视角不变。证据 `fb-motion-v004`（三刀 3/3 命中含两侧 65° 目标、前冲 1.4 格）、`fb-motion-v007`（第一人称）。
@@ -9,11 +14,11 @@
 
 2026-10-21 R108 反馈第四批怪物运行时（1212 JUnit / 736 GameTest 全绿，实拍完成，待Claude审查）：五种 glTF 躯体共用 GloomCreatureVisual / 纯函数片段规则；按服务端倒计时采样预警、0.15秒切换、yBodyRot朝向、甲虫roll及飞行俯仰。补鸦/翼母计时器与首领狂怒entityData；保留原战斗/20tick死亡时序、警告特效与旧躯体回退。新增39 JUnit/3同步GameTest，另补2条甲虫/kill死亡回归，Claude修复原翻倒增伤溢出NaN；最终含v012角色/v004五怪，旧遗迹光桥与defender全过。运行时、采样、测试和文档20文件清单在evidence/r108-monster-runtime-build/codex-files.txt；GLB/纹理/art源由Claude维护，未改动。 v003日夜/旧新/动作46图在capture-v008；最终v004八类预警+flipped/dive近景在evidence/r108-monsters-final-v001，翼母两张翼尖完整。客户端已清票、离开世界、正常退出；未做git写操作。
 
-2026-10-21 R108 反馈后续六项（五项实现；Spirit 光影手臂米黄仍待定位）：
+2026-10-21 R108 反馈后续六项（当时五项实现；米黄在上方2026-10-22反馈C中解决）：
 - **前冲/悬崖：** `BladeMotion` 消费新的 COMBAT_VIEW blade action，四 tick 在 feel 刹停之后叠加 .4/.4/.6 格，下一 tick 去掉旧步进，避免惯性累计；真实按键三刀共 1.400 格。服务端 step 只保留每次腾空最多三次的滞空，客户端纵向 feel 保持三 tick 下落限速。`BladeSupport` 同一纯几何函数检查合成位移全路径、末端和脚底五个采样点，要求碰撞顶面接近脚底；覆盖断崖、缺口、开/闭活板门。
 - **猛击/手臂：** 箭头改交叉带、四翼和端面，第一人称沿轴观察仍有面积；绝对坐标以 double 减相机后转 float。持物和前臂末端经过 ModelView 逆变换，修复无光影手部带相机逆旋转、Iris 手部不带该旋转时的坐标混用；刀/矛/弓/锤的掌心、前臂和武器都进入画面，末端延出屏幕，准星空出。未改角色模型、动画和 Claude 的 BladeSlash。
 - **调试：** OP `/ori companion flame on|off [player]`，会话开关默认开启、不存档；同时暂停自动打敌人和容器。`spirit_state.client/server.companionFlame.enabled` 可读，client.bladeMotion 提供剩余 groundTicks/holdTicks 与当前 step。
-- **C 未解决：** 仅做隔离探针，未合入发光猜测性修改。确认暖色来自 hand_cutout_diffuse 底色，entities_eyes 虽被选择但未正确覆盖手臂；alpha、深度、去底色等探针尚不能闭合根因。保留脚本、shader 差异和截图，详见 TESTING。
+- **C 当时未解决（现见顶部修复）：** 仅做隔离探针，未合入发光猜测性修改。确认暖色来自 hand_cutout_diffuse 底色，entities_eyes 虽被选择但未正确覆盖手臂；alpha、深度、去底色等探针尚不能闭合根因。保留脚本、shader 差异和截图，详见 TESTING。
 - **证据：** `r108-feedback-followup-v001` 的三刀轨迹和开关同步；`r108-bash-probe-v004` 的有效瞄准截图；`r108-followup-final-captures-v001` 的四武器无光影/Spirit 八张最终截图。全程 llvmpipe + DISPLAY=:0；已正常清票、离开世界、退出客户端。六项交接时1172 JUnit全过、GameTest728/731通过；Claude新遗迹装饰的3条光桥绕行随后已由Claude修复，第四批1211/734全量确认全过；原失败见followup-build/final-full-2.log。defender夹具补等实体区段ready，控制实验修前8/8失败→修后8/8通过，原生产节流/测试断言未改。25文件范围清单在`evidence/r108-feedback-followup-build/codex-files.txt`。
 
 
