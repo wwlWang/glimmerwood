@@ -6,8 +6,13 @@ import argparse, subprocess, time
 from devtools_client import DevClient
 
 p = argparse.ArgumentParser(); p.add_argument('build_id'); p.add_argument('--only', default='hold,idle,run,jump,combo')
+p.add_argument('--animation-pass', action='store_true', help='R112: full runtime state coverage; --only all or a comma list')
 args = p.parse_args(); only = set(args.only.split(','))
 c = DevClient(args.build_id)
+if args.animation_pass:
+    from capture_ori_animation_pass import run
+    run(c, only)
+    raise SystemExit(0)
 X, Y, Z = 5300, 120, 5300
 ITEMS = ['air', 'orimod:spirit_blade', 'orimod:spirit_spear', 'orimod:spirit_hammer', 'orimod:spirit_bow',
          'orimod:spirit_core', 'minecraft:iron_sword', 'minecraft:torch']

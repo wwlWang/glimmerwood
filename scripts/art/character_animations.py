@@ -9,6 +9,8 @@ import copy
 import re
 from mathutils import Vector, Quaternion, Matrix
 from character_arms import Arms, bow_grip_rotation
+import character_poses
+import character_clips
 
 FPS = 30
 CLIPS = {
@@ -25,6 +27,7 @@ CLIPS = {
     'hold': (30, True), 'use_item': (24, True), 'block': (30, True), 'swim': (30, True), 'climb': (30, True), 'sit': (60, True), 'sleep': (90, True),
     'bend': (60, True), 'tail_sway': (60, True),
 }
+CLIPS.update({name: (frames, loop) for name, (frames, loop, _) in character_clips.CLIPS.items()})
 
 def smooth(t):
     t=max(0,min(1,t))
@@ -145,6 +148,9 @@ def author(rig, mesh):
         rotate('spine',.12); rotate('head',-.10)
         rotate('thigh_l',.20); rotate('knee_l',.22)
         rotate('thigh_r',-.15); rotate('knee_r',.42)
+    class Ctx: pass
+    ctx=Ctx()
+    ctx.rotate,ctx.shift,ctx.leg,ctx.elbow,ctx.gripping,ctx.ankle_rest=rotate,shift,leg,elbow,gripping,ankle_rest
     actions=[]
     metadata={}
     rig.animation_data_create()
@@ -162,7 +168,9 @@ def author(rig, mesh):
             reset()
             t=frame/length
             phase=t*math.tau
-            if name in {'idle','alert','hold','use_item','block','tail_sway','bend'}:
+            if name in character_clips.CLIPS:
+                character_poses.apply(ctx,character_clips.CLIPS[name][2](t))
+            elif name in {'idle','alert','hold','use_item','block','tail_sway','bend'}:
                 breath=math.sin(phase)
                 arms(.16+.03*breath,-.08,-.18)
                 shift('root',(math.sin(phase)*.008,0,-.012+.006*breath))
@@ -314,7 +322,7 @@ def author(rig, mesh):
                 for s in ('l','r'):
                     rotate('thigh_'+s,-.15); rotate('knee_'+s,.20)
                 gripping('l',.5); gripping('r',.5)
-            elif name.startswith('blade_'):
+            elif name in ('blade_1','blade_2','blade_3'):
                 stage=int(name[-1])
                 # Shared server windows: prep / hit / recovery (ticks at 20 Hz).
                 prep=[2,3,4][stage-1]/20
@@ -401,7 +409,7 @@ def author(rig, mesh):
                 b.keyframe_insert('rotation_quaternion',frame=frame,group=b.name)
                 b.keyframe_insert('location',frame=frame,group=b.name)
                 b.keyframe_insert('scale',frame=frame,group=b.name)
-        if name.startswith('blade_'):
+        if name in ('blade_1','blade_2','blade_3'):
             stage=int(name[-1])
             duration=[12,13,18][stage-1]
             events=[{'frame':length*[2,3,4][stage-1]/duration,'event':'blade_hit_start'},
@@ -423,7 +431,7 @@ def author(rig, mesh):
                             key.interpolation='LINEAR'
         metadata[name]={'frames':length,'seconds':length/FPS,'loop':loop,'contacts':contacts,'events':events,
                         'max_ik_target_clamp':clip_ik_error}
-        if name.startswith('blade_'):
+        if name in ('blade_1','blade_2','blade_3'):
             metadata[name]['logic_seconds']=[12,13,18][int(name[-1])-1]/20
         if name in {'walk','run'}:
             metadata[name]['metres_per_cycle']=.80 if name=='walk' else 2.0
@@ -435,7 +443,8 @@ def author(rig, mesh):
     world_rest={b.name:rig.matrix_world@b.matrix_local for b in rig.data.bones}
     def opposite(name):
         return re.sub(r'_(l|r)(?=_|$)',lambda m:'_r' if m[1]=='l' else '_l',name)
-    for name in ('hold','use_item','block','blade_1','blade_2','blade_3','bow_charge','bow_hold','bow_release'):
+    for name in ('hold','use_item','block','blade_1','blade_2','blade_3','bow_charge','bow_hold','bow_release',
+                 'blade_air','throw_ready','spear_throw','hammer_charge','hammer_smash','mine','throw','drink','horn','brush','grapple','place','hurt_side'):
         original=next(a for a in actions if a.name==name)
         length,loop=CLIPS[name]
         rig.animation_data.action=original

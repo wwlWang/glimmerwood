@@ -53,9 +53,13 @@ public final class SpiritProgression {
                 if (SpiritData.isSpirit(player) && Ability.CHARGE_FLAME.unlocked(player) && !player.hasContainerOpen()) {
                     cn.wwl.orimod.combat.Flash.stop(player);
                     player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = player.level().getGameTime() + cn.wwl.orimod.combat.ChargeFlame.INPUT_LEASE_TICKS;
+                    cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_HOLD);
                 }
             }
-            case "charge_flame_cancel" -> player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
+            case "charge_flame_cancel" -> {
+                player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
+                cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_STOP);
+            }
             case "soul_link" -> SoulLink.create(player);
             case "well_travel" -> cn.wwl.orimod.world.SpiritWell.travel(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
             case "light_burst" -> cn.wwl.orimod.combat.LightBurst.toss(player);

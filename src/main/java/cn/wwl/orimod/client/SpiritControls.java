@@ -283,6 +283,11 @@ public final class SpiritControls {
 
     /** R56: Water Dash and faster swimming (client displacement; the server validates and plays the FX). */
     private static boolean burrowing;
+
+    /** R112 local-only visual observation; it grants no movement permission. */
+    public static boolean burrowing(net.minecraft.world.entity.player.Player player) {
+        return player == Minecraft.getInstance().player && burrowing;
+    }
     /** R64: steer through spirit sand along the look direction; pop out with a boost. */
     private static void burrowTick(Minecraft mc) {
         var player = mc.player;

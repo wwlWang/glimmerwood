@@ -1,5 +1,19 @@
 # 回归测试
 
+## R112 v014 动作运行时
+
+运行时契约与 promoted GLB/manifest 的 102 个名字及 loop 标志逐项核对。纯函数选择测试区分陆地爬行、水面/水下/踩水/水冲刺、墙附/上攀、梯子、mantle、launch/stomp、划桨、鞘翅、普通物品和施法；用 GemRender 实际 BlendEvaluator 验证 run 与 rise/fall 的权重，防止旧的 50/50 平均稀释。伤害按来源前/后/左右、大伤害/大击退选择，伤害包序号使连续受击重新播放；hurt+recover 时长取资产，不再写死9帧。
+
+`animation_action` 新通道版本1，区分挖掘、放置、投掷、灵矛和服务端批准的蓄力/释放。客户端只可请求前四项、entity 必须为 -1，每玩家每 tick 最多一次；服务端解析不合法 entity/action/hand 拒绝，不据此施加任何战斗效果。远端观察者收到可见动作，旧动作包/能力时序不改。本地 spirit_sand 钻行、mantle 接新片段；远端仍无对应专用状态同步，未声称已解决。
+
+实拍夹具与脚本：`scripts/capture-ori-closeup.py <id> --animation-pass --only all`，`capture_ori_animation_pass.py` 建立隔离地面/墙/梯/窄缝/水池，实际按键驱动角色，不注入片段。所有客户端使用 llvmpipe / DISPLAY=:0、关闭 shader 和自动灵焰。devtools `animation_review {enabled:true}` 只在当前 ClientLevel 隐藏 Aura 和粒子（含拦截入队），保留材质；`{enabled:false}` 或离开该世界自动失效，不写配置、不进入正式 jar。`review_camera` 正侧1.8格、targetHeight .58、follow，盾牌另用前侧机位检查竖直盾面；中心40%宽/80%高裁切避免切掉耳朵与脚，拼4×6，每段另存完整 mp4 和逐帧 pose.json。
+
+v001–v003 是前期小图/夹具修正证据；v004 近景主要动作获审查认可。实拍发现并修复两处运行时问题：静止攀附的 deltaMovement.y 仍有重力残值，旧相位倒放，新实现取插值脚部位移（v004 ladder 的 y=131.8、clipTime=.7762964 在整个保持段不变）；短 mine 结束而 vanilla swing 仍有尾段时误切 blade_1，现在保留语义至尾段结束、真实实体攻击清掉旧标签。补拍还发现零 tick 的 Launch impulse 在输入更新后已变 idle，改用独立的瞬时事件游标消费原服务端结果，防止丢播或被后续 IDLE 重播；原位移/网络格式不改，回归覆盖模式归零、空闲与旧序号。glide 循环层权重 [1,0,0,0]、overlay 空、bodyPitch≈.1，没有共享 V 形层覆盖；开伞之前的 fall 不作为循环造型。格挡盾牌原先将已弯曲的前臂再叠 vanilla shield_blocking 45°/155° display，形成头顶桌板；第三人称格挡用掌心局部补偿抵消双重姿势，盾面随身体朝向、柄仍在动画掌心，左右手几何回归及实拍验证。
+
+首轮完整验证1309 JUnit/736 GameTest全过；攀附/短动作尾段/hand解码拒绝修正后的完整验证为1312/736全过（pre-shield-counts.json、pre-shield-junit、pre-shield-gametest.xml，日志 final-full.log）。最终 `build runGameTestServer compileDevtoolsJava --console=plain` 为 **1315 JUnit / 736 GameTest，0失败、0错误、0跳过**（2分57秒）。日志 final-full-2.log；原始 final-junit/、final-gametest.xml、final-counts.json 已保存。check-assets.py 通过，实际加载 v014 的 SHA256 为48c5e0f1c052296795c626826083cdcfb3d05a6667252e584629dd46acf3aa90。审计文档保留 v013 历史快照，不将其58项旧清单冒充当前契约。
+
+v005 共34段干净近景（index.md/coverage.json 标明实际片段）：主要27段加左右盾、施法、Launch、放置、投掷；除盾牌外按正侧1.8格跟拍。粒子静音本轮拦截17238次入队。launch/place 两段使用 r112-v005-followup 的后补数据，原始失败取样移至 r112-v005-original-launch-place；前者实测 launch 14帧、后者 place 8帧，保留各自源码快照与记录。盾牌左右手另有正/侧/背图 r112-shield-stills-v001。未做所有102个clip逐一输入实拍或真实多人联机验收，不将纯选择单测当成全部场景视觉验收；非核心MC状态及远端钻砂/攀越是后续验证范围。客户端最后清区块票、恢复自动灵焰/相机/界面、退出世界并正常关闭，记录 r112-final-cleanup。Codex 31个文件范围见 r112-runtime-v001/codex-files.txt；Claude 的 v014 GLB/美术源不在该清单。
+
 ## R108 反馈 C：Spirit Glow 手臂米黄（根因与修复）
 
 根因有三层：`SpiritSelfLight` 的 block-light 15 在光影的 `lighting.glsl` 被解释为火把色（默认方案6为1/.78/.55）；GemRender第三带的alpha为paint coverage，Ori没有paint贴图所以为0，`gbuffers_spidereyes`按`alphaTestRef`将其丢弃（Iris默认eyes混合还是SRC_ALPHA/ONE，即使只放开alpha test，alpha=0也没有加色贡献）；第三人称的`clrwl_gbuffers.fsh`原先丢弃`clrwl_computeFragment`的材质结果，只给原始base贴图加光。这不是手部没有提交eyes，也不是输出到另一张emission缓冲：hand与eyes都写colortex0，Iris的HandWater程序回退到Hand。此前强制红色eyes探针能画出手臂，只能证明程序可执行，不能说明原材质的alpha通过了测试。源码与反编译依据存于`evidence/r108-hand-shader-source-v001/`；Colorwheel材质输出契约见[官方接口说明](https://djefrey.github.io/colorwheel/reference/miscellaneous/functions/)。

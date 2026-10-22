@@ -1,5 +1,11 @@
 # 当前工作状态
 
+2026-10-22 R112 动作运行时接线（1315 JUnit / 736 GameTest全过，待 v005 近景审查）：
+- v014 的 102 个片段完整登记契约与循环/镜像规则。陆地 crawl 与水中四态分流，攀梯相位用实际位移（静止暂停、下降倒放），墙附/上攀、mantle、鞘翅、launch、stomp 入口/落地使用各自片段；本地钻砂可见，远端钻砂/攀越状态仍未新增同步。
+- run 完整接管原 walk 权重，rise/fall 从 apex 扣权；旧 runPose/gait 增幅和水/滑翔 V 形覆盖退出。新空斩、矛投、锤蓄放、施法、MC 吃喝/挖掘/放置/投掷接线，伤害按方向/强度选择且每次伤害包重启，上身反应覆盖水中与攀附。新增 cosmetic animation_action 协议 v1，不接受伤害或位移；原攻击时窗不变；零 tick Launch 用动作事件游标消费，避免本地 mode 归零时丢播。
+- 近景评审使用 devtools-only animation_review，临时隐藏 Aura 与粒子、不改角色贴图与正式包。v004 原始近景已获主要动作认可；glide 循环无旧覆盖、俯角约0.1。盾牌修正格挡时叠加的原版 display 旋转，左右手握点保留；原版角色与第一人称物品路径不变。
+- 审计基线是 a06a6ba/v013（58 clip），见 ANIMATION_AUDIT_RUNTIME；Claude 提供 v014 资产，未由 Codex 修改 GLB/美术源。实现/测试证据在 evidence/r112-runtime-v001，干净近景目录 r112-closeup-v005（34段，含索引/覆盖数据，launch/place 后补有来源说明）；客户端与 Gradle 已释放，无 git 写操作。
+
 2026-10-22 R108 反馈 C：Spirit Glow 手臂米黄修复（1214 JUnit / 736 GameTest全过，客户端与Gradle已交回）：
 - 根因闭合：Ori block-light 15 被光影解释成暖色火把光；手臂 emission atlas 的 alpha 是 paint coverage=0，被 spidereyes 的 alpha test 丢弃；第三人称 Colorwheel 程序还丢掉了 GemRender 材质计算结果。仅 Ori 材质在手部一次合成 emission、身体消费原 PBR 材质输出，并在发光像素保留亮度/法线明暗、去掉暖色自照明。
 - 同机位旧/新包与无光影共36图：`evidence/r108-hand-shader-capture-v003/`。持刀前臂 RGB 228.75/216.35/178.16 → 216.93/225.70/224.63，身体胸部 219.13/225.84/223.26；原版空手/铁剑全帧修前修后差0。无光影五武器前臂区域与修前逐像素一致，整帧动态光晕/动画不声称相同。第三人称持刀近景为 `after-third-blade.png`。

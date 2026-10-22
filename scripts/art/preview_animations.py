@@ -30,6 +30,10 @@ rig = next(o for o in scene.objects if o.type == 'ARMATURE')
 mesh = next(o for o in scene.objects if o.type == 'MESH' and o.vertex_groups)
 for action in list(bpy.data.actions):
     bpy.data.actions.remove(action)
+# author() reads rest orientations from the current pose; clear the pose the saved file was left in.
+for b in rig.pose.bones:
+    b.rotation_mode = 'QUATERNION'; b.matrix_basis.identity()
+bpy.context.view_layer.update()
 report, actions = character_animations.author(rig, mesh)
 by_name = {a.name: a for a in actions}
 

@@ -40,7 +40,7 @@ evidence/
 dist/
 art/source/**/*.blend[0-9]
 art/source/character/v*/
-!art/source/character/v013/
+!art/source/character/v014/
 art/source/character/replaced/
 art/source/first-person/v*/
 !art/source/first-person/v010/

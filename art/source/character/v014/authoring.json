@@ -2913,7 +2913,7 @@
         "loop": false,
         "contacts": [],
         "events": [],
-        "max_ik_target_clamp": 0
+        "max_ik_target_clamp": 0.011955803745846545
       },
       "start": {
         "frames": 9,
@@ -2927,16 +2927,7 @@
         "frames": 30,
         "seconds": 1.0,
         "loop": true,
-        "contacts": [
-          {
-            "frame": 0,
-            "foot": "l"
-          },
-          {
-            "frame": 15,
-            "foot": "r"
-          }
-        ],
+        "contacts": [],
         "events": [],
         "max_ik_target_clamp": 0,
         "metres_per_cycle": 0.8
@@ -2945,16 +2936,7 @@
         "frames": 24,
         "seconds": 0.8,
         "loop": true,
-        "contacts": [
-          {
-            "frame": 0,
-            "foot": "l"
-          },
-          {
-            "frame": 12,
-            "foot": "r"
-          }
-        ],
+        "contacts": [],
         "events": [],
         "max_ik_target_clamp": 0,
         "metres_per_cycle": 2.0
@@ -3166,7 +3148,8 @@
         "loop": true,
         "contacts": [],
         "events": [],
-        "max_ik_target_clamp": 0
+        "max_ik_target_clamp": 0,
+        "hand": "right"
       },
       "stomp": {
         "frames": 18,
@@ -3356,6 +3339,266 @@
         "events": [],
         "max_ik_target_clamp": 0
       },
+      "crouch_walk": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "crawl": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "wall_climb": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "mantle": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_surface": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_idle": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_dash": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "stomp_start": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "launch": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "blade_air": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "throw_ready": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "spear_throw": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hammer_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hammer_smash": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "mine": {
+        "frames": 10,
+        "seconds": 0.3333333333333333,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "throw": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hurt_back": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "hurt_heavy": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "eat": {
+        "frames": 16,
+        "seconds": 0.5333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "drink": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "horn": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "brush": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "boat_row": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "elytra": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "burrow": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "launch_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "cast_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "cast_release": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "flash": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "place": {
+        "frames": 8,
+        "seconds": 0.26666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hurt_side": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
       "hold_left": {
         "frames": 30,
         "seconds": 1.0,
@@ -3471,8 +3714,125 @@
         ],
         "max_ik_target_clamp": 0,
         "hand": "left"
+      },
+      "blade_air_left": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "throw_ready_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "spear_throw_left": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hammer_charge_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hammer_smash_left": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "mine_left": {
+        "frames": 10,
+        "seconds": 0.3333333333333333,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "throw_left": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "drink_left": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "horn_left": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "brush_left": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "grapple_left": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "place_left": {
+        "frames": 8,
+        "seconds": 0.26666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hurt_side_left": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
       }
     },
-    "max_ik_target_clamp": 0
+    "max_ik_target_clamp": 0.011955803745846545
   }
 }

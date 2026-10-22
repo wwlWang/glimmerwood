@@ -1,32 +1,32 @@
 {
   "stage": "Character candidate; visual and runtime acceptance pending",
-  "revision": 13,
+  "revision": 14,
   "source": "models/ori/3/ori_rigged.glb",
   "source_sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
   "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
   "license": "CC-BY-4.0",
   "author": "Random modeler (Seea_Rooster)",
-  "blend": "art/source/character/v013/ori.blend",
-  "blend_sha256": "3dd95877595263f524e0ee56632e1cddbf7c8b171f6195fe02d755b0632c14f1",
-  "export": "art/source/character/v013/ori.glb",
-  "export_sha256": "e70ef449a124909f2ca50756f30fa51a7abcaf48f74f6eddfade989d08e9a1b4",
+  "blend": "art/source/character/v014/ori.blend",
+  "blend_sha256": "44337e0c10b0cce3f3adf9a8597317aacdab00e3f9a9359bcba90f8feb205e8a",
+  "export": "art/source/character/v014/ori.glb",
+  "export_sha256": "48c5e0f1c052296795c626826083cdcfb3d05a6667252e584629dd46acf3aa90",
   "triangles": 12399,
   "bones": 60,
   "height": 1.2,
   "blender": "5.1.2",
   "textures": {
     "orimod:textures/entity/ori_emission.png": {
-      "path": "art/source/character/v013/ori_emission.png",
+      "path": "art/source/character/v014/ori_emission.png",
       "sha256": "71d0382d5fe7394e4c9208e81fe182e254dee7033b72846601e9578720daab65",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_emission.png"
     },
     "orimod:textures/entity/ori_base.png": {
-      "path": "art/source/character/v013/ori_base.png",
+      "path": "art/source/character/v014/ori_base.png",
       "sha256": "6c19f87484bf791c87c31bf0ff69f262758d7c73caac760f85901222ac1d1b00",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_base.png"
     },
     "orimod:textures/entity/ori_surface.png": {
-      "path": "art/source/character/v013/ori_surface.png",
+      "path": "art/source/character/v014/ori_surface.png",
       "sha256": "410560e4936c360331bd80214bee7e078c514c820588db28b503e490f4e9cece",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_surface.png"
     }
@@ -72,7 +72,7 @@
         "loop": false,
         "contacts": [],
         "events": [],
-        "max_ik_target_clamp": 0
+        "max_ik_target_clamp": 0.011955803745846545
       },
       "start": {
         "frames": 9,
@@ -86,16 +86,7 @@
         "frames": 30,
         "seconds": 1.0,
         "loop": true,
-        "contacts": [
-          {
-            "frame": 0,
-            "foot": "l"
-          },
-          {
-            "frame": 15,
-            "foot": "r"
-          }
-        ],
+        "contacts": [],
         "events": [],
         "max_ik_target_clamp": 0,
         "metres_per_cycle": 0.8
@@ -104,16 +95,7 @@
         "frames": 24,
         "seconds": 0.8,
         "loop": true,
-        "contacts": [
-          {
-            "frame": 0,
-            "foot": "l"
-          },
-          {
-            "frame": 12,
-            "foot": "r"
-          }
-        ],
+        "contacts": [],
         "events": [],
         "max_ik_target_clamp": 0,
         "metres_per_cycle": 2.0
@@ -325,7 +307,8 @@
         "loop": true,
         "contacts": [],
         "events": [],
-        "max_ik_target_clamp": 0
+        "max_ik_target_clamp": 0,
+        "hand": "right"
       },
       "stomp": {
         "frames": 18,
@@ -515,6 +498,266 @@
         "events": [],
         "max_ik_target_clamp": 0
       },
+      "crouch_walk": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "crawl": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "wall_climb": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "mantle": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_surface": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_idle": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "swim_dash": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "stomp_start": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "launch": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "blade_air": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "throw_ready": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "spear_throw": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hammer_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hammer_smash": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "mine": {
+        "frames": 10,
+        "seconds": 0.3333333333333333,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "throw": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hurt_back": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "hurt_heavy": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "eat": {
+        "frames": 16,
+        "seconds": 0.5333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "drink": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "horn": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "brush": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "boat_row": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "elytra": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "burrow": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "launch_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "cast_charge": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "cast_release": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "flash": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0
+      },
+      "place": {
+        "frames": 8,
+        "seconds": 0.26666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
+      "hurt_side": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "right"
+      },
       "hold_left": {
         "frames": 30,
         "seconds": 1.0,
@@ -630,9 +873,126 @@
         ],
         "max_ik_target_clamp": 0,
         "hand": "left"
+      },
+      "blade_air_left": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "throw_ready_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "spear_throw_left": {
+        "frames": 18,
+        "seconds": 0.6,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hammer_charge_left": {
+        "frames": 30,
+        "seconds": 1.0,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hammer_smash_left": {
+        "frames": 15,
+        "seconds": 0.5,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "mine_left": {
+        "frames": 10,
+        "seconds": 0.3333333333333333,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "throw_left": {
+        "frames": 12,
+        "seconds": 0.4,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "drink_left": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "horn_left": {
+        "frames": 40,
+        "seconds": 1.3333333333333333,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "brush_left": {
+        "frames": 20,
+        "seconds": 0.6666666666666666,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "grapple_left": {
+        "frames": 24,
+        "seconds": 0.8,
+        "loop": true,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "place_left": {
+        "frames": 8,
+        "seconds": 0.26666666666666666,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
+      },
+      "hurt_side_left": {
+        "frames": 9,
+        "seconds": 0.3,
+        "loop": false,
+        "contacts": [],
+        "events": [],
+        "max_ik_target_clamp": 0,
+        "hand": "left"
       }
     },
-    "max_ik_target_clamp": 0
+    "max_ik_target_clamp": 0.011955803745846545
   },
   "attachments": [
     "grip_l",
@@ -642,5 +1002,5 @@
     "body_center"
   ],
   "player_export": "src/main/resources/assets/orimod/models/entity/ori.glb",
-  "player_export_sha256": "e70ef449a124909f2ca50756f30fa51a7abcaf48f74f6eddfade989d08e9a1b4"
+  "player_export_sha256": "48c5e0f1c052296795c626826083cdcfb3d05a6667252e584629dd46acf3aa90"
 }

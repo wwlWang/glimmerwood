@@ -532,6 +532,10 @@ public final class DevelopmentBridge {
                 mc.player.setYHeadRot(yaw);
             }
             case "camera" -> { ReviewCamera.stop(); mc.options.setCameraType(CameraType.valueOf(action.get("mode").getAsString())); }
+            case "animation_review" -> {
+                if (action.has("enabled")) AnimationReview.configure(action.get("enabled").getAsBoolean());
+                return Map.of("muted", AnimationReview.muted(), "scope", "aura_and_particles_only", "suppressedParticles", AnimationReview.suppressedParticles());
+            }
             case "review_camera" -> {
                 if (!action.get("enabled").getAsBoolean()) ReviewCamera.stop();
                 else {

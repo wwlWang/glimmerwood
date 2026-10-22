@@ -100,6 +100,7 @@ public final class LightBurst extends ThrowableProjectile {
         burst.setPos(player.getEyePosition().add(player.getLookAngle().scale(.5)));
         burst.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, (float) SPEED, 0);
         player.level().addFreshEntity(burst);
+        cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_RELEASE);
         player.level().playSound(null, player.blockPosition(), SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, .6f, 1.6f);
         return burst;
     }

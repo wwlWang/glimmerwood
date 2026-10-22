@@ -35,6 +35,7 @@ public final class ChargeFlame {
     public static int release(ServerPlayer player) {
         Flash.stop(player);
         player.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
+        cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_STOP);
         long now = player.level().getGameTime();
         var state = player.getData(SpiritData.ENERGY_STATE);
         String refusal = refusal(SpiritData.isSpirit(player), Ability.CHARGE_FLAME.unlocked(player), SpiritProgression.energy(player), now, state.chargeFlameReadyAt);
@@ -44,6 +45,7 @@ public final class ChargeFlame {
         }
         if (!SpiritProgression.spendEnergy(player, COST)) return -1;
         state.chargeFlameReadyAt = now + COOLDOWN_TICKS;
+        cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_RELEASE);
         var level = (ServerLevel) player.level();
         Vec3 center = player.position().add(0, .8, 0);
         int hits = 0;

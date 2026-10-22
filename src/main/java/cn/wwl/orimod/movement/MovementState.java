@@ -9,6 +9,12 @@ public final class MovementState {
     public boolean jumpHeld, dashHeld, crouching, active, airJumpSpent = true, airDashSpent = true, groundJumpAvailable;
     public float forward, left, yaw;
     public MoveMode mode = MoveMode.IDLE, lastAction = MoveMode.IDLE;
+    /** R112 visual event cursor: zero-duration impulses survive the next input tick resetting mode to IDLE. */
+    public MoveMode animationImpulse = MoveMode.IDLE;
+    public int animationImpulseId;
+    public void observeAnimationImpulse(MoveMode result, int id) {
+        if (result.isImpulse() && id > animationImpulseId) { animationImpulse = result; animationImpulseId = id; }
+    }
     public String lastWallRefill = "", dimension = "";
     public Vec3 velocity = Vec3.ZERO, previousPosition;
     public int acceptedJumps, acceptedWallJumps, acceptedDashes, rejectedDashes, relocations;

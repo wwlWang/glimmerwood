@@ -64,6 +64,7 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
         state.velocity = velocity;
         state.targetId = targetId;
         state.targetPosition = targetPosition;
+        if (!alreadyApplied) state.observeAnimationImpulse(mode, actionId);
         if (mode != IDLE && mode != JUMP_REJECT && mode != RELOCATE) state.lastAction = mode;
         if (!alreadyApplied && (mode == DOUBLE_JUMP || mode == WALL_JUMP || mode == BASH_LAUNCH || mode == GRAPPLE_END || mode == LAUNCH)) player.fallDistance = 0;
         if (!alreadyApplied && (mode == JUMP || mode == DOUBLE_JUMP)) {

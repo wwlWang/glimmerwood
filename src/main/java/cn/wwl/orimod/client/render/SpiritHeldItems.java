@@ -50,16 +50,25 @@ public final class SpiritHeldItems {
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
         float lowered = frame.world() ? SpiritPlayerVisual.lowered(player, left) : SpiritItemGrip.lowered(item) ? 1 : 0;
+        boolean blocking = player.isUsingItem() && item.getItem() instanceof net.minecraft.world.item.ShieldItem
+                && player.getUsedItemHand() == (left == (player.getMainArm() == HumanoidArm.LEFT)
+                        ? net.minecraft.world.InteractionHand.MAIN_HAND : net.minecraft.world.InteractionHand.OFF_HAND);
         renderAtPalm(player, item, left, poses, .72f,
-                frame.world() ? SpiritPlayerVisual.cradleWeight(player, left) : lowered, lowered, buffers, light);
+                frame.world() ? SpiritPlayerVisual.cradleWeight(player, left) : lowered, lowered, buffers, light,
+                blocking ? socket.getUnnormalizedRotation(new Quaternionf()) : null);
         poses.popPose();
     }
 
     static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered,
                              net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        renderAtPalm(player, item, left, poses, scale, cradleWeight, lowered, buffers, light, null);
+    }
+
+    private static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered,
+                             net.minecraft.client.renderer.MultiBufferSource buffers, int light, Quaternionf shieldPalm) {
         if (item.isEmpty()) return;
         var mc = Minecraft.getInstance();
-        var model = itemTransform(player, item, left, poses, scale, cradleWeight, lowered);
+        var model = itemTransform(player, item, left, poses, scale, cradleWeight, lowered, shieldPalm);
         var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
         SpiritWeaponRenderer.withOwner(player, () -> mc.getItemRenderer().render(item, display, left, poses, buffers, light, OverlayTexture.NO_OVERLAY, model));
     }
@@ -77,22 +86,25 @@ public final class SpiritHeldItems {
         poses.mulPose(frame.transform());
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
-        var model = itemTransform(player, item, left, poses, .72f, SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left));
+        var model = itemTransform(player, item, left, poses, .72f, SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left), null);
         model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poses, left);
         var tip = poses.last().pose().transformPosition(new Vector3f(.40625f, .40625f, 0));
         return player.getPosition(partialTick).add(tip.x, tip.y, tip.z);
     }
 
-    private static net.minecraft.client.resources.model.BakedModel itemTransform(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered) {
+    private static net.minecraft.client.resources.model.BakedModel itemTransform(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered, Quaternionf shieldPalm) {
         var mc = Minecraft.getInstance();
-        // Attachment axes match vanilla arm space; the origin is already at the palm.
-        poses.mulPose(Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(cradleWeight, lowered)));
-        poses.mulPose(Axis.YP.rotationDegrees(180));
-        poses.scale(scale, scale, scale);
         var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
         var model = mc.getItemRenderer().getModel(item, player.level(), player, player.getId());
         var itemPose = new PoseStack();
         model.applyTransform(display, itemPose, left);
+        if (shieldPalm != null) poses.mulPose(SpiritItemGrip.shieldRotation(shieldPalm, itemPose.last().pose().getUnnormalizedRotation(new Quaternionf())));
+        else {
+            // Existing weapon / first-person attachment calibration stays in vanilla arm space.
+            poses.mulPose(Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(cradleWeight, lowered)));
+            poses.mulPose(Axis.YP.rotationDegrees(180));
+        }
+        poses.scale(scale, scale, scale);
         var contact = new Vector3f();
         SpiritItemGrip.local(item, contact, new Vector3f());
         itemPose.last().pose().transformPosition(contact);

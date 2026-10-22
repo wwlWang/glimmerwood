@@ -19,6 +19,14 @@ final class SpiritItemGrip {
         return -90 + (90 - 70 * Math.clamp(lowered, 0, 1)) * Math.clamp(holdWeight, 0, 1);
     }
 
+    /** Shield's blocking display already pitches a vanilla arm; Ori's clip has posed that arm itself.
+     * Cancel both orientations in palm space, retaining the animated handle position and body yaw/lean.
+     * ShieldModel's own Y/Z flip then leaves its top upright and its decorated face toward body +Z.
+     */
+    static org.joml.Quaternionf shieldRotation(org.joml.Quaternionf palm, org.joml.Quaternionf display) {
+        return new org.joml.Quaternionf(palm).invert().mul(new org.joml.Quaternionf(display).invert());
+    }
+
     static boolean lowered(ItemStack item) {
         // Only small things are cradled at the chest; weapons (hammer and bows included) hang in one hand, which keeps the
         // weapon on the hand instead of floating in front of the face, and leaves aiming to the authored pose.
