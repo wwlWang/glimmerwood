@@ -35,6 +35,9 @@ public final class SpiritInventory {
     private static BlendMask leftArm, rightArm, bothArms, head;
     private static AdditiveReference rest;
     private static GltfAnimation lookYaw, lookPitch;
+    private static final SpiritPoseLayer CARRY_RIGHT = new SpiritPoseLayer("ori_inventory_carry_right"),
+            CARRY_LEFT = new SpiritPoseLayer("ori_inventory_carry_left");
+    private static BlendMask carryRightMask, carryLeftMask;
     private SpiritInventory() { }
 
     public static boolean render(GuiGraphics graphics, float x, float y, float scale, Vector3f translate,
@@ -49,6 +52,11 @@ public final class SpiritInventory {
             leftArm = BlendMask.subtree(table, "upper_arm_r"); rightArm = BlendMask.subtree(table, "upper_arm_l");
             bothArms = BlendMask.subtree(table, "upper_arm_l", "upper_arm_r"); head = BlendMask.nodes(table, "head");
             rest = AdditiveReference.rest(table);
+            CARRY_RIGHT.bind(table); CARRY_LEFT.bind(table);
+            SpiritPoses.lowered(CARRY_RIGHT, 0, 0, 1); CARRY_RIGHT.publish();
+            SpiritPoses.lowered(CARRY_LEFT, 1, 0, 1); CARRY_LEFT.publish();
+            carryRightMask = CARRY_RIGHT.mask(SpiritPoseLayer.UPPER_ARM_L, SpiritPoseLayer.FOREARM_L, SpiritPoseLayer.HAND_L);
+            carryLeftMask = CARRY_LEFT.mask(SpiritPoseLayer.UPPER_ARM_R, SpiritPoseLayer.FOREARM_R, SpiritPoseLayer.HAND_R);
             GltfPose.evaluate(model.layout(), (GltfAnimation)null, 0, palette);
             lookYaw = GltfAnimation.procedural("ori_inventory_yaw", SpiritAnimation.angle(table, palette, "head", new Vector3f(0,1,0), 1));
             lookPitch = GltfAnimation.procedural("ori_inventory_pitch", SpiritAnimation.angle(table, palette, "head", new Vector3f(1,0,0), 1));
@@ -65,6 +73,8 @@ public final class SpiritInventory {
                 held == null ? BlendMask.ALL : held.complement(table));
         if (!leftItem.isEmpty()) BLEND.override(holdLeft, holdLeft.loop(now), 1, leftArm);
         if (!rightItem.isEmpty()) BLEND.override(holdRight, holdRight.loop(now), 1, rightArm);
+        if (SpiritItemGrip.lowered(leftItem)) BLEND.override(CARRY_LEFT.clip(), now, 1, carryLeftMask);
+        if (SpiritItemGrip.lowered(rightItem)) BLEND.override(CARRY_RIGHT.clip(), now, 1, carryRightMask);
         BLEND.additive(lookYaw, -Mth.wrapDegrees(player.yHeadRot - player.yBodyRot) * Mth.DEG_TO_RAD, 1, head, rest);
         BLEND.additive(lookPitch, player.getXRot() * Mth.DEG_TO_RAD, 1, head, rest);
         GltfPose.evaluate(model.layout(), BLEND, palette, model.morphs(), null, SCRATCH);
@@ -82,9 +92,10 @@ public final class SpiritInventory {
             DirectRenderer.submit(model, palette, null, pose, 15728880, OverlayTexture.NO_OVERLAY, -1,
                     DirectPass.GUI, VariantUv.NONE, Paint.NONE, 0, palette);
             DirectRenderer.flush(DirectPass.GUI);
+            var frame = new SpiritPlayerVisual.Frame(model, (slot, out) -> out.set(palette[slot]), new Matrix4f(), false);
+            SpiritInventoryGlow.render(frame, pose, graphics.bufferSource());
             if (player instanceof AbstractClientPlayer clientPlayer
                     && Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(clientPlayer) instanceof PlayerRenderer renderer) {
-                var frame = new SpiritPlayerVisual.Frame(model, (slot, out) -> out.set(palette[slot]), new Matrix4f(), false);
                 var poses = new com.mojang.blaze3d.vertex.PoseStack(); poses.mulPose(pose);
                 var parent = renderer.getModel();
                 parent.setAllVisible(true); parent.young = false; parent.riding = false;

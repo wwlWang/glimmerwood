@@ -37,6 +37,7 @@ public final class GloomHeart extends Monster {
     private static final EntityDataAccessor<Integer> ATTACK = SynchedEntityData.defineId(GloomHeart.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> TIMER = SynchedEntityData.defineId(GloomHeart.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(GloomHeart.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ENRAGE_LEFT = SynchedEntityData.defineId(GloomHeart.class, EntityDataSerializers.INT);
     private final ServerBossEvent bar = new ServerBossEvent(Component.translatable("entity.orimod.gloom_heart"), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_10);
     private BlockPos home;
     private Vec3 slamAt;
@@ -70,12 +71,13 @@ public final class GloomHeart extends Monster {
 
     // ---- state ----------------------------------------------------------------------------------------
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(TIMER, 0); builder.define(PHASE, 1);
+        super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(TIMER, 0); builder.define(PHASE, 1); builder.define(ENRAGE_LEFT, 0);
     }
     public int attack() { return entityData.get(ATTACK); }
     public int timer() { return entityData.get(TIMER); }
     public int phase() { return entityData.get(PHASE); }
-    public boolean enraging() { return tickCount < enragedUntil; }
+    public int enrageRemaining() { return entityData.get(ENRAGE_LEFT); }
+    public boolean enraging() { return level().isClientSide ? enrageRemaining() > 0 : tickCount < enragedUntil; }
     public Vec3 slamTarget() { return slamAt; }
     public void setHome(BlockPos pos) { home = pos.immutable(); }
     public BlockPos home() { return home == null ? blockPosition() : home; }
@@ -108,7 +110,7 @@ public final class GloomHeart extends Monster {
 
     /** Phase change: shriek, a short invulnerable window, two Gloom Spitters, faster cycle. */
     public void enrage() {
-        entityData.set(PHASE, 2); enragedUntil = tickCount + ENRAGE_TICKS;
+        entityData.set(PHASE, 2); enragedUntil = tickCount + ENRAGE_TICKS; entityData.set(ENRAGE_LEFT, ENRAGE_TICKS);
         entityData.set(ATTACK, IDLE); entityData.set(TIMER, 0); rest = ENRAGE_TICKS; cycle = 0;
         bar.setColor(BossEvent.BossBarColor.RED);
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.WARDEN_ROAR, SoundSource.HOSTILE, 1.4f, 1.3f);
@@ -198,6 +200,7 @@ public final class GloomHeart extends Monster {
 
     @Override public void tick() {
         super.tick();
+        if (!level().isClientSide) entityData.set(ENRAGE_LEFT, Math.max(0, enragedUntil - tickCount));
         if (level().isClientSide) { cn.wwl.orimod.client.fx.GloomLook.heart(this); return; }
         bar.setProgress(getHealth() / getMaxHealth());
         if (isNoAi()) return;

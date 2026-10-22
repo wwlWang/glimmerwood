@@ -28,6 +28,7 @@ public final class SpiritFlame {
 
     public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (!player.getData(SpiritData.COMPANION_FLAME)) return;
         var state = player.getData(SpiritData.ENERGY_STATE);
         long now = player.level().getGameTime();
         if (!ready(SpiritData.isSpirit(player) && SpiritData.isAwakened(player), player.isAlive(), player.isSpectator(), now, state.flameReadyAt)) return;

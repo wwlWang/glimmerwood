@@ -1,33 +1,33 @@
 {
   "stage": "Character candidate; visual and runtime acceptance pending",
-  "revision": 10,
+  "revision": 12,
   "source": "models/ori/3/ori_rigged.glb",
   "source_sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
   "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
   "license": "CC-BY-4.0",
   "author": "Random modeler (Seea_Rooster)",
-  "blend": "art/source/character/v010/ori.blend",
-  "blend_sha256": "602746c3ed9f1845894cf3de14b32f08e0ad6aa89fef009511b650b66b32f99c",
-  "export": "art/source/character/v010/ori.glb",
-  "export_sha256": "5a51d332f2757aa01078dea02180938e2c0715f8567e1220f80b763e806c05e8",
+  "blend": "art/source/character/v012/ori.blend",
+  "blend_sha256": "b084d740dce4c449619e3b105a46a642c7654ffa2774e2ef49201a39d96dffab",
+  "export": "art/source/character/v012/ori.glb",
+  "export_sha256": "6653341480b175bfec47eade62ab01bab485bf138390610fc738dbed68313e8b",
   "triangles": 12399,
   "bones": 60,
   "height": 1.2,
   "blender": "5.1.2",
   "textures": {
     "orimod:textures/entity/ori_emission.png": {
-      "path": "art/source/character/v010/ori_emission.png",
-      "sha256": "754e86d0476fe47ab71d355f719043c7e193f9c76914b251fa7b24a695373b18",
+      "path": "art/source/character/v012/ori_emission.png",
+      "sha256": "71d0382d5fe7394e4c9208e81fe182e254dee7033b72846601e9578720daab65",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_emission.png"
     },
     "orimod:textures/entity/ori_base.png": {
-      "path": "art/source/character/v010/ori_base.png",
-      "sha256": "01dcde9fca2fdb722d09973954ea3731d1dd020d8cef988a202d2895f06f1547",
+      "path": "art/source/character/v012/ori_base.png",
+      "sha256": "6c19f87484bf791c87c31bf0ff69f262758d7c73caac760f85901222ac1d1b00",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_base.png"
     },
     "orimod:textures/entity/ori_surface.png": {
-      "path": "art/source/character/v010/ori_surface.png",
-      "sha256": "00d82af5c6e06f916ba9e174adf402c5f7ee0db25580e2facf5b75c830073792",
+      "path": "art/source/character/v012/ori_surface.png",
+      "sha256": "410560e4936c360331bd80214bee7e078c514c820588db28b503e490f4e9cece",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_surface.png"
     }
   },
@@ -642,5 +642,5 @@
     "body_center"
   ],
   "player_export": "src/main/resources/assets/orimod/models/entity/ori.glb",
-  "player_export_sha256": "5a51d332f2757aa01078dea02180938e2c0715f8567e1220f80b763e806c05e8"
+  "player_export_sha256": "6653341480b175bfec47eade62ab01bab485bf138390610fc738dbed68313e8b"
 }

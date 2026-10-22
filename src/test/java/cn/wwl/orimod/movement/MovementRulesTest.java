@@ -8,6 +8,10 @@ import org.junit.jupiter.params.provider.EnumSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MovementRulesTest {
+    @ParameterizedTest @CsvSource({"true,true,false", "true,false,true", "false,true,false", "false,false,false"})
+    void flightPermissionLeavesVanillaJumpEdgesIntact(boolean active, boolean mayFly, boolean consumes) {
+        assertEquals(consumes, MovementRules.ownsJump(active, mayFly));
+    }
     // Ages 2/3 straddle the coyote window. A buffered edge can predate its landing (age -1).
     @ParameterizedTest @CsvSource({
             "true,0,true,false,false,false,false,JUMP",

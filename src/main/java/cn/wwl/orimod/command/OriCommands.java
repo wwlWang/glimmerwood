@@ -72,6 +72,9 @@ public final class OriCommands {
                                 .executes(c -> unlock(c, java.util.List.of(c.getSource().getPlayerOrException())))
                                 .then(Commands.argument("targets", EntityArgument.players()).executes(c -> unlock(c, EntityArgument.getPlayers(c, "targets"))))))
                 .then(players("giveall", OriCommands::giveAll))
+                .then(Commands.literal("companion").then(Commands.literal("flame")
+                        .then(players("on", p -> companionFlame(p, true)))
+                        .then(players("off", p -> companionFlame(p, false)))))
                 .then(wispCommands())
                 .then(Commands.literal("restoration")
                         .then(Commands.literal("status").executes(c->{var d=cn.wwl.orimod.world.RestorationData.get(c.getSource().getServer());c.getSource().sendSuccess(()->Component.translatable("commands.orimod.restoration.status",d.restored(),d.epoch(),cn.wwl.orimod.world.RestorationBloom.pending()),false);return 1;}))
@@ -113,6 +116,12 @@ public final class OriCommands {
                         p.sendSystemMessage(Component.translatable(p.getAbilities().invulnerable ? "commands.orimod.god.on" : "commands.orimod.god.off")); return true; }))
                 .then(players("reset", OriCommands::reset))
                 .then(players("status", OriCommands::status));
+    }
+
+    private static boolean companionFlame(ServerPlayer player, boolean enabled) {
+        player.setData(SpiritData.COMPANION_FLAME, enabled);
+        player.sendSystemMessage(Component.translatable("commands.orimod.companion.flame." + (enabled ? "on" : "off")));
+        return true;
     }
 
     private static int tide(CommandContext<CommandSourceStack> c, String action) throws CommandSyntaxException {

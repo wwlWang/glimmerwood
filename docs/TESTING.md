@@ -1,5 +1,54 @@
 # 回归测试
 
+## R108 反馈第四批：五种腐光怪 glTF 运行时
+
+`GloomCreatureVisual` 按实体类型选择五份 GLB，原版躯体渲染仅在该实例已有有效 GPU pose 时让位；关闭 visual、模型缺失/片段契约失败/资源重载时走旧躯体。保留实体原有预警粒子、俯冲落点与地面标记；喷吐者的旧白球/紫雾粒子属于旧躯体，仅在回退时绘制，蓄力聚光仍保留。GemRender PBR 原生读取 emission band，不提高躯体 lightmap；明暗随世界光照，白核和腐光纹路独立自发光。
+
+新增39项JUnit覆盖五种规则、九类倒计时预警、狂怒/受伤/死亡优先级、攻击释放边沿、移动速度、俯仰正负、片段边界，以及实际五份promoted GLB的片段/1秒death契约。新增3项GameTest用原版 ClientboundSetEntityDataPacket 编解码并应用到独立镜像实体，核对鸦/翼母倒计时、两首领狂怒与phase，不改攻击周期。首轮两项测试因手工调用tick()遗漏ServerLevel负责的tickCount++而失败（39期望/40实际），原文 `evidence/r108-monster-runtime-build/full-1.log/xml`；夹具补齐年龄推进，断言不变。第二轮完整 `test --rerun build runGameTestServer compileDevtoolsJava --console=plain` 为 **1211 JUnit / 734 GameTest，零失败、零跳过**（`evidence/r108-monster-runtime-build/full-2.log`、`final-gametest.xml`、`final-junit/`、`final-counts.json`）。包含 v012 角色、v002 怪物和 Claude 修正后的遗迹装饰；六项 bridge_navigation、所有遗迹组以及 defender 均通过。随后最终 v004 全量为 **1212 JUnit / 736 GameTest，零失败、零跳过**（`full-3.log`、`final-v004-*`），包含 Claude 的甲虫有限伤害修复及两条死亡回归，BUILD SUCCESSFUL；五份打包 GLB 与 v004 manifest SHA 一致。
+
+采样中另发现原甲虫 `/kill` 边界：FLIPPED 的 2×倍率将 Float.MAX_VALUE 变成 Infinity，最终 Health/AbsorptionAmount 成为 NaN；isAlive 与 isDeadOrDying 均为假，普通 @e 选择器也漏掉这个实体。临时逐实体诊断确定 Health=NaN 且 visual=legacy，证据 `evidence/r108-monster-runtime-build/capture-v006.log` 与 `r108-monsters-nan-probe-v008/conclusion.txt`。Claude 修复 BeetleRules.scaledDamage：BYPASSES_INVULNERABILITY 不缩放，普通缩放溢出钳至有限最大值；Codex 增加翻倒 / 正面装甲两条 generic_kill GameTest，检查同次死亡、有限生命值和20tick内移除。未改正常2×/0.2×伤害；诊断序列化已移除。
+
+开发接口 `nearby_entities.entities[].visual` 包含 active/clip/time/speed/blend/bodyYaw/pitch/timer/enrage，只有五种腐光怪添加该字段，原id/state等保持不变。`creature_visuals {legacy:true|false}` 用同一实例切换旧/新躯体取图；`creature_action {id,action}` 调真实服务端方法（telegraph，甲虫flip，心ring/slam/enrage，翼母feathers/gust/enrage），不直接指定客户端动画。脚本 `scripts/capture-gloom-visuals.py` 使用固定第三人称机位、llvmpipe+DISPLAY=:0；临时tick rate5只用于捕捉短片段，finally解除freeze并恢复20。`review_camera` 可选 `entity` id，以客户端插值位置冻结相机锚点，避免快速飞行时服务端与客户端坐标差导致近景偏离；不传该项时保持原接口。v002死亡片段由Claude统一为1秒，匹配原有20tick移除，不延长结算。20文件清单为 `evidence/r108-monster-runtime-build/codex-files.txt`，不含Claude提供的GLB/纹理/art源。
+
+实拍证据分开记录资产版本与采样目录版本：`r108-monsters-capture-v002/v003` 是 v002 资产；`v008` 是 v003 资产的46张完整日/夜、旧/新躯体与动作对照；`v009` 是 v004 资产的八类后段预警与 flipped/dive 共10张。v009各张 blend=1，预警实际片段进度约77–87%；Claude确认60%后的保持段可验收，不再精确追70%。飞行动作镜头使用客户端插值位置，鸦 dive 近景正确居中；翼母 telegraph/gust 另补完整翼尖。所有动作均由真实服务端方法触发，未在客户端注入假片段；临时5TPS、冻结仅用于取图。最终挑选目录为 `evidence/r108-monsters-final-v001/`（index.md / results.json 逐图保留来源和SHA）；翼母两图来自v011，其余沿用v009。最终forceload清票、leave_world、quit记录为 `r108-monsters-final-cleanup/results.json`。
+
+前期采样失败保留：v004观战玩家重叠推挤导致翼母选择move，移走玩家并清零初始速度后解决；v005/006/007受上述NaN甲虫污染，修正清场并移除坏实体后v008完成。v003→v004 GLB/贴图由Claude promote，未修改模型源。client-3 在v009采样完成后收到SIGTERM退出143，日志无新Java崩溃报告，不能据此断言OOM或渲染崩溃；两张翼母补拍使用重启后的client-4。
+
+## R108 反馈后续：前冲、支撑、猛击箭头、持物取景、自动灵焰调试
+
+六项交接时合并工作区 **1172 JUnit 全过；731 GameTest 中728通过、3失败**（随后 Claude 修正装饰层，第四批全量已全绿，见上节）。失败均为新遗迹装饰引起的光桥绕行：`bridge_navigation.forest_spring_template`、`forest_spring_outside_grass`、`creek_ruins_outside_grass`，原文与路径保留在 `evidence/r108-feedback-followup-build/final-full-2.log`，XML、JUnit报告和数量为同目录 `final-*`。已交Claude处理，未改装饰层或旧断言。新增 10 JUnit / 8 GameTest（前冲/滞空/支撑 7、箭头投影与远坐标 2、手部坐标 1；真实碰撞地面/边缘/缺口/开闭活板门 5、服务端地面不改速度 1、腾空预算与落地复位 1、自动灵焰 OP 权限和开关 1）。未改旧战斗断言；包含 Claude 的 v012（manifest revision=12、ori.glb SHA256 `6653341480b175bfec47eade62ab01bab485bf138390610fc738dbed68313e8b`）。
+
+`evidence/r108-feedback-followup-v001/three-slashes.json` 记录真实按键三次 blade start，从 z=304.5 到 305.9，净位移 1.400 格；同目录 results.json 的 flame-off/on 同时确认 client/server attachment 同步。`/ori companion flame on|off [player]` 仅 OP，默认当前玩家；会话开关不存档，重新上线/重生恢复默认。读取 `spirit_state.client.companionFlame.enabled`、`server.companionFlame.enabled`，以及 `client.bladeMotion.{groundTicks,holdTicks,step}`。
+
+猛击有效证据为 `r108-bash-probe-v004/end-on.png`、`tilt.png`，JSON 同时记录 BASH_AIM。用原版 `/tick rate 5` 延长取图窗口，结束恢复20；没有更改能力定时器。较早截图有失焦或已松手/超时，不作为箭头通过依据。自动取图脚本 `scripts/verify-feedback-followup.py` 已补聚焦、瞄准状态断言和 finally 恢复 tick rate。
+
+手臂修前 `r108-body-after-v004/none-arm-sword.png` / `Spirit-arm-sword.png`，本轮首采样 `r108-feedback-followup-v001`；最终 `r108-followup-final-captures-v001/{none,Spirit}-spirit_{blade,spear,bow,hammer}.png`。持物与前臂末端必须先从视图坐标变回 ModelView 输入空间：原版 GameRenderer 把相机逆旋转留在手部 PoseStack，Iris HandRenderer 使用另一条路径，直接写视图坐标会使两边位置不同。纯矩阵测试覆盖左右手、多 yaw/pitch 和 identity（Iris）；前臂末端藏到屏幕下方而掌心与武器完整可见。最终截图运行时含只打印所选 shader 名的临时诊断 supplier，截图之后移除；无其他渲染行为变化。
+
+**仍未修复：Spirit 光影手臂米黄。** 固定暗室取景的内侧前臂 ROI [1370,800,1400,840]，无光影平均 RGB=(179.49,194.64,200.39)，Spirit=(228.75,216.35,178.16)，见最终目录 arm-colour.json。`r108-hand-isolation-v002/v003/v004`、`r108-hands-after-v001/Ori-Probe-*`、`r108-emission-combined-v001`、`r108-emission-atlas-v001` 保存独立光影包实验：关闭 eyes 对米黄底色影响很小，hand 底色置黑则手臂变黑；实际 shader 选择为 hand_cutout_diffuse 与 entities_eyes（`r108-feedback-followup-build/client-3-probe.log`）。强制 eyes 颜色/alpha/深度及去掉底色仍不足以区别缓冲顺序、深度与输出目标问题，故不声称已定位最终根因，不合入改光影包或改 emission 的推测。GemRender SurfaceBake 的第三带 alpha 为 paint coverage，不能直接当不透明度，但仅此不能解释全部探针结果。各独立探针相对原始 Spirit Glow.zip 的补丁和 SHA 位于 `r108-feedback-followup-build/shader-probes/`；运行目录里的临时探针包已移除，生产光影未变。
+
+本轮最终全量曾遇到另一处 defender 夹具初始化竞态，原文 `Expected Cooldown ignored to be 1, but was 0`（`evidence/r108-defender-visibility-v001/full-before.log/xml`）。守卫账本已登记1，但紧接着的 AABB 实体查询为空。原全量没有区段可见性日志；自然隔离8次全部通过，同时记录了“已有方块数据/强制票、实体尚未加载且不可 ticking”的窗口。控制实验将实体区段暂时保持 HIDDEN，旧夹具8/8重现同一错误：原版 addFreshEntity 可以成功加入隐藏区段，AABB查询只查可见区段。修法仅限夹具：覆盖 base±13 的全部区块等待 areEntitiesLoaded 与 isNaturalSpawningAllowed，再从0开始原0/100/200/300tick断言；等待100tick失败时也走清理，保留原finally清票/实体/地形恢复。生产 BlightData 与失败后100tick节流不变，原断言全部保留。控制复现和修后结果见同目录 delayed-visibility/ready.log与XML；诊断用的反射、临时测试命名空间及输出全部移除。修后控制实验8/8通过（均等3tick），随后合并全量中本条通过；仅上述三条光桥测试失败。
+
+采样全程 llvmpipe / DISPLAY=:0。client-2 在多次 shader reload 后收到 SIGTERM、退出143，无 Java 崩溃栈，不归为验证通过或确认的 OOM；client-3 完成最终八张截图及 forceload remove all → leave_world → quit，正常退出0。本轮没有改 v012、BladeSlash、FrameRecorder 或怪物资产，没有 git 写操作。
+
+
+## R108 用户反馈：第一批 A–E
+
+最终合并工作区 **1162 JUnit / 723 GameTest，0失败、0跳过**，含 Claude 并行实现的第二批斩击测试。JDK21执行`test --rerun build runGameTestServer compileDevtoolsJava --console=plain`，JUnit强制重跑；证据`evidence/r108-feedback-build/final-full-2.log`、`final-counts.json`、`final-junit/`和`final-gametest.xml`。第一批新增9 JUnit、5 GameTest：mayfly保留原版跳跃边沿，创造地面/空中、非创造模式授予飞行权限、等待队列期间权限改变、生存空中跳不回退；持物附着随实际姿势权重平滑过渡；弓弦0/.65/.9边界、弓臂范围；手臂满亮度保留原sky light。新增两侧真实GLB骨架测试计算低位单手持物：掌心在大腿旁、刀尖向前下方且不穿地，攻击/投掷权重为0时仍保留原socket校准。测试仅加载GemRender节点数学，不需要图形环境。
+
+A/B/D/E修前为`evidence/r108-feedback-before-v002`，同seed108108、固定位置(304.5,200,304.5)、FOV60、真实按键；最终修后整体前/侧/背、第一人称、GUI及掉落物为`r108-feedback-after-v003`（48张）；左右手近侧/斜侧及弓实际闲置/中蓄/满蓄为`r108-feedback-details-v002`（27张）。`flight-comparison.json`记录：创造人形飞行true→true、创造精灵false→true，精灵创造预测跳次数2→0，生存精灵仍为2。`r108-feedback-grip-probe-v001`保留胸前持物的近侧/斜侧四武器；后续按审查改为单手垂臂，v001细节采样尚有刀尖略向上，v002按实际掌心矩阵修正为向前下方。录制脚本为`capture-feedback-weapons.py`、`capture-feedback-body.py`、`capture-feedback-details.py`，全程llvmpipe / DISPLAY=:0；没有替换工作区为旧资源，也没有修改ori.glb。
+
+C经用户澄清指角色本身。暗室有效修前为`r108-body-before-v002`，最终为`r108-body-after-v004`；v001修前站位误入地板，不作为对照。第一人称原先使用环境lightmap，GUI的GemRender DirectRenderer没有emissive层。修后手臂补block light 15（保留sky light），两处都读取原PBR emission；该atlas的alpha是绘制覆盖率，故使用RGB加法而非再次乘alpha。GUI CPU蒙皮与原GPU底层存在深度精度差，增加polygon offset后消除亮斑；柔光受原GUI scissor限制。普通铁剑保留环境光照。
+
+最终补拍仍保留一项观察限制：`r108-feedback-details-v002/RIGHT-spirit_blade-diagonal.png`单张未见刀身，同组side及LEFT-diagonal清晰；随后不改代码、同机位连续3张（`r108-blade-diagonal-probe-v001`）和重复侧面→斜侧切换6张（`r108-blade-diagonal-probe-v002`）均清楚，完整48张采样的刀前/侧/背也可见。暂未确定该单帧遗漏来源，不据此改动共用渲染管线或声称排除了瞬时漏绘。后6张探针原计划8张，客户端和脚本在第6张后同时SIGTERM退出143；无Java崩溃栈，记录为中断而非通过8次。最终全量后生产源码SHA256保持一致。持物手指仍使用v010，未侵入Claude负责的v011动画任务。中断后只重开测试世界，成功`forceload remove all`→`leave_world`→`quit`，正常退出；证据`r108-feedback-cleanup/results.json`及`cleanup-client.log`。
+
+固定ROI原始PNG统计在`body-comparison.json`：无光影手臂V均值17.30→185.11、物品栏人物171.95→223.33；Spirit Glow下手臂66.52→227.72、物品栏173.43→226.12。V=max(R,G,B)，GUI只统计前后都V>40的像素，排除黑背景/眼睛；手臂为固定矩形，待机姿势微动，数值用于证明亮度恢复而非逐像素画质评级。世界光影仍会为身体/手臂染色，物品栏保留原版独立GUI色调，不声称三处像素颜色完全相同。
+
+本轮全量曾暴露旧`merchant.ruin_async_pay`偶发失败，原文为`Missing or duplicate async guide ... message=closed,busy=true ... removed=true ... expected 1 but was 0`，保存在`final-full.log`及`evidence/r108-merchant-fixture-diagnosis/original-full.xml`。异步测试将嵌入连接玩家/商人移到远处入口，`setPos`不建立玩家加载票。隔离原付款测试4次全部抢在卸载前付完，但其中3次商人随后在第2tick以`UNLOADED_TO_CHUNK`移除；将测试手动派发查询回调延至第4tick，这3次均失败（4次中3失败），证明是回调与区块卸载竞态。生产代码正确关闭已移除商人的会话，不修改交易语义。
+
+只修`MerchantGameTests`夹具：自持结构起点及入口±8全部区块票，覆盖商人和7格离开测试；幂等清理在成功、初始化异常、异步回调异常时恢复structure starts/placement并finally释放自己新增的票。相同延迟探针对照修后4/4通过，且逐tick断言商人未移除。原付款、余额、取消和600tick上限不改；临时延迟、诊断日志、重复用例和专用资源/命名空间均从源码移除。完整前后源码、日志/XML与summary.json在`evidence/r108-merchant-fixture-diagnosis/`。
+
+其他中途失败均已保留：`full-1.log`为Java不允许var复合声明；`final-full.log`的新骨架测试缺少GemRender测试依赖，隔离首次又因JUnit工作目录找不到GLB，已加本地测试依赖并使用既有orimod.projectDir。第一轮客户端被SIGTERM终止（退出码143、无崩溃报告），重启后修前采样完整跑完。R109仍只存于`docs/drafts/r109-checkpoint`，未注册、未进入世界生成。
+
 ## R108 视觉打磨
 
 最终 **1138 JUnit / 718 GameTest，0失败、0跳过**。JDK21 执行 `./gradlew test --rerun build runGameTestServer compileDevtoolsJava --console=plain`，JUnit 强制重跑；证据 `evidence/r108-polish-build/final-cyan-full.log`、`final-counts.json`、`final-junit/` 和 `final-gametest.xml`。新增 14 JUnit：开场20tick平滑、yaw最短路径、微小鼠标位移立即取消且不恢复、第三人称不启动、切第三人称终止、结束/断线清理，以及小花占比/饱和度不下降/原 cutout 掩码及盛开模型不压暗、宽光柱贴图/向上连续渐隐、三光配色/依次吸收、站位候选、全局粒子预算/去重/有界/过期。新增 7 GameTest：合法后退、墙/悬空/岩浆/水回退、生物占位避让，以及未加载区块不加票；保持权威锁位及 yaw/pitch。

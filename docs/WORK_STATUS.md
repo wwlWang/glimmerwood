@@ -1,5 +1,31 @@
 # 当前工作状态
 
+2026-10-22 R108 反馈第三～五批美术与 Claude 侧修复（审查、实拍完成，随本次提交）：
+- **动画（第三批）：** 角色 v012（v011 动作 + 循环片段首尾闭合），已 promote；`art/source/character/` 改为只跟踪当前源 v012。
+- **斩击光弧：** `BladeSlash` 在 Ori 自己的第一人称视角下改为贴近眼下、半径减半的扫弧并加强外晕（原弧在胸高处近乎侧视，只剩一条细线）；第三人称/他人视角不变。证据 `fb-motion-v004`（三刀 3/3 命中含两侧 65° 目标、前冲 1.4 格）、`fb-motion-v007`（第一人称）。
+- **怪物（第四批）：** `scripts/art/build_monster.py` 程序化建模/绑定/烘焙，`promote_monster.py` 打包；五种 v004（发光件深紫底+饱和紫 emission、紫色躯体；预警片段前 60% 到位后保持；death 统一 1.0 秒对应 20 tick）。实拍 `r108-monsters-final-v001`。
+- **甲虫 NaN：** `BeetleRules.scaledDamage`——绕过无敌的伤害（/kill、虚空）不缩放，溢出钳为有限值；翻倒 2×/正面 0.2× 规则不变。
+- **遗迹（第五批，方向 A 古树吞没的神殿）：** `scripts/art/ruin_dressing.py` 在功能布局后加装饰（断墙/立柱/倒柱/巨型灵树与板根/地面隆起/苔藓地衣灵藤，溶洞为洞顶垂根），只写受保护集合外；树冠以杜鹃叶为主、灵叶点缀；生成时用移植的 WalkGraph 搜索两种变体的暗桥绕行并裁掉装饰落脚点（溪谷裁 207 格）。林泉/溪谷模板加高到 28/30，林泉根拱改灵木。三处契约、`test_check_ruins.py` 通过，路线坐标与 HEAD 一致。实拍 `ruin-dressing-v002`。
+
+2026-10-21 R108 反馈第四批怪物运行时（1212 JUnit / 736 GameTest 全绿，实拍完成，待Claude审查）：五种 glTF 躯体共用 GloomCreatureVisual / 纯函数片段规则；按服务端倒计时采样预警、0.15秒切换、yBodyRot朝向、甲虫roll及飞行俯仰。补鸦/翼母计时器与首领狂怒entityData；保留原战斗/20tick死亡时序、警告特效与旧躯体回退。新增39 JUnit/3同步GameTest，另补2条甲虫/kill死亡回归，Claude修复原翻倒增伤溢出NaN；最终含v012角色/v004五怪，旧遗迹光桥与defender全过。运行时、采样、测试和文档20文件清单在evidence/r108-monster-runtime-build/codex-files.txt；GLB/纹理/art源由Claude维护，未改动。 v003日夜/旧新/动作46图在capture-v008；最终v004八类预警+flipped/dive近景在evidence/r108-monsters-final-v001，翼母两张翼尖完整。客户端已清票、离开世界、正常退出；未做git写操作。
+
+2026-10-21 R108 反馈后续六项（五项实现；Spirit 光影手臂米黄仍待定位）：
+- **前冲/悬崖：** `BladeMotion` 消费新的 COMBAT_VIEW blade action，四 tick 在 feel 刹停之后叠加 .4/.4/.6 格，下一 tick 去掉旧步进，避免惯性累计；真实按键三刀共 1.400 格。服务端 step 只保留每次腾空最多三次的滞空，客户端纵向 feel 保持三 tick 下落限速。`BladeSupport` 同一纯几何函数检查合成位移全路径、末端和脚底五个采样点，要求碰撞顶面接近脚底；覆盖断崖、缺口、开/闭活板门。
+- **猛击/手臂：** 箭头改交叉带、四翼和端面，第一人称沿轴观察仍有面积；绝对坐标以 double 减相机后转 float。持物和前臂末端经过 ModelView 逆变换，修复无光影手部带相机逆旋转、Iris 手部不带该旋转时的坐标混用；刀/矛/弓/锤的掌心、前臂和武器都进入画面，末端延出屏幕，准星空出。未改角色模型、动画和 Claude 的 BladeSlash。
+- **调试：** OP `/ori companion flame on|off [player]`，会话开关默认开启、不存档；同时暂停自动打敌人和容器。`spirit_state.client/server.companionFlame.enabled` 可读，client.bladeMotion 提供剩余 groundTicks/holdTicks 与当前 step。
+- **C 未解决：** 仅做隔离探针，未合入发光猜测性修改。确认暖色来自 hand_cutout_diffuse 底色，entities_eyes 虽被选择但未正确覆盖手臂；alpha、深度、去底色等探针尚不能闭合根因。保留脚本、shader 差异和截图，详见 TESTING。
+- **证据：** `r108-feedback-followup-v001` 的三刀轨迹和开关同步；`r108-bash-probe-v004` 的有效瞄准截图；`r108-followup-final-captures-v001` 的四武器无光影/Spirit 八张最终截图。全程 llvmpipe + DISPLAY=:0；已正常清票、离开世界、退出客户端。六项交接时1172 JUnit全过、GameTest728/731通过；Claude新遗迹装饰的3条光桥绕行随后已由Claude修复，第四批1211/734全量确认全过；原失败见followup-build/final-full-2.log。defender夹具补等实体区段ready，控制实验修前8/8失败→修后8/8通过，原生产节流/测试断言未改。25文件范围清单在`evidence/r108-feedback-followup-build/codex-files.txt`。
+
+
+2026-10-21 R108用户反馈第一批 A–E（1162 JUnit / 723 GameTest全绿，补拍完成，待Claude审查）：
+- **A：** mayfly时客户端保留原版跳跃输入，服务端不排队/执行Ori跳跃；权限切换清旧队列，生存原行为不变。真实双击跳修前/修后：精灵创造false→true飞行，预测跳次数2→0；生存仍正常二段跳，见`evidence/r108-feedback-build/flight-comparison.json`。
+- **B/E：** 左右骨骼映射正确，根因为运行时cradle已抬腕却又叠加原版垂臂X−90°。附着俯仰随实际姿势权重补偿，攻击/使用动作保留原校准，钓鱼线共用变换。按后续审查，刀/矛/原版剑改为单手自然垂臂、武器向前下方，弓/锤保留抬臂；两侧真实GLB骨架JUnit锁住掌心高度与尖端方向。灵刃补淡蓝OUTER外晕；第一/第三人称显示尺寸与握点按Ori比例校准，背包持物姿势同步。没有修改动画源或ori.glb。
+- **C：** 第一人称手臂补block light 15底线（保留sky light）、GemRender原PBR emissive层及掌心柔光；背包预览补同一emissive层和受原生scissor限制的骨骼柔光。RGB加法与polygon offset解决atlas覆盖alpha压暗和GUI深度亮斑；普通物品保留环境光。暗室前后`r108-body-before-v002`→`r108-body-after-v004`：无光影手臂亮度17.30→185.11、人物预览171.95→223.33；Spirit Glow也已实拍，世界色调与原版GUI色调仍各遵守其渲染环境。
+- **D：** 弓与灵核进入SpiritWeaponRenderer；弓臂连续能量曲线、弦按0/.65/.9三档后拉/满蓄提亮；灵核为冷蓝能量球与双环。渲染owner按调用作用域保存/恢复，远端玩家使用自己的蓄力状态。程序几何源为Java，无新增art/source；使用Claude第二批追加的strip/ribbon，不改其实现。
+- **验证：** JDK21 `test --rerun build runGameTestServer compileDevtoolsJava --console=plain`通过，含Claude第二批战斗代码/测试，JUnit实际重跑。日志/XML/数量在`evidence/r108-feedback-build/final-*`。本轮商人异步指引测试出现区块卸载竞态，已用延迟回调隔离证明，并仅修夹具自持区块票/异常清理，断言和生产交易不变；前后实验与失败原文在`evidence/r108-merchant-fixture-diagnosis`，根因详见TESTING。
+- **实拍：** 最终`evidence/r108-feedback-after-v003`为48张同机位全套对照，`r108-feedback-details-v002`为27张左右手/弓蓄力细节；角色暗室见C条目。右手斜侧首张刀身遗漏未稳定复现，之后同位3张及6次切机位均可见，保留失败截图与观察限制（TESTING）。额外探针在6/8时和客户端同时SIGTERM 143，无Java崩溃栈；完整两套采样此前均已完成。手指仍是v010，不改Claude负责的v011动画。已重开测试世界清除forceload、leave_world、quit，客户端正常退出（cleanup-client.log）；空档已交还Claude。
+- **范围：** 第一批36个实现/模型/测试/采样/文档文件列在`evidence/r108-feedback-build/codex-files.txt`，不包含Claude动画/战斗/特效文件。R109仍仅存于已提交的draft检查点，不注册、不生成；无git写操作。
+
 2026-10-21 R108 视觉打磨（1138 JUnit / 718 GameTest，0失败、0跳过；Claude 视觉复验与 verify-r108 19/19 通过，证据 `evidence/r108-accept-v004`）：
 - **盛开与三光：** 保留并提亮饱和青色底，四朵2×2近白小花/淡金花心占16/106不透明像素，完整保留透明孔隙；盛开模型关闭方向压暗与AO；心金、翼紫、地青绿同步到图标、拾取实体、仪式核心与拖尾，三光入树后依次淡出，避免在树心堆成白球。
 - **光柱：** 新独立横向渐隐贴图，不再拉伸细能量线。48格高、1.8格亮芯+3.6格淡外晕，分12段连续向上淡出；原演出时序不改。

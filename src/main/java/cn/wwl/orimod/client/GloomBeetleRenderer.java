@@ -29,6 +29,7 @@ public final class GloomBeetleRenderer extends EntityRenderer<GloomBeetle> {
         for(int i=0;i<6;i++)legs[i]=baked.getChild("leg"+i);
     }
     @Override public void render(GloomBeetle beetle,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
+        if (cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(beetle)) { super.render(beetle, yaw, partial, pose, buffers, light); return; }
         var state=beetle.state();float t=beetle.tickCount+partial;
         boolean windup=state==BeetleRules.State.WINDUP,flipped=state==BeetleRules.State.FLIPPED;
         pose.pushPose();pose.translate(0,.35,0);pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partial,beetle.yBodyRotO,beetle.yBodyRot)));

@@ -43,10 +43,12 @@ public final class GloomMatriarch extends Monster {
     public static final int REWARD_LIGHT = 100;
     private static final EntityDataAccessor<Integer> ATTACK = SynchedEntityData.defineId(GloomMatriarch.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(GloomMatriarch.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> TIMER = SynchedEntityData.defineId(GloomMatriarch.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ENRAGE_LEFT = SynchedEntityData.defineId(GloomMatriarch.class, EntityDataSerializers.INT);
     private final ServerBossEvent bar = new ServerBossEvent(Component.translatable("entity.orimod.gloom_matriarch"), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_10);
     private BlockPos home;
     private Vec3 diveAt;
-    private int timer, rest = 40, cycle, enragedUntil;
+    private int rest = 40, cycle, enragedUntil;
     private boolean diveHit;
 
     public GloomMatriarch(EntityType<? extends GloomMatriarch> type, Level level) {
@@ -82,12 +84,15 @@ public final class GloomMatriarch extends Monster {
     }
 
     // ---- state ------------------------------------------------------------------------------------------
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(PHASE, 1); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(PHASE, 1); builder.define(TIMER, 0); builder.define(ENRAGE_LEFT, 0); }
     public int attack() { return entityData.get(ATTACK); }
     public int phase() { return entityData.get(PHASE); }
-    public int timer() { return timer; }
+    public int timer() { return entityData.get(TIMER); }
+    private void timer(int ticks) { entityData.set(TIMER, ticks); }
+    private int advanceTimer() { int left = timer() - 1; timer(left); return left; }
+    public int enrageRemaining() { return entityData.get(ENRAGE_LEFT); }
     public Vec3 diveTarget() { return diveAt; }
-    public boolean enraging() { return tickCount < enragedUntil; }
+    public boolean enraging() { return level().isClientSide ? enrageRemaining() > 0 : tickCount < enragedUntil; }
     public void setHome(BlockPos pos) { home = pos.immutable(); }
     public BlockPos home() { return home == null ? blockPosition() : home; }
 
@@ -119,8 +124,8 @@ public final class GloomMatriarch extends Monster {
     }
 
     public void enrage() {
-        entityData.set(PHASE, 2); enragedUntil = tickCount + ENRAGE_TICKS;
-        entityData.set(ATTACK, IDLE); timer = 0; rest = ENRAGE_TICKS; cycle = 0;
+        entityData.set(PHASE, 2); enragedUntil = tickCount + ENRAGE_TICKS; entityData.set(ENRAGE_LEFT, ENRAGE_TICKS);
+        entityData.set(ATTACK, IDLE); timer(0); rest = ENRAGE_TICKS; cycle = 0;
         bar.setColor(BossEvent.BossBarColor.RED);
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.PHANTOM_DEATH, SoundSource.HOSTILE, 2, .5f);
         if (level() instanceof ServerLevel server) for (int side = -1; side <= 1; side += 2) {
@@ -132,14 +137,14 @@ public final class GloomMatriarch extends Monster {
     }
 
     public void startAttack(int attack, LivingEntity target) {
-        setTarget(target); entityData.set(ATTACK, attack); timer = telegraph(attack);
+        setTarget(target); entityData.set(ATTACK, attack); timer(telegraph(attack));
         if (attack == DIVE_TELEGRAPH) diveAt = target.position();
         level().playSound(null, getX(), getY(), getZ(), attack == DIVE_TELEGRAPH ? SoundEvents.PHANTOM_SWOOP : attack == GUST ? SoundEvents.ENDER_DRAGON_FLAP : SoundEvents.PHANTOM_AMBIENT,
                 SoundSource.HOSTILE, 1.6f, .6f);
     }
 
     public void stun() {
-        entityData.set(ATTACK, STUNNED); timer = STUN_TICKS; setDeltaMovement(Vec3.ZERO);
+        entityData.set(ATTACK, STUNNED); timer(STUN_TICKS); setDeltaMovement(Vec3.ZERO);
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, .8f, .6f);
         if (level() instanceof ServerLevel server) cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
     }
@@ -158,13 +163,13 @@ public final class GloomMatriarch extends Monster {
             }
             case DIVE_TELEGRAPH -> {
                 setDeltaMovement(getDeltaMovement().scale(.5));
-                if (level() instanceof ServerLevel server && diveAt != null && timer % 3 == 0)
+                if (level() instanceof ServerLevel server && diveAt != null && timer() % 3 == 0)
                     for (int i = 0; i < 10; i++) {
-                        double a = i * Math.PI / 5 + timer * .2;
+                        double a = i * Math.PI / 5 + timer() * .2;
                         server.sendParticles(new DustParticleOptions(new Vector3f(1, .15f, .15f), 1.8f), diveAt.x + Math.cos(a) * 1.4, diveAt.y + .15, diveAt.z + Math.sin(a) * 1.4, 1, 0, 0, 0, 0);
                     }
-                if (--timer <= 0) {
-                    entityData.set(ATTACK, DIVE); timer = DIVE_TICKS; diveHit = false;
+                if (advanceTimer() <= 0) {
+                    entityData.set(ATTACK, DIVE); timer(DIVE_TICKS); diveHit = false;
                     setDeltaMovement(diveVelocity());
                     level().playSound(null, getX(), getY(), getZ(), SoundEvents.PHANTOM_BITE, SoundSource.HOSTILE, 1.6f, .5f);
                 }
@@ -173,18 +178,18 @@ public final class GloomMatriarch extends Monster {
                 setDeltaMovement(diveVelocity());
                 if (!diveHit) for (var e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(.6), e -> e != this && e == getTarget() && e.isAlive()))
                     if (e.hurt(damageSources().mobAttack(this), DIVE_DAMAGE)) { e.push(getDeltaMovement().x * .6, .5, getDeltaMovement().z * .6); e.hurtMarked = true; diveHit = true; }
-                if (--timer <= 0 || diveAt == null || position().distanceTo(diveAt) < 1.2 || onGround() || horizontalCollision) {
+                if (advanceTimer() <= 0 || diveAt == null || position().distanceTo(diveAt) < 1.2 || onGround() || horizontalCollision) {
                     if (diveHit) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); } else stun();
                 }
             }
-            case STUNNED -> { setDeltaMovement(Vec3.ZERO); if (--timer <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); } }
+            case STUNNED -> { setDeltaMovement(Vec3.ZERO); if (advanceTimer() <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); } }
             case FEATHERS -> {
                 setDeltaMovement(getDeltaMovement().scale(.6));
-                if (--timer <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); return target == null ? List.of() : feathers(target); }
+                if (advanceTimer() <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); return target == null ? List.of() : feathers(target); }
             }
             case GUST -> {
                 setDeltaMovement(getDeltaMovement().scale(.6));
-                if (--timer <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); gust(); }
+                if (advanceTimer() <= 0) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); gust(); }
             }
             default -> entityData.set(ATTACK, IDLE);
         }
@@ -226,6 +231,7 @@ public final class GloomMatriarch extends Monster {
 
     @Override public void tick() {
         super.tick();
+        if (!level().isClientSide) entityData.set(ENRAGE_LEFT, Math.max(0, enragedUntil - tickCount));
         if (level().isClientSide) return;
         bar.setProgress(getHealth() / getMaxHealth());
         if (!isNoAi()) step();

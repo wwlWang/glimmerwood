@@ -1,0 +1,91 @@
+{
+  "creature": "gloom_heart",
+  "revision": 4,
+  "fps": 24,
+  "clips": {
+    "idle": {
+      "seconds": 1.5,
+      "loop": true,
+      "frames": 36
+    },
+    "idle_phase2": {
+      "seconds": 1.5,
+      "loop": true,
+      "frames": 36
+    },
+    "move": {
+      "seconds": 1.5,
+      "loop": true,
+      "frames": 36
+    },
+    "telegraph": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    },
+    "ring": {
+      "seconds": 1.5,
+      "loop": false,
+      "frames": 36
+    },
+    "slam": {
+      "seconds": 1.25,
+      "loop": false,
+      "frames": 30
+    },
+    "attack": {
+      "seconds": 0.4,
+      "loop": false,
+      "frames": 10
+    },
+    "enrage": {
+      "seconds": 2.0,
+      "loop": false,
+      "frames": 48
+    },
+    "hurt": {
+      "seconds": 0.4,
+      "loop": false,
+      "frames": 10
+    },
+    "death": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    }
+  },
+  "vertices": 5154,
+  "bones": [
+    "root",
+    "core",
+    "crown",
+    "rib_0_1",
+    "rib_0_2",
+    "rib_1_1",
+    "rib_1_2",
+    "rib_2_1",
+    "rib_2_2",
+    "rib_3_1",
+    "rib_3_2",
+    "rib_4_1",
+    "rib_4_2"
+  ],
+  "export": "art/source/monsters/gloom_heart/v004/gloom_heart.glb",
+  "export_sha256": "06a8d8fe4e4b309e37dfb13a8b9ce8e26b0ddb20a3ae9a19fd7f59f3fba1b924",
+  "blend": "art/source/monsters/gloom_heart/v004/gloom_heart.blend",
+  "textures": {
+    "orimod:textures/entity/gloom_heart_emission.png": {
+      "path": "art/source/monsters/gloom_heart/v004/gloom_heart_emission.png",
+      "sha256": "8254cb9957da51289489e98420a6b186fc516484e6792ed8562fc05575cc9465"
+    },
+    "orimod:textures/entity/gloom_heart_base.png": {
+      "path": "art/source/monsters/gloom_heart/v004/gloom_heart_base.png",
+      "sha256": "099e86f2175cb5113e7d5b182fde5bb13188dccdba21ebda18b1bc60c3b60a55"
+    },
+    "orimod:textures/entity/gloom_heart_surface.png": {
+      "path": "art/source/monsters/gloom_heart/v004/gloom_heart_surface.png",
+      "sha256": "44d451189a7b66c7716d9c7dc6a09d4f49d585a58a1c76d334a09341397c4f20"
+    }
+  },
+  "packaged": "src/main/resources/assets/orimod/models/entity/gloom_heart.glb"
+}

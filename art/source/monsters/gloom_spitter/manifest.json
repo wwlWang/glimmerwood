@@ -1,0 +1,77 @@
+{
+  "creature": "gloom_spitter",
+  "revision": 4,
+  "fps": 24,
+  "clips": {
+    "idle": {
+      "seconds": 3.0,
+      "loop": true,
+      "frames": 72
+    },
+    "move": {
+      "seconds": 1.0,
+      "loop": true,
+      "frames": 24
+    },
+    "telegraph": {
+      "seconds": 0.7,
+      "loop": false,
+      "frames": 17
+    },
+    "attack": {
+      "seconds": 0.5,
+      "loop": false,
+      "frames": 12
+    },
+    "hurt": {
+      "seconds": 0.4,
+      "loop": false,
+      "frames": 10
+    },
+    "death": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    }
+  },
+  "vertices": 4650,
+  "bones": [
+    "root",
+    "stalk_1",
+    "stalk_2",
+    "stalk_3",
+    "bud",
+    "root_0",
+    "root_1",
+    "root_2",
+    "root_3",
+    "root_4",
+    "root_5",
+    "root_6",
+    "petal_0",
+    "petal_1",
+    "petal_2",
+    "petal_3",
+    "petal_4",
+    "leaf_l",
+    "leaf_r"
+  ],
+  "export": "art/source/monsters/gloom_spitter/v004/gloom_spitter.glb",
+  "export_sha256": "fd72ca3119b7d7a17d82e96c6ccc18991b93954b2e47ed3056ff7c887b110280",
+  "blend": "art/source/monsters/gloom_spitter/v004/gloom_spitter.blend",
+  "textures": {
+    "orimod:textures/entity/gloom_spitter_emission.png": {
+      "path": "art/source/monsters/gloom_spitter/v004/gloom_spitter_emission.png",
+      "sha256": "86458f1e6555b8c2e237c6e7ec4f632cff10b75bcbbc64c1b9eca82753078507"
+    },
+    "orimod:textures/entity/gloom_spitter_base.png": {
+      "path": "art/source/monsters/gloom_spitter/v004/gloom_spitter_base.png",
+      "sha256": "1ff38f464a09d196a9bd834fb88048aea256e1a4e38230aac7c31cc1ae8a99a5"
+    },
+    "orimod:textures/entity/gloom_spitter_surface.png": {
+      "path": "art/source/monsters/gloom_spitter/v004/gloom_spitter_surface.png",
+      "sha256": "8ed88b35ab316341e6f4cb34e0ec840e07286378442aebf16adb930346b48b0c"
+    }
+  },
+  "packaged": "src/main/resources/assets/orimod/models/entity/gloom_spitter.glb"
+}

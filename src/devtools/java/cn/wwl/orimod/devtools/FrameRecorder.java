@@ -41,7 +41,9 @@ final class FrameRecorder {
         var target = Minecraft.getInstance().getMainRenderTarget();
         encoder = new ProcessBuilder("ffmpeg", "-hide_banner", "-loglevel", "warning", "-n",
                 "-f", "rawvideo", "-pixel_format", "rgba", "-video_size", target.width + "x" + target.height,
-                "-framerate", Integer.toString(fps), "-i", "pipe:0", "-an", "-c:v", "libx264",
+                "-framerate", Integer.toString(fps), "-i", "pipe:0", "-an",
+                // A window manager can leave an odd client height; x264 needs even dimensions.
+                "-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264",
                 "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
                 directory.resolve("capture.mp4").toAbsolutePath().toString())
                 .redirectError(directory.resolve("encoder.log").toFile()).start();

@@ -10,6 +10,9 @@ import gzip
 import io
 import json
 import nbtlib as nbt
+import sys
+sys.path.insert(0, str(Path(__file__).parent))
+import ruin_dressing
 
 NAMES = ("forest_spring", "creek_ruins", "cave_altar")
 # Preserve the original templates' gzip envelope (OS=10, TOPS-20), independently
@@ -99,6 +102,11 @@ class Template:
 
     def export(self, shrine, safe, entry, surface, checkpoints, clearances):
         self.important(*shrine, "orimod:" + self.name + "_shrine")
+        # Batch 5: dress the finished layout as a shrine swallowed by an ancient spirit tree; route cells stay untouched.
+        protected = ruin_dressing.protected_cells(self, shrine, safe, entry, clearances, checkpoints)
+        functional = dict(self.blocks)
+        ruin_dressing.DRESS[self.name](self, protected)
+        pruned = ruin_dressing.prune_bridge_bypasses(self, functional)
         palette, indexes, blocks = [], {}, []
         for position, state in sorted(self.blocks.items(), key=lambda item: (item[0][1], item[0][2], item[0][0])):
             if state not in indexes:
@@ -126,7 +134,7 @@ class Template:
         write(self.data / "worldgen/structure" / (self.name + ".json"), {
             "type": "orimod:ruin", "kind": self.name, "biomes": "#orimod:has_ruins", "spawn_overrides": {},
             "step": "top_layer_modification", "terrain_adaptation": "none"})
-        print(f"{self.name}: {len(blocks)} blocks, {len(palette)} states, {target.stat().st_size} bytes")
+        print(f"{self.name}: {len(blocks)} blocks, {len(palette)} states, {target.stat().st_size} bytes, {len(pruned)} bypass cells pruned")
 
 
 def write(path, value):
@@ -142,10 +150,6 @@ def surface(root, name, size):
     t.box((0, 1, 0), (w - 1, 1, d - 1), "moss_block")
     # Contained shallow spring with a dry entry, exits along both edges.
     t.box((3, 1, 7), (w - 4, 1, d - 4), "water", level="0")
-    for x in (1, w - 2):
-        for z in range(3, d - 1, 5):
-            t.put(x, 2, z, "azalea")
-            t.put(x, 1, z, "sea_lantern")
     for x in range(w // 2 - 2, w // 2 + 3):
         # Reach terrain up to four blocks below the deck, including the low side
         # of an accepted slope. The previous three steps exposed a climbable-only
@@ -158,20 +162,21 @@ def surface(root, name, size):
 
 
 def forest(root):
-    t = surface(root, "forest_spring", (19, 13, 31))
+    t = surface(root, "forest_spring", (19, 24, 31))  # batch 5: headroom for the great tree's crown
     # Two root arches frame the route; the inner face is the wall-jump surface.
-    t.box((5, 2, 4), (5, 8, 12), "stripped_dark_oak_log", axis="y")
+    # Batch 5: the arch is the great spirit tree's buttress roots (it stands just east of it).
+    t.box((5, 2, 4), (5, 8, 12), "orimod:spirit_log", axis="y")
     for y in (3, 5, 7):
-        t.important(5, y, 9, "stripped_dark_oak_log")
-    t.box((13, 2, 8), (14, 8, 10), "dark_oak_log", axis="y")
-    t.box((5, 9, 8), (14, 9, 10), "dark_oak_log", axis="x")
-    t.box((4, 10, 7), (15, 10, 11), "azalea_leaves", persistent="true")
+        t.important(5, y, 9, "orimod:spirit_log")
+    t.box((13, 2, 8), (14, 8, 10), "orimod:spirit_log", axis="y")
+    t.box((5, 9, 8), (14, 9, 10), "orimod:spirit_log", axis="x")
+    t.box((4, 10, 7), (15, 10, 11), "orimod:spirit_leaves", bloomed="false")
     t.platform((7, 3, 7), (10, 3, 10))
     t.platform((7, 5, 14), (10, 5, 17))
     t.platform((7, 4, 23), (11, 4, 28))
     for x, z in ((3, 24), (14, 22)):
-        t.box((x, 2, z), (x, 6, z), "dark_oak_log", axis="y")
-        t.box((x - 1, 7, z - 1), (x + 1, 7, z + 1), "flowering_azalea_leaves", persistent="true")
+        t.box((x, 2, z), (x, 6, z), "orimod:spirit_log", axis="y")
+        t.box((x - 1, 7, z - 1), (x + 1, 7, z + 1), "orimod:spirit_leaves", bloomed="false")
     t.cell((5, 9, 12), "life")  # R44: reward above the wall-jump roots.
     t.updrafts((8, 2, 20), (10, 2, 21))  # R46: lift below the final glide gap.
     t.features["map_stone"] = t.shifted((5, 2, 3))  # R62: beside the entry.
@@ -195,7 +200,7 @@ def forest(root):
     t.box((3, 0, 22), (5, 3, 23), "mossy_stone_bricks")
     t.box((2, 1, 14), (2, 2, 14), "air")  # Two-high drain returns to the western outer bank.
     t.put(1, 1, 14, "air")  # Step outside the drain before jumping up; do not jump into its low lintel.
-    t.box((4, 7, 18), (4, 7, 23), "stripped_dark_oak_log", axis="z")
+    t.box((4, 7, 18), (4, 7, 23), "orimod:spirit_log", axis="z")
     t.put(4, 6, 18, "chain", axis="y", waterlogged="false")
     t.put(4, 4, 23, "orimod:spirit_light_vessel")
     t.features["vessels"].append(t.shifted((4, 4, 23)))  # Ordinary reward; neither a secret nor a map-stone target.
@@ -208,7 +213,7 @@ def forest(root):
 
 
 def creek(root):
-    t = surface(root, "creek_ruins", (21, 17, 35))
+    t = surface(root, "creek_ruins", (21, 26, 35))
     for x in (3, 17):
         for z, height in ((8, 5), (18, 9), (30, 6)):
             t.box((x, 2, z), (x + 1, height, z + 1), "mossy_stone_bricks")

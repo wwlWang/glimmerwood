@@ -10,6 +10,8 @@ import java.util.UUID;
 public final class CombatState {
     public String mode = "idle", lastCancel = "";
     public int actionId, stage, bladeStarts, bladeHits, bowShots, cancellations;
+    /** Air slashes that held the player up since the last landing. */
+    public int airHolds;
     public long startedAt, nextBowAt;
     public boolean buffered;
     public ItemStack weapon = ItemStack.EMPTY;

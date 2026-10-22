@@ -457,5 +457,7 @@
   "commands.orimod.restoration.reset": "Restoration and personal receipts reset; loaded leaves are returning to their original state.",
   "advancement.orimod.restoration.title": "Lightkeeper",
   "advancement.orimod.restoration.description": "Return the three Wisps of Will and let the forest breathe again.",
-  "line.orimod.restoration": "Glimmer: The light is back. The forest will remember you."
+  "line.orimod.restoration": "Glimmer: The light is back. The forest will remember you.",
+  "commands.orimod.companion.flame.on": "Companion Spirit Flame: on (this session).",
+  "commands.orimod.companion.flame.off": "Companion Spirit Flame: off (this session)."
 }

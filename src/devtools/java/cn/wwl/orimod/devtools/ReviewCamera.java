@@ -16,11 +16,16 @@ public final class ReviewCamera {
     private ReviewCamera() { }
 
     static void start(Vec3 viewOffset, double height, boolean follows) {
+        start(viewOffset, height, follows, null);
+    }
+
+    static void start(Vec3 viewOffset, double height, boolean follows, Vec3 fixedAnchor) {
         var mc = Minecraft.getInstance();
         stop();
         if (mc.player == null || mc.level == null) throw new IllegalStateException("Player required");
         previousType = mc.options.getCameraType();
-        offset = viewOffset; targetHeight = height; follow = follows; anchor = mc.player.position();
+        offset = viewOffset; targetHeight = height; follow = follows;
+        anchor = fixedAnchor == null ? mc.player.position() : fixedAnchor;
         level = mc.level;
         mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         mc.gameRenderer.setRenderHand(false);

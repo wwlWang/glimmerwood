@@ -1,0 +1,74 @@
+{
+  "creature": "gloom_hawk",
+  "revision": 4,
+  "fps": 24,
+  "clips": {
+    "idle": {
+      "seconds": 3.0,
+      "loop": true,
+      "frames": 72
+    },
+    "move": {
+      "seconds": 0.6,
+      "loop": true,
+      "frames": 14
+    },
+    "telegraph": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    },
+    "dive": {
+      "seconds": 0.5,
+      "loop": true,
+      "frames": 12
+    },
+    "attack": {
+      "seconds": 0.4,
+      "loop": false,
+      "frames": 10
+    },
+    "hurt": {
+      "seconds": 0.35,
+      "loop": false,
+      "frames": 8
+    },
+    "death": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    }
+  },
+  "vertices": 5220,
+  "bones": [
+    "root",
+    "body",
+    "head",
+    "jaw",
+    "tail",
+    "wing_l_1",
+    "wing_l_2",
+    "leg_l",
+    "wing_r_1",
+    "wing_r_2",
+    "leg_r"
+  ],
+  "export": "art/source/monsters/gloom_hawk/v004/gloom_hawk.glb",
+  "export_sha256": "68687d2ba373f47b8fec54794406c4be19cbb842f9e5f453d8971d75df6735e8",
+  "blend": "art/source/monsters/gloom_hawk/v004/gloom_hawk.blend",
+  "textures": {
+    "orimod:textures/entity/gloom_hawk_emission.png": {
+      "path": "art/source/monsters/gloom_hawk/v004/gloom_hawk_emission.png",
+      "sha256": "2b3b46677884dd654496bc33582734e2d031f8527f46144f2af11d9cf88cd668"
+    },
+    "orimod:textures/entity/gloom_hawk_base.png": {
+      "path": "art/source/monsters/gloom_hawk/v004/gloom_hawk_base.png",
+      "sha256": "266f9d3398c97d0ebc535149d1d4eb3e0e2ccd0944144fb3502b3aede4988592"
+    },
+    "orimod:textures/entity/gloom_hawk_surface.png": {
+      "path": "art/source/monsters/gloom_hawk/v004/gloom_hawk_surface.png",
+      "sha256": "44b691cc46d56c2637e5c4eacd6e50944ba643dcffde9eaa03d108e35aa454f8"
+    }
+  },
+  "packaged": "src/main/resources/assets/orimod/models/entity/gloom_hawk.glb"
+}

@@ -92,6 +92,16 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
         return result;
     }
 
+    static float cradleWeight(Player player, boolean left) {
+        Body b = BODIES.get(player.getUUID());
+        return b == null ? 0 : b.animation.cradleWeight(left);
+    }
+
+    static float lowered(Player player, boolean left) {
+        Body b = BODIES.get(player.getUUID());
+        return b == null ? 0 : b.animation.lowered(left);
+    }
+
     static boolean socket(Player player, boolean left, Matrix4f target) {
         Body b = BODIES.get(player.getUUID());
         if (b == null || !b.socketsReady || !SpiritAppearance.visible(player)) return false;

@@ -26,7 +26,7 @@ public final class GloomHawk extends Monster {
     public static final double HEIGHT = 7, ORBIT = 6, DIVE_SPEED = 1.1, CLIMB_SPEED = .35;
     public static final float DIVE_DAMAGE = 5;
     private static final EntityDataAccessor<Integer> STATE = SynchedEntityData.defineId(GloomHawk.class, EntityDataSerializers.INT);
-    private int timer = CIRCLE_TICKS;
+    private static final EntityDataAccessor<Integer> TIMER = SynchedEntityData.defineId(GloomHawk.class, EntityDataSerializers.INT);
     private Vec3 mark;
     private boolean struck;
     /** R98: retreat from the light, cancelling any telegraph or dive. */
@@ -40,15 +40,18 @@ public final class GloomHawk extends Monster {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 16).add(Attributes.FOLLOW_RANGE, 32).add(Attributes.FLYING_SPEED, .6);
     }
 
-    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STATE, CIRCLE); }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STATE, CIRCLE); builder.define(TIMER, CIRCLE_TICKS); }
     public int state() { return entityData.get(STATE); }
+    public int timer() { return entityData.get(TIMER); }
+    private void timer(int ticks) { entityData.set(TIMER, ticks); }
+    private int advanceTimer() { int left = timer() - 1; timer(left); return left; }
     public Vec3 mark() { return mark; }
     public boolean dazzled() { return dazzled > 0; }
     public void dazzle(int ticks) { dazzle(ticks, getTarget() == null ? position().subtract(1, 0, 0) : getTarget().position()); }
     public void dazzle(int ticks, Vec3 light) {
         if (ticks <= 0) return;
         dazzled = Math.max(dazzled, ticks); lightOrigin = light;
-        mark = null; struck = false; timer = CIRCLE_TICKS; entityData.set(STATE, CIRCLE);
+        mark = null; struck = false; timer(CIRCLE_TICKS); entityData.set(STATE, CIRCLE);
         retreat();
     }
     private void retreat() {
@@ -69,7 +72,7 @@ public final class GloomHawk extends Monster {
         if (dazzled > 0) return;
         setTarget(target);
         mark = target.position().add(0, .5, 0);
-        entityData.set(STATE, TELEGRAPH); timer = TELEGRAPH_TICKS; struck = false;
+        entityData.set(STATE, TELEGRAPH); timer(TELEGRAPH_TICKS); struck = false;
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.PHANTOM_SWOOP, SoundSource.HOSTILE, 1.6f, .7f);
     }
 
@@ -79,16 +82,16 @@ public final class GloomHawk extends Monster {
         int s = state();
         if (s == TELEGRAPH) {
             setDeltaMovement(getDeltaMovement().scale(.5));
-            if (--timer <= 0) { entityData.set(STATE, DIVE); timer = DIVE_TICKS; level().playSound(null, getX(), getY(), getZ(), SoundEvents.PHANTOM_BITE, SoundSource.HOSTILE, 1.4f, .6f); }
+            if (advanceTimer() <= 0) { entityData.set(STATE, DIVE); timer(DIVE_TICKS); level().playSound(null, getX(), getY(), getZ(), SoundEvents.PHANTOM_BITE, SoundSource.HOSTILE, 1.4f, .6f); }
         } else if (s == DIVE) {
             if (mark != null) setDeltaMovement(diveVelocity(position(), mark));
             if (!level().isClientSide && !struck)
                 for (var e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(.4), e -> e == getTarget()))
                     if (strike(e)) { struck = true; break; }
-            if (--timer <= 0 || mark != null && position().distanceTo(mark) < .8 || horizontalCollision || verticalCollision) { entityData.set(STATE, CLIMB); timer = 30; }
+            if (advanceTimer() <= 0 || mark != null && position().distanceTo(mark) < .8 || horizontalCollision || verticalCollision) { entityData.set(STATE, CLIMB); timer(30); }
         } else if (s == CLIMB) {
             setDeltaMovement(getDeltaMovement().multiply(.8, 0, .8).add(0, CLIMB_SPEED, 0));
-            if (--timer <= 0) { entityData.set(STATE, CIRCLE); timer = CIRCLE_TICKS; }
+            if (advanceTimer() <= 0) { entityData.set(STATE, CIRCLE); timer(CIRCLE_TICKS); }
         }
     }
 
@@ -111,7 +114,7 @@ public final class GloomHawk extends Monster {
             double a = tickCount * .05;
             var goal = target.position().add(Math.cos(a) * ORBIT, HEIGHT, Math.sin(a) * ORBIT);
             setDeltaMovement(goal.subtract(position()).scale(.06));
-            if (--timer <= 0) telegraph(target);
+            if (advanceTimer() <= 0) telegraph(target);
         } else step();
         if (getDeltaMovement().horizontalDistanceSqr() > 1e-4) setYRot((float) Math.toDegrees(Math.atan2(-getDeltaMovement().x, getDeltaMovement().z)));
     }

@@ -1,7 +1,7 @@
 {
   "size": [
     19,
-    17,
+    28,
     31
   ],
   "shrine": [
@@ -27,7 +27,7 @@
         7,
         9
       ],
-      "block": "minecraft:stripped_dark_oak_log"
+      "block": "orimod:spirit_log"
     },
     {
       "position": [
@@ -35,7 +35,7 @@
         9,
         9
       ],
-      "block": "minecraft:stripped_dark_oak_log"
+      "block": "orimod:spirit_log"
     },
     {
       "position": [
@@ -43,7 +43,7 @@
         11,
         9
       ],
-      "block": "minecraft:stripped_dark_oak_log"
+      "block": "orimod:spirit_log"
     },
     {
       "position": [

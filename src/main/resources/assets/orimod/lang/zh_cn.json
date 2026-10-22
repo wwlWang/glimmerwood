@@ -457,5 +457,7 @@
   "commands.orimod.restoration.reset": "复苏状态和个人回执已重置；已加载的灵叶正在恢复。",
   "advancement.orimod.restoration.title": "守光者",
   "advancement.orimod.restoration.description": "归还三道意志之光，让森林重新呼吸。",
-  "line.orimod.restoration": "萤：光回来了。森林会记得你。"
+  "line.orimod.restoration": "萤：光回来了。森林会记得你。",
+  "commands.orimod.companion.flame.on": "同伴自动灵焰：开启（本次会话）。",
+  "commands.orimod.companion.flame.off": "同伴自动灵焰：关闭（本次会话）。"
 }

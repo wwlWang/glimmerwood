@@ -118,7 +118,7 @@ public final class GloomBeetle extends Monster {
     }
     @Override public boolean hurt(DamageSource source,float amount){
         boolean armored=state()!=State.FLIPPED && front(yBodyRot,incoming(source));
-        boolean applied=super.hurt(source,amount*damageScale(state(),armored));
+        boolean applied=super.hurt(source,scaledDamage(amount,state(),armored,source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)));
         if(applied && armored && level() instanceof ServerLevel server){
             playSound(SoundEvents.ANVIL_HIT,.5f,1.7f);server.sendParticles(ParticleTypes.ELECTRIC_SPARK,getX(),getY()+.5,getZ(),5,.45,.15,.45,.02);
         }

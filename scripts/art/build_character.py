@@ -23,9 +23,8 @@ SOURCE = ROOT / 'models/ori/3/ori_rigged.glb'
 SOURCE_HASH = '6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918'
 assert bpy.app.background and hashlib.sha256(SOURCE.read_bytes()).hexdigest() == SOURCE_HASH
 output_root = ROOT / 'art/source/character'
-revision = 1
-while (output_root / f'v{revision:03}').exists():
-    revision += 1
+# Continue after the newest revision; older pruned numbers are never reused.
+revision = 1 + max((int(d.name[1:]) for d in output_root.glob('v[0-9][0-9][0-9]')), default=0)
 OUTPUT = output_root / f'v{revision:03}'
 OUTPUT.mkdir(parents=True)
 

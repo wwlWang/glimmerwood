@@ -58,6 +58,9 @@ public final class SpiritFxClient {
         if (payload.kind() == SpiritFxKind.SPIRIT_FLAME && level.getEntity(payload.sourceEntity()) instanceof net.minecraft.world.entity.player.Player player)
             CompanionMotion.attack(player, new net.minecraft.world.phys.Vec3(payload.x(), payload.y(), payload.z()));
         burst(payload.kind(), payload.x(), payload.y(), payload.z(), payload.sourceEntity());
+        if (payload.kind() == SpiritFxKind.BLADE_HIT && mc.player != null && payload.sourceEntity() == mc.player.getId())
+            SpiritScreenFeedback.bladeHit(cn.wwl.orimod.config.OriClientConfig.visuals(),
+                    mc.player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW).stage() == 3);
     }
 
     /** Client tick: keep persistent effects alive only while the world, the entity and the heartbeat are. */

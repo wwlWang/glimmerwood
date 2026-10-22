@@ -33,6 +33,13 @@ public final class BeetleRules {
         return (forward.x*incoming.x+forward.z*incoming.z)/horizontal>=.5-1e-7;
     }
     public static float damageScale(State state,boolean front){return state==State.FLIPPED?2:front?.2f:1;}
+    /** Armour/flip scaling for ordinary hits only. /kill and the void (bypass invulnerability) pass through unscaled,
+     * and an overflow stays finite: Float.MAX_VALUE doubled became infinite health loss and a NaN, undying beetle. */
+    public static float scaledDamage(float amount,State state,boolean front,boolean bypass){
+        if(bypass)return amount;
+        float scaled=amount*damageScale(state,front);
+        return Float.isFinite(scaled)?scaled:Float.MAX_VALUE;
+    }
     public static boolean chargeRange(double distanceSquared){return distanceSquared>=MIN_RANGE*MIN_RANGE && distanceSquared<=MAX_RANGE*MAX_RANGE;}
     private BeetleRules(){}
 }

@@ -57,6 +57,18 @@
   - **路线自然**：玩家看到入口的方式、行进路线和奖励位置要像原作关卡那样一眼读得懂，不靠标记。
 - 给用户 2–3 个方向的概念截图（同一处遗迹的不同改法）后再定。
 
+## 第四/五批进展（2026-10-22）
+
+用户已定：怪物用 Ori 式光滑 glTF 模型；遗迹用方向 A“古树吞没的神殿”。用户要求此后模型和地图由 Claude 直接设计并落地，不再逐个确认，最后一起实机试玩。
+
+- **怪物资产（Claude）**：`scripts/art/build_monster.py <id>` 在 Blender 中程序化建模、绑定、烘焙 base/emission/surface 三张 512 贴图（与 ori.glb 同一 GemRender 契约），输出 `art/source/monsters/<id>/vNNN/`；`promote_monster.py` 打包进 `assets/orimod/models/entity/<id>.glb`；`preview_monster.py` 从导出的 GLB 渲染每个片段的序列帧（`vNNN/preview/`）。五种 v001 已 promote：
+  - 喷吐者：扎根花苞，根须当腿行走；蓄力花瓣收拢、花苞鼓起，吐球时整朵绽开。片段 idle/move/telegraph/attack/hurt/death。
+  - 甲虫：两片鞘翅在蓄力时掀开露出发光缝（预警），三足交替步态；另有 charge/stunned/flipped，死亡时腿蜷起。
+  - 腐光鸦 / 翼母：共用鸟类骨架（臂翼+手翼+尾扇+喙），翼母放大 2.4 倍并带发光冠羽和长尾羽；dive 收翼俯冲，翼母另有 stunned/feathers/gust/enrage。
+  - 腐光之心：裂开的暗色心脏外包五根两节荆棘肋骨；ring 时肋骨平展、slam 时上扬后砸下，另有 idle_phase2/enrage。
+- **怪物运行时（Codex，进行中）**：通用 GloomCreatureVisual 按服务端状态与计时器选片段，保留旧渲染作回退、旧预警环/地面标记保留。
+- **遗迹（Claude）**：`scripts/art/ruin_dressing.py` 在功能布局之后加装饰层，只写受保护集合（路线 clearance±1、检查点、updraft 整列、秘室、光桥、祭坛竞技场、甲虫/容器点等）以外的空位：断墙、立柱与倒柱、巨型灵树与板根、地面隆起、苔藓蕨类、发光地衣与灵藤；溶洞改为洞顶垂下的树根。林泉/溪谷模板加高到 28/30 给树冠留空间，林泉根拱改为灵木。三处契约、`test_check_ruins.py` 全过，路线坐标与 HEAD 一致。概念体块稿在 `evidence/ruin-concepts-v001`，怪物概念稿在 `evidence/monster-concepts-v002`。
+
 ## 推进方式
 
 Codex 实现，Claude 设计、审查、实机验收并提交；客户端与 Gradle 互斥，客户端一律 llvmpipe + `DISPLAY=:0`。每批做完停下报告。

@@ -1,0 +1,93 @@
+{
+  "creature": "gloom_matriarch",
+  "revision": 4,
+  "fps": 24,
+  "clips": {
+    "idle": {
+      "seconds": 4.0,
+      "loop": true,
+      "frames": 96
+    },
+    "move": {
+      "seconds": 1.1,
+      "loop": true,
+      "frames": 26
+    },
+    "telegraph": {
+      "seconds": 1.5,
+      "loop": false,
+      "frames": 36
+    },
+    "dive": {
+      "seconds": 0.6,
+      "loop": true,
+      "frames": 14
+    },
+    "attack": {
+      "seconds": 0.6,
+      "loop": false,
+      "frames": 14
+    },
+    "stunned": {
+      "seconds": 2.0,
+      "loop": true,
+      "frames": 48
+    },
+    "feathers": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    },
+    "gust": {
+      "seconds": 1.25,
+      "loop": false,
+      "frames": 30
+    },
+    "enrage": {
+      "seconds": 2.0,
+      "loop": false,
+      "frames": 48
+    },
+    "hurt": {
+      "seconds": 0.5,
+      "loop": false,
+      "frames": 12
+    },
+    "death": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    }
+  },
+  "vertices": 6132,
+  "bones": [
+    "root",
+    "body",
+    "head",
+    "jaw",
+    "tail",
+    "wing_l_1",
+    "wing_l_2",
+    "leg_l",
+    "wing_r_1",
+    "wing_r_2",
+    "leg_r"
+  ],
+  "export": "art/source/monsters/gloom_matriarch/v004/gloom_matriarch.glb",
+  "export_sha256": "99a4bdef943b25a30036a202725e581a14ef9ecded2b7c01a4b4294598fbee73",
+  "blend": "art/source/monsters/gloom_matriarch/v004/gloom_matriarch.blend",
+  "textures": {
+    "orimod:textures/entity/gloom_matriarch_emission.png": {
+      "path": "art/source/monsters/gloom_matriarch/v004/gloom_matriarch_emission.png",
+      "sha256": "d2a9d4351ea03068a53eccf8d28154bce4a429802e82d4cd2603cd7ae97ae28f"
+    },
+    "orimod:textures/entity/gloom_matriarch_base.png": {
+      "path": "art/source/monsters/gloom_matriarch/v004/gloom_matriarch_base.png",
+      "sha256": "b85cb1f484e26e569df350e1d34eb7544dbe1c7106805a48eebbb05e31f22a6a"
+    },
+    "orimod:textures/entity/gloom_matriarch_surface.png": {
+      "path": "art/source/monsters/gloom_matriarch/v004/gloom_matriarch_surface.png",
+      "sha256": "c825e46f286150fdb74fc9235a168dd8d210f7cf06e8086f2b8285623c5cb64d"
+    }
+  }
+}

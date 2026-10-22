@@ -29,6 +29,7 @@ public final class GloomMatriarchRenderer extends EntityRenderer<GloomMatriarch>
     }
 
     @Override public void render(GloomMatriarch e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(e)) { super.render(e, yaw, partial, pose, buffers, light); return; }
         float t = e.tickCount + partial;
         int a = e.attack();
         boolean warning = a == GloomMatriarch.DIVE_TELEGRAPH || a == GloomMatriarch.FEATHERS || a == GloomMatriarch.GUST;

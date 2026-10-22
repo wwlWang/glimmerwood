@@ -27,6 +27,7 @@ public final class SpiritScreenFeedback {
     private static int hurtTriggers, stompTriggers;
 
     static void stomp(OriClientConfig.Visuals visuals) { stompTriggers++; FEEDBACK.stomp(visuals.screenShake()); }
+    static void bladeHit(OriClientConfig.Visuals visuals, boolean finisher) { FEEDBACK.bladeHit(visuals.screenShake(), finisher); }
 
     public static void tick(ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();

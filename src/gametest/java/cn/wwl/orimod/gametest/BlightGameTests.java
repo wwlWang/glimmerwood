@@ -278,6 +278,7 @@ public final class BlightGameTests {
         var old=snapshot(h,base);
         var difficulty=level.getDifficulty();
         var guards=new ArrayList<net.minecraft.world.entity.Mob>();
+        var arena=new ArrayList<ChunkPos>();
         var pinned=new ArrayList<ChunkPos>();
         // setPos on an embedded player does not establish player chunk tickets. This arena is
         // outside the GameTest template's forced area; keep the entire inflate(13) search loaded.
@@ -299,32 +300,56 @@ public final class BlightGameTests {
         checked.accept(()->{
             for(int x=(base.getX()-13)>>4;x<=(base.getX()+13)>>4;x++)
                 for(int z=(base.getZ()-13)>>4;z<=(base.getZ()+13)>>4;z++)
-                    if(level.setChunkForced(x,z,true))pinned.add(new ChunkPos(x,z));
+                    {
+                        var chunk=new ChunkPos(x,z);arena.add(chunk);
+                        if(level.setChunkForced(x,z,true))pinned.add(chunk);
+                    }
             for(var p:old.keySet())level.setBlock(p,p.getY()<base.getY()?Blocks.DIRT.defaultBlockState():Blocks.AIR.defaultBlockState(),18);
             level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL,true);
             c.player().setPos(Vec3.atCenterOf(base).add(0,1,-2));
             level.setBlock(base,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);
             var data=BlightData.get(level);data.register(base,new long[]{base.below().asLong()});
             Runnable spawn=()->{
-                for(var chunk:pinned)h.assertTrue(level.getChunkSource().getChunkNow(chunk.x,chunk.z)!=null,"Defender arena unloaded");
+                for(var chunk:arena)h.assertTrue(level.getChunkSource().getChunkNow(chunk.x,chunk.z)!=null
+                        && level.areEntitiesLoaded(chunk.toLong()) && level.isNaturalSpawningAllowed(chunk),"Defender arena not entity-ticking");
                 data.defend(level,base,c.player());
                 for(var mob:level.getEntitiesOfClass(cn.wwl.orimod.entity.GloomSpitter.class,new AABB(base).inflate(13))){
                     mob.setNoAi(true);mob.setPersistenceRequired();if(!guards.contains(mob))guards.add(mob);
                 }
             };
-            spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),1,"First defender missing");
-            spawn.run();h.assertValueEqual(guards.size(),1,"Cooldown ignored");
-            h.runAfterDelay(100,()->checked.accept(()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"100 tick cooldown too long");}));
-            h.runAfterDelay(200,()->checked.accept(()->{spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Third defender missing");}));
-            h.runAfterDelay(300,()->{
-                try {
-                    spawn.run();h.assertValueEqual(guards.size(),3,"More than three defenders");
-                    var first=guards.getFirst();var saved=first.saveWithoutId(new CompoundTag());first.setRemoved(Entity.RemovalReason.UNLOADED_TO_CHUNK);
-                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Unloading freed a guard slot");
-                    var restored=cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get().create(level);restored.load(saved);level.addFreshEntity(restored);guards.add(restored);restored.discard();
-                    h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"Discarded defender did not free slot");
-                    spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Freed slot cannot refill");h.succeed();
-                } finally {cleanup.run();}
+            // Forced tickets are asynchronous: block data can already be available while entity
+            // sections are still HIDDEN. addFreshEntity succeeds there, but AABB queries see nothing.
+            // Start the unchanged cooldown assertions only once ALL arena sections are ready.
+            long[] began={-1};
+            long waitingSince=level.getGameTime();
+            h.onEachTick(()->{
+                if(cleaned.get())return;
+                checked.accept(()->{
+                    if(began[0]<0){
+                        h.assertTrue(level.getGameTime()-waitingSince<100,"Defender arena did not become entity-ticking");
+                        if(arena.stream().anyMatch(chunk->level.getChunkSource().getChunkNow(chunk.x,chunk.z)==null
+                                || !level.areEntitiesLoaded(chunk.toLong()) || !level.isNaturalSpawningAllowed(chunk)))return;
+                        began[0]=level.getGameTime();
+                    }
+                    switch((int)(level.getGameTime()-began[0])){
+                        case 0 -> {
+                            spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),1,"First defender missing");
+                            spawn.run();h.assertValueEqual(guards.size(),1,"Cooldown ignored");
+                        }
+                        case 100 -> {spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"100 tick cooldown too long");}
+                        case 200 -> {spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Third defender missing");}
+                        case 300 -> {
+                            try {
+                                spawn.run();h.assertValueEqual(guards.size(),3,"More than three defenders");
+                                var first=guards.getFirst();var saved=first.saveWithoutId(new CompoundTag());first.setRemoved(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+                                h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Unloading freed a guard slot");
+                                var restored=cn.wwl.orimod.entity.OriMobs.GLOOM_SPITTER.get().create(level);restored.load(saved);level.addFreshEntity(restored);guards.add(restored);restored.discard();
+                                h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),2,"Discarded defender did not free slot");
+                                spawn.run();h.assertValueEqual(data.status(Vec3.atCenterOf(base)).get("defenders"),3,"Freed slot cannot refill");h.succeed();
+                            } finally {cleanup.run();}
+                        }
+                    }
+                });
             });
         });
     }

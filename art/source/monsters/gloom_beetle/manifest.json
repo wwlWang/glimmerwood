@@ -1,0 +1,92 @@
+{
+  "creature": "gloom_beetle",
+  "revision": 4,
+  "fps": 24,
+  "clips": {
+    "idle": {
+      "seconds": 3.0,
+      "loop": true,
+      "frames": 72
+    },
+    "move": {
+      "seconds": 0.75,
+      "loop": true,
+      "frames": 18
+    },
+    "telegraph": {
+      "seconds": 0.75,
+      "loop": false,
+      "frames": 18
+    },
+    "attack": {
+      "seconds": 0.35,
+      "loop": false,
+      "frames": 8
+    },
+    "charge": {
+      "seconds": 0.4,
+      "loop": true,
+      "frames": 10
+    },
+    "stunned": {
+      "seconds": 1.5,
+      "loop": true,
+      "frames": 36
+    },
+    "flipped": {
+      "seconds": 0.8,
+      "loop": true,
+      "frames": 19
+    },
+    "hurt": {
+      "seconds": 0.35,
+      "loop": false,
+      "frames": 8
+    },
+    "death": {
+      "seconds": 1.0,
+      "loop": false,
+      "frames": 24
+    }
+  },
+  "vertices": 4546,
+  "bones": [
+    "root",
+    "body",
+    "head",
+    "mandible_l",
+    "shell_l",
+    "leg_l0_a",
+    "leg_l0_b",
+    "leg_l1_a",
+    "leg_l1_b",
+    "leg_l2_a",
+    "leg_l2_b",
+    "mandible_r",
+    "shell_r",
+    "leg_r0_a",
+    "leg_r0_b",
+    "leg_r1_a",
+    "leg_r1_b",
+    "leg_r2_a",
+    "leg_r2_b"
+  ],
+  "export": "art/source/monsters/gloom_beetle/v004/gloom_beetle.glb",
+  "export_sha256": "b2f27e45cc598ac42d6fd355e5f82afc5a7e6c48a45190af3f626839e10b1aed",
+  "blend": "art/source/monsters/gloom_beetle/v004/gloom_beetle.blend",
+  "textures": {
+    "orimod:textures/entity/gloom_beetle_emission.png": {
+      "path": "art/source/monsters/gloom_beetle/v004/gloom_beetle_emission.png",
+      "sha256": "cda38394fba41f32e667fd011e523ed2c2f584b45a35eccc05a54ca70607c8ef"
+    },
+    "orimod:textures/entity/gloom_beetle_base.png": {
+      "path": "art/source/monsters/gloom_beetle/v004/gloom_beetle_base.png",
+      "sha256": "6ecb7050f8af96038626816b45dfed2129b10f562dc1ebe3b09a1390c6f70a99"
+    },
+    "orimod:textures/entity/gloom_beetle_surface.png": {
+      "path": "art/source/monsters/gloom_beetle/v004/gloom_beetle_surface.png",
+      "sha256": "c0e316a3c6291df1b24e52e8b9b361610baff52bc2efc554511e9eff3d89dfa0"
+    }
+  },
+  "packaged": "src/main/resources/assets/orimod/models/entity/gloom_beetle.glb"
+}

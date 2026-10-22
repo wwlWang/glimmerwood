@@ -28,6 +28,9 @@ public final class SpiritData {
             AttachmentType.builder(() -> 100f).serialize(Codec.FLOAT).sync(ByteBufCodecs.FLOAT).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.progression.EnergyState>> ENERGY_STATE = TYPES.register("energy_state", () ->
             AttachmentType.builder(cn.wwl.orimod.progression.EnergyState::new).build());
+    /** OP playtest switch, synchronized for diagnostics; resets on reconnect/death and never changes saves. */
+    public static final Supplier<AttachmentType<Boolean>> COMPANION_FLAME = TYPES.register("companion_flame", () ->
+            AttachmentType.builder(() -> true).sync(ByteBufCodecs.BOOL).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.movement.MovementState>> MOVEMENT = TYPES.register("movement", () ->
             AttachmentType.builder(cn.wwl.orimod.movement.MovementState::new).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.combat.CombatState>> COMBAT = TYPES.register("combat", () ->

@@ -14,9 +14,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
 abstract class SpiritHeldHandMixin {
+    @Inject(method = "renderItem", at = @At("HEAD"))
+    private void orimod$heldOrigin(LivingEntity entity, ItemStack item, ItemDisplayContext context, boolean left,
+                                 PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo ci) {
+        if (SpiritHands.held(entity, item, context)) SpiritHands.beginHeld(pose, left);
+    }
+
     @Inject(method = "renderItem", at = @At("TAIL"))
     private void orimod$paw(LivingEntity entity, ItemStack item, ItemDisplayContext context, boolean left,
                            PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo ci) {
-        if (!item.isEmpty()) SpiritHands.heldItem(entity, item, context, pose, buffers, light);
+        if (SpiritHands.held(entity, item, context)) {
+            SpiritHands.heldItem(entity, item, context, pose, buffers, light);
+            pose.popPose();
+        }
     }
 }

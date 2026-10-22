@@ -301,6 +301,33 @@ public final class DevelopmentBridge {
                     player.setData(cn.wwl.orimod.spirit.SpiritData.ABILITIES, player.getData(cn.wwl.orimod.spirit.SpiritData.ABILITIES) | mask);
                 }).get(5, TimeUnit.SECONDS);
             }
+            case "creature_visuals" -> {
+                cn.wwl.orimod.client.render.GloomCreatureVisual.legacy(action.has("legacy") && action.get("legacy").getAsBoolean());
+            }
+            case "creature_action" -> {
+                require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
+                var id = mc.player.getUUID(); int entityId = action.get("id").getAsInt();
+                String animation = action.get("action").getAsString();
+                return mc.getSingleplayerServer().submit(() -> {
+                    var player = mc.getSingleplayerServer().getPlayerList().getPlayer(id);
+                    var entity = player.serverLevel().getEntity(entityId);
+                    require(entity != null && entity.distanceToSqr(player) <= 24 * 24, "Nearby creature required");
+                    if (entity instanceof cn.wwl.orimod.entity.GloomSpitter e && animation.equals("telegraph")) e.performRangedAttack(player, 1);
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomHawk e && animation.equals("telegraph")) e.telegraph(player);
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomBeetle e && animation.equals("flip")) e.flip();
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomBeetle e && animation.equals("telegraph")) e.beginWindup(player.position());
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomHeart e && animation.equals("enrage")) e.enrage();
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomMatriarch e && animation.equals("enrage")) e.enrage();
+                    else if (entity instanceof cn.wwl.orimod.entity.GloomHeart e) {
+                        int attack = switch(animation) { case "telegraph" -> e.VOLLEY; case "ring" -> e.RING; case "slam" -> e.SLAM; default -> -1; };
+                        require(attack >= 0, "Unknown Heart action"); e.startAttack(attack, player);
+                    } else if (entity instanceof cn.wwl.orimod.entity.GloomMatriarch e) {
+                        int attack = switch(animation) { case "telegraph" -> e.DIVE_TELEGRAPH; case "feathers" -> e.FEATHERS; case "gust" -> e.GUST; default -> -1; };
+                        require(attack >= 0, "Unknown Matriarch action"); e.startAttack(attack, player);
+                    } else throw new IllegalArgumentException("Unsupported creature action");
+                    return Map.<String,Object>of("id", entityId, "action", animation);
+                }).get(5, TimeUnit.SECONDS);
+            }
             case "nearby_entities" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var id = mc.player.getUUID();
@@ -314,6 +341,10 @@ public final class DevelopmentBridge {
                             "noGravity", entity.isNoGravity(), "noAi", entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi(),
                             "leashHolder", entity instanceof net.minecraft.world.entity.Mob leashed && leashed.getLeashHolder() != null ? leashed.getLeashHolder().getId() : -1));
                         if(entity instanceof cn.wwl.orimod.entity.GloomBeetle beetle)data.put("state",beetle.stateName());
+                        if(entity instanceof cn.wwl.orimod.entity.GloomSpitter || entity instanceof cn.wwl.orimod.entity.GloomBeetle
+                                || entity instanceof cn.wwl.orimod.entity.GloomHawk || entity instanceof cn.wwl.orimod.entity.GloomHeart
+                                || entity instanceof cn.wwl.orimod.entity.GloomMatriarch)
+                            data.put("visual",cn.wwl.orimod.client.render.GloomCreatureVisual.diagnostics(entity.getUUID()));
                         if(entity instanceof cn.wwl.orimod.entity.GladesMerchant merchant){data.put("job",merchant.job());if(merchant.well()!=null)data.put("well",new int[]{merchant.well().getX(),merchant.well().getY(),merchant.well().getZ()});}
                         return data;
                     }).toList());
@@ -507,7 +538,14 @@ public final class DevelopmentBridge {
                     double x=action.get("x").getAsDouble(), y=action.get("y").getAsDouble(), z=action.get("z").getAsDouble();
                     double height=action.has("targetHeight") ? action.get("targetHeight").getAsDouble() : .65;
                     require(Double.isFinite(x+y+z+height) && x*x+y*y+z*z<1024 && x*x+y*y+z*z>.01, "Invalid review camera offset");
-                    ReviewCamera.start(new net.minecraft.world.phys.Vec3(x,y,z),height,!action.has("follow") || action.get("follow").getAsBoolean());
+                    net.minecraft.world.phys.Vec3 anchor = null;
+                    if (action.has("entity")) {
+                        var entity = mc.level == null ? null : mc.level.getEntity(action.get("entity").getAsInt());
+                        require(entity != null && mc.player != null && entity.distanceToSqr(mc.player) <= 24 * 24, "Nearby client entity required");
+                        anchor = entity.getPosition(mc.getTimer().getGameTimeDeltaPartialTick(true));
+                    }
+                    ReviewCamera.start(new net.minecraft.world.phys.Vec3(x,y,z),height,
+                            anchor == null && (!action.has("follow") || action.get("follow").getAsBoolean()),anchor);
                 }
             }
             case "close_screen" -> { if (!action.has("keepKeys") || !action.get("keepKeys").getAsBoolean()) releaseKeys(); mc.setScreen(null); }
@@ -802,6 +840,7 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) {
+            state.put("bladeMotion", cn.wwl.orimod.client.SpiritControls.bladeDiagnostics());
             state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
             state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
             state.put("aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
@@ -827,6 +866,7 @@ public final class DevelopmentBridge {
             });
             state.put("blight", blight);
         }
+        state.put("companionFlame", Map.of("enabled", player.getData(cn.wwl.orimod.spirit.SpiritData.COMPANION_FLAME)));
         state.put("wisps",Map.of("mask",player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).wisps(),"purifications",cn.wwl.orimod.progression.WillWisp.purifications(player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS))));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),
                 "flightTicks", player.getFallFlyingTicks(), "spinAttack", player.isAutoSpinAttack(),

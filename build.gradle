@@ -44,6 +44,8 @@ dependencies {
     devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
     devtoolsCompileOnly fileTree(dir: 'libs/compile', include: '*.jar')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    // Pure node/pose evaluation against the shipped rig; no graphics context or client launch.
+    testImplementation files('libs/runtime/gemrender-0.1.17.jar')
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 

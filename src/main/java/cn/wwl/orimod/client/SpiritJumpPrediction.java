@@ -21,7 +21,7 @@ public final class SpiritJumpPrediction {
         boolean jump = (flags & MovementInputPayload.JUMP) != 0;
         boolean edge = jump && !state.jumpHeld;
         state.jumpHeld = jump;
-        if (!active) { state.predictedJumps.clear(); return false; }
+        if (!MovementRules.ownsJump(active, player.getAbilities().mayfly)) { state.predictedJumps.clear(); return false; }
         boolean grounded = SpiritMovement.grounded(player) && now >= state.groundLockUntil;
         if (grounded) {
             state.airJumpSpent = state.airDashSpent = false;

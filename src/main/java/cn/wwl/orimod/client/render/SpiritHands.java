@@ -22,6 +22,19 @@ import net.neoforged.neoforge.client.event.RenderArmEvent;
 public final class SpiritHands {
     private SpiritHands() { }
 
+    public static boolean held(LivingEntity entity, ItemStack item, ItemDisplayContext context) {
+        return !item.isEmpty() && entity instanceof Player player && SpiritData.isSpirit(player) && !player.isInvisible()
+                && (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+    }
+
+    /** Move item and palm together, in view space, preserving the handle contact under equip/use rotations. */
+    public static void beginHeld(PoseStack pose, boolean left) {
+        pose.pushPose();
+        var offset = SpiritHandSpace.offset(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix(),
+                new Vector3f(left ? .10f : -.10f, .22f, -.20f));
+        pose.last().pose().translateLocal(offset.x, offset.y, offset.z);
+    }
+
     public static void emptyArm(RenderArmEvent event) {
         if (!SpiritData.isSpirit(event.getPlayer()) || event.getPlayer().isInvisible()) return;
         boolean left = event.getArm() == HumanoidArm.LEFT;
@@ -67,9 +80,12 @@ public final class SpiritHands {
         // These small meshes are already posed. Feed their triangles through the
         // same entity buffers as vanilla hands so Iris owns the hand pass too.
         // GemRender's standalone direct shader is not part of Iris's hand pass.
-        for (var part : model.model().meshes()) {
+        var min = new Vector3f(Float.POSITIVE_INFINITY);
+        var max = new Vector3f(Float.NEGATIVE_INFINITY);
+        for (int pass = 0; pass < 2; pass++) for (var part : model.model().meshes()) {
             if (!(part.mesh() instanceof GltfMesh mesh)) continue;
-            var vertices = buffers.getBuffer(SpiritHandRenderType.triangles(part.material().texture()));
+            var vertices = buffers.getBuffer(pass == 0 ? SpiritHandRenderType.triangles(part.material().texture())
+                    : SpiritHandRenderType.emission(part.material().texture()));
             var geometry = mesh.geometry();
             var forearm = grip ? new SpiritForearm(pose.last(), geometry, left) : null;
             var point = new Vector3f();
@@ -85,12 +101,21 @@ public final class SpiritHands {
                         pose.last().pose().transformPosition(point.set(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2)));
                         pose.last().normal().transform(normal).normalize();
                     }
+                    if (pass == 0 && geometry.position(i,1) > -.1f) { min.min(point); max.max(point); }
                     vertices.addVertex(point.x, point.y, point.z)
-                            .setColor(0xFFFFFFFF).setUv(geometry.texCoord(i,0), geometry.texCoord(i,1))
-                            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light)
+                            .setColor(1f, 1f, 1f, 1f)
+                            .setUv(geometry.texCoord(i,0), geometry.texCoord(i,1) + (pass == 0 ? 0 : SpiritSelfLight.EMISSION_UV_OFFSET))
+                            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(SpiritSelfLight.packed(light))
                             .setNormal(normal.x, normal.y, normal.z);
                 }
             }
+        }
+        // The first-person pass has no world SpiritAura. A small view-space halo follows the posed palm.
+        if (Float.isFinite(min.x)) {
+            var centre = new Vector3f(min).add(max).mul(.5f);
+            float radius = Math.max(.08f, Math.max(max.x - min.x, max.y - min.y) * .8f);
+            SpiritEnergy.quad(buffers.getBuffer(SpiritEnergy.glow()), new PoseStack().last(), centre,
+                    new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, .35f);
         }
         return true;
     }

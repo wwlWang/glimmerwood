@@ -5,6 +5,8 @@ import net.minecraft.world.phys.Vec3;
 
 /** Shared deterministic rules. Callers supply observations and own all world/state mutations. */
 public final class MovementRules {
+    /** Vanilla must see both jump edges when flight is available (including mod-granted flight). */
+    public static boolean ownsJump(boolean movementActive, boolean mayFly) { return movementActive && !mayFly; }
     public static final int INPUT_BUFFER_TICKS = 2, COYOTE_TICKS = 2, DASH_TICKS = 5, DASH_COOLDOWN_TICKS = 12;
     public static final double DASH_SPEED = 1.12, WALL_SLIDE_SPEED = -.12, WALL_JUMP_SPEED = .47;
     public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = -2.4;

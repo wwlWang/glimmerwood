@@ -48,7 +48,9 @@ public final class SpiritMovement {
         s.yaw = Mth.wrapDegrees(input.yaw());
         s.pitch = Mth.clamp(input.pitch(), -90, 90);
         s.crouching = input.has(MovementInputPayload.CROUCH);
-        boolean jump = input.has(MovementInputPayload.JUMP), dash = input.has(MovementInputPayload.DASH), bash = input.has(MovementInputPayload.BASH);
+        boolean jump = ownsJump(true, player.getAbilities().mayfly) && input.has(MovementInputPayload.JUMP);
+        boolean dash = input.has(MovementInputPayload.DASH), bash = input.has(MovementInputPayload.BASH);
+        if (player.getAbilities().mayfly) { s.jumps.clear(); s.jumpUntil = -100; s.launchCharge = 0; }
         if (s.active) {
             if (jump && !s.jumpHeld && s.crouching && tryLaunch(player, s, now)) {
                 // R38: crouch + jump is Launch (charged on the ground), never an ordinary jump.
@@ -133,12 +135,14 @@ public final class SpiritMovement {
         if (now < s.launchHitUntil) launchContact(player, s);
         if (AirMovement.tickOwned(player, s, now, grounded)) return;
         // R38: charge a ground Launch while crouching still on the ground; a short chime marks the full charge.
-        if (grounded && s.crouching && s.mode == IDLE && cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player)) {
+        if (!player.getAbilities().mayfly && grounded && s.crouching && s.mode == IDLE && cn.wwl.orimod.progression.Ability.LAUNCH.unlocked(player)) {
             if (++s.launchCharge == LAUNCH_CHARGE_TICKS)
                 player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, .8f, 1.6f);
         } else s.launchCharge = 0;
         Direction wall = slidingWall(player, inputDirection(s, false), s.wallDirection);
         s.wallDirection = wall == null ? -1 : wall.ordinal();
+        // Permission can change after a survival jump was queued, before the next input packet.
+        if (player.getAbilities().mayfly) { s.jumps.clear(); s.jumpUntil = -100; }
         while (!s.jumps.isEmpty()) {
             var request = s.jumps.getFirst();
             if (request.expiresAt() < now) { s.jumps.removeFirst(); rejectJump(player, s, request); }
@@ -166,7 +170,7 @@ public final class SpiritMovement {
 
     private static boolean tryJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request, long now) {
         // R88: sneaking no longer blocks jumping (Ori can jump from a crouch); only a ready Launch takes the press.
-        if (s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
+        if (player.getAbilities().mayfly || s.bash != null || s.grapple != null || s.mode.blocksJump()) return false;
         boolean onGround = grounded(player) && now >= s.groundLockUntil;
         Direction wall = slidingWall(player, inputDirection(s, false), s.wallDirection);
         if (wall == null) wall = request.wall();

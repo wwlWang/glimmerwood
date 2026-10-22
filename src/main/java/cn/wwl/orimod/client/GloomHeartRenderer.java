@@ -28,6 +28,7 @@ public final class GloomHeartRenderer extends EntityRenderer<GloomHeart> {
     }
 
     @Override public void render(GloomHeart e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(e)) { super.render(e, yaw, partial, pose, buffers, light); return; }
         float t = e.tickCount + partial;
         boolean charging = e.attack() != GloomHeart.IDLE;
         float swell = charging ? 1 + .35f * (1 - e.timer() / (float) GloomHeart.telegraph(e.attack())) : 1;

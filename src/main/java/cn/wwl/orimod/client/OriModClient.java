@@ -60,6 +60,7 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::tickTarget);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritTargetOverlay::renderWorld);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.BladeSlash::render);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritAura::render);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritAppearance::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritGlow::tick);
@@ -82,6 +83,7 @@ public final class OriModClient {
 
     private void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(cn.wwl.orimod.client.render.SpiritPlayerVisual::register);
+        event.enqueueWork(() -> { cn.wwl.orimod.client.render.GloomCreatureVisual.register(); });
         event.enqueueWork(() -> {
             var bow = cn.wwl.orimod.item.OriItems.SPIRIT_BOW.get();
             net.minecraft.client.renderer.item.ItemProperties.register(bow, net.minecraft.resources.ResourceLocation.withDefaultNamespace("pull"),

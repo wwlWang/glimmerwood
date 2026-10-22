@@ -5,7 +5,7 @@ import com.wf.gemrender.gltf.MeshGeometry;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Bends the extended wrist back below the screen without moving the gripping palm. */
+/** Curves from the gripping palm toward a visible forearm at the lower corner of the view. */
 final class SpiritForearm {
     private final PoseStack.Pose pose;
     private final float centerX, centerZ;
@@ -24,7 +24,8 @@ final class SpiritForearm {
         }
         centerX = (minX + maxX) * .5f; centerZ = (minZ + maxZ) * .5f;
         start = pose.pose().transformPosition(new Vector3f(centerX, -.09f, centerZ));
-        end = new Vector3f(left ? -.58f : .58f, -.95f, -.15f);
+        end = SpiritHandSpace.point(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix(),
+                new Vector3f(left ? -.62f : .62f, -.62f, -.85f));
         direction = pose.pose().transformDirection(new Vector3f(0,-1,0)).normalize();
         float length = start.distance(end);
         startTangent = new Vector3f(direction).mul(length * .55f);

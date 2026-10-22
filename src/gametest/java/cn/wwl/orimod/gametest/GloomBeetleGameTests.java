@@ -65,6 +65,20 @@ public final class GloomBeetleGameTests {
             s.b.yBodyRot=0;s.p.setPos(s.b.position().add(0,0,2));s.b.hurt(s.p.damageSources().playerAttack(s.p),4);
             Fixtures.near(h,s.b.getHealth(),10,"Exposed belly must bypass front armor");
         });
+        for(boolean flipped:List.of(true,false))add(tests,"generic_kill_"+(flipped?"flipped":"front_armored")+"_finite_and_removed",(h,s)->{
+            s.b.yBodyRot=0;s.p.setPos(s.b.position().add(0,0,2));
+            if(flipped){s.b.flip();h.assertValueEqual(s.b.state(),FLIPPED,"Flip fixture");s.b.kill();}
+            else{
+                h.assertTrue(BeetleRules.front(s.b.yBodyRot,s.p.position().subtract(s.b.getBoundingBox().getCenter())),"Front fixture");
+                // The same generic_kill type and amount as /kill, with an explicit
+                // frontal source so the armour branch is also exercised.
+                s.b.hurt(new net.minecraft.world.damagesource.DamageSource(s.b.damageSources().genericKill().typeHolder(),s.p),Float.MAX_VALUE);
+            }
+            h.assertTrue(Float.isFinite(s.b.getHealth()),"/kill produced non-finite health");
+            h.assertTrue(s.b.isDeadOrDying() && !s.b.isAlive(),"/kill did not enter death immediately");
+            for(int i=0;i<20 && !s.b.isRemoved();i++){s.b.tickCount++;s.b.tick();h.assertTrue(Float.isFinite(s.b.getHealth()),"Death tick corrupted health");}
+            h.assertTrue(s.b.isRemoved(),"Killed beetle survived the 20-tick death lifecycle");
+        });
         for(boolean release:List.of(true,false))add(tests,"bash_"+(release?"launch_flips_preserves_recoil":"cancel_does_not_flip"),(h,s)->{
             s.p.setPos(s.b.position().add(0,0,-3));var delta=s.b.getBoundingBox().getCenter().subtract(s.p.getEyePosition());
             float pitch=(float)-Math.toDegrees(Math.atan2(delta.y,delta.horizontalDistance()));

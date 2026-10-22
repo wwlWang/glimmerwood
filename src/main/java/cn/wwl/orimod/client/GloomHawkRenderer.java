@@ -26,6 +26,7 @@ public final class GloomHawkRenderer extends EntityRenderer<GloomHawk> {
     }
 
     @Override public void render(GloomHawk e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(e)) { super.render(e, yaw, partial, pose, buffers, light); return; }
         float t = e.tickCount + partial;
         boolean diving = e.state() == GloomHawk.DIVE, warning = e.state() == GloomHawk.TELEGRAPH;
         float flap = diving ? -55 : Mth.sin(t * (warning ? .9f : .45f)) * 35;

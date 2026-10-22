@@ -28,6 +28,9 @@ public final class ScreenFeedback {
     /** Own stomp landing: lighter shake, no flash. */
     public void stomp(int shakePercent) { shake(0.6, shakePercent); }
 
+    /** Own blade connecting: a small kick, stronger on the finisher, so hits read as weight rather than a click. */
+    public void bladeHit(int shakePercent, boolean finisher) { shake(finisher ? 0.42 : 0.2, shakePercent); }
+
     private void shake(double strength, int percent) {
         double amplitude = MAX_SHAKE_DEGREES * strength * fraction(percent);
         if (amplitude <= 0) return;

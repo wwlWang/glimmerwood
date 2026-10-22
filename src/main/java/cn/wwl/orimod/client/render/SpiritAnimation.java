@@ -67,6 +67,7 @@ final class SpiritAnimation {
             cn.wwl.orimod.movement.FeelTuning.BODY_PITCH_STIFFNESS, cn.wwl.orimod.movement.FeelTuning.BODY_PITCH_DAMPING);
     private float swimMix, glideMix, dart, cruise, swimPhase, speed3, cradleWeightRight, cradleWeightLeft, runPoseWeight;
     private boolean throwing, throwLeft;
+    private float loweredRight, loweredLeft;
     /** "", "swim", "spin" (riptide), "glide" (spirit glide) or "elytra". */
     private String family = "";
     private NodeTable table;
@@ -97,6 +98,7 @@ final class SpiritAnimation {
         var pose = new java.util.LinkedHashMap<String, Object>();
         pose.put("family", family); pose.put("swim", swimMix); pose.put("glide", glideMix); pose.put("dart", dart); pose.put("cruise", cruise);
         pose.put("bodyPitch", bodyPitch.value); pose.put("cradleRight", cradleWeightRight); pose.put("cradleLeft", cradleWeightLeft);
+        pose.put("loweredRight", loweredRight); pose.put("loweredLeft", loweredLeft);
         pose.put("throw", throwing ? 1f : 0f); pose.put("run", runPoseWeight); pose.put("speed3", speed3);
         out.put("pose", pose);
         if (DEBUG_POSE) { out.put("poseError", new java.util.LinkedHashMap<>(poseError)); }
@@ -120,7 +122,7 @@ final class SpiritAnimation {
             wasBow = false; bowReleasedAt = -100;
             itemPoseWeight = 0;
             secondary.reset();
-            speed3 = 0; cradleWeightLeft = cradleWeightRight = 0;
+            speed3 = 0; cradleWeightLeft = cradleWeightRight = loweredLeft = loweredRight = 0;
         }
         float dt = Math.clamp(now - lastNow, 0, .1f);
         double distance = position == null ? 0 : at.subtract(position).horizontalDistance();
@@ -407,12 +409,16 @@ final class SpiritAnimation {
         cruise = cn.wwl.orimod.movement.FeelTuning.approach(cruise, cn.wwl.orimod.movement.FeelTuning.swimCruise(speed3), dt / .3f);
         swimPhase = (swimPhase + dt * Mth.TWO_PI * Mth.lerp(cruise, cn.wwl.orimod.movement.FeelTuning.SWIM_STROKE_FLOAT,
                 cn.wwl.orimod.movement.FeelTuning.SWIM_STROKE_CRUISE) * (1 - .85f * dart)) % (Mth.TWO_PI * 64);
-        // R95: held tools are cradled at the chest (weighted, eased), bobbing a little with the stride.
+        // Held tools ease into a chest cradle or a lowered one-handed carry, with a small stride bob.
         float holdFade = dt / cn.wwl.orimod.movement.FeelTuning.HOLD_FADE;
         boolean leftFree = handsAvailable && mask != upperBody && mask != leftArm && !(throwing && throwLeft);
         boolean rightFree = handsAvailable && mask != upperBody && mask != rightArm && !(throwing && !throwLeft);
         cradleWeightLeft = leftFree ? cn.wwl.orimod.movement.FeelTuning.approach(cradleWeightLeft, holdLeft ? 1 : 0, holdFade) : 0;
         cradleWeightRight = rightFree ? cn.wwl.orimod.movement.FeelTuning.approach(cradleWeightRight, holdRight ? 1 : 0, holdFade) : 0;
+        loweredRight = cn.wwl.orimod.movement.FeelTuning.approach(loweredRight,
+                SpiritItemGrip.lowered(mainLeft ? player.getOffhandItem() : player.getMainHandItem()) ? 1 : 0, holdFade);
+        loweredLeft = cn.wwl.orimod.movement.FeelTuning.approach(loweredLeft,
+                SpiritItemGrip.lowered(mainLeft ? player.getMainHandItem() : player.getOffhandItem()) ? 1 : 0, holdFade);
         bodyShare = ease(Math.min(1, swimMix + glideMix));
         keep = null;
         keepOut(bodyPoseMask, bodyShare); keepOut(cradleRightMask, ease(cradleWeightRight)); keepOut(cradleLeftMask, ease(cradleWeightLeft));
@@ -488,11 +494,11 @@ final class SpiritAnimation {
         if (Math.abs(spineArch) > 1e-4f) blend.additive(aimPitch, spineArch, 1, upperBody, rest);
         float bob = .07f * Mth.sin(locoPhase * Mth.TWO_PI * 2) * locoWeight * (player.onGround() ? 1 : 0) + .03f * Mth.sin(now * 2.1f);
         if (cradleWeightRight > .002f) {
-            cradleRight.clear(); SpiritPoses.cradle(cradleRight, 0, bob, 1); cradleRight.publish();
+            cradleRight.clear(); SpiritPoses.held(cradleRight, 0, bob, loweredRight); cradleRight.publish();
             blend.override(cradleRight.clip(), now, ease(cradleWeightRight), cradleRightMask);
         }
         if (cradleWeightLeft > .002f) {
-            cradleLeft.clear(); SpiritPoses.cradle(cradleLeft, 1, bob, 1); cradleLeft.publish();
+            cradleLeft.clear(); SpiritPoses.held(cradleLeft, 1, bob, loweredLeft); cradleLeft.publish();
             blend.override(cradleLeft.clip(), now, ease(cradleWeightLeft), cradleLeftMask);
         }
         if (overlay.isEmpty()) overlay = holdLeft && holdRight ? "hold_both" : holdLeft ? "hold_left" : holdRight ? "hold" : "";
@@ -626,6 +632,9 @@ final class SpiritAnimation {
         for (int i = 0; i < keep.length; i++) keep[i] = Math.min(keep[i], 1 - share * mask.weight(i));
     }
 
+    float cradleWeight(boolean left) { return ease(left ? cradleWeightLeft : cradleWeightRight); }
+    float lowered(boolean left) { return left ? loweredLeft : loweredRight; }
+
     private static String handed(String name, boolean left) { return left ? name + "_left" : name; }
 
     private boolean trigger(String action, float now, float length) {
@@ -663,7 +672,7 @@ final class SpiritAnimation {
         cradleLeftMask = cradleLeft.mask(SpiritPoseLayer.UPPER_ARM_R, SpiritPoseLayer.FOREARM_R, SpiritPoseLayer.HAND_R);
         runPoseMask = runPose.mask(SpiritPoseLayer.SPINE, SpiritPoseLayer.NECK, SpiritPoseLayer.HEAD,
                 SpiritPoseLayer.THIGH_L, SpiritPoseLayer.THIGH_R, SpiritPoseLayer.KNEE_L, SpiritPoseLayer.KNEE_R);
-        swimMix = glideMix = dart = cruise = 0; cradleWeightLeft = cradleWeightRight = 0;
+        swimMix = glideMix = dart = cruise = 0; cradleWeightLeft = cradleWeightRight = loweredLeft = loweredRight = 0;
         createdAt = lastNow = now; clock = 0; position = player.getPosition(partial); grounded = player.onGround();
         selected = ""; shotUntil = -100; lag = speed = 0; runningGait = false; previousYaw = player.yBodyRot;
         var movement = player.getData(SpiritData.MOVEMENT);

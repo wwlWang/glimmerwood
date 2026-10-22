@@ -65,6 +65,17 @@ public final class SpiritCombat {
         s.weapon = player.getMainHandItem(); s.buffered = false; s.hitTargets.clear(); s.bladeStarts++;
         publish(player);
         player.swing(InteractionHand.MAIN_HAND, true);
+        step(player);
+    }
+
+    /** Ground displacement belongs to the local movement curve; the server only grants bounded air holds. */
+    private static void step(ServerPlayer player) {
+        var s = player.getData(SpiritData.COMBAT);
+        if (player.onGround() || s.airHolds >= BladeArc.AIR_HOLDS) return;
+        s.airHolds++;
+        Vec3 motion = player.getDeltaMovement();
+        player.setDeltaMovement(motion.x, Math.max(motion.y, BladeArc.AIR_HOLD_FALL), motion.z);
+        player.hurtMarked = true;
     }
 
     public static void attackEntity(AttackEntityEvent event) {
@@ -145,7 +156,8 @@ public final class SpiritCombat {
     public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         var s = player.getData(SpiritData.COMBAT);
-        if (s.mode.equals("idle")) return;
+        if (s.mode.equals("idle")) { if (player.onGround()) s.airHolds = 0; return; }
+        if (player.onGround()) s.airHolds = 0;
         if (!available(player) || movementOwnsAction(player)) { cancel(player, "unavailable"); return; }
         if (s.mode.equals("bow")) {
             if (!player.isUsingItem() || player.getUseItem() != s.weapon) cancel(player, "item");
@@ -162,20 +174,25 @@ public final class SpiritCombat {
     }
 
     private static void hitBlade(ServerPlayer player, CombatState s) {
-        Vec3 origin = player.getEyePosition(), direction = player.getLookAngle();
-        double reach = s.stage == 3 ? 3.2 : 2.8;
+        // The fan is centred on the chest and follows the body's facing, not the camera pitch.
+        Vec3 origin = player.position().add(0, player.getBbHeight() * .55, 0);
+        float yaw = player.getYRot();
+        double reach = BladeArc.reach(s.stage);
         cn.wwl.orimod.block.BlightInteractions.melee(player,reach);
-        for (var target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach),
+        for (var target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach, BladeArc.VERTICAL, reach),
                 entity -> CombatTargets.canHit(player, entity))) {
-            var box = target.getBoundingBox();
-            Vec3 closest = new Vec3(Math.clamp(origin.x, box.minX, box.maxX), Math.clamp(origin.y, box.minY, box.maxY), Math.clamp(origin.z, box.minZ, box.maxZ));
-            Vec3 offset = closest.subtract(origin);
-            if (offset.lengthSqr() > reach * reach || offset.lengthSqr() > .01 && direction.dot(offset.normalize()) < .5
+            Vec3 closest = BladeArc.closest(origin, target.getBoundingBox());
+            if (!BladeArc.contains(origin, yaw, closest, s.stage)
                     || !SpiritTargets.visible(player, closest) || s.hitTargets.contains(target.getUUID())) continue;
             s.hitTargets.add(target.getUUID()); // A failed/invulnerable hit cannot retry within this swing.
             if (target.hurt(player.damageSources().playerAttack(player), DAMAGE[s.stage])) {
                 s.bladeHits++;
-                target.knockback(s.stage == 3 ? .45 : .15, -direction.x, -direction.z);
+                Vec3 away = target.position().subtract(player.position()).multiply(1, 0, 1);
+                if (away.lengthSqr() < 1e-4) away = BladeArc.facing(yaw);
+                away = away.normalize();
+                target.knockback(BladeArc.knockback(s.stage), -away.x, -away.z);
+                if (BladeArc.overhead(s.stage) && target.onGround())
+                    target.setDeltaMovement(target.getDeltaMovement().add(0, BladeArc.FINISHER_LIFT, 0));
                 cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.BLADE_HIT, closest.x, closest.y, closest.z, player, 1 + s.stage * .1f);
                 s.weapon.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             }

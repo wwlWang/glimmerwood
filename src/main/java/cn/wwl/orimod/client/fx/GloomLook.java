@@ -16,6 +16,10 @@ public final class GloomLook {
                     level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_SPARK.get(), 0xD070FF, .3f, 7), true,
                             e.getX() + Math.cos(a) * d, e.getY() + .5 + (r.nextDouble() - .5), e.getZ() + Math.sin(a) * d, -Math.cos(a) * .18, 0, -Math.sin(a) * .18);
                 }
+            // The legacy white/mist motes ARE its old particle body. Keep the warning above,
+            // but do not obscure the skinned plant with the old opaque light ball.
+            if (e instanceof net.minecraft.world.entity.LivingEntity living
+                    && cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(living)) return;
             level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xF4ECFF, .7f, 3), true, e.getX(), e.getY() + .6, e.getZ(), 0, 0, 0);
             for (int i = 0; i < 2; i++)
                 level.addParticle(new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), i == 0 ? MIST : 0xC060FF, .55f, 8), true,

@@ -48,6 +48,11 @@ public final class SpiritControls {
         var mc = Minecraft.getInstance();
         var player = event.getEntity();
         if (player != mc.player) return;
+        if (bladeOwner != player || bladeWorld != player.level()) {
+            bladeOwner = player; bladeWorld = player.level();
+            bladeMotion = new cn.wwl.orimod.movement.BladeMotion();
+            feelBlade = net.minecraft.world.phys.Vec3.ZERO; feelControlled = false;
+        }
         var input = event.getInput();
         if(RestorationClient.active()){input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=input.shiftKeyDown=false;player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);return;}
         boolean active = mc.screen == null && mc.isWindowActive() && SpiritMovement.canMove(player);
@@ -58,7 +63,8 @@ public final class SpiritControls {
         var state = player.getData(SpiritData.MOVEMENT);
         // Vanilla checks this jump edge after the input event. Try the same guarded
         // transition before Ori consumes it, so usable wings take priority in midair.
-        if (active && input.jumping && !blockJumpUntilReleased && !state.jumpHeld
+        boolean ownsJump = MovementRules.ownsJump(SpiritMovement.canMove(player), player.getAbilities().mayfly);
+        if (active && ownsJump && input.jumping && !blockJumpUntilReleased && !state.jumpHeld
                 && player.getItemBySlot(EquipmentSlot.CHEST).canElytraFly(player)
                 && player.tryToStartFallFlying()) {
             mc.player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
@@ -66,7 +72,7 @@ public final class SpiritControls {
         }
         if (!active) { blockJumpUntilReleased = blockDashUntilReleased = blockBashUntilReleased = true; }
         int flags = (active ? MovementInputPayload.ACTIVE : 0)
-                | (input.jumping && !blockJumpUntilReleased ? MovementInputPayload.JUMP : 0)
+                | (ownsJump && input.jumping && !blockJumpUntilReleased ? MovementInputPayload.JUMP : 0)
                 | (DASH.isDown() && !blockDashUntilReleased ? MovementInputPayload.DASH : 0)
                 | (BASH.isDown() && !blockBashUntilReleased ? MovementInputPayload.BASH : 0)
                 | (input.shiftKeyDown ? MovementInputPayload.CROUCH : 0);
@@ -75,7 +81,7 @@ public final class SpiritControls {
         else if (SpiritMovement.canMove(player)) SpiritActionPrediction.apply(player, state, flags, input.forwardImpulse, input.leftImpulse);
         PacketDistributor.sendToServer(new MovementInputPayload(sequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
         sentActive = active;
-        if (SpiritMovement.canMove(player)) input.jumping = false;
+        if (ownsJump) input.jumping = false;
         state.active = active;
         if (!active) {
             if (state.mode == BASH_AIM) player.setDeltaMovement(state.suspendedVelocity);
@@ -146,8 +152,8 @@ public final class SpiritControls {
             if (state.mode == BASH_AIM) player.setDeltaMovement(state.suspendedVelocity);
             state.mode = IDLE;
             if (active) feel(player, state, input, (flags & MovementInputPayload.JUMP) != 0);
-            else feelControlled = false;
-        } else feelControlled = false;
+            else { feelControlled = false; cancelBlade(player); }
+        } else { feelControlled = false; cancelBlade(player); }
         prevJumpHeld = (flags & MovementInputPayload.JUMP) != 0;
     }
 
@@ -157,24 +163,41 @@ public final class SpiritControls {
     private static boolean feelControlled, prevJumpHeld, wasDash;
     private static long wallJumpAt = -100;
     private static int feelAction, feelPrediction;
+    private static cn.wwl.orimod.movement.BladeMotion bladeMotion = new cn.wwl.orimod.movement.BladeMotion();
+    private static net.minecraft.world.entity.player.Player bladeOwner;
+    private static net.minecraft.world.level.Level bladeWorld;
+    private static net.minecraft.world.phys.Vec3 feelBlade = net.minecraft.world.phys.Vec3.ZERO;
+
+    private static void cancelBlade(net.minecraft.world.entity.player.Player player) {
+        bladeMotion.observe(player.getData(SpiritData.COMBAT_VIEW), false, player.onGround(), player.getYRot());
+        feelBlade = net.minecraft.world.phys.Vec3.ZERO;
+    }
+
+    public static java.util.Map<String, Object> bladeDiagnostics() {
+        return java.util.Map.of("groundTicks", bladeMotion.groundTicks(), "holdTicks", bladeMotion.holdTicks(),
+                "step", new double[]{feelBlade.x, feelBlade.y, feelBlade.z});
+    }
 
     private static void feel(net.minecraft.world.entity.player.Player player, cn.wwl.orimod.movement.MovementState state,
                              net.minecraft.client.player.Input input, boolean jumpHeld) {
         var d = player.getDeltaMovement();
         long now = player.level().getGameTime();
+        boolean airImpulse = bladeMotion.observe(player.getData(SpiritData.COMBAT_VIEW), true, player.onGround(), player.getYRot());
         // Recover the pre-friction velocity vanilla travel stored last tick, so our curve owns the motion.
         // Anything external (collision, knockback, Bash/Launch impulses) shows up in the observed value and is kept.
         // Impulses written straight into the velocity (server-confirmed Launch/Bash/grapple end, predicted wall jumps,
         // knockback) were never through friction: take them as they are.
         boolean newAction = state.actionId != feelAction, newPrediction = state.predictedJumpCount != feelPrediction;
-        boolean raw = player.hurtTime == player.hurtDuration - 1
+        boolean raw = airImpulse || player.hurtTime == player.hurtDuration - 1
                 || newAction && (state.mode == RESUME || state.lastAction == LAUNCH || state.lastAction == BASH_LAUNCH || state.lastAction == GRAPPLE_END
                     || state.lastAction == WALL_JUMP && !newPrediction)
                 || newPrediction && state.lastAction == WALL_JUMP;
         feelAction = state.actionId; feelPrediction = state.predictedJumpCount;
         float div = raw ? 1 : feelFriction;
         var observed = new net.minecraft.world.phys.Vec3(d.x / div, 0, d.z / div);
-        var h = feelControlled && observed.distanceToSqr(feelH) < 1e-4 ? feelH : observed;
+        // Remove last frame's forced step before steering; add this frame's step only AFTER braking.
+        // A collision/external impulse breaks the match and is left untouched.
+        var h = !raw && feelControlled && observed.distanceToSqr(feelH) < 1e-4 ? feelH.subtract(feelBlade) : observed;
         if (wasDash && dashExit == null) dashExit = player.getDeltaMovement();
         wasDash = false;
         if (dashExit != null) {
@@ -188,7 +211,10 @@ public final class SpiritControls {
         double scale = input.shiftKeyDown ? cn.wwl.orimod.movement.FeelTuning.CROUCH_SCALE : player.isUsingItem() ? cn.wwl.orimod.movement.FeelTuning.USING_ITEM_SCALE : 1;
         double control = now - wallJumpAt < cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_TICKS ? cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_SCALE : 1;
         h = cn.wwl.orimod.movement.FeelTuning.horizontal(h, wish, grounded, scale, control);
+        feelBlade = bladeMotion.ground(h, grounded, path -> cn.wwl.orimod.movement.BladeSupport.supported(player, path));
+        h = h.add(feelBlade);
         double vy = grounded && d.y <= 0 ? d.y : cn.wwl.orimod.movement.FeelTuning.vertical(d.y, jumpHeld, prevJumpHeld && !jumpHeld);
+        vy = bladeMotion.vertical(vy);
         player.setDeltaMovement(h.x, vy, h.z);
         input.forwardImpulse = input.leftImpulse = 0;   // vanilla moveRelative would add its own acceleration on top
         feelH = h; feelControlled = true;

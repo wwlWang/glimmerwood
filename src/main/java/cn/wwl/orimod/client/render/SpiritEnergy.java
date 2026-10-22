@@ -38,6 +38,18 @@ public final class SpiritEnergy extends RenderStateShard {
     public static RenderType glow() { return TYPES.apply(SOFT_GLOW); }
     public static RenderType streak() { return TYPES.apply(STREAK); }
     public static RenderType restorationColumn() { return TYPES.apply(RESTORATION_COLUMN); }
+    /** Soft falloff across u, constant along v: a ribbon whose edges fade (blade slashes reuse the column texture). */
+    public static RenderType ribbon() { return TYPES.apply(RESTORATION_COLUMN); }
+
+    /** One ribbon segment: {@code inner0..outer0} to {@code inner1..outer1}; u runs inner→outer, alpha per end. */
+    public static void strip(VertexConsumer out, PoseStack.Pose pose, Vector3f inner0, Vector3f outer0, Vector3f inner1, Vector3f outer1,
+                             int rgb, float alpha0, float alpha1) {
+        float r = (rgb >> 16 & 255) / 255f, g = (rgb >> 8 & 255) / 255f, b = (rgb & 255) / 255f;
+        corner(out, pose, inner0.x, inner0.y, inner0.z, 0, 0, r, g, b, alpha0);
+        corner(out, pose, outer0.x, outer0.y, outer0.z, 1, 0, r, g, b, alpha0);
+        corner(out, pose, outer1.x, outer1.y, outer1.z, 1, 1, r, g, b, alpha1);
+        corner(out, pose, inner1.x, inner1.y, inner1.z, 0, 1, r, g, b, alpha1);
+    }
 
     /** A broad vertical column slice, crossed on X/Z, with continuous endpoint alpha. */
     public static void columnSlice(VertexConsumer out, PoseStack.Pose pose, Vector3f bottom, float height,

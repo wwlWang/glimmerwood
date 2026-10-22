@@ -21,6 +21,14 @@ class BeetleRulesTest {
     }
     @ParameterizedTest @EnumSource(State.class)
     void damageTable(State state){assertEquals(state==State.FLIPPED?2:.2f,damageScale(state,true));assertEquals(state==State.FLIPPED?2:1,damageScale(state,false));}
+    @Test void killDamageStaysFiniteAndUnscaled(){
+        assertEquals(Float.MAX_VALUE,scaledDamage(Float.MAX_VALUE,State.FLIPPED,false,true));
+        assertEquals(Float.MAX_VALUE,scaledDamage(Float.MAX_VALUE,State.FLIPPED,false,false));
+        assertTrue(Float.isFinite(scaledDamage(Float.POSITIVE_INFINITY,State.FLIPPED,false,false)));
+        assertEquals(8f,scaledDamage(4f,State.FLIPPED,false,false));
+        assertEquals(.8f,scaledDamage(4f,State.IDLE,true,false),1e-6);
+        assertEquals(4f,scaledDamage(4f,State.IDLE,true,true));
+    }
     @Test void windupHasFifteenFullTicks(){
         var c=Clock.idle().with(State.WINDUP,WINDUP);
         for(int i=1;i<15;i++){c=c.step();assertEquals(State.WINDUP,c.state());assertEquals(15-i,c.left());}

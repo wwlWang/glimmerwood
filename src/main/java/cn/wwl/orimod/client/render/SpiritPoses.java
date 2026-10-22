@@ -71,6 +71,22 @@ final class SpiritPoses {
         }
     }
 
+    /** One-handed weapons rest beside the thigh, with a soft elbow and a small forward reach. */
+    static void lowered(SpiritPoseLayer l, int side, float bob, float w) {
+        if (w <= 0) return;
+        if (side == 0) {
+            l.add(UPPER_ARM_L, -.12f + bob * .3f, 0, 1.42f, w);
+            l.add(FOREARM_L, 0, .15f, 0, w); l.add(HAND_L, 0, 0, 0, w);
+        } else {
+            l.addMirrored(UPPER_ARM_R, -.12f + bob * .3f, 0, 1.42f, w);
+            l.addMirrored(FOREARM_R, 0, .15f, 0, w); l.addMirrored(HAND_R, 0, 0, 0, w);
+        }
+    }
+
+    static void held(SpiritPoseLayer l, int side, float bob, float lowered) {
+        cradle(l, side, bob, 1 - lowered); lowered(l, side, bob, lowered);
+    }
+
     /** Wrist on the cocked arm: tips the shaft forward over the shoulder (about the axis that is model X once cocked,
      *  measured offline: hand local X/Y/Z map to world X with weights .47/.5/.73, so 1.1 rad is split that way). */
     private static final float[] HAND_TILT = {.52f, .3f + .55f, .8f};

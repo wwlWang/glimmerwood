@@ -107,12 +107,12 @@ def author(rig, mesh):
     def secondary(t, strength=1, tucked=0):
         p=t*math.tau
         for i in range(1,6):
-            rotate('tail_'+str(i),math.sin(p-i*.48)*.055*strength,(0,0,1))
-            rotate('tail_'+str(i),-.035+tucked*.05)
+            rotate('tail_'+str(i),math.sin(p-i*.48)*.11*strength,(0,0,1))
+            rotate('tail_'+str(i),-.035+math.sin(p*2-i*.6)*.05*strength+tucked*.08)
         for side,sign in [('l',-1),('r',1)]:
             for i in range(1,4):
-                rotate(f'ear_{side}_{i}',sign*math.sin(p-i*.55)*.06*strength,(0,0,1))
-                rotate(f'ear_{side}_{i}',math.sin(p-i*.65)*.035*strength+tucked*.09)
+                rotate(f'ear_{side}_{i}',sign*math.sin(p-i*.55)*.09*strength,(0,0,1))
+                rotate(f'ear_{side}_{i}',math.sin(p-i*.65)*.06*strength+tucked*.18)
                 rotate(f'antenna_{side}_{i}',math.sin(p-i*.65)*.035*strength+tucked*.07)
     def gripping(side, amount):
         strength=min(1,amount/.45)
@@ -124,19 +124,22 @@ def author(rig, mesh):
         for i in range(1,3):
             rotate(f'thumb_{side}_{i}',.85*strength,(0,0,-1) if side=='l' else (0,0,1))
     def air(kind, t):
+        wave=math.sin(t*math.tau)
         if kind=='rise':
-            arms(.55,-.25,-.45)
-            rotate('thigh_l',-.38); rotate('knee_l',.65)
-            rotate('thigh_r',.18); rotate('knee_r',.25)
+            arms(.45,-1.15+.08*wave,-.30)
+            rotate('spine',-.10); rotate('head',-.12)
+            rotate('thigh_l',-.62); rotate('knee_l',1.05)
+            rotate('thigh_r',.32); rotate('knee_r',.30)
         elif kind=='apex':
-            arms(.85,-.18,-.23)
+            arms(.70,-.65,-.75)
+            rotate('spine',.16); rotate('head',.04)
             for s in ('l','r'):
-                rotate('thigh_'+s,-.18); rotate('knee_'+s,.34)
+                rotate('thigh_'+s,-.62+.04*wave); rotate('knee_'+s,1.0)
         else:
-            arms(.95,.10,-.28)
-            rotate('spine',.12); rotate('head',-.14)
-            rotate('thigh_l',.12); rotate('knee_l',.22)
-            rotate('thigh_r',-.10); rotate('knee_r',.26)
+            arms(.95+.08*wave,-.45,-.70)
+            rotate('spine',.04); rotate('head',-.24)
+            rotate('thigh_l',.10+.05*wave); rotate('knee_l',.30)
+            rotate('thigh_r',-.18-.05*wave); rotate('knee_r',.40)
     def glider(t):
         arms(2.45,-.20,-.30)
         rotate('spine',.12); rotate('head',-.10)
@@ -160,9 +163,12 @@ def author(rig, mesh):
             t=frame/length
             phase=t*math.tau
             if name in {'idle','alert','hold','use_item','block','tail_sway','bend'}:
-                arms(.14,-.05,-.06)
-                rotate('spine',math.sin(phase)*.018)
-                rotate('head',math.sin(phase+.3)*.02)
+                breath=math.sin(phase)
+                arms(.16+.03*breath,-.08,-.18)
+                shift('root',(math.sin(phase)*.008,0,-.012+.006*breath))
+                rotate('spine',.05+breath*.04)
+                rotate('head',-.04+math.sin(phase+.6)*.035)
+                rotate('head',math.sin(phase+.4)*.06,(0,0,1))  # whole cycles only: loops must close
                 if name=='alert':
                     rotate('head',math.sin(phase)*.25,(0,0,1))
                     rotate('head',-.10)
@@ -183,11 +189,14 @@ def author(rig, mesh):
                 run=name=='run'
                 duty=.24 if run else .60
                 stride=2.0 if run else .80
-                bounce=.027*max(0,math.sin(phase*2)) if run else .008*(1-math.cos(phase*2))
-                shift('root',(0,0,(-.072 if run else -.055)+bounce))
-                rotate('spine',.24 if run else .08)
-                rotate('head',-.12 if run else -.04)
-                arms(.18,0,-.42 if run else -.10)
+                bounce=.05*abs(math.sin(phase)) if run else .012*(1-math.cos(phase*2))
+                shift('root',(0,0,(-.095 if run else -.058)+bounce))
+                rotate('root',.10 if run else .03)
+                rotate('spine',.38 if run else .12)
+                rotate('head',-.34 if run else -.10)
+                rotate('spine',math.sin(phase)*(.16 if run else .07),(0,0,1))
+                rotate('head',-math.sin(phase)*(.10 if run else .04),(0,0,1))
+                arms(.26 if run else .16,0,-1.05 if run else -.25)
                 for side,offset in [('l',0),('r',.5)]:
                     p=(t+offset)%1
                     if p<duty:
@@ -196,12 +205,12 @@ def author(rig, mesh):
                     else:
                         f=(p-duty)/(1-duty)
                         y=stride*duty/2-stride*duty*smooth(f)
-                        z=math.sin(math.pi*f)*(.16 if run else .08)
+                        z=math.sin(math.pi*f)*(.24 if run else .09)
                     target=ankle_rest[side].copy()
                     target.y=.036+y
                     target.z+=z
                     leg(side,target)
-                    rotate('upper_arm_'+side,-math.sin(p*math.tau)*(.62 if run else .27))
+                    rotate('upper_arm_'+side,-math.sin(p*math.tau)*(1.0 if run else .40))
                 if frame in (0,length//2):
                     contacts.append({'frame':frame,'foot':'l' if frame==0 else 'r'})
             elif name=='crouch':
@@ -223,12 +232,21 @@ def author(rig, mesh):
                     crouch(.09*f)
                     rotate('spine',-.25*f)
                 elif name=='jump_start':
-                    arms(.2+.35*t,-.5*t,-.15)
-                    crouch(.085*pulse(min(1,t*1.5)))
+                    # Played over ~3 ticks as the jump fires (the jump force is immediate): a push-off from
+                    # a loaded crouch into the stretched rise pose, never a crouch in mid-air.
+                    lift=smooth(t)
+                    arms(.25+.20*lift,.70*(1-lift)-1.15*lift,-.35+.05*lift)
+                    crouch(.13*(1-lift))
+                    rotate('spine',.30*(1-lift)-.10*lift)
+                    rotate('thigh_l',-.62*lift); rotate('knee_l',1.05*lift)
+                    rotate('thigh_r',.32*lift); rotate('knee_r',.30*lift)
                 else:
-                    arms(.3+.2*f,-.25*f,-.2)
-                    crouch((.13 if name=='land_heavy' else .065)*f)
-                    rotate('head',.08*f)
+                    f=smooth(t/.22) if t<.22 else 1-smooth((t-.22)/.78)
+                    heavy=name=='land_heavy'
+                    arms(.35+(.45 if heavy else .2)*f,-(.6 if heavy else .3)*f,-.25-.3*f)
+                    crouch((.20 if heavy else .09)*f)
+                    rotate('spine',(.40 if heavy else .18)*f)
+                    rotate('head',(.10 if heavy else .05)*f)
             elif name.startswith('turn_'):
                 f=pulse(t)
                 sign=1 if name.endswith('left') else -1
@@ -239,10 +257,12 @@ def author(rig, mesh):
             elif name in {'rise','apex','fall'}:
                 air(name,t)
             elif name=='double_jump':
-                f=pulse(t)
-                arms(.45,-1.0*f,-.5*f)
+                # Tuck fast, hold it through the flip, open late for the fall.
+                f=smooth(min(1,t*3.5))*(1-smooth((t-.72)/.28))
+                arms(.45,-1.35*f,-1.0*f)
+                rotate('spine',.35*f); rotate('head',.20*f)
                 for s in ('l','r'):
-                    rotate('thigh_'+s,-1.0*f); rotate('knee_'+s,1.2*f)
+                    rotate('thigh_'+s,-1.45*f); rotate('knee_'+s,1.7*f)
                 rotate('root',-math.tau*smooth(t))
                 shift('root',(0,0,.14*f))
             elif name in {'wall_hold','wall_slide'}:
@@ -262,11 +282,11 @@ def author(rig, mesh):
                 f=smooth(t) if name=='dash_start' else 1-smooth(t)
                 if name=='bash_launch':
                     f=1-.25*smooth(t)
-                arms(.18,.6*f,-.15)
-                rotate('spine',.55*f); rotate('head',-.32*f)
-                rotate('thigh_l',-.55*f); rotate('knee_l',.95*f)
-                rotate('thigh_r',.45*f); rotate('knee_r',.18*f)
-                rotate('root',.55*f)
+                arms(.30,1.25*f,-.20)
+                rotate('spine',.65*f); rotate('head',-.55*f)
+                rotate('thigh_l',-.75*f); rotate('knee_l',1.25*f)
+                rotate('thigh_r',.60*f); rotate('knee_r',.25*f)
+                rotate('root',.60*f)
             elif name=='bash_aim':
                 arms(.6,-.65,-.8)
                 rotate('spine',.20)
@@ -307,20 +327,25 @@ def author(rig, mesh):
                 else:
                     wind=1; strike=1; recover=smooth((seconds-prep-hit)/max(.05,duration-prep-hit))
                 active=1-recover
-                arms(.24,-.15,-.35)
+                arms(.30,-.20,-.40)
                 sign=-1 if stage==2 else 1
-                twist=sign*(.48*wind-1.0*strike)*active
+                twist=sign*(.85*wind-1.75*strike)*active
+                lunge=(.20+.25*strike)*active if stage<3 else (.10+.45*strike)*active
+                rotate('spine',lunge)
                 rotate('spine',twist,(0,0,1))
-                rotate('head',-twist*.6,(0,0,1))
-                rotate('upper_arm_r',(-1.1*wind+1.9*strike)*active)
-                rotate('upper_arm_r',sign*(.7*wind-1.3*strike)*active,(0,0,1))
-                elbow('r',-.65*(1-strike)*active)
+                rotate('head',-twist*.55,(0,0,1))
+                rotate('head',-lunge*.6)
+                rotate('upper_arm_r',(-1.5*wind+2.5*strike)*active)
+                rotate('upper_arm_r',sign*(1.1*wind-2.0*strike)*active,(0,0,1))
+                elbow('r',-.95*(1-strike)*active)
                 if stage==3:
-                    rotate('upper_arm_r',-1.6*wind*(1-strike)*active)
-                    rotate('spine',.32*strike*active)
-                rotate('upper_arm_l',-.35*active)
+                    rotate('upper_arm_r',-2.2*wind*(1-strike)*active)
+                    shift('root',(0,0,.05*pulse(min(1,(wind+strike)/2))*active))
+                rotate('upper_arm_l',-.55*active)
+                rotate('upper_arm_l',-sign*.7*strike*active,(0,0,1))
+                elbow('l',-.6*active)
                 gripping('r',.55)
-                crouch(.035*active)
+                crouch((.05+.06*strike)*active)
             elif name in {'bow_charge','bow_hold','bow_release'}:
                 f=smooth(t) if name=='bow_charge' else 1 if name=='bow_hold' else 1-smooth(t)
                 arms(.14,-.05,-.06)

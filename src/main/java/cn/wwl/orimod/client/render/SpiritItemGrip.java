@@ -13,8 +13,20 @@ import org.joml.Vector3f;
 final class SpiritItemGrip {
     private SpiritItemGrip() { }
 
+    /** Match the eased procedural carry: raised tools face up/forward, one-handed weapons face down/forward.
+     * Weight zero retains the authored aiming/attack/socket calibration. */
+    static float attachmentPitch(float holdWeight, float lowered) {
+        return -90 + (90 - 70 * Math.clamp(lowered, 0, 1)) * Math.clamp(holdWeight, 0, 1);
+    }
+
+    static boolean lowered(ItemStack item) {
+        return item.getItem() instanceof SwordItem || item.getItem() instanceof DiggerItem
+                || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR);
+    }
+
     static void local(ItemStack item, Vector3f point, Vector3f axis) {
         point.set(0, -.16f, 0); axis.set(0,1,0);
+        if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_CORE)) { point.set(0, -.18f, 0); return; }
         // R88: condensed-light hammer and spear (SpiritWeaponRenderer) are held low on the shaft, like a handheld tool;
         // the hammer's SPEAR use animation must not pick the trident's flipped built-in grip below.
         if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)) { point.set(-.2f, -.2f, 0); axis.set(1,1,0); return; }

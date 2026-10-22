@@ -32,6 +32,7 @@ public final class GloomSpitterRenderer extends EntityRenderer<GloomSpitter> {
     }
 
     @Override public void render(GloomSpitter e, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (cn.wwl.orimod.client.render.GloomCreatureVisual.hideVanilla(e)) { super.render(e, yaw, partial, pose, buffers, light); return; }
         float t = e.tickCount + partial;
         float hurt = e.hurtTime > 0 ? 1.15f : 1;
         pose.pushPose();

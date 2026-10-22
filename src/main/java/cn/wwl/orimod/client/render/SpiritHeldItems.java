@@ -27,7 +27,8 @@ public final class SpiritHeldItems {
         var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
         var poses = new PoseStack();
         poses.mulPose(rotation);
-        poses.mulPose(Axis.XP.rotationDegrees(-90)); poses.mulPose(Axis.YP.rotationDegrees(180));
+        poses.mulPose(Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left))));
+        poses.mulPose(Axis.YP.rotationDegrees(180));
         model.applyTransform(display, poses, left);
         var arrow = poses.last().pose().transformDirection(new Vector3f(-1, 1, 0)).normalize();
         return java.util.Map.of("rotation", new float[]{rotation.x, rotation.y, rotation.z, rotation.w},
@@ -48,17 +49,19 @@ public final class SpiritHeldItems {
         poses.pushPose();
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
-        renderAtPalm(player, item, left, poses, .72f, buffers, light);
+        float lowered = frame.world() ? SpiritPlayerVisual.lowered(player, left) : SpiritItemGrip.lowered(item) ? 1 : 0;
+        renderAtPalm(player, item, left, poses, .72f,
+                frame.world() ? SpiritPlayerVisual.cradleWeight(player, left) : lowered, lowered, buffers, light);
         poses.popPose();
     }
 
-    static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale,
+    static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered,
                              net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
         if (item.isEmpty()) return;
         var mc = Minecraft.getInstance();
-        var model = itemTransform(player, item, left, poses, scale);
+        var model = itemTransform(player, item, left, poses, scale, cradleWeight, lowered);
         var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
-        mc.getItemRenderer().render(item, display, left, poses, buffers, light, OverlayTexture.NO_OVERLAY, model);
+        SpiritWeaponRenderer.withOwner(player, () -> mc.getItemRenderer().render(item, display, left, poses, buffers, light, OverlayTexture.NO_OVERLAY, model));
     }
 
     /** The same centered item transform used to draw the rod, evaluated at its tip. */
@@ -74,16 +77,16 @@ public final class SpiritHeldItems {
         poses.mulPose(frame.transform());
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
-        var model = itemTransform(player, item, left, poses, .72f);
+        var model = itemTransform(player, item, left, poses, .72f, SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left));
         model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poses, left);
         var tip = poses.last().pose().transformPosition(new Vector3f(.40625f, .40625f, 0));
         return player.getPosition(partialTick).add(tip.x, tip.y, tip.z);
     }
 
-    private static net.minecraft.client.resources.model.BakedModel itemTransform(Player player, ItemStack item, boolean left, PoseStack poses, float scale) {
+    private static net.minecraft.client.resources.model.BakedModel itemTransform(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered) {
         var mc = Minecraft.getInstance();
         // Attachment axes match vanilla arm space; the origin is already at the palm.
-        poses.mulPose(Axis.XP.rotationDegrees(-90));
+        poses.mulPose(Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(cradleWeight, lowered)));
         poses.mulPose(Axis.YP.rotationDegrees(180));
         poses.scale(scale, scale, scale);
         var display = left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
