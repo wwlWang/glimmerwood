@@ -51,8 +51,10 @@ public final class SpiritMovement {
         boolean jump = ownsJump(true, player.getAbilities().mayfly) && input.has(MovementInputPayload.JUMP);
         boolean dash = input.has(MovementInputPayload.DASH), bash = input.has(MovementInputPayload.BASH);
         if (player.getAbilities().mayfly) { s.jumps.clear(); s.jumpUntil = -100; s.launchCharge = 0; }
+        FeatherGlide.input(player,s.active,jump,s.crouching);
         if (s.active) {
-            if (jump && !s.jumpHeld && s.crouching && tryLaunch(player, s, now)) {
+            if (FeatherGlide.migrating(player)) { /* preserve current glide; input must not become an air jump */ }
+            else if (jump && !s.jumpHeld && s.crouching && tryLaunch(player, s, now)) {
                 // R38: crouch + jump is Launch (charged on the ground), never an ordinary jump.
             } else if (jump && !s.jumpHeld) {
                 s.jumpEdgeAt = now; // R88: glide needs a fresh airborne press, not the hold that started the jump

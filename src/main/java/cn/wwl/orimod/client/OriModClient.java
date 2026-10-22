@@ -15,6 +15,8 @@ public final class OriModClient {
                         (context, key, element) -> cn.wwl.orimod.config.OriClientConfig.HIDDEN_IN_MENU.contains(key) ? null : element));
         modEventBus.addListener(OriModClient::configLoaded);
         modEventBus.addListener(OriModClient::configReloaded);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritHud::hideVanilla);
+        modEventBus.addListener(SpiritHud::register);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritFxResources::register);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritParticle::register);
@@ -82,6 +84,7 @@ public final class OriModClient {
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(FeatherItemAppearance::register);
         event.enqueueWork(cn.wwl.orimod.client.render.SpiritPlayerVisual::register);
         event.enqueueWork(() -> { cn.wwl.orimod.client.render.GloomCreatureVisual.register(); });
         event.enqueueWork(() -> {

@@ -224,7 +224,7 @@
   "block.orimod.updraft": "灵风口",
   "shard.orimod.triple_jump": "三段跳",
   "shard.orimod.triple_jump.description": "二段跳之后在空中还能再跳一次。",
-  "screen.orimod.well_travel": "灵泉：传送到下一处（已发现 %s 处）",
+  "screen.orimod.well_travel": "选择灵泉目的地（已发现 %s 处）",
   "message.orimod.well.refilled": "灵泉恢复了你的生命与能量",
   "message.orimod.well.travelled": "已传送到灵泉 %s, %s, %s",
   "message.orimod.well.none": "没有其他已发现的灵泉可传送",
@@ -459,5 +459,14 @@
   "advancement.orimod.restoration.description": "归还三道意志之光，让森林重新呼吸。",
   "line.orimod.restoration": "萤：光回来了。森林会记得你。",
   "commands.orimod.companion.flame.on": "同伴自动灵焰：开启（本次会话）。",
-  "commands.orimod.companion.flame.off": "同伴自动灵焰：关闭（本次会话）。"
+  "commands.orimod.companion.flame.off": "同伴自动灵焰：关闭（本次会话）。",
+  "message.orimod.feather.firework": "羽毛借风滑翔，烟花不会推进。",
+  "message.orimod.well.unsafe": "灵泉已损坏或周围没有安全落脚点。",
+  "screen.orimod.well.choose": "选择已发现的灵泉",
+  "screen.orimod.well.destination": "%s, %s, %s · %s 格",
+  "hud.orimod.life": "生命 %s/%s",
+  "hud.orimod.light": "灵光 %s",
+  "hud.orimod.armor": "护甲 %s",
+  "orimod.configuration.vanillaHud": "使用原版 HUD",
+  "item.orimod.kuro_feather": "库罗之羽"
 }

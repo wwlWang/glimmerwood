@@ -1,11 +1,20 @@
 # 开发与验收工具
 
+## R113 羽毛与灵泉验证
+
+人形使用原版鞘翅；精灵装备同一个 minecraft:elytra 得到羽毛滑翔升级，仍需GLIDE。仅客户端默认名称/物品模型切换，服务器保存和物品ID不变；其他模组鞘翅不接管。`ori awaken`、`ori unlock all`、`ori form on|off`、`ori energy set <n>`可准备场景。左下主HUD的回退设置为客户端 `vanillaHud`。灵泉用右键发现/补满并打开同维度选择列表；遗迹面板的灵泉按钮也打开该列表。
+
+`spirit_state.client/server.feather`给出wearing/permitted/gliding/handoff/migrationRemaining/displayName；服务端displayName保持原物品名，客户端随本地形态切换。`container_state.slots[].name`便于比对名称；脚本用XTest在DISPLAY=:0移动真实鼠标，截图原版工具提示。验证脚本为 scripts/verify-r113.py。客户端启动遵守 llvmpipe + DISPLAY=:0；测试运行时关闭客户端。
+
+运行方式：`DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe XAUTHORITY="$HOME/.Xauthority" python3 scripts/verify-r113.py <新证据目录名> <flight|beauty|inventory|hud|well|death|all>`。脚本只连接已启动的验收世界，会改建(5800,140,5800)附近测试场；beauty需单独运行，临时静音Aura看羽毛姿势。最终两形态证据与覆盖限制见TESTING的R113条目；第二批恢复循环的数值/接入点仍只在 `drafts/ORI_VANILLA_PARITY.md` 设计中。
+
+
 代码按职责命名。`P1`、`P2` 等阶段编号只用于计划和验收记录，不进入包名、类名、资源 ID 或构建任务。样例使用明确的 `Preview`、`Sample` 名称；正式玩法类按实际行为命名。
 
 ## R107 驿站验收
 
 - `/locate structure orimod:glades_outpost` 查自然结构；`/place structure orimod:glades_outpost ~ ~ ~` 摆放模板。后者不登记structure start，适合外观、摊位、泉水测试；`first_outpost`入场台词应在自然结构验收。
-- 模板31×18×31，局部入口脚位(15,3,0)，苔语(7,3,13)，路路(23,3,13)，灵泉方块(15,3,19)。未旋转时世界坐标等于模板原点加局部坐标。自然生成四旋转由piece处理。右键商人交易；右键灵泉回满，潜行右键传到下一个已发现泉水。
+- 模板31×18×31，局部入口脚位(15,3,0)，苔语(7,3,13)，路路(23,3,13)，灵泉方块(15,3,19)。未旋转时世界坐标等于模板原点加局部坐标。自然生成四旋转由piece处理。右键商人交易；R113起右键灵泉回满并打开同维度已发现目的地列表，取代原来的潜行右键循环传送。
 - 独立测试商人可 `/summon orimod:glades_merchant ~ ~ ~ {Job:0}` 或 `{Job:1}`；结构生成的商人自带泉水/站位绑定及持久化。`/ori light 500`准备余额（勿先unlock all，否则所有碎片已拥有而无商品）。`/time add 24000`检查隔日换货；同一天购买一件后不补抽，重新打开仍见原3行且已售行禁用。
 - 成长面板提供商人价×1.5的保底购买（120–300），并提示去驿站可省钱、显示2048格内最近驿站的异步指引；商人仍按80–200出售。由服务端检查余额/所有权并只扣一次，已拥有碎片不变。经济调整保留商人探索价值，同时避免海洋出生或旧世界找不到驿站卡进度。
 - 价格：充盈/回流/复苏100，聚光80，轻灵/生机汲取/灵能汲取120，荆棘/吸附140，极限猛击160，三段跳200；路路遗迹40/灵树60/腐地50。未找到不扣灵光。指引默认最近水平距离≤2048：遗迹未通关，灵树未领取，腐地未净化；后两者来自持久生成索引而非视野扫描，未加载目标不强载。旧版本已生成的树/地带不会补登记；手放方块不登记；用`/place feature`成功生成可建索引。原`/ori tree nearest`、`/ori blight nearest`仍仅查已加载方块。

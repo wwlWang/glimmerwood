@@ -1,5 +1,23 @@
 # 回归测试
 
+## R113 按形态羽毛、主HUD与灵泉选择
+
+新增测试覆盖原版/第三方鞘翅保留、人形耐久/烟花、精灵破损羽毛、双向空中交接/释放/创飞、风口、死亡FORM与原版掉落、灵武器旧耐久不再消耗、灵泉发现/范围/维度/安全校验、协议v1解码拒绝及HUD分组。新增 DeferredRegister 的测试鞘翅用于兼容断言，避免运行时注册导致 Registry is already frozen。
+
+潮夜既有用例曾在全量失败 `gloom_tide.fixed_seed_mixed_waves_include_beetles_with_expected_frequency: Wave size`。原失败日志没有n/nearby/拒绝原因，不能追认任何根因。之后单独运行、原失败坐标(8803014,180,2268086)隔离复测、带临时诊断的全量均通过，都是200波：73甲虫/61鸦/296喷吐者。按审查限时，未继续无限重跑；唯一夹具修正是给该用例覆盖base±30的全部区块自持加载票，等待FULL及实体数据加载后才开始（最多80tick），成功/异常均finally撤掉本次私有区域票（不修改共享FORCED票）。原波次断言、频率区间与生产代码不变。由于未重现原故障，“区块加载竞态”仍是高可能假设而非已证明结论。原始日志/XML、正常隔离、原坐标隔离和诊断全量在 evidence/r113-runtime-v001；临时探针全部移除。 新夹具收尾中还修正两处自身问题：同一Runnable重新排期会被测试任务表删除，改用既有onEachTick；同步生成用例只要求FULL与实体数据可查询，不要求整个外围区块entity-ticking，后者曾导致不必要的等待超时（full-4/full-5/tide-ticket-alone均保留）。
+
+最终 `build runGameTestServer compileDevtoolsJava --console=plain` 为 **1326 JUnit / 746 GameTest，0失败、0错误、0跳过**，4分19秒。证据在 `evidence/r113-runtime-v001/full-6.log`、`final-counts.json`、`final-junit/`、`final-gametest.xml`。`tide-investigation.json`明确保留原故障n/nearby/QUERY原因未知；`check-assets.log`与`texture-check.txt`记录资源检查、8张HUD/羽毛纹理在临时目录生成后逐字节一致。全量后仅移除一个未采用的devtools鼠标探针，另跑compileDevtoolsJava，正式代码/测试未再改变。
+
+实拍脚本 `scripts/verify-r113.py <evidence-id> [flight|beauty|inventory|hud|well|death|all]` 使用真实跳跃/使用键，记录双端状态；XTest（DISPLAY=:0）移动真实光标，工具提示仍由原版库存界面绘制。所有客户端使用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0`，与Gradle全量互斥。脚本会修改验收世界，在结束后保留客户端；交接时另执行release_keys、forceload remove all、leave_world、quit。
+
+- `evidence/r113-per-form-v001/`：人形原版FallFlying/背翼及火箭16→15，精灵GLIDE/禁FallFlying/火箭16→16，无装备/破损羽毛，真实空中双向切形。服务端装备名仍为Elytra，精灵客户端为Kuro's Feather。
+- `evidence/r113-inventory-v002/`：人形/精灵各有normal与broken两张，均有真实鼠标悬停工具提示；v001没有工具提示，不作为最终名称验收。
+- `evidence/r113-per-form-clean-v001/spirit-feather-clean.png`与`evidence/r113-final-captures-v001/human-elytra-full.png`：干净近景；review临时静音Aura/新粒子，仅用于看模型与举羽姿势，默认特效保留在per-form-v001。clean-v001早期人形图身体被裁切，以后补全身图为准。
+- `evidence/r113-final-captures-v001/hud-clean.png`及`r113-hud-v001/`：生命/能量/灵光/护甲/XP/饥饿，中毒/凋零/吸收；`r113-well-v001/`：真实右键打开选择界面，点击目的地按钮安全到达；`r113-death-v001/`：真实死亡后复活保持精灵，物品不保留。
+
+本轮没有逐项实拍气泡、冻结、坐骑生命、vanillaHud开关或不同GUI缩放，也没有真实多人联机、其他光影包和第一人称羽毛专门验收；这些不计入已完成视觉覆盖。最终退出记录 `evidence/r113-final-cleanup/`；截图均为原始帧，未修图。
+
+
 ## R112 v014 动作运行时
 
 运行时契约与 promoted GLB/manifest 的 102 个名字及 loop 标志逐项核对。纯函数选择测试区分陆地爬行、水面/水下/踩水/水冲刺、墙附/上攀、梯子、mantle、launch/stomp、划桨、鞘翅、普通物品和施法；用 GemRender 实际 BlendEvaluator 验证 run 与 rise/fall 的权重，防止旧的 50/50 平均稀释。伤害按来源前/后/左右、大伤害/大击退选择，伤害包序号使连续受击重新播放；hurt+recover 时长取资产，不再写死9帧。

@@ -14,6 +14,7 @@ public final class OriMod {
     public OriMod(IEventBus modEventBus, net.neoforged.fml.ModContainer container) {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
+        modEventBus.addListener(cn.wwl.orimod.network.WellSelectPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.AnimationActionPayload::register);
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
@@ -97,6 +98,8 @@ public final class OriMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.progression.SpiritProgression::changedDimension);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.spirit.SpiritForm::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.movement.SpiritMovement::tick);
+        bus.addListener(cn.wwl.orimod.movement.FeatherGlide::migrate);
+        bus.addListener(cn.wwl.orimod.movement.FeatherGlide::tick);
         // Registered after movement so persistent effects follow this tick's authoritative state.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.combat.Flash::spawn);

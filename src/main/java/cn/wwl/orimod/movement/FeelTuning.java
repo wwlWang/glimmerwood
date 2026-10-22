@@ -10,6 +10,10 @@ import net.minecraft.world.phys.Vec3;
  * scripts/feel_curves.py reads these constants to plot the before/after curves.
  */
 public final class FeelTuning {
+    /** R113 blocks/tick: base Glide and its equipped-feather travel upgrade. Human elytra retains vanilla physics. */
+    public static final double FEATHER_SPEED = .5, FEATHER_SPIRIT_SPEED = .65;
+    public static final double FEATHER_FALL = -.12, FEATHER_SPIRIT_FALL = -.07;
+    public static final double FEATHER_ACCEL = .06, FEATHER_SPIRIT_ACCEL = .078;
     // ---- horizontal ---------------------------------------------------------------------------------------
     public static final double TOP_SPEED = .32;          // 6.4 m/s (vanilla walk .216, sprint .286 terminal)
     public static final double GROUND_ACCEL = .11;       // 0 -> top in 3 ticks

@@ -37,6 +37,9 @@ public final class SpiritHeldItems {
 
     static void render(Player player, SpiritPlayerVisual.Frame frame, PoseStack base,
                        net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        // Idle tools are stowed while both paws hold the feather. Actual attack/use overlays still render their items.
+        if (frame.world() && cn.wwl.orimod.movement.FeatherGlide.gliding(player) && !player.isUsingItem()
+                && !player.swinging && player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW).mode().equals("idle")) return;
         boolean mainLeft = player.getMainArm() == HumanoidArm.LEFT;
         draw(player, frame, base, buffers, light, player.getMainHandItem(), mainLeft);
         draw(player, frame, base, buffers, light, player.getOffhandItem(), !mainLeft);

@@ -76,9 +76,12 @@ public final class SpiritControls {
                 | (DASH.isDown() && !blockDashUntilReleased ? MovementInputPayload.DASH : 0)
                 | (BASH.isDown() && !blockBashUntilReleased ? MovementInputPayload.BASH : 0)
                 | (input.shiftKeyDown ? MovementInputPayload.CROUCH : 0);
+        cn.wwl.orimod.movement.FeatherGlide.input(player,active,(flags & MovementInputPayload.JUMP)!=0,input.shiftKeyDown);
+        boolean handoff=cn.wwl.orimod.movement.FeatherGlide.migrating(player);
+        if(handoff && active){state.mode=GLIDE;state.activeTicks=MovementRules.GLIDE_LEASE_TICKS;}
         int sequence = ++inputSequence;
-        if (SpiritJumpPrediction.apply(player, state, sequence, flags, input.forwardImpulse, input.leftImpulse)) flags |= MovementInputPayload.PREDICTED_JUMP;
-        else if (SpiritMovement.canMove(player)) SpiritActionPrediction.apply(player, state, flags, input.forwardImpulse, input.leftImpulse);
+        if (!handoff && SpiritJumpPrediction.apply(player, state, sequence, flags, input.forwardImpulse, input.leftImpulse)) flags |= MovementInputPayload.PREDICTED_JUMP;
+        else if (!handoff && SpiritMovement.canMove(player)) SpiritActionPrediction.apply(player, state, flags, input.forwardImpulse, input.leftImpulse);
         PacketDistributor.sendToServer(new MovementInputPayload(sequence, player.level().getGameTime(), flags, input.forwardImpulse, input.leftImpulse, player.getYRot(), player.getXRot()));
         sentActive = active;
         if (ownsJump) input.jumping = false;
@@ -114,13 +117,12 @@ public final class SpiritControls {
                 player.setDeltaMovement(MovementRules.stompVelocity(player.getDeltaMovement().y));
                 input.forwardImpulse = input.leftImpulse = 0;
             } else if (state.mode == GLIDE) {
-                if ((flags & MovementInputPayload.JUMP) == 0 || input.shiftKeyDown || player.onGround() || player.horizontalCollision) state.activeTicks = 0;
+                if ((flags & MovementInputPayload.JUMP) == 0 && !handoff || input.shiftKeyDown || player.onGround() || player.horizontalCollision) state.activeTicks = 0;
                 else {
                     var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
-                    var glide = MovementRules.glideVelocity(player.getDeltaMovement(), direction,
-                            cn.wwl.orimod.progression.Shard.AIR_CONTROL.equipped(player));
+                    var glide = cn.wwl.orimod.movement.FeatherGlide.velocity(player, direction);
                     // R40: an updraft vent below lifts the glide.
-                    if (cn.wwl.orimod.block.UpdraftBlock.lifting(player.level(), player)) glide = new net.minecraft.world.phys.Vec3(glide.x, MovementRules.updraftVelocity(glide.y), glide.z);
+
                     player.setDeltaMovement(glide);
                     player.fallDistance = 0;
                     input.forwardImpulse = input.leftImpulse = 0;

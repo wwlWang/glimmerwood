@@ -476,7 +476,7 @@ public final class DevelopmentBridge {
                 return Map.of("screen", screen.getClass().getSimpleName(), "slots", screen.getMenu().slots.stream().map(slot -> Map.of(
                         "index", slot.index, "x", screen.getGuiLeft() + slot.x, "y", screen.getGuiTop() + slot.y,
                         "item", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(slot.getItem().getItem()).toString(),
-                        "count", slot.getItem().getCount())).toList(),
+                        "count", slot.getItem().getCount(), "name", slot.getItem().getHoverName().getString())).toList(),
                         "carried", screen.getMenu().getCarried().toString());
             }
             case "gui_key" -> {
@@ -870,6 +870,9 @@ public final class DevelopmentBridge {
             });
             state.put("blight", blight);
         }
+        state.put("feather",Map.of("displayName",player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getHoverName().getString(),"handoff",player.getData(cn.wwl.orimod.spirit.SpiritData.FEATHER_HANDOFF),"wearing",cn.wwl.orimod.movement.FeatherGlide.wearing(player),
+                "permitted",cn.wwl.orimod.movement.FeatherGlide.permitted(player),"gliding",cn.wwl.orimod.movement.FeatherGlide.gliding(player),
+                "migrationRemaining",Math.max(0,player.getData(cn.wwl.orimod.spirit.SpiritData.FEATHER_STATE).migrationUntil-player.level().getGameTime())));
         state.put("companionFlame", Map.of("enabled", player.getData(cn.wwl.orimod.spirit.SpiritData.COMPANION_FLAME)));
         state.put("wisps",Map.of("mask",player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).wisps(),"purifications",cn.wwl.orimod.progression.WillWisp.purifications(player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS))));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),

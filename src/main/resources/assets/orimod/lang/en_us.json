@@ -224,7 +224,7 @@
   "block.orimod.updraft": "Spirit Updraft",
   "shard.orimod.triple_jump": "Triple Jump",
   "shard.orimod.triple_jump.description": "One more jump in the air after your double jump.",
-  "screen.orimod.well_travel": "Spirit Well: travel to the next well (%s discovered)",
+  "screen.orimod.well_travel": "Choose a Spirit Well (%s discovered)",
   "message.orimod.well.refilled": "The Spirit Well restores your health and energy",
   "message.orimod.well.travelled": "Travelled to the well at %s, %s, %s",
   "message.orimod.well.none": "No other discovered well to travel to",
@@ -459,5 +459,14 @@
   "advancement.orimod.restoration.description": "Return the three Wisps of Will and let the forest breathe again.",
   "line.orimod.restoration": "Glimmer: The light is back. The forest will remember you.",
   "commands.orimod.companion.flame.on": "Companion Spirit Flame: on (this session).",
-  "commands.orimod.companion.flame.off": "Companion Spirit Flame: off (this session)."
+  "commands.orimod.companion.flame.off": "Companion Spirit Flame: off (this session).",
+  "message.orimod.feather.firework": "The feather rides the wind. Fireworks cannot propel it.",
+  "message.orimod.well.unsafe": "That well is missing or has no safe landing space.",
+  "screen.orimod.well.choose": "Choose a discovered Spirit Well",
+  "screen.orimod.well.destination": "%s, %s, %s · %s blocks",
+  "hud.orimod.life": "Life %s/%s",
+  "hud.orimod.light": "Spirit Light %s",
+  "hud.orimod.armor": "Armor %s",
+  "orimod.configuration.vanillaHud": "Use vanilla HUD",
+  "item.orimod.kuro_feather": "Kuro's Feather"
 }

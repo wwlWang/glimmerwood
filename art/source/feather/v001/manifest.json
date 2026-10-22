@@ -1,0 +1,37 @@
+{
+  "asset": "kuro_feather",
+  "revision": 1,
+  "length_m": 1.35,
+  "grip": "origin, bottom of the quill",
+  "up": "glTF +Y",
+  "bounds_blender": [
+    [
+      -0.12214046716690063,
+      -0.06888701766729355,
+      -0.00020704253984149545
+    ],
+    [
+      0.1459362655878067,
+      0.038508445024490356,
+      1.3530000448226929
+    ]
+  ],
+  "vertices": 6022,
+  "export": "art/source/feather/v001/kuro_feather.glb",
+  "export_sha256": "4200a97b4e80858da8ac636f50a2dddcfee56c6c33b820e9399a1ba027d05da1",
+  "blend": "art/source/feather/v001/kuro_feather.blend",
+  "textures": {
+    "orimod:textures/entity/kuro_feather_emission.png": {
+      "path": "art/source/feather/v001/kuro_feather_emission.png",
+      "sha256": "1386be2e49c051b95d8d73eaa36c48f26a329d8dc3b6475085e4c90a56aaf7a2"
+    },
+    "orimod:textures/entity/kuro_feather_base.png": {
+      "path": "art/source/feather/v001/kuro_feather_base.png",
+      "sha256": "279b316e92dd7580c9e9ce6b3acd8b43492f197b03cd3f675abfa80603758b5b"
+    },
+    "orimod:textures/entity/kuro_feather_surface.png": {
+      "path": "art/source/feather/v001/kuro_feather_surface.png",
+      "sha256": "753ea17d7e1a0e77495d156799d98aead479a96239dceaeb14bfe45effdb799a"
+    }
+  }
+}

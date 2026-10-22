@@ -11,7 +11,9 @@
     "ServerFloatingAccessor",
     "SpiritLandingParticlesMixin",
     "SpiritSprintParticlesMixin",
-    "RestorationMoveMixin"
+    "RestorationMoveMixin",
+    "KuroFeatherItemMixin",
+    "FeatherFireworkMixin"
   ],
   "client": [
     "SpiritHeldHandMixin",
@@ -29,7 +31,9 @@
     "RestorationMouseMixin",
     "SpiritAnimationDamageMixin",
     "SpiritAnimationDropMixin",
-    "SpiritAnimationInteractionMixin"
+    "SpiritAnimationInteractionMixin",
+    "FeatherElytraLayerMixin",
+    "FeatherItemNameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -141,7 +141,7 @@ final class SpiritAnimation {
             lag = Mth.lerp(1 - (float)Math.exp(-dt * 9), lag, Math.clamp(-angular * .0013f, -.17f, .17f));
         }
         previousYaw = yaw;
-        String mode = movement.mode.id();
+        String mode = cn.wwl.orimod.movement.FeatherGlide.gliding(player) ? "glide" : movement.mode.id();
         wasMantling = mantling;
         mantling = player == net.minecraft.client.Minecraft.getInstance().player && cn.wwl.orimod.client.SpiritMantle.active(player);
         var state = new SpiritAnimationRules.State();
@@ -396,9 +396,9 @@ final class SpiritAnimation {
                 arch = .04f * Mth.sin(now * 2.2f + 1);
             }
         }
-        boolean holdLeft = handsAvailable && !(mainLeft ? player.getMainHandItem() : player.getOffhandItem()).isEmpty()
+        boolean holdLeft = handsAvailable && !family.equals("glide") && !(mainLeft ? player.getMainHandItem() : player.getOffhandItem()).isEmpty()
                 && mask != upperBody && mask != leftArm;
-        boolean holdRight = handsAvailable && !(mainLeft ? player.getOffhandItem() : player.getMainHandItem()).isEmpty()
+        boolean holdRight = handsAvailable && !family.equals("glide") && !(mainLeft ? player.getOffhandItem() : player.getMainHandItem()).isEmpty()
                 && mask != upperBody && mask != rightArm;
         // R95: only weapon / use overlays exclude an arm from the base; cradles and body poses scale it instead (keepOut).
         boolean leftCovered = mask == leftArm, rightCovered = mask == rightArm;

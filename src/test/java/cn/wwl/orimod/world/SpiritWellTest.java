@@ -24,4 +24,8 @@ class SpiritWellTest {
         assertEquals(2, SpiritWell.count(KEYS, "minecraft:overworld"));
         assertEquals(1, SpiritWell.count(KEYS, "minecraft:the_nether"));
     }
+    @Test void chooserListsOnlyValidDiscoveriesInThisDimension() {
+        assertEquals(List.of(new BlockPos(-5,70,3),new BlockPos(10,64,10)),SpiritWell.discovered(KEYS,"minecraft:overworld"));
+        assertTrue(SpiritWell.discovered(List.of("discover/minecraft:overworld/nonsense","discover/minecraft:overworld/1,2,3/extra"),"minecraft:overworld").isEmpty());
+    }
 }

@@ -41,6 +41,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
     private final VisualizationContext context;
     private final SpiritAnimation animation;
     private Body body;
+    private FeatherVisual feather;
 
     public static void register() {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritClips::tick);
@@ -56,14 +57,19 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
 
     @Override public void beginFrame(Context frame) {
         var mc = Minecraft.getInstance();
+        if (cn.wwl.orimod.movement.FeatherGlide.gliding(entity)) {
+            if (feather == null) feather = new FeatherVisual(context, entity, frame.partialTick());
+        } else if (feather != null) { feather.delete(); feather = null; }
         boolean visible = SpiritAppearance.visible(entity)
                 && (entity != mc.getCameraEntity() || !mc.options.getCameraType().isFirstPerson());
         if (!visible) {
             if (body != null) { body.delete(); body = null; }
+            if (feather != null) feather.beginFrame(frame);
             return;
         }
         if (body == null) body = new Body(context, entity, frame.partialTick(), animation);
         body.beginFrame(frame);
+        if (feather != null) feather.beginFrame(frame);
     }
 
     public static Map<String, Object> diagnostics(Player player) {
@@ -124,6 +130,7 @@ public final class SpiritPlayerVisual extends ComponentEntityVisual<Player> {
 
     @Override protected void _delete() {
         if (body != null) { body.delete(); body = null; }
+        if (feather != null) { feather.delete(); feather = null; }
         super._delete();
     }
 

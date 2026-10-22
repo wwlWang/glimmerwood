@@ -61,7 +61,7 @@ public final class SpiritProgression {
                 cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_STOP);
             }
             case "soul_link" -> SoulLink.create(player);
-            case "well_travel" -> cn.wwl.orimod.world.SpiritWell.travel(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
+            case "well_travel" -> cn.wwl.orimod.world.SpiritWell.open(player, cn.wwl.orimod.world.SpiritWell.position("x/" + target));
             case "light_burst" -> cn.wwl.orimod.combat.LightBurst.toss(player);
             case "water_dash" -> cn.wwl.orimod.movement.WaterMovement.dash(player);
             case "charge_flame" -> cn.wwl.orimod.combat.ChargeFlame.release(player);

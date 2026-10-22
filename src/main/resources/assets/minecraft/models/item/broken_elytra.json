@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/broken_elytra"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "orimod:spirit_form": 1
+      },
+      "model": "orimod:item/kuro_feather_broken"
+    }
+  ]
+}

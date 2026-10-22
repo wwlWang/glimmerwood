@@ -14,6 +14,7 @@ public final class OriClientConfig {
     public static final ModConfigSpec.BooleanValue SPIRIT_GLOW;
     /** R97: first-encounter guidance from Glimmer (automatically exposed by ConfigurationScreen). */
     public static final ModConfigSpec.BooleanValue COMPANION_HINTS;
+    public static final ModConfigSpec.BooleanValue VANILLA_HUD;
     public static final ModConfigSpec.IntValue SCREEN_SHAKE;
     public static final ModConfigSpec.IntValue SCREEN_FLASH;
     /** Plan default: shake is light; flash is moderate. */
@@ -46,6 +47,8 @@ public final class OriClientConfig {
                         "Choosing another pack in Iris turns this off.")
                 .define("spiritGlow", true);
         builder.pop();
+        VANILLA_HUD = builder.comment("Keep vanilla hearts, armor and XP while in spirit form instead of the life/energy cell HUD.")
+                .define("vanillaHud", false);
         COMPANION_HINTS = builder.comment("Glimmer's hints and contextual lines, sound and guiding flight. The server remembers sent messages even when hidden.")
                 .define("companionHints", true);
         builder.push("feedback");

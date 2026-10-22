@@ -13,6 +13,9 @@ import net.minecraft.world.level.Level;
 public final class SpiritBowItem extends BowItem {
     public SpiritBowItem(Properties properties) { super(properties); }
 
+    // Preserve old Damage components and repair recipes; all normal wear (including mining) is zero.
+    @Override public <T extends net.minecraft.world.entity.LivingEntity> int damageItem(ItemStack stack, int amount, T entity,
+            java.util.function.Consumer<net.minecraft.world.item.Item> onBroken) { return 0; }
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<net.minecraft.network.chat.Component> lines, net.minecraft.world.item.TooltipFlag flag) {
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.bow_energy").withStyle(net.minecraft.ChatFormatting.AQUA));
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.orimod.bow_charge").withStyle(net.minecraft.ChatFormatting.GRAY));

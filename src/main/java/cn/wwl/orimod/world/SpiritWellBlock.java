@@ -22,7 +22,7 @@ public class SpiritWellBlock extends Block {
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player p,BlockHitResult hit){
         if(p instanceof ServerPlayer player && SpiritData.isAwakened(player)){
             SpiritProgression.reward(player,"discover/"+ChallengeSession.key(level.dimension(),pos),0,0);
-            if(player.isShiftKeyDown())SpiritWell.travel(player,pos);else SpiritWell.refill(player);
+            SpiritWell.refill(player); SpiritWell.open(player,pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

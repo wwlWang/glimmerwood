@@ -293,8 +293,38 @@ public final class GloomTideGameTests {
     }
     private static void add(List<TestFunction> list,String name,BiConsumer<GameTestHelper,Site> run) {
         list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",100,0,true,h->{
-            try(var site=new Site(h)) {run.accept(h,site);} h.succeed();
+            if(name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency")) {
+                loadedRing(h, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
+            } else {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();}
         }));
+    }
+    private static final TicketType<ChunkPos> TIDE_TICKET=TicketType.create("orimod_gametest_tide",Comparator.comparingLong(ChunkPos::toLong));
+    /** This 61x61 arena lies outside room's tickets. Block writes alone do not make entity sections ready.
+     * Acquire only our own tickets, wait before touching global tide settings, and release on every exit. */
+    private static void loadedRing(GameTestHelper h,Runnable test) {
+        var level=h.getLevel();var base=h.absolutePos(BlockPos.ZERO);var chunks=new ArrayList<ChunkPos>();
+        var added=new ArrayList<ChunkPos>();
+        var cleaned=new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable cleanup=()->{if(cleaned.compareAndSet(false,true))added.forEach(c->level.getChunkSource().removeRegionTicket(TIDE_TICKET,c,2,c));};
+        try {
+            for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)
+                for(int z=(base.getZ()-30)>>4;z<=(base.getZ()+30)>>4;z++) {
+                    var c=new ChunkPos(x,z);chunks.add(c);
+                    // A private ticket type cannot be removed by neighbouring GameTests releasing FORCED.
+                    added.add(c);level.getChunkSource().addRegionTicket(TIDE_TICKET,c,2,c);
+                    level.getChunk(x,z,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);
+                }
+            long started=level.getGameTime();
+            h.onEachTick(()->{
+                if(cleaned.get())return;
+                try {
+                    h.assertTrue(level.getGameTime()-started<80,"Tide fixture ring did not load block/entity data");
+                    if(chunks.stream().anyMatch(c->level.getChunkSource().getChunkNow(c.x,c.z)==null
+                            || !level.areEntitiesLoaded(c.toLong())))return;
+                    try {test.run();} finally {cleanup.run();}
+                }catch(Throwable error){cleanup.run();throw error;}
+            });
+        }catch(Throwable error){cleanup.run();throw error;}
     }
     private static final class Site implements AutoCloseable {
         final GameTestHelper h;final ServerLevel level;final Fixtures.ConnectedPlayer connection;final ServerPlayer p;final BlockPos base;

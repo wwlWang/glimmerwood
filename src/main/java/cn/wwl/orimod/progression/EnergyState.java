@@ -9,7 +9,7 @@ public final class EnergyState {
     /** R39: next Light Burst throw. */
     public long burstReadyAt, waterDashReadyAt, chargeFlameReadyAt, spearReadyAt;
     /** R41: next Spirit Well refill. */
-    public long wellReadyAt;
+    public long wellReadyAt, wellTravelReadyAt;
     public long lastSpent, lastHurt, healReadyAt;
     /** R97: separate hint timers avoid treating a fresh player's tick zero as an energy spend. */
     public long lastHintSpendAt = Long.MIN_VALUE, lastCompanionHintAt = Long.MIN_VALUE;

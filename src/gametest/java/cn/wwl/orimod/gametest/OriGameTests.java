@@ -10,7 +10,11 @@ import java.nio.file.Path;
 
 @Mod("orimod_gametest")
 public final class OriGameTests {
+    private static final net.neoforged.neoforge.registries.DeferredRegister.Items ITEMS = net.neoforged.neoforge.registries.DeferredRegister.createItems("orimod_gametest");
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.ElytraItem> OTHER_ELYTRA = ITEMS.register("other_elytra",
+            () -> new net.minecraft.world.item.ElytraItem(new net.minecraft.world.item.Item.Properties().durability(432)));
     public OriGameTests(IEventBus bus) {
+        ITEMS.register(bus);
         if (Boolean.getBoolean("orimod.worldgen.audit")) {
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(WorldgenAudit::started);
             return;

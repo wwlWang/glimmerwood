@@ -11,13 +11,13 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import java.util.function.Supplier;
 
-/** Permanent awakening and current form have separate death-copy rules. */
+/** Permanent progress and the chosen form survive death; inventory and XP retain vanilla rules. */
 public final class SpiritData {
     private static final DeferredRegister<AttachmentType<?>> TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, OriMod.MOD_ID);
     public static final Supplier<AttachmentType<Boolean>> AWAKENED = TYPES.register("awakened", () ->
             AttachmentType.builder(() -> false).serialize(Codec.BOOL).copyOnDeath().sync(ByteBufCodecs.BOOL).build());
     public static final Supplier<AttachmentType<Boolean>> FORM = TYPES.register("spirit_form", () ->
-            AttachmentType.builder(() -> false).serialize(Codec.BOOL).sync(ByteBufCodecs.BOOL).build());
+            AttachmentType.builder(() -> false).serialize(Codec.BOOL).copyOnDeath().sync(ByteBufCodecs.BOOL).build());
     public static final Supplier<AttachmentType<Integer>> ABILITIES = TYPES.register("abilities", () ->
             AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().sync(ByteBufCodecs.VAR_INT).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.progression.SpiritProgress>> PROGRESS = TYPES.register("progress", () ->
@@ -43,6 +43,12 @@ public final class SpiritData {
     public static final Supplier<AttachmentType<Boolean>> CHALLENGE_ACTIVE = TYPES.register("challenge_active", () ->
             AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
 
+    public static final Supplier<AttachmentType<Boolean>> FEATHER_HANDOFF = TYPES.register("feather_handoff", () ->
+            AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
+    public static final Supplier<AttachmentType<Boolean>> FEATHER_GLIDING = TYPES.register("feather_gliding", () ->
+            AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
+    public static final Supplier<AttachmentType<cn.wwl.orimod.movement.FeatherGlide.State>> FEATHER_STATE = TYPES.register("feather_state", () ->
+            AttachmentType.builder(cn.wwl.orimod.movement.FeatherGlide.State::new).build());
     private SpiritData() {}
     /** R34: the player's Soul Link respawn point (kept through death). */
     public static final Supplier<AttachmentType<java.util.Optional<cn.wwl.orimod.progression.SoulLink.Link>>> SOUL_LINK = TYPES.register("soul_link", () ->
