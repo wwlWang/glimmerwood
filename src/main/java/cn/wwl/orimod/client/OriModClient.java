@@ -17,6 +17,7 @@ public final class OriModClient {
         modEventBus.addListener(OriModClient::configReloaded);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritHud::hideVanilla);
         modEventBus.addListener(SpiritHud::register);
+        modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> e.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.RECOVERY_ORB.get(), RecoveryOrbRenderer::new));
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritFxResources::register);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritParticle::register);
@@ -29,6 +30,8 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritFxClient::loggingOut);
         modEventBus.addListener(cn.wwl.orimod.client.render.SpiritWeaponRenderer::register);
         modEventBus.addListener(SpiritControls::registerKeys);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SkillControls::input);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SkillControls::frame);
         modEventBus.addListener(SpiritTargetOverlay::register);
         modEventBus.addListener(SpiritCombatClient::register);
         modEventBus.addListener(RuinGuideOverlay::register);

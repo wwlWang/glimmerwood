@@ -4,6 +4,8 @@
   "package": "cn.wwl.orimod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "SpiritFoodMixin",
+    "SpiritPlayerFoodMixin",
     "PlayerDimensionsMixin",
     "PlayerAirControlMixin",
     "MovementTeleportMixin",

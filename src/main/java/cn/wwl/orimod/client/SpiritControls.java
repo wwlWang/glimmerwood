@@ -27,11 +27,10 @@ public final class SpiritControls {
     public static final KeyMapping PANEL = new KeyMapping("key.orimod.panel", GLFW.GLFW_KEY_G, "key.categories.orimod");
     public static final KeyMapping SOUL_LINK = new KeyMapping("key.orimod.soul_link", GLFW.GLFW_KEY_B, "key.categories.orimod");
     public static final KeyMapping LIGHT_BURST = new KeyMapping("key.orimod.light_burst", GLFW.GLFW_KEY_Z, "key.categories.orimod");
-    /** R59: hold to charge the flame, release to burst. */
+    /** Slot 2 retains its legacy mapping ID so custom Controls bindings migrate. */
     public static final KeyMapping CHARGE_FLAME = new KeyMapping("key.orimod.charge_flame", GLFW.GLFW_KEY_X, "key.categories.orimod");
-    /** R98: hold Flash; release sends an edge, with a twenty-tick server lease as fallback. */
+    /** Slot 3 retains the original conflict-resolution policy. */
     public static final KeyMapping FLASH = new KeyMapping("key.orimod.flash", GLFW.GLFW_KEY_H, "key.categories.orimod");
-    private static int flashHeld;
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
     private static CameraType spiritCamera = CameraType.THIRD_PERSON_BACK;
     private static boolean wasSpirit;
@@ -224,60 +223,17 @@ public final class SpiritControls {
         feelFriction = grounded ? below.getFriction(player.level(), player.getBlockPosBelowThatAffectsMyMovement(), player) * .91f : .91f;
     }
 
-    private static int chargeFlameHeld;
 
     /** R59: count the hold of the Charge Flame key; a charged release sends the burst, charging shows gathering sparks. */
-    private static void chargeFlameTick(Minecraft mc) {
-        while (CHARGE_FLAME.consumeClick()) { }
-        var player = mc.player;
-        boolean down = CHARGE_FLAME.isDown() && player != null && mc.screen == null && mc.isWindowActive();
-        if (down) {
-            chargeFlameHeld++;
-            if ((chargeFlameHeld - 1) % cn.wwl.orimod.combat.Flash.KEEPALIVE_TICKS == 0)
-                PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("charge_flame_hold", ""));
-            if (player != null && chargeFlameHeld <= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS && chargeFlameHeld % 2 == 0) {
-                double a = chargeFlameHeld * .7;
-                try {
-                    player.level().addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_SPARK.get(),
-                            chargeFlameHeld >= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS ? 0xFFE080 : 0xFF9A40, .35f, 8), true,
-                            player.getX() + Math.cos(a) * 1.6, player.getY() + .8, player.getZ() + Math.sin(a) * 1.6, -Math.cos(a) * .2, 0, -Math.sin(a) * .2);
-                } catch (Throwable ignored) { }
-            }
-            return;
-        }
-        if (chargeFlameHeld >= cn.wwl.orimod.combat.ChargeFlame.CHARGE_TICKS && player != null)
-            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("charge_flame", ""));
-        else if (chargeFlameHeld > 0 && player != null)
-            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("charge_flame_cancel", ""));
-        chargeFlameHeld = 0;
-    }
-
-    private static void flashTick(Minecraft mc) {
-        while (FLASH.consumeClick()) { }
-        if (mc.player == null || mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player)
-                || !mc.player.isAlive() || !FLASH.isDown() || CHARGE_FLAME.isDown()
-                || mc.player.isUsingItem() || mc.options.keyAttack.isDown() || mc.options.keyUse.isDown()) {
-            stopFlash(mc);
-            return;
-        }
-        if (flashHeld++ % cn.wwl.orimod.combat.Flash.KEEPALIVE_TICKS == 0)
-            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("flash", ""));
-    }
-
-    /** Send once on release or input invalidation, without waiting for the next keepalive. */
-    private static void stopFlash(Minecraft mc) {
-        if (flashHeld > 0 && mc.player != null && mc.getConnection() != null)
-            PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("flash_stop", ""));
-        flashHeld = 0;
-    }
-
-    /** R98: a screen has no server menu for e.g. G/Escape; reuse the existing inactive movement input immediately. */
+    /** Menus cancel unfinished holds; opening the wheel never releases a charged attack. */
     public static void opening(net.neoforged.neoforge.client.event.ScreenEvent.Opening event) {
-        var mc = Minecraft.getInstance();
-        if (event.getNewScreen() == null || mc.player == null || flashHeld == 0 && !cn.wwl.orimod.client.fx.SpiritFxClient.flashing(mc.player.getId())) return;
-        stopFlash(mc);
-        PacketDistributor.sendToServer(new MovementInputPayload(++inputSequence, mc.player.level().getGameTime(), 0, 0, 0, mc.player.getYRot(), mc.player.getXRot()));
-        sentActive = false;
+        if(event.getNewScreen()==null)return;
+        SkillControls.cancel();
+        var mc=Minecraft.getInstance();
+        if(mc.player!=null&&sentActive){
+            PacketDistributor.sendToServer(new MovementInputPayload(++inputSequence,mc.player.level().getGameTime(),0,0,0,mc.player.getYRot(),mc.player.getXRot()));
+            sentActive=false;
+        }
     }
 
     private static boolean waterDashHeld;
@@ -315,7 +271,7 @@ public final class SpiritControls {
     }
 
     public static void tick(ClientTickEvent.Post event) {
-        if(RestorationClient.active()){net.minecraft.client.KeyMapping.releaseAll();return;}
+        if(RestorationClient.active()){SkillControls.cancel();net.minecraft.client.KeyMapping.releaseAll();return;}
         var mc = Minecraft.getInstance();
         boolean spirit = mc.player != null && SpiritData.isSpirit(mc.player);
         if (mc.player == null) {
@@ -371,15 +327,7 @@ public final class SpiritControls {
         waterTick(mc);
         burrowTick(mc);
         while (BASH.consumeClick()) { }
-        while (PANEL.consumeClick()) {
-            if (mc.player != null && mc.screen == null && mc.isWindowActive()) mc.setScreen(new SpiritScreen(!SpiritData.isAwakened(mc.player)));
-        }
-        chargeFlameTick(mc);
-        flashTick(mc);
-        while (LIGHT_BURST.consumeClick()) {
-            if (mc.player != null && mc.screen == null && mc.isWindowActive())
-                PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("light_burst", ""));
-        }
+        SkillControls.tick();
         while (SOUL_LINK.consumeClick()) {
             if (mc.player != null && mc.screen == null && mc.isWindowActive())
                 PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("soul_link", ""));

@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 public final class OriEntities {
     private static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, OriMod.MOD_ID);
+    public static final Supplier<EntityType<cn.wwl.orimod.entity.RecoveryOrb>> RECOVERY_ORB = TYPES.register("recovery_orb", () -> EntityType.Builder
+            .<cn.wwl.orimod.entity.RecoveryOrb>of(cn.wwl.orimod.entity.RecoveryOrb::new, MobCategory.MISC).sized(.25f, .25f).clientTrackingRange(6).updateInterval(2).build("orimod:recovery_orb"));
     public static final Supplier<EntityType<PracticeTarget>> PRACTICE_TARGET = TYPES.register("practice_target", () -> EntityType.Builder
             .of(PracticeTarget::new, MobCategory.MISC).sized(.9f, 1.4f).clientTrackingRange(8).build("orimod:practice_target"));
     /** R39: thrown Light Burst orb. */

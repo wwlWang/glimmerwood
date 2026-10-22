@@ -15,9 +15,13 @@ public final class OriMod {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.CLIENT, cn.wwl.orimod.config.OriClientConfig.SPEC);
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, cn.wwl.orimod.config.OriServerConfig.SPEC);
         modEventBus.addListener(cn.wwl.orimod.network.WellSelectPayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.SkillBindPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.AnimationActionPayload::register);
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::damaged);
+        bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::logout);
+        bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.progression.RecoveryOrbs::drops);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::login);
         bus.addListener(cn.wwl.orimod.progression.Restoration::tick);

@@ -1,12 +1,22 @@
 # 开发与验收工具
 
+## R113 恢复与技能轮盘
+
+G轻按松开开原能力/碎片面板；按住250ms开技能轮盘，鼠标或滚轮选择，再按Z/X/H绑定。松G直接关闭。三个槽继承原光爆/蓄力灵焰/灵闪的按键配置，Controls中改名“技能槽1/2/3”；移动能力与武器不进轮盘。打开菜单会取消未完成引导，绑定时按住的技能键要松开重按才会施法。
+
+`WheelSkill`一处登记目录/触发方式/原服务端action/耗能/冷却；`SkillBindings`为三个持久槽、初始化标记与已见技能集合，死亡复制，仅同步本人。新学技能填首个空槽、不挤已有技能；重复绑定会从旧槽移走。`skill_bind`通道v1有显式线格式版本拒绝。施法仍走已有progress_action验证，没有新增可绕过校验的施法入口。
+
+`spirit_state.client/server.skills`包含slots和readyAt；`client.skillWheel`包含open/hovered/skills/centre/radius；`server.recovery`包含regenerating/lastDamage/food。`ori energy set 20`、`damage @s 8 minecraft:generic`可准备恢复场景，保持naturalRegeneration=true、去除回血碎片/效果。精灵脱伤8秒后0.5HP/s至80%；按住复原每秒扣10能量回6HP，伤害中断需松手。冷却后回能只到20，精灵饥饿冻结；人形食物保持原版。
+
+实拍脚本：`DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe python3 scripts/verify-r113-recovery-wheel.py <新证据目录名>`，连接现有验收客户端，在(5800,140,5800)建立测试平台，使用XTest真实G/Z/H和鼠标输入；不要在生产世界运行。脚本不启动Gradle、不退出客户端；交接时清forceload、leave_world、quit。技能PNG由Claude制作，本轮只读取，`icon-check.txt`记录全部6张逐字节复现。
+
 ## R113 羽毛与灵泉验证
 
 人形使用原版鞘翅；精灵装备同一个 minecraft:elytra 得到羽毛滑翔升级，仍需GLIDE。仅客户端默认名称/物品模型切换，服务器保存和物品ID不变；其他模组鞘翅不接管。`ori awaken`、`ori unlock all`、`ori form on|off`、`ori energy set <n>`可准备场景。左下主HUD的回退设置为客户端 `vanillaHud`。灵泉用右键发现/补满并打开同维度选择列表；遗迹面板的灵泉按钮也打开该列表。
 
 `spirit_state.client/server.feather`给出wearing/permitted/gliding/handoff/migrationRemaining/displayName；服务端displayName保持原物品名，客户端随本地形态切换。`container_state.slots[].name`便于比对名称；脚本用XTest在DISPLAY=:0移动真实鼠标，截图原版工具提示。验证脚本为 scripts/verify-r113.py。客户端启动遵守 llvmpipe + DISPLAY=:0；测试运行时关闭客户端。
 
-运行方式：`DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe XAUTHORITY="$HOME/.Xauthority" python3 scripts/verify-r113.py <新证据目录名> <flight|beauty|inventory|hud|well|death|all>`。脚本只连接已启动的验收世界，会改建(5800,140,5800)附近测试场；beauty需单独运行，临时静音Aura看羽毛姿势。最终两形态证据与覆盖限制见TESTING的R113条目；第二批恢复循环的数值/接入点仍只在 `drafts/ORI_VANILLA_PARITY.md` 设计中。
+运行方式：`DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe XAUTHORITY="$HOME/.Xauthority" python3 scripts/verify-r113.py <新证据目录名> <flight|beauty|inventory|hud|well|death|all>`。脚本只连接已启动的验收世界，会改建(5800,140,5800)附近测试场；beauty需单独运行，临时静音Aura看羽毛姿势。最终两形态证据与覆盖限制见TESTING的R113条目；第二批恢复循环已接入，数值依据见 `drafts/ORI_VANILLA_PARITY.md`。
 
 
 代码按职责命名。`P1`、`P2` 等阶段编号只用于计划和验收记录，不进入包名、类名、资源 ID 或构建任务。样例使用明确的 `Preview`、`Sample` 名称；正式玩法类按实际行为命名。

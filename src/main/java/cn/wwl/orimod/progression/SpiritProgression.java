@@ -41,6 +41,7 @@ public final class SpiritProgression {
     }
 
     public static void request(ServerPlayer player, String action, String target) {
+        if (action.equals("regenerate_stop")) { Regenerate.release(player); return; }
         if(action.equals("restoration_skip")){Restoration.skip(player,target);return;}
         if(Restoration.active(player))return;
         // Releasing must remain possible even if eligibility changed after the last hold packet.
@@ -48,6 +49,7 @@ public final class SpiritProgression {
         if (!player.isAlive() || !SpiritData.isAwakened(player)) { reply(player, "progress.orimod.awakening_required"); return; }
         var p = player.getData(SpiritData.PROGRESS);
         switch (action) {
+            case "regenerate" -> Regenerate.keepAlive(player);
             case "flash" -> cn.wwl.orimod.combat.Flash.keepAlive(player);
             case "charge_flame_hold" -> {
                 if (SpiritData.isSpirit(player) && Ability.CHARGE_FLAME.unlocked(player) && !player.hasContainerOpen()) {
@@ -219,18 +221,19 @@ public final class SpiritProgression {
     }
 
     public static void changedDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) player.getData(SpiritData.ENERGY_STATE).pendingHeal = false;
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.getData(SpiritData.ENERGY_STATE).pendingHeal = false;
+            player.getData(SpiritData.ENERGY_STATE).recoveryHurtAt = player.level().getGameTime();
+            Regenerate.release(player);
+        }
     }
 
     public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || !SpiritData.isAwakened(player) || !player.isAlive()) return;
         long now = player.level().getGameTime();
         var s = player.getData(SpiritData.ENERGY_STATE);
-        if (now % 4 == 0) {
-            float energy = energy(player);
-            if (!cn.wwl.orimod.combat.Flash.active(player) && now - s.lastSpent >= 40) energy = Math.min(maxEnergy(player), energy + (Shard.RECOVERY.equipped(player) ? 1.5f : 1));
-            if (Float.compare(player.getData(SpiritData.ENERGY), energy) != 0) player.setData(SpiritData.ENERGY, energy);
-        }
+        SpiritRecovery.tick(player);
+        SpiritSkills.tick(player);
         if (now % 2 == 0) pullLight(player);
         cn.wwl.orimod.movement.WaterMovement.breathe(player);
         if (s.pendingHeal) {

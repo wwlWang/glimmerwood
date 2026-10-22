@@ -1,5 +1,23 @@
 # 回归测试
 
+## R113 第二批：恢复循环与技能轮盘
+
+`RecoveryTuning/RecoveryRules`集中数值与纯函数：精灵脱伤8秒后每秒0.5HP至80%，消耗后4秒回能2/秒至20（RECOVERY为3/秒）；Regenerate按住每20tick扣10能量恢复6HP，受伤含吸收伤害中断并等松键重试。80%不拦其他治疗；人形FoodData保持原版。FoodData.tick、玩家exhaustion/eat与和平aiStep分别门控，避免和平回血绕过新上限。
+
+恢复球4格吸附，出生10tick后可领，满对应资源不拉取/不消费，1200个已加载tick后消失，保存年龄。服务端单消费入口防止两名玩家重复领取，生命球不走灵光汲取。掉落按敌人最大HP分组、每组两类各50%，保留原XP/灵光。
+
+初轮新增GameTest夹具问题留在`evidence/r113-recovery-runtime-v001/full-a-1.log`：新登录玩家60tick保护使伤害/饥饿被拒，嵌入连接不自动驱动正常玩家Post tick。按既有Flash/Damage夹具先tick61次，定时恢复测试显式调用正式Post入口；断言不变。第二轮吸收测试暴露MC 1.21的max_absorption属性限制：直接setAbsorptionAmount(4)实际被钳0，改用真正ABSORPTION效果并先断言吸收值存在（full-a-2.log）。这些是新增夹具修正，未改旧用例断言。
+
+A检查点：`evidence/r113-recovery-runtime-v001/full-a-3.log`，1334 JUnit / 759 GameTest，0失败；吸收效果夹具修正后没有放宽断言。B加普通食物不浪费、金苹果效果保留、naturalRegeneration=false只禁被动生命恢复；三个技能槽的迁移、移动、非法绑定/包版本、250ms手势和死亡复制回归。首轮A+B全量1356/763全过（`evidence/r113-wheel-runtime-v001/full-b-1.log`），随后补“后学技能只填空槽且不重新填用户主动留空槽”回归，随后最终 `build runGameTestServer compileDevtoolsJava` 为 **1357 JUnit / 764 GameTest，0失败、0错误、0跳过**（full-b-3.log，4分15秒）。GUI绕序修正实拍后，再跑full-final.log，仍1357/764全绿；最终源码SHA-256与v003截图记录一致。最终XML/计数在同目录final-counts.json、final-junit/、final-gametest.xml。
+
+本轮另遇既有潮夜 `wave_uses_horizontal_ring_and_persistent_tags: Outside horizontal ring`（full-b-2.log）。夹具Site.mobs原先无归属地取55格内全部潮汐怪，查询范围重叠；改按波次目标玩家UUID与手工夹具UUID筛选，多人用例显式纳入两个玩家，清理也限本夹具怪物。距离断言保留，并新增“查询数=本波生成数”及邻居污染回归；与上轮区块票问题分开记录。原失败未记录具体怪物位置，不能冒称已观测到外来UUID。详见`evidence/r113-wheel-runtime-v001/tide-investigation.json`。
+
+轮盘为不暂停游戏的Screen，打开后原版释放鼠标；G释放由Screen自己的keyReleased接收，不能依赖被setScreen清零的KeyMapping.isDown。250ms使用单调毫秒而非客户端tick；技能绑定包v1校验槽位0..2和目录ID，未学技能在服务端再次拒绝。保留三个旧映射ID以迁移用户改键，界面名称改为技能槽1/2/3。
+
+实拍：`evidence/r113-wheel-capture-v003/`的14个检查点由XTest真实键鼠输入完成，`results.json`保留双端状态：G短按面板、长按轮盘、鼠标视角不变、H绑定、移槽清空、绑定键未松开不误施法；12HP在脱伤间隔内保持，之后至16HP稳定，复原16→20HP且20→10能量；X蓄力松手扣10、Z光爆扣15、H灵闪持续扣能。HUD有正常/缺能/冷却帧。`r113-wheel-extra-v001`补中文轮盘、实际滚轮切换、满血生命球保留与18→20磁吸消费（早于被动恢复）。绑定从v002到客户端重启后的v003保留。所有拍摄llvmpipe / DISPLAY=:0，shader关闭；未实测真实多人或第三方食物/光影模组。
+
+初次capture-v001准备场地时fill已是相同方块返回0，被脚本误判；v002功能已全通过，但轮盘扇区GUI绕序反，被RenderType.gui背面剔除；仅调整顶点绕序，v003补拍确认高亮/底色。六张技能PNG未改动，直接用生成函数在内存复现逐字节一致，见icon-check.txt；资产契约check-assets.log通过。最终退出记录r113-wheel-cleanup-v001（释放按键、移除测试强加载、leave_world、quit）。
+
 ## R113 按形态羽毛、主HUD与灵泉选择
 
 新增测试覆盖原版/第三方鞘翅保留、人形耐久/烟花、精灵破损羽毛、双向空中交接/释放/创飞、风口、死亡FORM与原版掉落、灵武器旧耐久不再消耗、灵泉发现/范围/维度/安全校验、协议v1解码拒绝及HUD分组。新增 DeferredRegister 的测试鞘翅用于兼容断言，避免运行时注册导致 Registry is already frozen。

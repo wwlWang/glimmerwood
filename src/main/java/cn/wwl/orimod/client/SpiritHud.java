@@ -16,7 +16,7 @@ public final class SpiritHud {
     public static void hideVanilla(RenderGuiLayerEvent.Pre e){
         if(!enabled())return;
         var n=e.getName();
-        if(n.equals(VanillaGuiLayers.PLAYER_HEALTH)||n.equals(VanillaGuiLayers.ARMOR_LEVEL)
+        if(n.equals(VanillaGuiLayers.FOOD_LEVEL)||n.equals(VanillaGuiLayers.PLAYER_HEALTH)||n.equals(VanillaGuiLayers.ARMOR_LEVEL)
                 ||n.equals(VanillaGuiLayers.EXPERIENCE_BAR)||n.equals(VanillaGuiLayers.EXPERIENCE_LEVEL))e.setCanceled(true);
     }
     public static void register(RegisterGuiLayersEvent e){e.registerAbove(VanillaGuiLayers.AIR_LEVEL,ResourceLocation.parse("orimod:life_energy"),(g,t)->render(g));}
@@ -37,7 +37,8 @@ public final class SpiritHud {
         int light=p.getData(SpiritData.PROGRESS).light();
         g.drawString(mc.font,Component.translatable("hud.orimod.light",light),x,y+24,0xFFF0AE,false);
         if(p.getArmorValue()>0)g.drawString(mc.font,Component.translatable("hud.orimod.armor",p.getArmorValue()),x,y+35,0xC5D6DF,false);
-        // Keep the hotbar and vanilla food/air/mount rows at their normal positions. Thin XP retains both value and level.
+        SkillWheelScreen.hud(g,x,y+49);
+        // Food is frozen in spirit form; keep vanilla air/mount rows. Thin XP retains both value and level.
         if(mc.gameMode!=null && mc.gameMode.hasExperience()){
             int bx=g.guiWidth()/2-91,by=g.guiHeight()-29;
             g.fill(bx,by,bx+182,by+2,0xA01B2B25);g.fill(bx,by,bx+(int)(182*p.experienceProgress),by+2,0xFF83CF5C);

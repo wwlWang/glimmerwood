@@ -40,12 +40,22 @@ public final class GloomTideGameTests {
             s.floor(); s.begin();
             int n=GloomTide.spawnWave(s.p,RandomSource.create(1),GloomTideDefense.QUERY);
             h.assertTrue(n>=1 && n<=4,"Wave composition " + n);
+            h.assertValueEqual(s.mobs().size(),n,"Fixture must observe every mob in this wave");
             for(var mob:s.mobs()) {
                 var d=mob.position().subtract(s.p.position());
                 h.assertTrue(GloomTideRules.spawnDistance(d.x*d.x+d.z*d.z),"Outside horizontal ring");
                 h.assertTrue(GloomTide.validGround(s.level,mob.blockPosition()),"Invalid ground");
                 var copy=mob.getType().create(s.level); copy.load(mob.saveWithoutId(new CompoundTag()));
                 h.assertTrue(GloomTide.tagged(copy),"Tag not persisted"); copy.discard();
+            }
+        });
+        add(tests,"fixture_excludes_neighbour_wave_but_observes_own",(h,s)->{
+            s.begin();var own=s.mob(s.p.position().add(3,0,0),true);
+            try(var other=Fixtures.connectedPlayer(h)){
+                var foreign=OriMobs.GLOOM_SPITTER.get().create(s.level);foreign.setPos(s.p.position().add(4,0,0));foreign.getPersistentData().putBoolean(GloomTide.TAG,true);foreign.setTarget(other.player());
+                h.assertTrue(s.level.addFreshEntity(foreign),"Foreign fixture rejected");
+                try{h.assertTrue(s.mobs().contains(own),"Own fixture missing");h.assertFalse(s.mobs().contains(foreign),"Neighbour counted as this wave");}
+                finally{foreign.discard();}
             }
         });
         add(tests,"fixed_seed_mixed_waves_include_beetles_with_expected_frequency",(h,s)->{
@@ -94,7 +104,7 @@ public final class GloomTideGameTests {
         add(tests,"multiplayer_wave_chunks_do_not_overlap",(h,s)->{
             s.floor(); s.begin(); OriServerConfig.MAX_NEARBY.set(32);
             try(var other=Fixtures.connectedPlayer(h)) {
-                var p=other.player();p.setData(SpiritData.FORM,true);p.setPos(s.p.position());
+                var p=other.player();s.owners.add(p.getUUID());p.setData(SpiritData.FORM,true);p.setPos(s.p.position());
                 GloomTide.spawnWave(s.p,RandomSource.create(9),GloomTideDefense.QUERY);
                 var first=Set.copyOf(s.mobs()); var chunks=new HashSet<ChunkPos>(); first.forEach(m->chunks.add(m.chunkPosition()));
                 GloomTide.spawnWave(p,RandomSource.create(9),GloomTideDefense.QUERY);
@@ -330,6 +340,7 @@ public final class GloomTideGameTests {
         final GameTestHelper h;final ServerLevel level;final Fixtures.ConnectedPlayer connection;final ServerPlayer p;final BlockPos base;
         final long time;final Difficulty difficulty;final boolean spawning,loot,enabled;final int interval,max;
         final Map<BlockPos,BlockState> saved=new LinkedHashMap<>();
+        final Set<UUID> owners=new HashSet<>(), fixtureMobs=new HashSet<>();
         Site(GameTestHelper h) {
             this.h=h;level=h.getLevel();time=level.getDayTime();difficulty=level.getDifficulty();
             spawning=level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);loot=level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
@@ -337,7 +348,7 @@ public final class GloomTideGameTests {
             GloomTide.reset();level.setDayTime(18000);level.getServer().setDifficulty(Difficulty.NORMAL,true);
             level.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(true,level.getServer());level.getGameRules().getRule(GameRules.RULE_DOMOBLOOT).set(true,level.getServer());
             OriServerConfig.ENABLED.set(true);OriServerConfig.MAX_NEARBY.set(8);OriServerConfig.WAVE_INTERVAL.set(200);
-            connection=Fixtures.connectedPlayer(h);p=connection.player();
+            connection=Fixtures.connectedPlayer(h);p=connection.player();owners.add(p.getUUID());
             var origin=h.absolutePos(BlockPos.ZERO);base=new BlockPos(origin.getX(),180,origin.getZ());p.setPos(Vec3.atBottomCenterOf(base));
             p.setData(SpiritData.FORM,false);p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY);
             set(base,Blocks.AIR.defaultBlockState());set(base.above(),Blocks.AIR.defaultBlockState());
@@ -354,9 +365,12 @@ public final class GloomTideGameTests {
         }
         GloomSpitter mob(Vec3 at,boolean tagged) {
             var m=OriMobs.GLOOM_SPITTER.get().create(level);m.setPos(at);m.setNoAi(true);if(tagged)m.getPersistentData().putBoolean(GloomTide.TAG,true);
-            h.assertTrue(level.addFreshEntity(m),"Fixture mob rejected");return m;
+            h.assertTrue(level.addFreshEntity(m),"Fixture mob rejected");fixtureMobs.add(m.getUUID());return m;
         }
-        List<Mob> mobs() {return level.getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(55),GloomTide::tagged);}
+        // Neighbouring arenas overlap this box. Production waves set their owner as target;
+        // manually spawned fixture mobs are tracked explicitly, including no-AI and reloaded copies.
+        boolean owns(Mob mob) {return fixtureMobs.contains(mob.getUUID()) || mob.getTarget()!=null&&owners.contains(mob.getTarget().getUUID());}
+        List<Mob> mobs() {return level.getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(55),m->GloomTide.tagged(m)&&owns(m));}
         void kills(int n) {for(int i=0;i<n;i++)mob(Vec3.atBottomCenterOf(base).add(3,0,0),true).hurt(p.damageSources().playerAttack(p),1000);}
         void dawn() {level.setDayTime(GloomTideRules.day(level.getDayTime())*24000+23000);GloomTide.tickLevel(level);}
         int command(String cmd) {
@@ -368,7 +382,7 @@ public final class GloomTideGameTests {
         public void close() {
             Flash.stop(p);
             var box=new net.minecraft.world.phys.AABB(base).inflate(65);
-            for(var entity:level.getEntities((Entity)null,box,e->e instanceof Mob || e instanceof ItemEntity))entity.discard();
+            for(var entity:level.getEntities((Entity)null,box,e->e instanceof Mob mob&&owns(mob) || e instanceof ItemEntity))entity.discard();
             connection.close();GloomTide.reset();
             saved.forEach((pos,state)->level.setBlock(pos,state,18));
             level.setDayTime(time);level.getServer().setDifficulty(difficulty,true);

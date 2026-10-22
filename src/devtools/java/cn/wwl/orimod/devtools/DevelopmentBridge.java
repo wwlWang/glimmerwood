@@ -844,6 +844,7 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) {
+            state.put("skillWheel",cn.wwl.orimod.client.SkillControls.diagnostics());
             state.put("bladeMotion", cn.wwl.orimod.client.SpiritControls.bladeDiagnostics());
             state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
             state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
@@ -873,6 +874,8 @@ public final class DevelopmentBridge {
         state.put("feather",Map.of("displayName",player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getHoverName().getString(),"handoff",player.getData(cn.wwl.orimod.spirit.SpiritData.FEATHER_HANDOFF),"wearing",cn.wwl.orimod.movement.FeatherGlide.wearing(player),
                 "permitted",cn.wwl.orimod.movement.FeatherGlide.permitted(player),"gliding",cn.wwl.orimod.movement.FeatherGlide.gliding(player),
                 "migrationRemaining",Math.max(0,player.getData(cn.wwl.orimod.spirit.SpiritData.FEATHER_STATE).migrationUntil-player.level().getGameTime())));
+        state.put("skills",Map.of("slots",player.getData(cn.wwl.orimod.spirit.SpiritData.SKILL_BINDINGS).slots(),"readyAt",player.getData(cn.wwl.orimod.spirit.SpiritData.SKILL_READY)));
+        if(player instanceof net.minecraft.server.level.ServerPlayer sp)state.put("recovery",Map.of("regenerating",cn.wwl.orimod.progression.Regenerate.active(sp),"lastDamage",player.getData(cn.wwl.orimod.spirit.SpiritData.ENERGY_STATE).recoveryHurtAt,"food",player.getFoodData().getFoodLevel()));
         state.put("companionFlame", Map.of("enabled", player.getData(cn.wwl.orimod.spirit.SpiritData.COMPANION_FLAME)));
         state.put("wisps",Map.of("mask",player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).wisps(),"purifications",cn.wwl.orimod.progression.WillWisp.purifications(player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS))));
         state.put("vanilla", Map.of("pose", player.getPose().name(), "fallFlying", player.isFallFlying(),

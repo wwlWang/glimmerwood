@@ -20,6 +20,12 @@ public final class SpiritData {
             AttachmentType.builder(() -> false).serialize(Codec.BOOL).copyOnDeath().sync(ByteBufCodecs.BOOL).build());
     public static final Supplier<AttachmentType<Integer>> ABILITIES = TYPES.register("abilities", () ->
             AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().sync(ByteBufCodecs.VAR_INT).build());
+    public static final Supplier<AttachmentType<cn.wwl.orimod.progression.SkillBindings>> SKILL_BINDINGS = TYPES.register("skill_bindings", () ->
+            AttachmentType.builder(() -> cn.wwl.orimod.progression.SkillBindings.EMPTY).serialize(cn.wwl.orimod.progression.SkillBindings.CODEC).copyOnDeath()
+                    .sync((holder,to)->holder==to,ByteBufCodecs.fromCodec(cn.wwl.orimod.progression.SkillBindings.CODEC)).build());
+    public static final Supplier<AttachmentType<java.util.List<Long>>> SKILL_READY = TYPES.register("skill_ready", () ->
+            AttachmentType.<java.util.List<Long>>builder(() -> java.util.List.of(0L,0L,0L))
+                    .sync((holder,to)->holder==to,ByteBufCodecs.fromCodec(Codec.LONG.listOf())).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.progression.SpiritProgress>> PROGRESS = TYPES.register("progress", () ->
             AttachmentType.builder(() -> cn.wwl.orimod.progression.SpiritProgress.EMPTY)
                     .serialize(cn.wwl.orimod.progression.SpiritProgress.CODEC).copyOnDeath()
