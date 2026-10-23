@@ -34,7 +34,7 @@ public final class GreatTreeDiscovery {
     public static boolean guide(ServerPlayer p){
         var site=GreatTreeSite.get(p.server.overworld()).site();
         if(site==null){p.displayClientMessage(Component.translatable("commands.orimod.great_tree.none"),true);return false;}
-        PacketDistributor.sendToPlayer(p,new RuinGuidePayload(Level.OVERWORLD.location().toString(),site.origin().north(18),"great_spirit_tree"));
+        PacketDistributor.sendToPlayer(p,new RuinGuidePayload(Level.OVERWORLD.location().toString(),site.origin().north(site.shapeVersion()==1?18:24),"great_spirit_tree"));
         p.displayClientMessage(Component.translatable("message.orimod.great_tree.guide"),true);return true;
     }
     private GreatTreeDiscovery(){}

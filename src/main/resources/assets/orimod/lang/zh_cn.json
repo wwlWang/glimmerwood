@@ -500,5 +500,8 @@
   "hint.orimod.ginso_wind": "萤：在风口上展开羽毛，升起后移向根台。",
   "hint.orimod.ginso_wind_locked": "萤：先学会滑翔，才能乘这股灵风。",
   "hint.orimod.ginso_jump": "萤：跳到最高处再跳一次，就能越过高台。",
-  "message.orimod.ginso.checkpoint": "金索树检查点已绑定；复活时返回这座灵泉。"
+  "message.orimod.ginso.checkpoint": "金索树检查点已绑定；复活时返回这座灵泉。",
+  "block.orimod.great_tree_leaf_core": "致密灵叶",
+  "block.orimod.great_tree_wind": "灵树风脉",
+  "block.orimod.great_tree_landing": "灵树缓冲根台"
 }

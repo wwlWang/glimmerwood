@@ -93,7 +93,7 @@ public final class GreatTreeInteriorGameTests {
         })
     );}
     /** Vanilla player-size swept body, half-block stair steps only; no jump, climb or Ori movement. */
-    private static void walk(GameTestHelper h,BlockPos base,List<GreatTreeInterior.Point> route){
+    static void walk(GameTestHelper h,BlockPos base,List<GreatTreeInterior.Point> route){
         var level=h.getLevel();var first=route.getFirst();double y=base.getY()+first.y();
         for(int i=1;i<route.size();i++){
             var a=route.get(i-1);var b=route.get(i);int samples=(int)Math.ceil(Math.hypot(b.x()-a.x(),b.z()-a.z())*12);

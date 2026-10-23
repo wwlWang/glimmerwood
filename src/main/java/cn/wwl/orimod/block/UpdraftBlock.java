@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@link #HEIGHT} blocks, with no solid block in between) lifts the player. Purely a movement aid; it
  * pushes nothing that is not gliding.
  */
-public final class UpdraftBlock extends Block {
+public class UpdraftBlock extends Block {
     public static final int HEIGHT = 12;
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 3, 16);
 
@@ -38,7 +38,7 @@ public final class UpdraftBlock extends Block {
         for (int dy = 0; dy <= HEIGHT; dy++, pos.move(0, -1, 0)) {
             if (!level.isLoaded(pos)) return false;
             var state = level.getBlockState(pos);
-            if (state.getBlock() instanceof UpdraftBlock) return true;
+            if (state.getBlock() instanceof UpdraftBlock || state.is(OriBlocks.GREAT_TREE_WIND)) return true;
             if (!state.getCollisionShape(level, pos).isEmpty() || !state.getFluidState().isEmpty()) return false;
         }
         return false;

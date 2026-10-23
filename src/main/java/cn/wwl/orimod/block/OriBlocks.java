@@ -50,6 +50,9 @@ public final class OriBlocks {
             .strength(.2f).noOcclusion().lightLevel(s -> s.getValue(SpiritLeavesBlock.BLOOMED) ? 12 : 9).sound(SoundType.AZALEA_LEAVES)
             .emissiveRendering((s, l, p) -> true)
             .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+    public static final DeferredBlock<GreatTreeLeafCoreBlock> GREAT_TREE_LEAF_CORE=BLOCKS.register("great_tree_leaf_core",()->new GreatTreeLeafCoreBlock(BlockBehaviour.Properties.of()
+            .strength(.2f).noLootTable().sound(SoundType.AZALEA_LEAVES).lightLevel(s->s.getValue(SpiritLeavesBlock.BLOOMED)?12:9)
+            .emissiveRendering((s,l,p)->true).isSuffocating((s,l,p)->false)));
     public static final DeferredBlock<SpiritVineBlock> SPIRIT_VINE = BLOCKS.register("spirit_vine",
             () -> new SpiritVineBlock(BlockBehaviour.Properties.of().instabreak().noCollission().noOcclusion()
                     .lightLevel(s -> 10).sound(SoundType.CAVE_VINES).emissiveRendering((s, l, p) -> true)));
@@ -68,6 +71,11 @@ public final class OriBlocks {
     /** R40: glowing updraft vent that lifts gliding players. */
     public static final DeferredBlock<UpdraftBlock> UPDRAFT = BLOCKS.register("updraft", () -> new UpdraftBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noOcclusion().lightLevel(state -> 8).sound(SoundType.AMETHYST)));
+    public static final DeferredBlock<GreatTreeWindBlock> GREAT_TREE_WIND=BLOCKS.register("great_tree_wind",()->new GreatTreeWindBlock(BlockBehaviour.Properties.of()
+            .strength(-1,3600000).noLootTable().noCollission().noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
+    public static final DeferredBlock<GreatTreeLandingBlock> GREAT_TREE_LANDING=BLOCKS.register("great_tree_landing",()->new GreatTreeLandingBlock(BlockBehaviour.Properties.of()
+            .strength(-1,3600000).noLootTable().noOcclusion().lightLevel(s->12).sound(SoundType.AMETHYST)
+            .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
     /** R44: Life / Energy Cell pedestals placed inside ruins. */
     public static final DeferredBlock<CellPedestalBlock> LIFE_CELL_PEDESTAL = pedestal(cn.wwl.orimod.progression.SpiritCells.Kind.LIFE);
     public static final DeferredBlock<CellPedestalBlock> ENERGY_CELL_PEDESTAL = pedestal(cn.wwl.orimod.progression.SpiritCells.Kind.ENERGY);
@@ -112,7 +120,7 @@ public final class OriBlocks {
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
                 GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, GINSO_WOOD, GINSO_FUNGUS, GINSO_LEAVES, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+                SPIRIT_LOG, GINSO_WOOD, GINSO_FUNGUS, GINSO_LEAVES, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "format": "runtime voxel sculpture",
+  "source": "src/main/java/cn/wwl/orimod/world/GreatTreeShape.java",
+  "source_sha256": "a93c31865817dab3baf68b13ba70c2c0d2804b76c337353da6393617f9663034",
+  "package": "data/orimod/worldgen/structure/great_spirit_tree.json",
+  "palette": [
+    "orimod:great_spirit_wood",
+    "orimod:spirit_leaves",
+    "orimod:great_tree_leaf_core",
+    "orimod:spirit_vine"
+  ],
+  "recipe": "200-block hollow bole, 31-block foot tapering to 23; 40-block buttress roots; six 12-block primary arms, twice forked; eighteen overlapping five-blob flattened crowns in three separated tiers, 148-159-block projected span; partially flat undersides and drooping edges; two-layer shell of the union: outer glowing cutout skin and opaque teal leaf backing on every side, adjacent-leaf face culling; at most eight 6-16-block strands per cluster. Lower interior kept separately; upper ascent reserved.",
+  "reference_seeds": [
+    {
+      "seed": 115115,
+      "wood": 132505,
+      "leaves": 51968,
+      "dense_cores": 49127,
+      "vines": 977,
+      "crown_y": [
+        116,
+        215
+      ],
+      "crown_x": [
+        -75,
+        76
+      ],
+      "crown_z": [
+        -76,
+        75
+      ]
+    },
+    {
+      "seed": 115116,
+      "wood": 132221,
+      "leaves": 52083,
+      "dense_cores": 49135,
+      "vines": 931,
+      "crown_y": [
+        115,
+        213
+      ],
+      "crown_x": [
+        -74,
+        75
+      ],
+      "crown_z": [
+        -75,
+        74
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import java.nio.file.*;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Original shape assertions remain as version-1 save compatibility coverage. */
 class GreatTreeTest {
     @TempDir Path dir;
     @Test void absentRegionsStayAbsentAndNegativeChunkIndicesUseFloorDivision() throws Exception {
@@ -35,7 +36,7 @@ class GreatTreeTest {
     }
     @Test void shapeHasLandmarkScaleAndAnOpenHollowEntranceAcrossSeeds() {
         for(int seed=0;seed<8;seed++){
-            var s=new GreatTreeShape(seed);int top=0,minX=100,maxX=-100,minZ=100,maxZ=-100,wood=0,leaves=0;
+            var s=new LegacyGreatTreeShape(seed);int top=0,minX=100,maxX=-100,minZ=100,maxZ=-100,wood=0,leaves=0;
             for(int x=-40;x<=40;x++)for(int z=-40;z<=40;z++)for(int y=-12;y<=82;y++){
                 byte cell=s.cell(x,y,z);if(cell==GreatTreeShape.WOOD || cell==GreatTreeShape.VEIN)wood++;
                 if(cell==GreatTreeShape.LEAF){leaves++;top=Math.max(top,y);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);}
@@ -45,11 +46,11 @@ class GreatTreeTest {
             assertTrue(maxZ-minZ>=60&&maxZ-minZ<=74,"Crown Z span="+(maxZ-minZ));
             assertTrue(wood>5000&&leaves>8000,"Not a substantial landmark");
             for(int z=-11;z<=0;z++)for(int x=-2;x<=2;x++)for(int y=0;y<5;y++)assertEquals(GreatTreeShape.AIR,s.cell(x,y,z));
-            for(int y=1;y<39;y++)assertEquals(GreatTreeShape.AIR,s.cell((int)Math.round(GreatTreeShape.bendX(y)),y,(int)Math.round(GreatTreeShape.bendZ(y))));
+            for(int y=1;y<39;y++)assertEquals(GreatTreeShape.AIR,s.cell((int)Math.round(LegacyGreatTreeShape.bendX(y)),y,(int)Math.round(LegacyGreatTreeShape.bendZ(y))));
         }
     }
     @Test void independentlyVisitedChunkSlicesGiveExactlyTheSameVoxels() {
-        var s=new GreatTreeShape(115115);var again=new GreatTreeShape(115115);
+        var s=new LegacyGreatTreeShape(115115);var again=new LegacyGreatTreeShape(115115);
         long full=0,sliced=0;int offsetX=8,offsetZ=8;
         for(int x=-40;x<=40;x++)for(int z=-40;z<=40;z++)for(int y=-12;y<=82;y++){
             assertEquals(s.cell(x,y,z),again.cell(x,y,z));full+=s.cell(x,y,z);
@@ -62,13 +63,13 @@ class GreatTreeTest {
         assertEquals(full,sliced);
     }
     @Test void allVineSegmentsHaveLeafOrVineDirectlyAbove(){
-        var s=new GreatTreeShape(115116);
+        var s=new LegacyGreatTreeShape(115116);
         for(int x=-40;x<=40;x++)for(int z=-40;z<=40;z++)for(int y=0;y<82;y++)
             if(s.cell(x,y,z)==GreatTreeShape.VINE)assertTrue(s.cell(x,y+1,z)==GreatTreeShape.VINE||s.cell(x,y+1,z)==GreatTreeShape.LEAF);
     }
     @Test void tiersExposeSkyWindowsAndTheirSupportingArms(){
         for(int seed=0;seed<8;seed++){
-            var s=new GreatTreeShape(seed);int gaps=0,arms=0;
+            var s=new LegacyGreatTreeShape(seed);int gaps=0,arms=0;
             for(int y=26;y<=58;y++){
                 boolean[] foliage=new boolean[81],wood=new boolean[81];
                 for(int x=-40;x<=40;x++)for(int z=-40;z<=40;z++){
@@ -84,8 +85,8 @@ class GreatTreeTest {
         }
     }
     @Test void flaredLowerBoleAndVeinsReachRootsTrunkAndArms(){
-        var s=new GreatTreeShape(115115);int[] veins=new int[3];
-        assertTrue(GreatTreeShape.trunkRadius(8)>=7.3);assertTrue(GreatTreeShape.trunkRadius(40)<=4.9);
+        var s=new LegacyGreatTreeShape(115115);int[] veins=new int[3];
+        assertTrue(LegacyGreatTreeShape.trunkRadius(8)>=7.3);assertTrue(LegacyGreatTreeShape.trunkRadius(40)<=4.9);
         for(int x=-40;x<=40;x++)for(int z=-40;z<=40;z++)for(int y=0;y<=74;y++)
             if(s.cell(x,y,z)==GreatTreeShape.VEIN)veins[y<14?0:y<28?1:2]++;
         for(int n:veins)assertTrue(n>=20,"Missing segment of luminous veins");

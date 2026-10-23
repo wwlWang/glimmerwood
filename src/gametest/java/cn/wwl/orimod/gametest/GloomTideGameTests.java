@@ -96,7 +96,11 @@ public final class GloomTideGameTests {
         add(tests,"nearby_cap_checked_after_every_spawn",(h,s)->{
             s.floor(); s.begin();
             for(int i=0;i<7;i++) s.mob(s.p.position().add(i,0,2),true);
-            int n=GloomTide.spawnWave(s.p,RandomSource.create(2),GloomTideDefense.QUERY);
+            int before=GloomTide.nearby(s.p);int[] queries={0,0};
+            int n=GloomTide.spawnWave(s.p,RandomSource.create(2),(l,point)->{queries[0]++;boolean protectedPoint=GloomTideDefense.QUERY.protects(l,point);if(protectedPoint)queries[1]++;return protectedPoint;});
+            com.mojang.logging.LogUtils.getLogger().info("TIDE_CAP_PROBE before={} n={} after={} eligible={} active={} max={} defenseQueries={} protected={} mobs={}",
+                    before,n,GloomTide.nearby(s.p),GloomTide.eligible(s.p),GloomTide.isActive(s.level),OriServerConfig.maxNearby(),queries[0],queries[1],
+                    s.level.getEntitiesOfClass(Mob.class,s.p.getBoundingBox().inflate(48),m->GloomTide.tagged(m)).stream().map(m->m.getType()+":"+m.position()+":own="+s.owns(m)).toList());
             h.assertValueEqual(n,1,"Wave overran remaining slot");
             h.assertValueEqual(GloomTide.nearby(s.p),8,"Cap count");
             h.assertValueEqual(GloomTide.spawnWave(s.p,RandomSource.create(3),GloomTideDefense.QUERY),0,"Cap ignored");
@@ -302,10 +306,10 @@ public final class GloomTideGameTests {
         return tests;
     }
     private static void add(List<TestFunction> list,String name,BiConsumer<GameTestHelper,Site> run) {
-        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency") || name.equals("scheduler_enrolls_once_and_honors_wave_interval");
+        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency") || name.equals("scheduler_enrolls_once_and_honors_wave_interval") || name.equals("nearby_cap_checked_after_every_spawn");
         list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",loadsRing?RING_READY_TICKS+20:100,0,true,h->{
             if(loadsRing) {
-                loadedRing(h, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
+                loadedRing(h,name, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
             } else {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();}
         }));
     }
@@ -313,16 +317,18 @@ public final class GloomTideGameTests {
     private static final TicketType<ChunkPos> TIDE_TICKET=TicketType.create("orimod_gametest_tide",Comparator.comparingLong(ChunkPos::toLong));
     /** This 61x61 arena lies outside room's tickets. Block writes alone do not make entity sections ready.
      * Acquire only our own tickets, wait before touching global tide settings, and release on every exit. */
-    private static void loadedRing(GameTestHelper h,Runnable test) {
+    private static void loadedRing(GameTestHelper h,String name,Runnable test) {
         var level=h.getLevel();var base=h.absolutePos(BlockPos.ZERO);var chunks=new ArrayList<ChunkPos>();
         var added=new ArrayList<ChunkPos>();
         var cleaned=new java.util.concurrent.atomic.AtomicBoolean();
         Runnable cleanup=()->{if(cleaned.compareAndSet(false,true))added.forEach(c->level.getChunkSource().removeRegionTicket(TIDE_TICKET,c,2,c));};
-        long began=System.nanoTime();
+        long began=System.nanoTime();int[] initiallyMissing={0,0};
         try {
             for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)
                 for(int z=(base.getZ()-30)>>4;z<=(base.getZ()+30)>>4;z++) {
                     var c=new ChunkPos(x,z);chunks.add(c);
+                    if(level.getChunkSource().getChunkNow(x,z)==null)initiallyMissing[0]++;
+                    if(!level.areEntitiesLoaded(c.toLong()))initiallyMissing[1]++;
                     // A private ticket type cannot be removed by neighbouring GameTests releasing FORCED.
                     added.add(c);level.getChunkSource().addRegionTicket(TIDE_TICKET,c,2,c);
                     level.getChunk(x,z,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);
@@ -342,7 +348,7 @@ public final class GloomTideGameTests {
                         return;
                     }
                     com.mojang.logging.LogUtils.getLogger().info(
-                            "Tide fixture ready: ticks={}, acquisition_ms={}, total_ms={}",waited,acquisitionMs,(System.nanoTime()-began)/1_000_000.);
+                            "Tide fixture {} ready: ticks={}, acquisition_ms={}, total_ms={}, initially_missing_blocks={}, initially_missing_entities={}",name,waited,acquisitionMs,(System.nanoTime()-began)/1_000_000.,initiallyMissing[0],initiallyMissing[1]);
                     try {test.run();} finally {cleanup.run();}
                 }catch(Throwable error){cleanup.run();throw error;}
             });

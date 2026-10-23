@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "orimod:spirit_leaves",
-    "orimod:ginso_leaves"
+    "orimod:ginso_leaves",
+    "orimod:great_tree_leaf_core"
   ]
 }

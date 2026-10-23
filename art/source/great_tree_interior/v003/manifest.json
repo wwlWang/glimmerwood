@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "generator": "scripts/art/build_great_tree_interior.py",
+  "source": "src/main/java/cn/wwl/orimod/world/GreatTreeScaleInterior.java",
+  "source_sha256": "a099905ba98e4a5fb0f8f3a5bb6e3b1fe42ac7b0b4c12652aa363ea80a62ee3f",
+  "layout_sha256": "65d2250aed0a434292a380e83574464f241932c0d553cac628ea64302900519f",
+  "palette": {
+    "1": "great_spirit_wood",
+    "4": "air",
+    "5": "great_spirit_wood[vein=true]",
+    "6": "great_tree_heart",
+    "7": "energy_cell_pedestal",
+    "8": "dark_oak_stairs[north]",
+    "9": "dark_oak_stairs[east]",
+    "10": "dark_oak_stairs[south]",
+    "11": "dark_oak_stairs[west]",
+    "12": "great_spirit_root[light=none]",
+    "13": "great_spirit_root[light=vein]",
+    "14": "great_spirit_root[light=knot]",
+    "16": "great_tree_wind",
+    "17": "dark_oak_fence",
+    "18": "great_tree_landing (dry updraft, zero fall damage)",
+    "19": "glass skylight"
+  },
+  "entry": [
+    0,
+    0,
+    -24
+  ],
+  "lookout": [
+    4,
+    218,
+    0
+  ],
+  "wind_base": [
+    4,
+    25,
+    3
+  ],
+  "heart": [
+    2,
+    25,
+    1
+  ],
+  "root_cave_reward": [
+    -1,
+    -8,
+    3
+  ],
+  "recipe": "Tall flared root arch, legacy three-turn lower stair and root cave, enlarged 19-block heart vault, real light every six treads and daylight windows. Two-wide reversible root staircase with corner landings climbs to y218 lookout; separate 3x3 continuous glide windway, fenced lookout and shaft. ShapeVersion1 keeps the original overlay.",
+  "landing_model_sha256": "294775f31c59d4a1b2d8efe659ffd53ac77949e162f2206b0b3552651e6714fa",
+  "safety": "Continuous root supports and rails preserve three-block route headroom. Wind 3x3 is reserved from supports; dry quarter-block root cushion nullifies fall damage without bounce or blocking lift."
+}

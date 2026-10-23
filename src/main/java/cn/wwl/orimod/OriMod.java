@@ -23,6 +23,7 @@ public final class OriMod {
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::started);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::tick);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::unload);
+        bus.addListener(cn.wwl.orimod.world.GreatTreeSanctuary::spawn);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::damaged);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::logout);
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.progression.RecoveryOrbs::drops);

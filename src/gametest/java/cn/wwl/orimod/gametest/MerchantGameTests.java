@@ -88,6 +88,10 @@ public final class MerchantGameTests {
             var s=new Site(h);
             try {
                 var fixture=new SearchFixture(h);s.searchCleanup=fixture::close;var level=h.getLevel();
+                // The async success/cancellation cases must not start on the last tick of a game day.
+                // The explicit "day" case below still advances the quoted day and verifies refusal.
+                long beforeTime=level.getDayTime();level.setDayTime(Math.floorDiv(beforeTime,24000)*24000+6000);
+                com.mojang.logging.LogUtils.getLogger().info("Merchant async {} fixture time {} -> {}",outcome,beforeTime,level.getDayTime());
                 var potential=fixture.placement.getPotentialStructureChunk(level.getSeed(),s.p.chunkPosition().x,s.p.chunkPosition().z);
                 s.pin(potential.getWorldPosition(),0);
                 var chunk=level.getChunk(potential.x,potential.z);var starts=new HashMap<>(chunk.getAllStarts());

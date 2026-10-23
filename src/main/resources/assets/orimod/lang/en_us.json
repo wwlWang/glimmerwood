@@ -500,5 +500,8 @@
   "hint.orimod.ginso_wind": "Glimmer: Open your feather over the vent, then drift onto the ledge.",
   "hint.orimod.ginso_wind_locked": "Glimmer: Learn Glide first to ride this updraft.",
   "hint.orimod.ginso_jump": "Glimmer: Jump again at the top of your leap to reach the ledge.",
-  "message.orimod.ginso.checkpoint": "Ginso checkpoint bound. Respawning returns you to this well."
+  "message.orimod.ginso.checkpoint": "Ginso checkpoint bound. Respawning returns you to this well.",
+  "block.orimod.great_tree_leaf_core": "Dense Spirit Foliage",
+  "block.orimod.great_tree_wind": "Spirit Tree Updraft",
+  "block.orimod.great_tree_landing": "Spirit Tree Root Cushion"
 }

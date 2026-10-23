@@ -1,5 +1,7 @@
 # 开发与验收工具
 
+大灵树尺度修订：当前艺术源`art/source/great_spirit_tree/v004/`，两项`build_great_tree_{manifest,textures}.py --check`只读复现；原v1算法冻结为LegacyGreatTreeShape，新建站点用ShapeVersion2，旧站点/piece不升级。`great_tree_state`新增shapeVersion/radius/topBound与groundLight（真实block/sky光、直方图、自然刷怪保护覆盖、未加载块数），扫描只读已加载区块。`capture-great-tree-scale.py <新证据名> [seed...]`新建世界，默认115115/115116，含locate/重载、270/283格日夜和140格真实帧时采样；必须llvmpipe + DISPLAY=:0，与测试Gradle互斥。新版叶状态great_tree=true启用相邻面剔除（Sodium同样走skipRendering），默认false保留旧树/先祖树；合并冠体外层cutout+内层不透明great_tree_leaf_core（普通/盛开）构成两格表壳，防止减面后近景透空；叶芯同样纳入限额盛开队列。140格性能同时采原地反向180°的地形基线；v003云开关对照保留作诊断。`--first-seed-perf`可只对首种子重测帧时，其余种子仍拍形状/地面光；20格叶缘与冠下仰视验证衬底。v2内部使用GreatTreeScaleInterior，v1仍用GreatTreeInterior；新清单`build_great_tree_interior.py --check`→`art/source/great_tree_interior/v003/`。`great_tree_state`增加upperAscent/lookout/windBase坐标。内部连续风区great_tree_wind无模型/碰撞/掉落，仅共享UpdraftBlock.lifting供Glide读取。 风柱相对坐标x3..5/z2..4/y25..217；底部y24为4像素高great_tree_landing干燥根台（fallOn零伤害、不回弹、仍属UpdraftBlock），顶部出口完整护栏。风格不可替换并通过LiquidBlockContainer拒绝流水，步道补支撑禁止改写风/根台/天井。`capture-great-tree-scale-interior.py <新证据名> [seed]`录制短按真实输入，分段上/下行、复苏、风井和冠顶帧时，禁止与测试Gradle并行。起飞用input_script按客户端tick0按跳、3松、7再按；不要在短跳内插入多次同步HTTP观察，否则第二次按键可能已晚于落地。v003分段索引`evidence/r115-b-scale-interior-review-v003/`保留中断和重试，不以状态重写掩盖失败。纯行走计时排除录像补足时长，仍包含控制器短按松键/转向/采样；用于可达性与时长估计。
+
 R115 C 课程：`GinsoInterior`独立于已验收的`GinsoShape`，`GinsoPiece`持久化Entrance/Approach/CourseVersion并将契约整体旋转。`ginso_state`（devtools）返回entry、sections、两个checkpoints和预留heart世界坐标；`scripts/capture-ginso-course.py <build-id> [seed]`使用真实按键，客户端仍需llvmpipe + DISPLAY=:0。井的右键保留补满/目的地菜单，并在金索树专用点绑定SoulLink；结构引用查询不加载区块。此阶段只接课程，水心逃生留待检查点审查。
 
 课程最终层高0/8/14/20/28/31，根阶到37层平台（脚位38）；猛击、抓钩、滑翔缺技能提示各有独立locked记录。检查点局部(0,15,3)/(0,38,3)，魂链安全脚位各在井前两格，依入口方向旋转。已存旧外形piece无CourseVersion时保留外壳，不自动写入内部。
@@ -9,7 +11,7 @@ R115 C 课程：`GinsoInterior`独立于已验收的`GinsoShape`，`GinsoPiece`�
 
 ## R115 B 大灵树（外形阶段）
 
-唯一站点、原版 locate 补充和按区块裁剪生成的实现说明见 [R115 B 外形记录](drafts/R115_B_SHAPE.md)。OP 命令 `/ori great_tree site|repick|force_place`；已触及的站点不可重选。Devtools `great_tree_state` 返回站点/出生点/写入耗时；`command` 可传 `captureOutput:true` 收集真实反馈。内部玩法待外形批准后接入。
+唯一站点、原版 locate 补充和按区块裁剪生成的实现说明见 [R115 B 外形记录](drafts/R115_B_SHAPE.md)。OP 命令 `/ori great_tree site|repick|force_place`；已触及的站点不可重选。Devtools `great_tree_state` 返回站点/出生点/写入耗时；`command` 可传 `captureOutput:true` 收集真实反馈。此段是最初外形检查点说明；已接入的新旧版内部及验收见本页顶部。
 
 
 ## R115 A 建筑模型与旧档升级

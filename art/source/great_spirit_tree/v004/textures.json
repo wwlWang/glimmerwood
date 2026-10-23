@@ -1,0 +1,19 @@
+{
+  "generator": "scripts/art/build_great_tree_textures.py",
+  "size": [
+    16,
+    16
+  ],
+  "filter": "nearest",
+  "emission": "bark retains world light; masked vein overlay; dense leaf backing is opaque and fullbright like the cutout skin",
+  "assets": {
+    "src/main/resources/assets/orimod/textures/block/great_spirit_bark.png": "32009d86e8ff8bea59d109ac82ebfe97e4d032a52dba44a9959c25cf9e997d68",
+    "src/main/resources/assets/orimod/textures/block/great_spirit_vein.png": "edddbd29f5f7d00490ccd2ddb515cea15dc661ed7354a62568c88ee888e0e961",
+    "src/main/resources/assets/orimod/textures/block/great_tree_leaf_core.png": "d884728ed84ca588a19babda8fd32ee31847d41231b3d5beea31c669f73f8f88",
+    "src/main/resources/assets/orimod/textures/block/great_tree_leaf_core_bloomed.png": "3ff755290c6cde865d402b321d7b9d4a4dbbb8ad0f61b1ec9110de410dabd3b1",
+    "art/source/great_spirit_tree/v004/great_spirit_bark.png": "32009d86e8ff8bea59d109ac82ebfe97e4d032a52dba44a9959c25cf9e997d68",
+    "art/source/great_spirit_tree/v004/great_spirit_vein.png": "edddbd29f5f7d00490ccd2ddb515cea15dc661ed7354a62568c88ee888e0e961",
+    "art/source/great_spirit_tree/v004/great_tree_leaf_core.png": "d884728ed84ca588a19babda8fd32ee31847d41231b3d5beea31c669f73f8f88",
+    "art/source/great_spirit_tree/v004/great_tree_leaf_core_bloomed.png": "3ff755290c6cde865d402b321d7b9d4a4dbbb8ad0f61b1ec9110de410dabd3b1"
+  }
+}

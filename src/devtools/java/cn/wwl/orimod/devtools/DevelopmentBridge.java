@@ -239,28 +239,35 @@ public final class DevelopmentBridge {
                     var level=mc.getSingleplayerServer().overworld();
                     var data=cn.wwl.orimod.world.GreatTreeSite.get(level);var site=data.site();
                     if(site==null)return Map.<String,Object>of("present",false);
-                    var p=site.origin();var spawn=site.spawn();
+                    var p=site.origin();var spawn=site.spawn();int treeRadius=cn.wwl.orimod.world.GreatTreeShape.radius(site.shapeVersion()),treeTop=cn.wwl.orimod.world.GreatTreeShape.maxY(site.shapeVersion());
                     var timings=cn.wwl.orimod.world.GreatTreeSites.timings(level).stream().map(t->Map.of("chunk",List.of(t.chunkX(),t.chunkZ()),"writes",t.writes(),"shapeMs",t.shapeMs(),"writeMs",t.writeMs())).toList();
                     var result=new java.util.LinkedHashMap<String,Object>();
                     result.put("present",true);result.put("origin",List.of(p.getX(),p.getY(),p.getZ()));result.put("spawn",List.of(spawn.getX(),spawn.getY(),spawn.getZ()));
                     result.put("distance",site.spawnDistance());result.put("begun",data.begun());result.put("timings",timings);
+                    result.put("shapeVersion",site.shapeVersion());result.put("radius",treeRadius);result.put("topBound",p.getY()+treeTop);
                     var layout=cn.wwl.orimod.world.GreatTreeInterior.layout();
                     java.util.function.Function<cn.wwl.orimod.world.GreatTreeInterior.Point,List<Integer>> absolute=q->List.of(p.getX()+q.x(),p.getY()+q.y(),p.getZ()+q.z());
                     result.put("heart",absolute.apply(cn.wwl.orimod.world.GreatTreeInterior.HEART_POS));result.put("reward",absolute.apply(cn.wwl.orimod.world.GreatTreeInterior.REWARD_POS));
-                    result.put("entrance",List.of(p.getX(),p.getY(),p.getZ()-18));result.put("ascent",layout.ascent().stream().map(absolute).toList());result.put("descent",layout.descent().stream().map(absolute).toList());
-                    int leaves=0,bloomed=0;var scan=new net.minecraft.core.BlockPos.MutableBlockPos();
-                    for(int cx=(p.getX()-40)>>4;cx<=(p.getX()+40)>>4;cx++)for(int cz=(p.getZ()-40)>>4;cz<=(p.getZ()+40)>>4;cz++){
+                    result.put("entrance",List.of(p.getX(),p.getY(),p.getZ()-(site.shapeVersion()==1?18:24)));result.put("ascent",layout.ascent().stream().map(absolute).toList());result.put("descent",layout.descent().stream().map(absolute).toList());
+                    if(site.shapeVersion()>=2){
+                        result.put("upperAscent",cn.wwl.orimod.world.GreatTreeScaleInterior.layout().upper().stream().map(absolute).toList());
+                        result.put("lookout",absolute.apply(cn.wwl.orimod.world.GreatTreeScaleInterior.LOOKOUT));
+                        result.put("windBase",absolute.apply(cn.wwl.orimod.world.GreatTreeScaleInterior.WIND_BASE));
+                    }
+                    int leaves=0,bloomed=0,cores=0;var scan=new net.minecraft.core.BlockPos.MutableBlockPos();
+                    for(int cx=(p.getX()-treeRadius)>>4;cx<=(p.getX()+treeRadius)>>4;cx++)for(int cz=(p.getZ()-treeRadius)>>4;cz<=(p.getZ()+treeRadius)>>4;cz++){
                         var chunk=level.getChunkSource().getChunkNow(cx,cz);if(chunk==null)continue;
                         for(int sy=0;sy<chunk.getSectionsCount();sy++){
-                            var section=chunk.getSection(sy);if(!section.maybeHas(b->b.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)))continue;
+                            var section=chunk.getSection(sy);if(!section.maybeHas(b->b.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)||b.is(cn.wwl.orimod.block.OriBlocks.GREAT_TREE_LEAF_CORE)))continue;
                             for(int lx=0;lx<16;lx++)for(int lz=0;lz<16;lz++)for(int ly=0;ly<16;ly++){
                                 scan.set(cx*16+lx,chunk.getSectionYFromSectionIndex(sy)*16+ly,cz*16+lz);
-                                if(Math.abs(scan.getX()-p.getX())>40||Math.abs(scan.getZ()-p.getZ())>40||scan.getY()<p.getY()+25||scan.getY()>p.getY()+82)continue;
-                                var block=section.getBlockState(lx,ly,lz);if(block.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)){leaves++;if(block.getValue(cn.wwl.orimod.block.SpiritLeavesBlock.BLOOMED))bloomed++;}
+                                if(Math.abs(scan.getX()-p.getX())>treeRadius||Math.abs(scan.getZ()-p.getZ())>treeRadius||scan.getY()<p.getY()+25||scan.getY()>p.getY()+treeTop)continue;
+                                var block=section.getBlockState(lx,ly,lz);if(block.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)||block.is(cn.wwl.orimod.block.OriBlocks.GREAT_TREE_LEAF_CORE)){leaves++;if(block.is(cn.wwl.orimod.block.OriBlocks.GREAT_TREE_LEAF_CORE))cores++;if(block.getValue(cn.wwl.orimod.block.SpiritLeavesBlock.BLOOMED))bloomed++;}
                             }
                         }
                     }
-                    result.put("foliage",Map.of("loadedLeaves",leaves,"bloomedLeaves",bloomed));
+                    result.put("foliage",Map.of("loadedLeaves",leaves,"bloomedLeaves",bloomed,"denseCores",cores));
+                    result.put("groundLight",GreatTreeLightProbe.scan(level,site));
                     return result;
                 }).get(10,TimeUnit.SECONDS);
             }
@@ -702,6 +709,7 @@ public final class DevelopmentBridge {
                 if (action.has("mainArm")) mc.options.mainHand().set(net.minecraft.world.entity.HumanoidArm.valueOf(action.get("mainArm").getAsString()));
                 if (action.has("fov")) mc.options.fov().set(Math.clamp(action.get("fov").getAsInt(), 30, 110));
                 if (action.has("renderDistance")) mc.options.renderDistance().set(Math.clamp(action.get("renderDistance").getAsInt(), 2, 32));
+                if (action.has("clouds")) mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.valueOf(action.get("clouds").getAsString()));
                 if (action.has("vsync")) mc.options.enableVsync().set(action.get("vsync").getAsBoolean());
                 if (action.has("fpsLimit")) mc.options.framerateLimit().set(Math.clamp(action.get("fpsLimit").getAsInt(), 10, 260));
                 if (action.has("hideGui")) mc.options.hideGui = action.get("hideGui").getAsBoolean();
@@ -849,6 +857,7 @@ public final class DevelopmentBridge {
         state.put("windowActive", mc.isWindowActive());
         state.put("fps", mc.getFps());
         state.put("renderDistance", mc.options.renderDistance().get());
+        state.put("clouds", mc.options.cloudStatus().get().name());
         state.put("vsync", mc.options.enableVsync().get());
         state.put("fpsLimit", mc.options.framerateLimit().get());
         state.put("autoJump", mc.options.autoJump().get());

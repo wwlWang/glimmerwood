@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "bloomed=false": {
+      "model": "orimod:block/great_tree_leaf_core"
+    },
+    "bloomed=true": {
+      "model": "orimod:block/great_tree_leaf_core_bloomed"
+    }
+  }
+}

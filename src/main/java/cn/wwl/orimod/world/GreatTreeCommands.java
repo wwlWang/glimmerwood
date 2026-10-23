@@ -21,7 +21,7 @@ public final class GreatTreeCommands {
                     var s=c.getSource();var level=s.getServer().overworld();var data=GreatTreeSite.get(level);
                     if(data.site()==null && !GreatTreeSites.choose(level,0)){s.sendFailure(Component.translatable("commands.orimod.great_tree.none"));return 0;}
                     // Generate the reserved chunks through normal worldgen, never stamp over existing terrain/builds.
-                    var p=data.site().origin();int r=GreatTreeShape.RADIUS;
+                    var p=data.site().origin();int r=GreatTreeShape.radius(data.site().shapeVersion());
                     for(int x=(p.getX()-r)>>4;x<=(p.getX()+r)>>4;x++)for(int z=(p.getZ()-r)>>4;z<=(p.getZ()+r)>>4;z++)level.getChunk(x,z);
                     return report(s);
                 })).build());

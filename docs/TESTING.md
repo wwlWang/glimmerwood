@@ -1,6 +1,14 @@
 # 回归测试
 
-R115 C 课程检查点：最终 `build runGameTestServer compileDevtoolsJava` 为 **1457 JUnit / 841 GameTest，零失败/错误/跳过**（`evidence/r115-c-course-v001/full-04.log`、counts.json、gametest.xml）。`GinsoInteriorTest`覆盖交错承接层、基础跳跃/猛击余量、入口坡度/旋转、独立locked提示、检查点净空；`GinsoCourseGameTests`用自持/清理区块票的远场真实piece，覆盖四方向目标视线/范围、风柱、灵泉BE/魂链、旧NBT、只读结构引用；根阶双向按完整1.8格体型逐段扫掠。提示协议11覆盖10↔11拒绝。原遗迹路线/光桥/秘室断言未改。
+R115 B放大内部：**1475 JUnit / 852 GameTest，零失败/错误/跳过**（`evidence/r115-b-scale-interior-safety-v001/full-03.log`、counts-full03.json、gametest-full03.xml）。保留v1测试；v2覆盖纯步行连通、两格踏面全宽邻格落差≤3/转角内栏、9×193风柱完整、灯距/采光井，真实piece完整体型双向扫掠、零技能复苏、根洞一次回执/指引。新风格拒绝普通放置和流水覆盖；两条坠落测试从风口/中段真实重力落下，调用原版服务端doCheckFallDamage结算，再等8步确认无迟发伤害/反弹。新连接先正常tick61次解除原版登录保护，同人形石地负对照必须死亡，根台生命保持20。原始失败与修复见drafts/R115_B_RESCALE.md，实拍功能完成待视觉审核，见下段。
+
+v003最终证据索引`evidence/r115-b-scale-interior-review-v003/`。零技能生存真实上/下行504.250/460.842秒（10224/9333客户端tick；含短按松键/采样，排除换片等待），34段relocations固定4。完整风井23.572秒/472tick、生命20；人形真实落差193.75/95.75格，fallDamage=true、invulnerable=0b、无状态效果，落地后生命仍20。根洞0→1→1、新心复苏及先祖拒绝均有状态/录像。两张大厅支撑近景仍待美术评判；冠顶近/斜俯视FPS10.035/7.056（非140格基线）。记录与失败重试分开，不把原始failed文件改成passed。
+
+起飞诊断：旧脚本第二次按跳晚于落地；输入改为真实客户端tick0/3/7按松再按，3/3短程和一整程通过。冷模型首次加载与0.5秒tick空档、旧4tick移动租约过期同时出现；没有据此改生产逻辑。最后只加强现有JUnit的两格全宽三格净空断言，`final-junit.log`1475/0通过；`post-full03-source-changes.json`证明生产代码/包资源未变，故GameTest采用全量full-03的852/0。美术3项只读复现、diff检查通过；客户端正常退出。
+
+R115 B放大外形：**1468 JUnit / 847 GameTest，零失败/错误/跳过**（`evidence/r115-b-rescale-v001/full-06.log`、counts-full06.json、gametest-full06.xml）。覆盖冻结v1完整体素哈希、v2高度/12方位冠幅/三层间隙/薄壳叶量/天空露枝/藤限量、版本缓存、逐块切片、根区/冠水地形界限、新旧世界搜索上限、刷怪来源、piece边界、真实根结光，以及大树叶相邻面剔除但旧叶/外表面不变。v005两档自然选址/重载与双层叶壳实拍通过，证据`evidence/r115-b-rescale-capture-v005/summary.json`；首种子树景对反向基线FPS日间+0.2%、夜间−5.2%；失败原文与处理见`drafts/R115_B_RESCALE.md`。
+
+R115 C 课程检查点：最终 `build runGameTestServer compileDevtoolsJava` 为 **1457 JUnit / 841 GameTest，零失败/错误/跳过**（`evidence/r115-c-course-v001/full-06.log`、counts.json、gametest.xml）。`GinsoInteriorTest`覆盖交错承接层、基础跳跃/猛击余量、入口坡度/旋转、独立locked提示、检查点净空；`GinsoCourseGameTests`用自持/清理区块票的远场真实piece，覆盖四方向目标视线/范围、风柱、灵泉BE/魂链、旧NBT、只读结构引用；根阶双向按完整1.8格体型逐段扫掠。提示协议11覆盖10↔11拒绝。原遗迹路线/光桥/秘室断言未改。
 
 保留失败：full-02四方向`Landing blocked wind`证明降低楼层后净空不足；full-03四方向`Root stair headroom blocked`证明顶层护栏侵入转角。修布局，未放宽断言。实拍旧8格猛击段峰值余量仅约0.76格，已降低到6格，能力速度不改。全量后Java/模型SHA均不变，仅两条`ginso_grapple_locked`中英文提示改成沿根台返回入口，避免承诺尚未发现的灵泉目的地。见post-full04-changes.json。
 

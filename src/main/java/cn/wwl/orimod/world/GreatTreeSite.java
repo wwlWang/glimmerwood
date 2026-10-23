@@ -11,7 +11,7 @@ public final class GreatTreeSite extends SavedData {
     public record Site(BlockPos origin, BlockPos spawn, long shapeSeed, int shapeVersion) {
         public double spawnDistance() { return Math.hypot(origin.getX()-spawn.getX(),origin.getZ()-spawn.getZ()); }
         public boolean covers(int x,int z,int margin) {
-            return Math.abs(x-origin.getX()) <= GreatTreeShape.RADIUS+margin && Math.abs(z-origin.getZ()) <= GreatTreeShape.RADIUS+margin;
+            return Math.abs(x-origin.getX()) <= GreatTreeShape.radius(shapeVersion)+margin && Math.abs(z-origin.getZ()) <= GreatTreeShape.radius(shapeVersion)+margin;
         }
     }
     private Site site;
