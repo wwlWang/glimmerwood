@@ -9,11 +9,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import java.util.*;
 
-/** Natural SpiritTreeShape entrances face north and end three blocks in front of the heart. */
+/** The great heart stands on a raised root dais. Viewpoints stay inside the hall. */
 public final class RestorationViewpoint {
     public static List<BlockPos> candidates(BlockPos heart){
         var result=new ArrayList<BlockPos>();
-        for(int distance:new int[]{8,7,9})for(int side:new int[]{0,-1,1})for(int dy:new int[]{0,1,-1})
+        for(int distance:new int[]{3,4,2})for(int side:new int[]{0,-1,1})for(int dy:new int[]{-1,0,1})
             result.add(heart.offset(side,dy,-distance));
         return List.copyOf(result);
     }

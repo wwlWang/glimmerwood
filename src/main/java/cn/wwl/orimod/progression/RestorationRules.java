@@ -3,12 +3,12 @@ package cn.wwl.orimod.progression;
 /** Pure admission/timeline rules shared by the server, UI and tests. */
 public final class RestorationRules {
     public static final int DURATION=300, REWARD=500;
-    public static String refusal(boolean alive,boolean spirit,int wisps,boolean blessed,boolean completed,boolean busy){
+    public static String refusal(boolean alive,boolean spirit,int wisps,boolean completed,boolean busy){
         if(!alive || !spirit)return "dormant";
         if(completed)return "complete";
         if(busy)return "busy";
         if((wisps&7)!=7)return "wisps";
-        return blessed?null:"blessing";
+        return null;
     }
     public static int waveSize(int original){return (original+1)/2;}
     /** GLFW ESC/PRESS constants kept here so this policy is testable without a client or GL context. */

@@ -1,0 +1,7 @@
+{
+  "type": "orimod:great_spirit_tree",
+  "biomes": "#minecraft:is_overworld",
+  "spawn_overrides": {},
+  "step": "local_modifications",
+  "terrain_adaptation": "none"
+}

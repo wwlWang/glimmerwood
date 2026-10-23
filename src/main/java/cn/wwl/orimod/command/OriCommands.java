@@ -49,6 +49,7 @@ public final class OriCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var root = dispatcher.register(tree("orimod"));
+        cn.wwl.orimod.world.GreatTreeCommands.register(root);
         dispatcher.register(Commands.literal("ori").requires(s -> s.hasPermission(PERMISSION)).redirect(root));
     }
 

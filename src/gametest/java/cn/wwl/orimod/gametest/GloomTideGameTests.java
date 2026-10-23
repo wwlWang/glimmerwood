@@ -195,7 +195,7 @@ public final class GloomTideGameTests {
             h.assertFalse(GloomTideDefense.blocksProtect(s.level,Vec3.atCenterOf(s.base)),"Stale unloaded lamp");
         });
         add(tests,"ground_rejects_tree_roof_water_and_low_ceiling",(h,s)->{
-            for(var block:List.of(Blocks.STONE,OriBlocks.SPIRIT_LOG.get(),OriBlocks.SPIRIT_LEAVES.get(),Blocks.OAK_LEAVES,Blocks.WATER,Blocks.AIR)) {
+            for(var block:List.of(Blocks.STONE,OriBlocks.GREAT_SPIRIT_WOOD.get(),OriBlocks.GREAT_SPIRIT_ROOT.get(),OriBlocks.SPIRIT_LOG.get(),OriBlocks.SPIRIT_LEAVES.get(),Blocks.OAK_LEAVES,Blocks.WATER,Blocks.AIR)) {
                 s.set(s.base.below(),block.defaultBlockState());
                 h.assertValueEqual(GloomTide.validGround(s.level,s.base),block==Blocks.STONE,"Ground " + block);
             }
@@ -302,9 +302,9 @@ public final class GloomTideGameTests {
         return tests;
     }
     private static void add(List<TestFunction> list,String name,BiConsumer<GameTestHelper,Site> run) {
-        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency");
+        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency") || name.equals("scheduler_enrolls_once_and_honors_wave_interval");
         list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",loadsRing?RING_READY_TICKS+20:100,0,true,h->{
-            if(name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency")) {
+            if(loadsRing) {
                 loadedRing(h, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
             } else {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();}
         }));

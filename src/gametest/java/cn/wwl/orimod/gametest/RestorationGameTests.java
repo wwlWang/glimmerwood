@@ -69,8 +69,8 @@ public final class RestorationGameTests {
             }finally{level.getDataStorage().set("orimod_blight",old);}
         });
         for(int bits=0;bits<7;bits++){int mask=bits;add(tests,"missing_wisps_"+bits+"_cannot_start",(h,p)->{var tree=tree(h,p);p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withWisps(mask));h.assertFalse(Restoration.start(p,tree),"Incomplete collection started ritual");});}
-        add(tests,"unclaimed_tree_and_human_form_cannot_start",(h,p)->{
-            var tree=tree(h,p);WillWisps.give(p,7);var progress=p.getData(SpiritData.PROGRESS);p.setData(SpiritData.PROGRESS,progress.withRewards(Map.of()));h.assertFalse(Restoration.start(p,tree),"Unclaimed tree accepted");p.setData(SpiritData.PROGRESS,progress);p.setData(SpiritData.FORM,false);h.assertFalse(Restoration.start(p,tree),"Human started ritual");
+        add(tests,"great_heart_needs_no_ancestral_blessing_but_human_cannot_start",(h,p)->{
+            var tree=tree(h,p);WillWisps.give(p,7);var progress=p.getData(SpiritData.PROGRESS);p.setData(SpiritData.PROGRESS,progress.withRewards(Map.of()));h.assertTrue(Restoration.start(p,tree),"Three wisps should suffice at the great heart");Restoration.cancel(p);p.setData(SpiritData.PROGRESS,progress);p.setData(SpiritData.FORM,false);h.assertFalse(Restoration.start(p,tree),"Human started ritual");
         });
         add(tests,"skip_requires_matching_session_and_settles_once",(h,p)->{
             var tree=tree(h,p);WillWisps.give(p,7);int light=p.getData(SpiritData.PROGRESS).light();h.assertTrue(Restoration.start(p,tree),"Start refused");h.assertFalse(Restoration.skip(p,"forged"),"Forged skip accepted");
@@ -117,27 +117,27 @@ public final class RestorationGameTests {
         var old=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
         net.minecraft.world.entity.Entity occupant=null;
         try{
-            for(var mutable:BlockPos.betweenClosed(heart.offset(-4,-1,-12),heart.offset(4,3,1))){
-                var pos=mutable.immutable();old.put(pos,level.getBlockState(pos));level.setBlock(pos,pos.getY()<heart.getY()?Blocks.STONE.defaultBlockState():Blocks.AIR.defaultBlockState(),2);
+            for(var mutable:BlockPos.betweenClosed(heart.offset(-4,-2,-6),heart.offset(4,3,1))){
+                var pos=mutable.immutable();old.put(pos,level.getBlockState(pos));level.setBlock(pos,pos.getY()<heart.getY()-1?Blocks.STONE.defaultBlockState():Blocks.AIR.defaultBlockState(),2);
             }
-            level.setBlock(heart,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState(),2);
-            p.setPos(Vec3.atBottomCenterOf(heart.north(2)));p.setYRot(17);p.setXRot(23);var before=p.position();
+            level.setBlock(heart,OriBlocks.GREAT_TREE_HEART.get().defaultBlockState(),2);
+            p.setPos(Vec3.atBottomCenterOf(heart.north(1).below()));p.setYRot(17);p.setXRot(23);var before=p.position();
             p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withWisps(7).withRewards(Map.of(SpiritTreeHeartBlock.siteKey(level,heart),1)));
-            if(scenario.equals("wall"))for(int x=-4;x<=4;x++)for(int y=0;y<3;y++)level.setBlock(heart.offset(x,y,-5),Blocks.STONE.defaultBlockState(),2);
-            if(List.of("void","magma","water").contains(scenario))for(int x=-2;x<=2;x++)for(int z=-10;z<=-6;z++){
-                level.setBlock(heart.offset(x,-1,z),switch(scenario){case "magma"->Blocks.MAGMA_BLOCK.defaultBlockState();case "water"->Blocks.WATER.defaultBlockState();default->Blocks.AIR.defaultBlockState();},2);
+            if(scenario.equals("wall"))for(int x=-4;x<=4;x++)for(int y=0;y<3;y++)level.setBlock(heart.offset(x,y-1,-2),Blocks.STONE.defaultBlockState(),2);
+            if(List.of("void","magma","water").contains(scenario))for(int x=-2;x<=2;x++)for(int z=-5;z<=-2;z++){
+                level.setBlock(heart.offset(x,-2,z),switch(scenario){case "magma"->Blocks.MAGMA_BLOCK.defaultBlockState();case "water"->Blocks.WATER.defaultBlockState();default->Blocks.AIR.defaultBlockState();},2);
             }
             if(scenario.equals("occupied")){
-                var mob=net.minecraft.world.entity.EntityType.COW.create(level);mob.setNoAi(true);mob.moveTo(Vec3.atBottomCenterOf(heart.north(8)));level.addFreshEntity(mob);occupant=mob;
+                var mob=net.minecraft.world.entity.EntityType.COW.create(level);mob.setNoAi(true);mob.moveTo(Vec3.atBottomCenterOf(heart.north(3).below()));level.addFreshEntity(mob);occupant=mob;
             }
             h.assertTrue(Restoration.start(p,heart),"Start refused");var origin=Restoration.session(p).origin();
-            if(scenario.equals("clear"))h.assertValueEqual(origin,Vec3.atBottomCenterOf(heart.north(8)),"Did not back away from entrance");
-            else if(scenario.equals("occupied")){h.assertFalse(origin.equals(Vec3.atBottomCenterOf(heart.north(8))),"Teleported into another entity");h.assertTrue(level.noCollision(p,p.getBoundingBox()),"Viewpoint collides");h.assertFalse(p.getBoundingBox().intersects(occupant.getBoundingBox()),"Living entity overlap remains");}
+            if(scenario.equals("clear"))h.assertValueEqual(origin,Vec3.atBottomCenterOf(heart.north(3).below()),"Did not back away from entrance");
+            else if(scenario.equals("occupied")){h.assertFalse(origin.equals(Vec3.atBottomCenterOf(heart.north(3).below())),"Teleported into another entity");h.assertTrue(level.noCollision(p,p.getBoundingBox()),"Viewpoint collides");h.assertFalse(p.getBoundingBox().intersects(occupant.getBoundingBox()),"Living entity overlap remains");}
             else h.assertValueEqual(origin,before,"Unsafe corridor/ground moved player");
             h.assertValueEqual(p.position(),origin,"Server did not move to authoritative origin");h.assertValueEqual(p.getYRot(),17f,"Forced yaw");h.assertValueEqual(p.getXRot(),23f,"Forced pitch");
         }finally{Restoration.cancel(p);if(occupant!=null)occupant.discard();old.forEach((pos,state)->level.setBlock(pos,state,2));}
     }
-    private static BlockPos tree(GameTestHelper h,ServerPlayer p){var at=h.absolutePos(new BlockPos(7,2,7));h.getLevel().setBlock(at,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState(),2);p.setPos(Vec3.atBottomCenterOf(at).add(0,0,-2));var r=new HashMap<>(p.getData(SpiritData.PROGRESS).rewards());r.put(SpiritTreeHeartBlock.siteKey(p.level(),at),1);p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withRewards(r));return at;}
+    private static BlockPos tree(GameTestHelper h,ServerPlayer p){var at=h.absolutePos(new BlockPos(7,2,7));h.getLevel().setBlock(at,OriBlocks.GREAT_TREE_HEART.get().defaultBlockState(),2);p.setPos(Vec3.atBottomCenterOf(at).add(0,0,-2));var r=new HashMap<>(p.getData(SpiritData.PROGRESS).rewards());r.put(SpiritTreeHeartBlock.siteKey(p.level(),at),1);p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withRewards(r));return at;}
     private static void prepare(ServerPlayer p){p.setData(SpiritData.AWAKENED,true);p.setData(SpiritData.FORM,true);p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY);}
     private static void add(List<TestFunction> tests,String name,BiConsumer<GameTestHelper,ServerPlayer> run){tests.add(new TestFunction("restoration_sync","restoration."+name,"orimod_gametest:room",100,0,true,h->{try(var c=Fixtures.connectedPlayer(h)){var p=c.player();Restoration.reset(p.server);prepare(p);try{run.accept(h,p);h.succeed();}finally{WillWisps.clear(p);Restoration.reset(p.server);}}}));}
     private static void natural(List<TestFunction> tests){tests.add(new TestFunction("restoration_natural","restoration.natural_300_ticks_finishes_same_as_skip","orimod_gametest:room",380,0,true,h->{var c=Fixtures.connectedPlayer(h);var p=c.player();Restoration.reset(p.server);prepare(p);var tree=tree(h,p);WillWisps.give(p,7);h.assertTrue(Restoration.start(p,tree),"Start failed");var low=tree.above(4);var high=tree.above(20);h.getLevel().setBlock(low,OriBlocks.SPIRIT_LEAVES.get().defaultBlockState(),2);h.getLevel().setBlock(high,OriBlocks.SPIRIT_LEAVES.get().defaultBlockState(),2);

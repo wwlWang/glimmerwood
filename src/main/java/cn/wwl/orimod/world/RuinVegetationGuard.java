@@ -20,6 +20,7 @@ public final class RuinVegetationGuard {
     public static boolean blocksTree(WorldGenLevel level, BlockPos tree, int margin) {
         // Saplings and bone meal run against ServerLevel, outside this generation-only rule.
         if (!(level instanceof WorldGenRegion region) || !region.getLevel().getServer().getWorldData().worldGenOptions().generateStructures()) return false;
+        if(GreatTreeSites.reserved(region.getLevel().getChunkSource().randomState(),tree.getX(),tree.getZ(),margin))return true;
         var center = new ChunkPos(tree);
         for (int x = center.x - START_RADIUS; x <= center.x + START_RADIUS; x++)
             for (int z = center.z - START_RADIUS; z <= center.z + START_RADIUS; z++) {

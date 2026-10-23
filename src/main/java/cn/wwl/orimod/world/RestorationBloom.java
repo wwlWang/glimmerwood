@@ -31,7 +31,7 @@ public final class RestorationBloom {
     public static void load(ChunkEvent.Load e){if(e.getLevel() instanceof ServerLevel l && e.getChunk() instanceof LevelChunk)NOTICES.put(new Key(l,e.getChunk().getPos().toLong()),true);}
     public static void unload(ChunkEvent.Unload e){if(e.getLevel() instanceof ServerLevel l)NOTICES.put(new Key(l,e.getChunk().getPos().toLong()),false);}
     public static void changed(ServerLevel l,BlockPos p){NOTICES.put(new Key(l,ChunkPos.asLong(p.getX()>>4,p.getZ()>>4)),true);}
-    private static boolean relevant(BlockState s){return s.is(OriBlocks.SPIRIT_LEAVES)||s.is(OriBlocks.SPIRIT_TREE_HEART);}
+    private static boolean relevant(BlockState s){return s.is(OriBlocks.SPIRIT_LEAVES)||s.is(OriBlocks.SPIRIT_TREE_HEART)||s.is(OriBlocks.GREAT_TREE_HEART);}
     private static void merge(MinecraftServer server){
         int merged=0;for(var notice:NOTICES.entrySet()){if(merged++>=128)break;var n=notice.getKey();if(n.level.getServer()!=server)continue;NOTICES.remove(n,notice.getValue());
             var set=LOADED.computeIfAbsent(n.level,k->new HashSet<>());var key=new Key(n.level,n.chunk);
@@ -42,7 +42,7 @@ public final class RestorationBloom {
         }
     }
     public static void canopy(ServerLevel level,BlockPos tree){
-        for(int x=(tree.getX()-14)>>4;x<=(tree.getX()+14)>>4;x++)for(int z=(tree.getZ()-12)>>4;z<=(tree.getZ()+16)>>4;z++){
+        for(int x=(tree.getX()-40)>>4;x<=(tree.getX()+40)>>4;x++)for(int z=(tree.getZ()-40)>>4;z<=(tree.getZ()+40)>>4;z++){
             if(level.getChunkSource().getChunkNow(x,z)!=null)WORK.put(new Key(level,ChunkPos.asLong(x,z)),new Cursor());
         }
     }
@@ -63,11 +63,11 @@ public final class RestorationBloom {
             while(c.section<chunk.getSectionsCount()){
                 if(System.nanoTime()-start>2_000_000)break outer;
                 var section=chunk.getSection(c.section);
-                if(c.index==0 && !section.maybeHas(s->(s.is(OriBlocks.SPIRIT_LEAVES)||target && s.is(OriBlocks.SPIRIT_TREE_HEART)) && (temporary || s.getValue(SpiritLeavesBlock.BLOOMED)!=target))){c.section++;continue;}
+                if(c.index==0 && !section.maybeHas(s->(s.is(OriBlocks.SPIRIT_LEAVES)||s.is(OriBlocks.GREAT_TREE_HEART)||target && s.is(OriBlocks.SPIRIT_TREE_HEART)) && (temporary || s.getValue(SpiritLeavesBlock.BLOOMED)!=target))){c.section++;continue;}
                 while(c.index<4096){
                     if(writes>=WRITE_BUDGET || reads>=READ_BUDGET || System.nanoTime()-start>2_000_000)break outer;
                     int i=c.index++;reads++;int x=i&15,z=(i>>4)&15,y=i>>8;var state=section.getBlockState(x,y,z);
-                    if(!(state.is(OriBlocks.SPIRIT_LEAVES)||target && state.is(OriBlocks.SPIRIT_TREE_HEART)))continue;
+                    if(!(state.is(OriBlocks.SPIRIT_LEAVES)||state.is(OriBlocks.GREAT_TREE_HEART)||target && state.is(OriBlocks.SPIRIT_TREE_HEART)))continue;
                     pos.set(chunk.getPos().getMinBlockX()+x,chunk.getSectionYFromSectionIndex(c.section)*16+y,chunk.getPos().getMinBlockZ()+z);
                     boolean wanted=target || temporary && cn.wwl.orimod.progression.Restoration.bloomingAt(key.level,pos);
                     if(state.getValue(SpiritLeavesBlock.BLOOMED)==wanted)continue;

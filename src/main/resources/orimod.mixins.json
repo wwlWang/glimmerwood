@@ -10,6 +10,7 @@
     "PlayerAirControlMixin",
     "MovementTeleportMixin",
     "RuinTreeFeatureMixin",
+    "GreatTreeLocateMixin",
     "ServerFloatingAccessor",
     "SpiritLandingParticlesMixin",
     "SpiritSprintParticlesMixin",

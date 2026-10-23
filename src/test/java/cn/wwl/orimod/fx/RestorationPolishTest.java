@@ -49,8 +49,8 @@ class RestorationPolishTest {
         assertEquals(0,RestorationVisuals.wispTravel(i,60+i*20));assertEquals(1,RestorationVisuals.wispTravel(i,95+i*20));
         assertEquals(1,RestorationVisuals.wispAlpha(i,60+i*20));assertEquals(0,RestorationVisuals.wispAlpha(i,105+i*20));
     }}
-    @Test void viewpointCandidatesStayFourToSixBlocksOutsideNorthEntrance(){var heart=new BlockPos(100,64,100);
-        for(var p:RestorationViewpoint.candidates(heart)){int outside=heart.getZ()-3-p.getZ();assertTrue(outside>=4&&outside<=6);assertTrue(Math.abs(p.getX()-heart.getX())<=1);assertTrue(Math.abs(p.getY()-heart.getY())<=1);}
+    @Test void viewpointCandidatesStayInsideGreatHeartHall(){var heart=new BlockPos(100,64,100);
+        for(var p:RestorationViewpoint.candidates(heart)){int distance=heart.getZ()-p.getZ();assertTrue(distance>=2&&distance<=4);assertTrue(Math.abs(p.getX()-heart.getX())<=1);assertTrue(Math.abs(p.getY()-heart.getY())<=1);}
     }
     @Test void sparkleQueueDeduplicatesAndHonoursQualityBudget(){var q=new BloomSparkQueue();for(int i=0;i<100;i++){q.offer(i,0);q.offer(i,0);}assertEquals(100,q.size());
         for(var quality:VisualQuality.values()){int n=FxBudget.bloomSparks(quality,true);assertTrue(n<=FxBudget.MAX_PER_BURST);assertEquals(n,q.drain(0,n).size());assertEquals(0,FxBudget.bloomSparks(quality,false));}

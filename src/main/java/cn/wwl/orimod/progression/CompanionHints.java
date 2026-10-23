@@ -28,7 +28,7 @@ public final class CompanionHints {
         UPDRAFT("updraft", 6), BASH_ANCHOR("bash_anchor", 8), SPIRIT_PLATFORM("spirit_platform", 8), GRAPPLE_FLOWER("grapple_flower", 10),
         SPIRIT_SAND("spirit_sand", 6), GLOOM_WATER("gloom_water", 6), KEYSTONE_DOOR("keystone_door", 6),
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
-        SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
+        GREAT_TREE("great_tree", 120), SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
         CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12), MERCHANT("merchant",12),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
@@ -93,6 +93,7 @@ public final class CompanionHints {
         var unseen = unseen(seen, abilities);
         if (unseen.isEmpty()) return;
         var positions = scan(player, unseen);
+        if(unseen.contains(Hint.GREAT_TREE)){var at=cn.wwl.orimod.world.GreatTreeDiscovery.visible(player);if(at!=null)positions.put(Hint.GREAT_TREE,at);}
         if(unseen.contains(Hint.GLOOM_BEETLE))player.level().getEntitiesOfClass(cn.wwl.orimod.entity.GloomBeetle.class,player.getBoundingBox().inflate(12),
                 beetle->beetle.isAlive() && player.distanceToSqr(beetle)<=144 && player.hasLineOfSight(beetle)).stream()
                 .min(java.util.Comparator.comparingDouble(player::distanceToSqr)).ifPresent(beetle->positions.put(Hint.GLOOM_BEETLE,beetle.blockPosition()));

@@ -39,7 +39,9 @@ public final class RestorationClient {
     }
     private static double clock(){var mc=Minecraft.getInstance();return mc.level==null?0:mc.level.getGameTime()+mc.getTimer().getGameTimeDeltaPartialTick(false);}
     private static Vec3 lookTarget(){
-        var level=Minecraft.getInstance().level;var tree=state.tree();int lower=9;
+        var level=Minecraft.getInstance().level;var tree=state.tree();
+        if(level!=null && level.getBlockState(tree).is(cn.wwl.orimod.block.OriBlocks.GREAT_TREE_HEART))return heart().add(0,1,0);
+        int lower=9;
         // Opening-only search in already loaded client chunks. Aim just below the lowest crown
         // so the trunk and approaching lights fit along with its lower half at normal FOV.
         crown:for(int y=4;y<=20;y++)for(int x=-10;x<=10;x++)for(int z=-10;z<=10;z++){

@@ -1,14 +1,27 @@
 # 当前工作状态
 
-## R115 A — 先祖之树与核心建筑化（功能验收通过，外观修订待复验）
+## R115 B 内部与玩法（第二版全量通过，实拍待验收）
 
-- 小灵树显示名、萤提示/台词、商人指引、命令反馈改为“先祖之树 / Ancestral Tree”；注册 ID、rewards、命令名不变。B/C/D 尚未开始，复苏入口暂保留原树心。
+v003 外形已通过双种子验收。已接两格宽三圈盘梯、24格高大厅、大树心、根洞能量格、首次发现提示及潜行地图石指引；复苏只在大树心触发，先祖赐福不变。第二版每六步真实光14根结、每圈三扇外窗，短外扩根拱、独立暗细纹内根木、拱顶/三条顶井及1676三角面根笼晶体；A的建筑资产与已通过外部树形不变。全量 **1434 JUnit / 832 GameTest，0失败/错误/跳过**，日志 `evidence/r115-b-interior-v002/full-03.log`。新增美术源 `art/source/great_tree_heart/v002/`、`art/source/great_tree_interior/v002/`，所有生成器支持只读复现。新版真实输入实拍 `evidence/r115-b-interior-capture-v004/` 已完成：零技能人形走三圈上楼、原路下楼及根洞，仪式+500、9228/9228加载叶片盛开、能量格0→1→1。补充大厅/根洞宽景与真实命中先祖核心后的拒绝提示在 `r115-b-interior-gallery-v004/`；先前拒绝夹具被自然树挡住的帧不作证据。中央树干/盘梯/大厅切片(40,23)写10443格、22.42ms，使用UPDATE_CLIENTS无邻居更新；正常ProtoChunk光照在后续阶段初始化。当前等待Claude视觉审查，客户端已正常退出；详见 `docs/drafts/R115_B_SHAPE.md`。
+
+## R115 B — 大灵树（已通过的v003外形检查点）
+
+- 已接唯一 SavedData 站点、自定义 placement、原版 `/locate` 返回补充、OP `/ori great_tree site|repick|force_place`；旧区块整片避让。外形为弯曲中空主干、九条板根、九根承托主枝、三层分离冠团和冷光悬藤，逐块裁剪写入，邻接 Ori 结构互斥。
+- 该外形检查点只含入口与空腔；后续内部/玩法已接入，当前进度见顶部条目。
+- 全量 **1423 JUnit / 828 GameTest，0失败、0跳过**（`evidence/r115-b-shape-v003/full.log`）。首轮新命令别名注册回归已修，原甲虫命令断言未动。细节见 `docs/drafts/R115_B_SHAPE.md`。
+- 第二版下段主干加粗约15格，上段约9格；根/干/枝统一暗树皮，独立遮罩满亮冷光纹路贯穿，入口为地面双根拱和渐升土坡。
+- 第三版冠簇由五个扁椭球并成不规则形体，三层大小错开、外缘下垂；枝臂加粗弯曲并在冠下分叉。第二版球状轮廓未获外观通过；第三版两种子18图已通过，证据r115-b-shape-capture-v003。
+- 新增体素美术清单 `art/source/great_spirit_tree/v003/manifest.json`；不修改 A 的建筑模型、遗迹模板与现有路线/光桥/秘室测试。
+
+## R115 A — 先祖之树与核心建筑化（v006 已验收，52bb19b）
+
+- 小灵树显示名、萤提示/台词、商人指引、命令反馈改为“先祖之树 / Ancestral Tree”；注册 ID、rewards、命令名不变。A 已提交；B 当前已接入内部/玩法，C/D 尚未开始。
 - 八种原核心换为共享 Sanctuary BE：灵泉/林泉/溪谷/洞穴为 2.8 格盆式神龛，背侧双弯拱留出正面；祭坛为阶梯基座+悬浮裂晶/旋转羽环，休眠/活跃/击败三态；地图石为刻纹柱+浮空星图盘；圆钥石门按原连通门洞尺寸合成，两插槽显示进度，第二颗钥石当 tick 去碰撞，客户端独立播放 24 tick 收拢动画。
 - A 首轮外观修订：石材改为约16 texel/格、nearest 像素石粒/暗刻槽，林泉苔点绿灰、溪谷蓝灰、洞穴深板岩；发光配色不变。根拱基部加粗1.5倍、顶部加高0.5格。实景补拍发现门背面无槽、埋地核心遮住祭坛底座：两面均显示槽位，埋地祭坛只上移视觉基座1格（AABB同步扩展），碰撞和地形不变。
 - 原方块碰撞与交互保留，无新增实体碰撞/路线方块；旧区块区段调色板预筛补建缺失 BE，状态持久化、区块包与更新包同步，大模型渲染 AABB 覆盖全体量。没有改遗迹模板、生成器或原路线/光桥/秘室测试。
 - 美术全部为本轮原创程序生成：`scripts/art/build_sanctuaries.py`，`art/source/sanctuaries/v002/`（12 个 GLB/.blend、36 张 PBR 贴图、manifest；v001留作首轮参照），包内 `models/sanctuary` / `textures/sanctuary`。`check-sanctuaries.py` 只读检查通过，UV 导出回归已修正并锁为单 UV。
 - 全量 **1414 JUnit / 826 GameTest，0 失败/错误/跳过**；日志 `evidence/r115-a/full-2.log`、`counts.json`、`gametest.xml`。后续客户端细节/美术构建日志 `final-client-build.log`。check-ruins 17 文件校验通过、写入 0，Python 12 测试通过。
-- 旧档副本 `orimod_dev_r115legacy` 源于 R114 自然世界；原 NBT 四处核心均没有 BE（`legacy-source-nbt.json`），已验证三座神龛交互、驿站灵泉交互与两端同步。首轮实拍 `evidence/r115-a-gallery-v005/` 与 `evidence/r115-a-legacy-v003/` 已通过功能验收；外观修订展示场 `evidence/r115-a-gallery-v006/`、自然遗迹内圆门/地图石/双祭坛日夜图 `evidence/r115-a-insitu-v006/` 待复验。本次 build/1414 JUnit 重跑全绿，服务端不变，826 GameTest 沿用上一轮结果；未提交，B继续等待A验收。
+- 旧档副本 `orimod_dev_r115legacy` 源于 R114 自然世界；原 NBT 四处核心均没有 BE（`legacy-source-nbt.json`），已验证三座神龛交互、驿站灵泉交互与两端同步。首轮实拍 `evidence/r115-a-gallery-v005/` 与 `evidence/r115-a-legacy-v003/` 已通过功能验收；外观修订展示场 `evidence/r115-a-gallery-v006/`、自然遗迹内圆门/地图石/双祭坛日夜图 `evidence/r115-a-insitu-v006/` 均已由 Claude 验收。本次 build/1414 JUnit 重跑全绿，服务端不变，826 GameTest 沿用上一轮结果；A 已由 Claude 提交推送 52bb19b。
 
 2026-10-22 R114 完成（1410 JUnit / 814 GameTest全绿，Claude实拍审查通过，待用户试玩）：
 - 猛击36tick瞄准，6格内含后方；加权距离兼顾向前连跳，刚弹出目标15tick或落地后恢复选取。原光桥测试未改动并全过，灵灯回归改为等待真实排除窗口而非立即重选。

@@ -56,7 +56,9 @@ public final class SpiritTreeHeartBlock extends Block {
         var progress = player.getData(SpiritData.PROGRESS);
         String key = siteKey(level, pos);
         if (progress.rewards().containsKey(key)) {
-            if (progress.wisps()==7) return cn.wwl.orimod.progression.Restoration.start(player,pos);
+            if (progress.wisps()==7) {
+                player.displayClientMessage(Component.translatable("message.orimod.restoration.great_tree"),true);return false;
+            }
             player.displayClientMessage(Component.translatable("message.orimod.tree.taken"), true);
             return false;
         }
@@ -76,6 +78,7 @@ public final class SpiritTreeHeartBlock extends Block {
         if (!state.getValue(BLOOMED)) level.setBlock(pos, state.setValue(BLOOMED, true), Block.UPDATE_ALL);
         SpiritFx.emit(level, SpiritFxKind.TREE_BLESSING, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, player);
         level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, .7f, 1.4f);
+        if(progress.wisps()==7)player.sendSystemMessage(Component.translatable("message.orimod.restoration.great_tree"));
         return true;
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

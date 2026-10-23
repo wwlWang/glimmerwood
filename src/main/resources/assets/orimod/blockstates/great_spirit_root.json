@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "light=none": {
+      "model": "orimod:block/great_spirit_root_none"
+    },
+    "light=vein": {
+      "model": "orimod:block/great_spirit_root_vein"
+    },
+    "light=knot": {
+      "model": "orimod:block/great_spirit_root_knot"
+    }
+  }
+}

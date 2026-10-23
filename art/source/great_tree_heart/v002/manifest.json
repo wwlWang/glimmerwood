@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "generator": "scripts/art/build_great_heart.py",
+  "style": "Faceted pointed crystal with three satellite shards, five curved tapering roots; 16 texels/block on wood, nearest-filtered PBR/emission",
+  "runtime": "Sanctuary BE, crystal pivot at y=1.75, slight float and slow rotation; full AABB; same one-block collision",
+  "assets": [
+    {
+      "name": "great_heart_roots",
+      "vertices": 2836,
+      "triangles": 1452,
+      "bounds": [
+        [
+          -1.2425416933791211,
+          -0.06262209299449344,
+          -1.0913189490557729
+        ],
+        [
+          1.2374917304701065,
+          2.6830001526045337,
+          1.2879537522020506
+        ]
+      ]
+    },
+    {
+      "name": "great_heart_crystal",
+      "vertices": 504,
+      "triangles": 224,
+      "bounds": [
+        [
+          -0.6127884342657072,
+          -0.91,
+          -0.5868466903861955
+        ],
+        [
+          0.4930613724652745,
+          1.0373999999999999,
+          0.4742903650235007
+        ]
+      ]
+    }
+  ],
+  "files": {
+    "art/source/great_tree_heart/v002/great_heart_roots.mesh.json": "7b492932ba5e9402de4b68dfb17f258d215a365fb59ee76b1741c3b8be03e659",
+    "art/source/great_tree_heart/v002/great_heart_roots.glb": "352f66cb0b3d1ef961f5ee340ceeb3cb61743b158ff724935577de1219d501f8",
+    "src/main/resources/assets/orimod/models/sanctuary/great_heart_roots.glb": "352f66cb0b3d1ef961f5ee340ceeb3cb61743b158ff724935577de1219d501f8",
+    "art/source/great_tree_heart/v002/great_heart_roots_base.png": "055defd1bfafe1b1149954e6cc6b1bb3161cbc792d960893fc2ab10bb16c4196",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_roots_base.png": "055defd1bfafe1b1149954e6cc6b1bb3161cbc792d960893fc2ab10bb16c4196",
+    "art/source/great_tree_heart/v002/great_heart_roots_emission.png": "87581f2ebfb33655bad919c39c83882b74ce6cdbd16c3b479c54718e3373ff52",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_roots_emission.png": "87581f2ebfb33655bad919c39c83882b74ce6cdbd16c3b479c54718e3373ff52",
+    "art/source/great_tree_heart/v002/great_heart_roots_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_roots_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "art/source/great_tree_heart/v002/great_heart_crystal.mesh.json": "6ae9b2408dcb8aee11d0c57b8ba7248e2e8a9d0ee2691ba98ace09f2f0b8629c",
+    "art/source/great_tree_heart/v002/great_heart_crystal.glb": "c25d54d83a9921d32422778af4eff6f8c8c8923f913b86828af8e493dcab8a86",
+    "src/main/resources/assets/orimod/models/sanctuary/great_heart_crystal.glb": "c25d54d83a9921d32422778af4eff6f8c8c8923f913b86828af8e493dcab8a86",
+    "art/source/great_tree_heart/v002/great_heart_crystal_base.png": "055defd1bfafe1b1149954e6cc6b1bb3161cbc792d960893fc2ab10bb16c4196",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_crystal_base.png": "055defd1bfafe1b1149954e6cc6b1bb3161cbc792d960893fc2ab10bb16c4196",
+    "art/source/great_tree_heart/v002/great_heart_crystal_emission.png": "87581f2ebfb33655bad919c39c83882b74ce6cdbd16c3b479c54718e3373ff52",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_crystal_emission.png": "87581f2ebfb33655bad919c39c83882b74ce6cdbd16c3b479c54718e3373ff52",
+    "art/source/great_tree_heart/v002/great_heart_crystal_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/textures/sanctuary/great_heart_crystal_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/models/block/great_tree_heart.json": "e5ef93c25e422a54a87efd85b983cd70fa27bc38a66a7f98e41a7bc33911bd3b",
+    "art/source/great_tree_heart/v002/great_tree_heart.json": "e5ef93c25e422a54a87efd85b983cd70fa27bc38a66a7f98e41a7bc33911bd3b",
+    "src/main/resources/assets/orimod/models/block/great_tree_heart_bloomed.json": "572522ea9e0201a1f11190a866d98a3904d3324c87a52a632b1c83926962134b",
+    "art/source/great_tree_heart/v002/great_tree_heart_bloomed.json": "572522ea9e0201a1f11190a866d98a3904d3324c87a52a632b1c83926962134b",
+    "src/main/resources/assets/orimod/blockstates/great_tree_heart.json": "07c8d0488b3c862f66ad9f2a139be239241b2b92eec3033c7433c3c95064c3d7",
+    "src/main/resources/assets/orimod/models/item/great_tree_heart.json": "3ab80f7e5e516498a1754626d1d557d8f5b0a44e26150074134f27c1f40512f2"
+  }
+}

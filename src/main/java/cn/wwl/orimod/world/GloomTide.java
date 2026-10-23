@@ -169,7 +169,7 @@ public final class GloomTide {
         if (level.isOutsideBuildHeight(feet.below()) || level.isOutsideBuildHeight(feet.above())
                 || !level.getWorldBorder().isWithinBounds(feet) || level.getChunkSource().getChunkNow(feet.getX() >> 4, feet.getZ() >> 4) == null) return false;
         var floor = level.getBlockState(feet.below());
-        if (floor.is(OriBlocks.SPIRIT_LOG) || floor.is(OriBlocks.SPIRIT_LEAVES) || floor.is(BlockTags.LEAVES)
+        if (floor.is(OriBlocks.SPIRIT_LOG) || floor.is(OriBlocks.GREAT_SPIRIT_WOOD) || floor.is(OriBlocks.GREAT_SPIRIT_ROOT) || floor.is(OriBlocks.SPIRIT_LEAVES) || floor.is(BlockTags.LEAVES)
                 || !floor.getFluidState().isEmpty() || !floor.isFaceSturdy(level, feet.below(), Direction.UP)) return false;
         for (var pos : List.of(feet, feet.above())) {
             var block = level.getBlockState(pos);

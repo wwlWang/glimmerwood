@@ -1,0 +1,128 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "orimod:block/great_root_bark",
+    "bark": "orimod:block/great_root_bark",
+    "glow": "orimod:block/great_root_sap"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bark",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#bark",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#bark",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#bark",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#bark",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#bark",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.006,
+        -0.006,
+        -0.006
+      ],
+      "to": [
+        16.006,
+        16.006,
+        16.006
+      ],
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#glow",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

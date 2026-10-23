@@ -1,5 +1,20 @@
 # 回归测试
 
+## R115 B 内部第二版
+
+`test --rerun build runGameTestServer compileDevtoolsJava`：**1434 JUnit / 832 GameTest，0失败/错误/跳过**，`evidence/r115-b-interior-v002/full-03.log`、`counts.json`、`gametest.xml`。内部路径/窗/根结距离的4项纯检查，以及双向无技能行走、根洞一次奖励、新心仪式/先祖拒绝、查询不加载、真实光传播和BE同步；原遗迹路线/光桥/秘室断言未改。
+
+保留两次本阶段全量失败原文：full-01的切片夹具只数旧外树皮；纳入新内根木，越界断言不变。full-02旧潮夜调度器“First scheduled wave missing”，未捕获当时逐点拒绝数据，不声称根因已证明；该61×61远场用例缺少已有频率测试的区块/实体准备等待，复用同一个私有票/400tick上限后通过。full-03两项等待0与71tick（约2.32ms/1178.23ms），断言及生产刷怪逻辑未改。
+
+第一次内部实拍v002+v003已验证真实前进键上楼/返回/根洞、仪式+500及全部加载叶盛开、能量格0→1→1、先祖拒绝；但视觉太暗/粗纹/方心已被退回。第二版实拍已完成，等待Claude视觉验收。`r115-b-interior-capture-v004/`的新存档(115115)中人形未学技能，三圈上/下楼及根洞均只用前进键和转视角；9段视频/逐点坐标包含仪式，+500及9228/9228加载叶片盛开、能量格0→1→1。根洞宽景/大厅日夜/拱顶补图在`r115-b-interior-gallery-v004/`。原拒绝夹具的视线被自然树挡住，仅断言“未开仪式”不足以证明交互；修脚本先清该独立夹具空气，并断言实际命中坐标和tree/领取回执，补图明确显示前往Spirit Tree的拒绝文案。此修正只改拍摄脚本，生产代码与最终全量的src SHA-256逐文件一致。美术五个--check覆盖外形/外纹、内布局/内纹、根笼晶体，均只读且通过。
+
+新版内部切片最大22.422299ms，为(40,23)中央树干/盘梯/大厅（包含树心核心），10443次写入；其余切片最大4.216599ms。这是一次世界生成worker切片写入阶段，不是整服务器tick，也未细分证明瓶颈是BE或光照。`UPDATE_CLIENTS`=2，不含`UPDATE_NEIGHBORS`；常规FEATURES阶段ProtoChunk尚未INITIALIZE_LIGHT，不逐格重算光照，后续阶段统一初始化。没为测速修改标志。客户端为llvmpipe/GL4.6、Sodium开启、无光影、DISPLAY=:0；未实测真实多人或第三方shader。退出记录`r115-b-interior-shutdown-v002/`。
+
+## R115 B 外形检查点
+
+全量 `build runGameTestServer compileDevtoolsJava`：1423 JUnit / 828 GameTest，全过。新增 GreatTreeTest 9项、GreatTreeGameTests 2项；原路线/光桥/秘室断言未改。完整日志、首轮命令别名回归原文和截图索引见 [外形检查点记录](drafts/R115_B_SHAPE.md)。第三版两种子实拍已通过（r115-b-shape-capture-v003）：距离662/656，重载选址不变，切片≤7.18ms；这是外形检查点的历史结果；内部与结局当前结果见本页顶部。
+
+
 ## R115 A 核心建筑化
 
 全量 `build runGameTestServer compileDevtoolsJava`：**1414 JUnit / 826 GameTest，0 失败/错误/跳过**（基线 1410/814）。新增 4 个门洞几何单测、12 个 GameTest：八种旧核心无 BE 的升级与幂等、原碰撞/无邻格写入、存档与客户端 tag、两种首领实际召唤/死亡外观、插钥匙共享进度与立即变空气。原遗迹路线、桥、秘室测试原样通过；本轮没有改 NBT 或 layout。`evidence/r115-a/full-2.log`、`gametest.xml`、`counts.json` 保存证据；full-1 为新增夹具调用了不存在的 Shapes.equal 的编译错误，已换为原版形状差集比较，没有修改任何旧断言。首次 compile.log 另记录方法引用类型推断/缺失 import 两处已修正编译错误。

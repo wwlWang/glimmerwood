@@ -1,0 +1,47 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "orimod:block/great_root_bark",
+    "bark": "orimod:block/great_root_bark"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bark",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#bark",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#bark",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#bark",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#bark",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#bark",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

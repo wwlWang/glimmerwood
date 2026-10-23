@@ -47,12 +47,12 @@ public final class GloomTideDefense {
         if (saved != null && now >= saved.at && now - saved.at < CACHE_TICKS) return saved;
         var lamps = new ArrayList<BlockPos>(); var hearts = new ArrayList<BlockPos>(); var wells = new ArrayList<BlockPos>();
         var section = chunk.getSection(chunk.getSectionIndex(sy << 4));
-        if (section.maybeHas(s -> s.is(OriBlocks.BASH_ANCHOR) || s.is(OriBlocks.SPIRIT_TREE_HEART) || s.is(OriBlocks.GLADES_WELL)))
+        if (section.maybeHas(s -> s.is(OriBlocks.BASH_ANCHOR) || (s.is(OriBlocks.SPIRIT_TREE_HEART)||s.is(OriBlocks.GREAT_TREE_HEART)) || s.is(OriBlocks.GLADES_WELL)))
             for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) {
                 var state = section.getBlockState(x, y, z);
                 if (state.is(OriBlocks.BASH_ANCHOR)) lamps.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
                 else if (state.is(OriBlocks.GLADES_WELL)) wells.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
-                else if (state.is(OriBlocks.SPIRIT_TREE_HEART)) hearts.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
+                else if ((state.is(OriBlocks.SPIRIT_TREE_HEART)||state.is(OriBlocks.GREAT_TREE_HEART))) hearts.add(new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z));
             }
         saved = new Sites(now, List.copyOf(lamps), List.copyOf(hearts), List.copyOf(wells));
         cache.put(key, saved);

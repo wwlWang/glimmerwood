@@ -1,0 +1,15 @@
+{
+  "generator": "scripts/art/build_great_tree_textures.py",
+  "size": [
+    16,
+    16
+  ],
+  "filter": "nearest",
+  "emission": "masked overlay only; bark retains world light",
+  "assets": {
+    "src/main/resources/assets/orimod/textures/block/great_spirit_bark.png": "32009d86e8ff8bea59d109ac82ebfe97e4d032a52dba44a9959c25cf9e997d68",
+    "src/main/resources/assets/orimod/textures/block/great_spirit_vein.png": "edddbd29f5f7d00490ccd2ddb515cea15dc661ed7354a62568c88ee888e0e961",
+    "art/source/great_spirit_tree/v003/great_spirit_bark.png": "32009d86e8ff8bea59d109ac82ebfe97e4d032a52dba44a9959c25cf9e997d68",
+    "art/source/great_spirit_tree/v003/great_spirit_vein.png": "edddbd29f5f7d00490ccd2ddb515cea15dc661ed7354a62568c88ee888e0e961"
+  }
+}

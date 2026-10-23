@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "orimod:spirit_log",
-    "orimod:withered_spirit_log"
+    "orimod:withered_spirit_log",
+    "orimod:great_spirit_wood",
+    "orimod:great_spirit_root"
   ]
 }

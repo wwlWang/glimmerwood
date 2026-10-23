@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "vein=false": {
+      "model": "orimod:block/great_spirit_wood"
+    },
+    "vein=true": {
+      "model": "orimod:block/great_spirit_wood_vein"
+    }
+  }
+}

@@ -1,5 +1,10 @@
 # 开发与验收工具
 
+## R115 B 大灵树（外形阶段）
+
+唯一站点、原版 locate 补充和按区块裁剪生成的实现说明见 [R115 B 外形记录](drafts/R115_B_SHAPE.md)。OP 命令 `/ori great_tree site|repick|force_place`；已触及的站点不可重选。Devtools `great_tree_state` 返回站点/出生点/写入耗时；`command` 可传 `captureOutput:true` 收集真实反馈。内部玩法待外形批准后接入。
+
+
 ## R115 A 建筑模型与旧档升级
 
 灵泉、三种遗迹神龛、两座首领祭坛、地图石、钥石门保留原注册 ID / 原碰撞 / 原交互。`SanctuaryBlock` 提供共享 BE；`SanctuaryMigration` 在区块加载时先用 section palette `maybeHas` 预筛，只对含核心的区段补缺失 BE，不查询邻区块。服务端在发区块包前补建，客户端加载/重同步也能补建；`getUpdateTag` 和更新包同步地图石与祭坛的外观状态。旧档已领取奖励仍以原 rewards 为准，旧地图石的外观首次再次使用后点亮，不推测历史回执。
@@ -386,3 +391,17 @@ R108 视觉打磨：盛开叶片保留原来的 cutout 孔隙，保留高饱和�
 新增确定性光柱贴图源脚本 `scripts/art/build_restoration_texture.py`，用 `--check` 校验 `textures/misc/restoration_column.png`。本次 polish 没有新增 `art/source` JSON；前述两份 R108 FX JSON 已在 fbb3c90 中，22 个 FX 导出不变。
 
 实拍色彩回归见 `evidence/r108-polish-after-v003/canopy-metrics.json`：Sodium下盛开模型关闭方向压暗/AO，树冠ROI饱和度+12.2%、HSV亮度+49.2%，没有增加光照引擎写入或neoforge_data顶点光照字段。
+
+
+### R115 B 内部生成与指引
+
+`GreatTreeInterior` 是对已验收 `GreatTreeShape` 的确定性建筑覆盖层；世界生成逐区块读取同一个原点相对坐标，内部不另开写入队列、不跨clip写邻区块。`scripts/art/build_great_tree_interior.py --check` 和 `build_great_heart.py --check` 检查原创布局/根笼心部模型源与包装，外部树形/树皮的原检查脚本仍须通过。
+
+`great_tree_heart` 用于复苏；`spirit_tree_heart` 仍是先祖赐福核心，注册ID与旧奖励键不变。旧复苏世界效果及个人回执保持兼容，未完成者带三光到新大厅即可，无先祖赐福前置。地图石普通使用仍找遗迹；潜行使用通过持久唯一树址指向大树根部，不生成目标区块。Companion协议10、Guide协议3拒绝旧版本。
+
+Devtools `great_tree_state` 增加世界坐标 `entrance/heart/reward/ascent/descent` 和 `foliage.loadedLeaves/bloomedLeaves`；仅在手动查询时扫描已加载、调色板含灵叶的区段。`capture-great-tree-interior.py <新目录> [seed]` 从根部用真实按键走完盘梯与根洞，保留逐步位置和视频。客户端仍必须 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority`；与全量Gradle互斥。
+
+
+R115 B 内部第二版：已通过的 `GreatTreeShape` 与外部树皮/光纹不变；`GreatTreeInterior` 独立覆盖短根拱、三圈台阶、九窗/三顶井、拱顶大厅和根洞。调色板12/13/14是内根木/暗细纹/亮度14根结，不能替换外部WOOD/VEIN。`GreatSpiritRootBlock.light` 控制真实光照，楼梯每六步放置根结；生成仍裁剪在当前区块。内根木同样禁止潮夜落点。新树心采用共享Sanctuary BE，以一个方块保持碰撞和交互，GLB根笼/晶体仅视觉，渲染AABB覆盖整体。新资产复现：`python3 scripts/art/build_great_tree_root_textures.py --check`、`build_great_tree_interior.py --check`、`build_great_heart.py --check`；源目录均为各自v002。客户端拍摄必须 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority`，并与全量Gradle互斥。
+
+R115 B 切片写入使用 `Block.UPDATE_CLIENTS`（2），不包含邻居更新。在正常 FEATURES 的 `WorldGenRegion/ProtoChunk` 中，树心BE先保存DUMMY占位，成品区块才实例化；GLB不在生成线程读取。ProtoChunk在INITIALIZE_LIGHT之后写入才进入逐格光照检查，正常新生结构的照明由后续阶段初始化。不能将该说明推广到OP在已完成区块中的强制放置：此时必须正常更新光照。第二版实测(40,23)10443写/22.42ms，日志未做BE/光照分项归因，保留此慢切片而不额外改不明标志。实拍与时序索引见 `evidence/r115-b-interior-v002/checkpoint.json`。

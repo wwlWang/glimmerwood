@@ -34,6 +34,10 @@ public final class OriBlocks {
     public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SPIRIT_LOG = BLOCKS.register("spirit_log",
             () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .strength(2).lightLevel(s -> 4).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GreatSpiritWoodBlock> GREAT_SPIRIT_WOOD=BLOCKS.register("great_spirit_wood",()->new GreatSpiritWoodBlock(BlockBehaviour.Properties.of()
+            .strength(2).lightLevel(s->s.getValue(GreatSpiritWoodBlock.VEIN)?10:0).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GreatSpiritRootBlock> GREAT_SPIRIT_ROOT=BLOCKS.register("great_spirit_root",()->new GreatSpiritRootBlock(BlockBehaviour.Properties.of()
+            .strength(2).lightLevel(s->s.getValue(GreatSpiritRootBlock.LIGHT).emission).sound(SoundType.WOOD)));
     public static final DeferredBlock<SpiritLeavesBlock> SPIRIT_LEAVES = BLOCKS.register("spirit_leaves", () -> new SpiritLeavesBlock(BlockBehaviour.Properties.of()
             .strength(.2f).noOcclusion().lightLevel(s -> s.getValue(SpiritLeavesBlock.BLOOMED) ? 12 : 9).sound(SoundType.AZALEA_LEAVES)
             .emissiveRendering((s, l, p) -> true)
@@ -44,6 +48,9 @@ public final class OriBlocks {
     public static final DeferredBlock<SpiritTreeHeartBlock> SPIRIT_TREE_HEART = BLOCKS.register("spirit_tree_heart",
             () -> new SpiritTreeHeartBlock(BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable()
                     .lightLevel(s -> 15).sound(SoundType.AMETHYST).emissiveRendering((s, l, p) -> true)));
+    public static final DeferredBlock<GreatTreeHeartBlock> GREAT_TREE_HEART=BLOCKS.register("great_tree_heart",()->new GreatTreeHeartBlock(BlockBehaviour.Properties.of()
+            .strength(-1,3600000).noLootTable().noOcclusion().lightLevel(s->15).sound(SoundType.AMETHYST)
+            .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
     /** R96: keep the original registry id so existing ruins and player-built Bash routes remain valid. */
     public static final DeferredBlock<SpiritLanternBlock> BASH_ANCHOR = BLOCKS.register("bash_anchor", () -> new SpiritLanternBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> SpiritLanternBlock.lightLevel(state.getValue(SpiritLanternBlock.LIT)))
@@ -97,7 +104,7 @@ public final class OriBlocks {
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
                 GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+                SPIRIT_LOG, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

@@ -22,6 +22,7 @@ public final class RuinStructure extends Structure {
     public RuinStructure(StructureSettings settings, RuinKind kind) { super(settings); this.kind = kind; }
 
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+        if(GreatTreeSites.reserved(context.randomState(),context.chunkPos().getMiddleBlockX(),context.chunkPos().getMiddleBlockZ(),56))return Optional.empty();
         var layout = kind.layout();
         int x = context.chunkPos().getMinBlockX(), z = context.chunkPos().getMinBlockZ();
         var rotation = Rotation.getRandom(context.random());

@@ -56,7 +56,8 @@ public final class MapStoneBlock extends SanctuaryBlock {
         cn.wwl.orimod.fx.SpiritFx.emit((net.minecraft.server.level.ServerLevel) player.level(), cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, null);
         player.displayClientMessage(Component.translatable("message.orimod.map_stone.survey", survey.cells(), survey.keystones(),
                 Component.translatable(survey.altars() > 0 ? "message.orimod.map_stone.altar" : "message.orimod.map_stone.no_altar")), false);
-        cn.wwl.orimod.world.RuinLocator.request(player);
+        if(player.isShiftKeyDown())cn.wwl.orimod.world.GreatTreeDiscovery.guide(player);
+        else {cn.wwl.orimod.world.RuinLocator.request(player);player.sendSystemMessage(Component.translatable("message.orimod.great_tree.map_tip"));}
         return survey;
     }
 

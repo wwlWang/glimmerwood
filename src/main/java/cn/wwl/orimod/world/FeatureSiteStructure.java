@@ -58,6 +58,7 @@ public final class FeatureSiteStructure extends Structure {
     public FeatureSiteStructure(StructureSettings settings, Site site) { super(settings); this.site = site; }
 
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+        if(GreatTreeSites.reserved(context.randomState(),context.chunkPos().getMiddleBlockX(),context.chunkPos().getMiddleBlockZ(),Site.RADIUS+8))return Optional.empty();
         // Keep the origin RADIUS-compatible: anywhere in the chunk keeps all writes inside its 3x3 neighbourhood.
         var random = context.random();
         int x = context.chunkPos().getMinBlockX() + random.nextInt(16), z = context.chunkPos().getMinBlockZ() + random.nextInt(16);

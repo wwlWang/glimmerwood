@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -193,8 +194,17 @@ public final class DevelopmentBridge {
                             "Command is unavailable in the integrated server");
                     var result = new java.util.concurrent.atomic.AtomicInteger();
                     var successful = new java.util.concurrent.atomic.AtomicBoolean();
-                    server.getCommands().performPrefixedCommand(player.createCommandSourceStack().withPermission(4)
-                            .withSuppressedOutput().withCallback((success, value) -> { successful.set(success); result.set(value); }), command);
+                    var messages = new ArrayList<String>();
+                    var source=player.createCommandSourceStack().withPermission(4);
+                    boolean capture=action.has("captureOutput")&&action.get("captureOutput").getAsBoolean();
+                    if(capture)source=source.withSource(new net.minecraft.commands.CommandSource(){
+                        @Override public void sendSystemMessage(net.minecraft.network.chat.Component message){messages.add(message.getString());}
+                        @Override public boolean acceptsSuccess(){return true;}
+                        @Override public boolean acceptsFailure(){return true;}
+                        @Override public boolean shouldInformAdmins(){return false;}
+                    });else source=source.withSuppressedOutput();
+                    server.getCommands().performPrefixedCommand(source.withCallback((success, value) -> { successful.set(success); result.set(value); }), command);
+                    if(capture)return Map.<String,Object>of("success",successful.get(),"result",result.get(),"messages",messages);
                     return Map.<String, Object>of("success", successful.get(), "result", result.get());
                 }).get(10, TimeUnit.SECONDS);
             }
@@ -214,6 +224,37 @@ public final class DevelopmentBridge {
                     return SpiritTreeProbe.scan(player.serverLevel(), action.get("minX").getAsInt(), action.get("maxX").getAsInt(),
                             action.get("minZ").getAsInt(), action.get("maxZ").getAsInt(), action.get("step").getAsInt());
                 }).get(30, TimeUnit.SECONDS);
+            }
+            case "great_tree_state" -> {
+                require(mc.getSingleplayerServer()!=null,"Single-player world required");
+                return mc.getSingleplayerServer().submit(()->{
+                    var level=mc.getSingleplayerServer().overworld();
+                    var data=cn.wwl.orimod.world.GreatTreeSite.get(level);var site=data.site();
+                    if(site==null)return Map.<String,Object>of("present",false);
+                    var p=site.origin();var spawn=site.spawn();
+                    var timings=cn.wwl.orimod.world.GreatTreeSites.timings(level).stream().map(t->Map.of("chunk",List.of(t.chunkX(),t.chunkZ()),"writes",t.writes(),"shapeMs",t.shapeMs(),"writeMs",t.writeMs())).toList();
+                    var result=new java.util.LinkedHashMap<String,Object>();
+                    result.put("present",true);result.put("origin",List.of(p.getX(),p.getY(),p.getZ()));result.put("spawn",List.of(spawn.getX(),spawn.getY(),spawn.getZ()));
+                    result.put("distance",site.spawnDistance());result.put("begun",data.begun());result.put("timings",timings);
+                    var layout=cn.wwl.orimod.world.GreatTreeInterior.layout();
+                    java.util.function.Function<cn.wwl.orimod.world.GreatTreeInterior.Point,List<Integer>> absolute=q->List.of(p.getX()+q.x(),p.getY()+q.y(),p.getZ()+q.z());
+                    result.put("heart",absolute.apply(cn.wwl.orimod.world.GreatTreeInterior.HEART_POS));result.put("reward",absolute.apply(cn.wwl.orimod.world.GreatTreeInterior.REWARD_POS));
+                    result.put("entrance",List.of(p.getX(),p.getY(),p.getZ()-18));result.put("ascent",layout.ascent().stream().map(absolute).toList());result.put("descent",layout.descent().stream().map(absolute).toList());
+                    int leaves=0,bloomed=0;var scan=new net.minecraft.core.BlockPos.MutableBlockPos();
+                    for(int cx=(p.getX()-40)>>4;cx<=(p.getX()+40)>>4;cx++)for(int cz=(p.getZ()-40)>>4;cz<=(p.getZ()+40)>>4;cz++){
+                        var chunk=level.getChunkSource().getChunkNow(cx,cz);if(chunk==null)continue;
+                        for(int sy=0;sy<chunk.getSectionsCount();sy++){
+                            var section=chunk.getSection(sy);if(!section.maybeHas(b->b.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)))continue;
+                            for(int lx=0;lx<16;lx++)for(int lz=0;lz<16;lz++)for(int ly=0;ly<16;ly++){
+                                scan.set(cx*16+lx,chunk.getSectionYFromSectionIndex(sy)*16+ly,cz*16+lz);
+                                if(Math.abs(scan.getX()-p.getX())>40||Math.abs(scan.getZ()-p.getZ())>40||scan.getY()<p.getY()+25||scan.getY()>p.getY()+82)continue;
+                                var block=section.getBlockState(lx,ly,lz);if(block.is(cn.wwl.orimod.block.OriBlocks.SPIRIT_LEAVES)){leaves++;if(block.getValue(cn.wwl.orimod.block.SpiritLeavesBlock.BLOOMED))bloomed++;}
+                            }
+                        }
+                    }
+                    result.put("foliage",Map.of("loadedLeaves",leaves,"bloomedLeaves",bloomed));
+                    return result;
+                }).get(10,TimeUnit.SECONDS);
             }
             case "inspect_block" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");

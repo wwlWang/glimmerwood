@@ -43,7 +43,7 @@ art/source/character/v*/
 !art/source/character/v014/
 art/source/character/replaced/
 art/source/first-person/v*/
-!art/source/first-person/v010/
+!art/source/first-person/v011/
 art/source/monsters/*/v*/
 !art/source/monsters/*/v004/
 art/source/deformation-sample/*.blend
@@ -57,3 +57,11 @@ libs/runtime/*
 libs/compile/*
 !libs/runtime/gemrender-0.1.17.jar
 !libs/compile/flywheel-neoforge-1.21.1-1.0.6.jar
+art/source/sanctuaries/v*/
+!art/source/sanctuaries/v002/
+art/source/great_spirit_tree/v*/
+!art/source/great_spirit_tree/v003/
+art/source/great_tree_heart/v*/
+!art/source/great_tree_heart/v002/
+art/source/great_tree_interior/v*/
+!art/source/great_tree_interior/v002/

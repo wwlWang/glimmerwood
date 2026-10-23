@@ -26,8 +26,11 @@ public final class Restoration {
     public static boolean start(ServerPlayer p,BlockPos tree){
         var progress=p.getData(SpiritData.PROGRESS);
         String refusal=RestorationRules.refusal(p.isAlive() && !p.isSpectator(),SpiritData.isAwakened(p)&&SpiritData.isSpirit(p),progress.wisps(),
-                progress.rewards().containsKey(SpiritTreeHeartBlock.siteKey(p.level(),tree)),completed(p),active(p));
-        if(!p.serverLevel().getBlockState(tree).is(OriBlocks.SPIRIT_TREE_HEART) || p.position().distanceToSqr(Vec3.atCenterOf(tree))>36)return false;
+                completed(p),active(p));
+        if(p.serverLevel().getChunkSource().getChunkNow(tree.getX()>>4,tree.getZ()>>4)==null || p.position().distanceToSqr(Vec3.atCenterOf(tree))>36)return false;
+        if(!p.serverLevel().getBlockState(tree).is(OriBlocks.GREAT_TREE_HEART)){
+            p.displayClientMessage(Component.translatable("message.orimod.restoration.great_tree"),true);return false;
+        }
         if(refusal!=null){p.displayClientMessage(Component.translatable("message.orimod.restoration."+refusal),true);return false;}
         p.stopRiding();p.stopUsingItem();cn.wwl.orimod.combat.Flash.stop(p);cn.wwl.orimod.combat.SpiritCombat.cancel(p,"restoration");
         cn.wwl.orimod.movement.SpiritMovement.teleported(p);
@@ -42,7 +45,7 @@ public final class Restoration {
     public static boolean skip(ServerPlayer p,String id){var s=session(p);if(s==null || !s.id.toString().replace("-", "").equals(id))return false;return finish(p);}
     private static boolean valid(ServerPlayer p,Session s){return p.isAlive() && !p.isSpectator() && SpiritData.isSpirit(p) && p.serverLevel()==s.level
             && p.getData(SpiritData.PROGRESS).wisps()==7 && s.level.getChunkSource().getChunkNow(s.tree.getX()>>4,s.tree.getZ()>>4)!=null
-            && s.level.getBlockState(s.tree).is(OriBlocks.SPIRIT_TREE_HEART);}
+            && s.level.getBlockState(s.tree).is(OriBlocks.GREAT_TREE_HEART);}
     public static boolean finish(ServerPlayer p){
         var s=session(p);if(s==null)return false;
         if(!valid(p,s) || completed(p)){cancel(p);return false;}
@@ -83,14 +86,14 @@ public final class Restoration {
     /** Temporary crown bands during seconds 7–11. Cancellation schedules the same leaves back to normal. */
     public static boolean canopyChunk(ServerLevel level,int x,int z){
         for(var s:SESSIONS.values())if(s.level==level && level.getGameTime()-s.start>=140
-                && x*16<=s.tree.getX()+14 && x*16+15>=s.tree.getX()-14
-                && z*16<=s.tree.getZ()+16 && z*16+15>=s.tree.getZ()-12)return true;
+                && x*16<=s.tree.getX()+40 && x*16+15>=s.tree.getX()-40
+                && z*16<=s.tree.getZ()+40 && z*16+15>=s.tree.getZ()-40)return true;
         return false;
     }
     public static boolean bloomingAt(ServerLevel level,BlockPos pos){
         for(var s:SESSIONS.values())if(s.level==level){long age=level.getGameTime()-s.start;
-            if(age<140 || Math.abs(pos.getX()-s.tree.getX())>14 || Math.abs(pos.getZ()-(s.tree.getZ()+2))>14)continue;
-            int height=(int)Math.min(26,5+(age-140)/20*5);
+            if(age<140 || Math.abs(pos.getX()-s.tree.getX())>40 || Math.abs(pos.getZ()-s.tree.getZ())>40)continue;
+            int height=(int)Math.min(46,12+(age-140)/20*9);
             if(pos.getY()>=s.tree.getY() && pos.getY()<=s.tree.getY()+height)return true;
         }return false;
     }

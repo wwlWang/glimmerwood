@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "generator": "scripts/art/build_great_tree_interior.py",
+  "source": "src/main/java/cn/wwl/orimod/world/GreatTreeInterior.java",
+  "source_sha256": "20d4bd68dbe6b8298badbed943fc70378c9991fbd4f807a00d8b350748d3134e",
+  "layout_sha256": "15703f04c7a4d7c3dbbbcca7ba71ce9e1813607f109b45678c12b7ddaf4cafae",
+  "palette": {
+    "1": "great_spirit_wood",
+    "4": "air",
+    "5": "great_spirit_wood[vein=true]",
+    "6": "great_tree_heart",
+    "7": "energy_cell_pedestal",
+    "8": "dark_oak_stairs[north]",
+    "9": "dark_oak_stairs[east]",
+    "10": "dark_oak_stairs[south]",
+    "11": "dark_oak_stairs[west]",
+    "12": "great_spirit_root[light=none]",
+    "13": "great_spirit_root[light=vein]",
+    "14": "great_spirit_root[light=knot]"
+  },
+  "entry": [
+    0,
+    0,
+    -18
+  ],
+  "heart": [
+    2,
+    25,
+    1
+  ],
+  "root_cave_reward": [
+    -1,
+    -8,
+    3
+  ],
+  "recipe": "Two-wide three-turn root staircase, 24 block rise. Three-high headroom, open stairwell through hall slab. Short flared root arch, nine stair windows, light-14 knots every six treads, domed hall with three sky shafts; fine interior sap lines, lined root cave with reversible stair."
+}

@@ -26,7 +26,7 @@ public final class CompanionLines {
         FIRST_RUIN_CAVE_ALTAR("first_ruin_cave_altar", true, 0),
         BOSS_START("boss_start", false, 6000), BOSS_DEFEATED("boss_defeated", false, 0),
         ESCAPE("escape", false, 0), TIDE_BEGIN("tide_begin", false, 0), TIDE_END("tide_end", false, 0),
-        TREE_FOUND("tree_found", true, 0), LOW_HEALTH("low_health", false, 1200, 60), NIGHT_ONE("night_one", true, 0),
+        GREAT_TREE_FOUND("great_tree_found", true, 0), TREE_FOUND("tree_found", true, 0), LOW_HEALTH("low_health", false, 1200, 60), NIGHT_ONE("night_one", true, 0),
         FIRST_VESSEL("first_vessel", true, 0), FIRST_PURIFY("first_purify", true, 0), FIRST_OUTPOST("first_outpost", true, 0), RESTORATION("restoration",true,0);
         public final String id;
         public final boolean once;
@@ -51,8 +51,8 @@ public final class CompanionLines {
         public float previousHealth = Float.NaN;
         public boolean wasNight;
         public RuinKind insideRuin;
-        public boolean insideOutpost;
-        public void clearPending() { pending = null; previousHealth = Float.NaN; wasNight = false; insideRuin = null; insideOutpost = false; }
+        public boolean insideOutpost, sawGreatTree;
+        public void clearPending() { pending = null; previousHealth = Float.NaN; wasNight = false; insideRuin = null; insideOutpost = false; sawGreatTree=false; }
     }
     public static boolean eligible(ServerPlayer p) {
         return !Restoration.active(p) && p.isAlive() && !p.isSpectator() && SpiritData.isAwakened(p) && SpiritData.isSpirit(p);
@@ -99,6 +99,11 @@ public final class CompanionLines {
             boolean inside = cn.wwl.orimod.world.GladesOutpostPiece.at(level, p.blockPosition()) != null;
             if (inside && !session.insideOutpost) offer(p, Line.FIRST_OUTPOST);
             session.insideOutpost = inside;
+        }
+        if(now % CompanionHints.SCAN_TICKS == 0 && !p.getData(SpiritData.PROGRESS).rewards().containsKey(PREFIX+Line.GREAT_TREE_FOUND.id)){
+            boolean visible=cn.wwl.orimod.world.GreatTreeDiscovery.visible(p)!=null;
+            if(visible && !session.sawGreatTree)offer(p,Line.GREAT_TREE_FOUND);
+            session.sawGreatTree=visible;
         }
         boolean night = nightCondition(level.dimension() == Level.OVERWORLD,
                 surface(p), level.getDayTime());

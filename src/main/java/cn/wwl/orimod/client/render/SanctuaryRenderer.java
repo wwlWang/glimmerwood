@@ -18,6 +18,8 @@ import org.joml.Vector3f;
 public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlockEntity> {
     public SanctuaryRenderer(BlockEntityRendererProvider.Context context) {}
     @Override public AABB getRenderBoundingBox(SanctuaryBlockEntity b) {
+        if (b.getBlockState().is(OriBlocks.GREAT_TREE_HEART))
+            return new AABB(b.getBlockPos()).inflate(1,0,1).expandTowards(0,2.7,0);
         if (b.getBlockState().is(OriBlocks.KEYSTONE_DOOR) && b.getLevel()!=null) {
             var cells=KeystoneDoorBlock.door(b.getLevel(),b.getBlockPos());
             if (!cells.isEmpty()) return KeystoneDoorShape.of(cells,0).bounds().inflate(.1);
@@ -37,7 +39,13 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
         }
         pose.pushPose();pose.translate(.5,0,.5);
         boolean ready;
-        if (state.getBlock() instanceof SpiritWellBlock) {
+        if (state.is(OriBlocks.GREAT_TREE_HEART)) {
+            boolean bloomed=state.getValue(SpiritTreeHeartBlock.BLOOMED);
+            ready=mesh("great_heart_roots",pose,buffers,light,.45f,1);
+            pose.translate(0,1.75+Math.sin(time*.025)*.035,0);
+            pose.mulPose(Axis.YP.rotation((float)time*.003f));
+            mesh("great_heart_crystal",pose,buffers,light,bloomed?1:.65f,1);
+        } else if (state.getBlock() instanceof SpiritWellBlock) {
             pose.mulPose(Axis.YP.rotationDegrees(-state.getValue(SpiritWellBlock.FACING).toYRot()));
             String theme=state.is(OriBlocks.FOREST_SHRINE)?"forest":state.is(OriBlocks.CREEK_SHRINE)?"creek":state.is(OriBlocks.CAVE_SHRINE)?"cave":"well";
             ready=mesh("basin_"+theme,pose,buffers,light,1,1);

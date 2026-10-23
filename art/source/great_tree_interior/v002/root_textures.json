@@ -1,0 +1,22 @@
+{
+  "generator": "scripts/art/build_great_tree_root_textures.py",
+  "texels_per_block": 16,
+  "emission_levels": {
+    "none": 0,
+    "vein": 6,
+    "knot": 14
+  },
+  "files": {
+    "src/main/resources/assets/orimod/textures/block/great_root_bark.png": "fd967e74eb8fb5c1ee30bbfdc9ca61eed2e033765ef21bb04e546331512d7ff3",
+    "art/source/great_tree_interior/v002/great_root_bark.png": "fd967e74eb8fb5c1ee30bbfdc9ca61eed2e033765ef21bb04e546331512d7ff3",
+    "src/main/resources/assets/orimod/textures/block/great_root_sap.png": "03812a30d852141d5044f92059582bc00801d26850392312735982f33cee85ec",
+    "art/source/great_tree_interior/v002/great_root_sap.png": "03812a30d852141d5044f92059582bc00801d26850392312735982f33cee85ec",
+    "src/main/resources/assets/orimod/textures/block/great_root_knot.png": "b0f8e69cc05e256134306c0af6c963f81540d468bb24dcf6ed916b2a782ed36a",
+    "art/source/great_tree_interior/v002/great_root_knot.png": "b0f8e69cc05e256134306c0af6c963f81540d468bb24dcf6ed916b2a782ed36a",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_none.json": "e2e26e2845dd7fac47695470f0b67bc814b1814e7c77b881f6681e139a6e183a",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_vein.json": "25c0cf9556cb31624232a216e06c25348300609381ac75cfc729b9407d9dea8e",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_knot.json": "c4ae5fff369cd9dc9c6854b952901a39b4866b65337a6f3ee2d7317665528247",
+    "src/main/resources/assets/orimod/blockstates/great_spirit_root.json": "3fd562fa649fbe8fa1dc0e77978201fe793b5c417f92eaeae99c9cba968016ff",
+    "src/main/resources/assets/orimod/models/item/great_spirit_root.json": "791a6b7edcb482f41ff3d34668e0cadc32b55f748b33f454182e46c2a082871b"
+  }
+}

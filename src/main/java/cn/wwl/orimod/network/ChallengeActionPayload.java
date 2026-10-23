@@ -18,6 +18,6 @@ public record ChallengeActionPayload(BlockPos shrine, boolean start) implements 
         var registrar = event.registrar("1");
         registrar.playToServer(TYPE, CODEC, (request, context) -> { if (context.player() instanceof ServerPlayer player) SpiritChallenge.request(player, request.shrine, request.start); });
         registrar.playToClient(RuinOfferPayload.TYPE, RuinOfferPayload.CODEC, (reply, context) -> RuinOfferPayload.pending = reply);
-        event.registrar("2").playToClient(RuinGuidePayload.TYPE, RuinGuidePayload.CODEC, (reply, context) -> RuinGuidePayload.current = reply);
+        event.registrar(Integer.toString(RuinGuidePayload.VERSION)).playToClient(RuinGuidePayload.TYPE, RuinGuidePayload.CODEC, (reply, context) -> RuinGuidePayload.current = reply);
     }
 }

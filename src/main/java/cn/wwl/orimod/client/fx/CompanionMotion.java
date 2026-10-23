@@ -277,7 +277,12 @@ public final class CompanionMotion {
         if (mc.level == null || mc.player == null || !SpiritData.isSpirit(mc.player) || !SpiritData.isAwakened(mc.player)) return;
         var state = ensure(mc.player);
         if (state != null) {
-            payload.pos().ifPresent(pos -> state.seek(Vec3.atCenterOf(pos).add(0, HINT_ABOVE, 0), true));
+            payload.pos().ifPresent(pos -> {
+                var target=Vec3.atCenterOf(pos).add(0,HINT_ABOVE,0);
+                // A landmark is seen from 120 blocks: point toward it without losing Glimmer in the distance.
+                if(payload.id().equals("great_tree"))target=mc.player.getEyePosition().add(target.subtract(mc.player.getEyePosition()).normalize().scale(4));
+                state.seek(target,true);
+            });
             state.pulseTicks = PULSE_TICKS;
         }
         if (payload.kind() == CompanionHintPayload.Kind.LINE) cn.wwl.orimod.client.CompanionLineOverlay.show(payload.id());

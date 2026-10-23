@@ -15,6 +15,10 @@ public final class OriWorldgen {
     public static final Supplier<BlightedGroundsFeature> BLIGHTED_GROUNDS = FEATURES.register("blighted_grounds", BlightedGroundsFeature::new);
     private static final DeferredRegister<StructureType<?>> TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, OriMod.MOD_ID);
     private static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, OriMod.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<?>> PLACEMENTS = DeferredRegister.create(Registries.STRUCTURE_PLACEMENT, OriMod.MOD_ID);
+    public static final Supplier<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<GreatTreePlacement>> GREAT_TREE_PLACEMENT = PLACEMENTS.register("great_tree", () -> () -> GreatTreePlacement.CODEC);
+    public static final Supplier<StructureType<GreatTreeStructure>> GREAT_TREE = TYPES.register("great_spirit_tree", () -> () -> GreatTreeStructure.CODEC);
+    public static final Supplier<StructurePieceType> GREAT_TREE_PIECE = PIECES.register("great_spirit_tree", () -> (StructurePieceType.ContextlessType) GreatTreePiece::new);
     public static final Supplier<StructureType<GladesOutpostStructure>> OUTPOST=TYPES.register("glades_outpost",()->()->GladesOutpostStructure.CODEC);
     public static final Supplier<StructurePieceType> OUTPOST_PIECE=PIECES.register("glades_outpost",()->(StructurePieceType.StructureTemplateType)GladesOutpostPiece::new);
     public static final Supplier<StructureType<RuinStructure>> RUIN = TYPES.register("ruin", () -> () -> RuinStructure.CODEC);
@@ -27,6 +31,6 @@ public final class OriWorldgen {
             DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, OriMod.MOD_ID);
     public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<CaveEntranceProcessor>> CAVE_ENTRANCE =
             PROCESSORS.register("cave_entrance", () -> () -> CaveEntranceProcessor.CODEC);
-    public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); PROCESSORS.register(bus); }
+    public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); PROCESSORS.register(bus); PLACEMENTS.register(bus); }
     private OriWorldgen() {}
 }

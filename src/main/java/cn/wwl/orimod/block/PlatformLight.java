@@ -74,7 +74,7 @@ public final class PlatformLight {
         for(var p:GloomTideDefense.lightSources(level,center,Source.TREE.radius)) {
             if(p.equals(excluded) || !loaded(level,p))continue;
             var state=level.getBlockState(p);double distance=p.distSqr(pos);
-            if(state.is(OriBlocks.SPIRIT_TREE_HEART) && within(Source.TREE,distance))until=Math.max(until,now+HOLD);
+            if((state.is(OriBlocks.SPIRIT_TREE_HEART)||state.is(OriBlocks.GREAT_TREE_HEART)) && within(Source.TREE,distance))until=Math.max(until,now+HOLD);
             if(state.is(OriBlocks.BASH_ANCHOR) && state.getValue(SpiritLanternBlock.LIT) && within(Source.LANTERN,distance)) {
                 var ticks=(LevelChunkTicks<Block>)level.getChunkSource().getChunkNow(p.getX()>>4,p.getZ()>>4).getBlockTicks();
                 long expiry=ticks.getAll().filter(t->t.type()==state.getBlock() && t.pos().equals(p))
