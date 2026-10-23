@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 
 /** R70: the storm altar at the far end of the forest spring ruin; an awakened player calls the Gloom Matriarch down. */
-public final class StormAltarBlock extends Block {
+public final class StormAltarBlock extends SanctuaryBlock {
     public StormAltarBlock(Properties properties) { super(properties); }
 
     public static GloomMatriarch awake(ServerLevel level, BlockPos pos) {
@@ -36,6 +36,7 @@ public final class StormAltarBlock extends Block {
         boss.setHome(pos);
         boss.moveTo(pos.getX() + .5, pos.getY() + GloomMatriarch.hover(1) + 4, pos.getZ() + .5, 0, 0);
         level.addFreshEntity(boss);
+        SanctuaryBlockEntity.activate(level, pos);
         level.playSound(null, pos, SoundEvents.PHANTOM_DEATH, SoundSource.HOSTILE, 1.5f, .4f);
         cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.FORM_SWITCH, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, null);
         player.displayClientMessage(Component.translatable("message.orimod.matriarch.woke"), true);

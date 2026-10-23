@@ -147,6 +147,11 @@ public final class DevelopmentBridge {
         }
     }
 
+    private static Map<String,Object> sanctuaryState(net.minecraft.world.level.block.entity.BlockEntity entity) {
+        if (!(entity instanceof cn.wwl.orimod.block.SanctuaryBlockEntity b)) return Map.of("present",false);
+        return Map.of("present",true,"phase",b.phase().name(),"activated",b.activated());
+    }
+
     private Map<String, Object> action(JsonObject action) throws Exception {
         var mc = Minecraft.getInstance();
         String operation = action.get("op").getAsString();
@@ -214,6 +219,7 @@ public final class DevelopmentBridge {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var playerId = mc.player.getUUID();
                 var pos = new net.minecraft.core.BlockPos(action.get("x").getAsInt(), action.get("y").getAsInt(), action.get("z").getAsInt());
+                var clientSanctuary = sanctuaryState(mc.level.getBlockEntity(pos));
                 return mc.getSingleplayerServer().submit(() -> {
                     var player = mc.getSingleplayerServer().getPlayerList().getPlayer(playerId);
                     var block = player.level().getBlockState(pos);
@@ -222,7 +228,8 @@ public final class DevelopmentBridge {
                             "fullBlock", block.isCollisionShapeFullBlock(player.level(), pos),
                             "collisionEmpty", block.getCollisionShape(player.level(), pos).isEmpty(),
                             "shape", block.getCollisionShape(player.level(), pos).toAabbs().stream().map(Object::toString).toList(),
-                            "foliage", block.is(net.minecraft.tags.BlockTags.LEAVES) || block.is(net.minecraft.tags.BlockTags.LOGS));
+                            "foliage", block.is(net.minecraft.tags.BlockTags.LEAVES) || block.is(net.minecraft.tags.BlockTags.LOGS),
+                            "sanctuary", sanctuaryState(player.level().getBlockEntity(pos)), "clientSanctuary", clientSanctuary);
                 }).get(5, TimeUnit.SECONDS);
             }
             case "key" -> {

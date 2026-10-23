@@ -30,6 +30,7 @@
     "GloomTideSkyMixin",
     "RestorationKeyboardMixin",
     "RestorationLeavesMixin",
+    "KeystoneOpeningMixin",
     "RestorationMouseMixin",
     "SpiritAnimationDamageMixin",
     "SpiritAnimationDropMixin",

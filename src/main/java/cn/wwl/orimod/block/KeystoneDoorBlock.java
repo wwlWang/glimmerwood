@@ -28,7 +28,7 @@ import java.util.List;
  * R57 keystone door (after Ori's keystone doors): a sealed ruin wall that opens once {@link #REQUIRED} keystones
  * are set into it. Every connected door block shows the shared progress; the whole door dissolves when it opens.
  */
-public final class KeystoneDoorBlock extends Block {
+public final class KeystoneDoorBlock extends SanctuaryBlock {
     public static final int REQUIRED = 2, MAX_SIZE = 32;
     public static final IntegerProperty FILLED = IntegerProperty.create("filled", 0, REQUIRED - 1);
 
@@ -42,6 +42,7 @@ public final class KeystoneDoorBlock extends Block {
         queue.add(start.immutable()); seen.add(start.immutable());
         while (!queue.isEmpty() && out.size() < MAX_SIZE) {
             var pos = queue.poll();
+            if (!level.hasChunkAt(pos)) continue;
             if (!(level.getBlockState(pos).getBlock() instanceof KeystoneDoorBlock)) continue;
             out.add(pos);
             for (var d : Direction.values()) { var next = pos.relative(d); if (seen.add(next)) queue.add(next); }

@@ -1,5 +1,20 @@
 # 开发与验收工具
 
+## R115 A 建筑模型与旧档升级
+
+灵泉、三种遗迹神龛、两座首领祭坛、地图石、钥石门保留原注册 ID / 原碰撞 / 原交互。`SanctuaryBlock` 提供共享 BE；`SanctuaryMigration` 在区块加载时先用 section palette `maybeHas` 预筛，只对含核心的区段补缺失 BE，不查询邻区块。服务端在发区块包前补建，客户端加载/重同步也能补建；`getUpdateTag` 和更新包同步地图石与祭坛的外观状态。旧档已领取奖励仍以原 rewards 为准，旧地图石的外观首次再次使用后点亮，不推测历史回执。
+
+`SanctuaryRenderer` 用原生实体缓冲绘制静态 GLB 三角形：石材吃世界光，水面/铭文单独自发光，支持无 Flywheel 可视化时显示；资源加载期间回退旧方块模型。覆盖完整体量的 `getRenderBoundingBox` 防止只按核心一格裁剪。额外盆沿/拱/悬浮核心无碰撞。祭坛核心同层有至少三个坚固邻格时，视为旧式埋地核心，视觉基座上移一格并同步扩大渲染 AABB；不改核心坐标或地形。钥石门两面均有共享进度的钥石槽（旧门无朝向属性），按原连通门洞合成圆门，第二次插钥石仍当 tick 变空气；客户端从方块更新前快照播放 24 tick 收拢消散，最多 32 个，离线清空，不引入延迟碰撞或新协议。
+
+原创源：`scripts/art/build_sanctuaries.py` → `art/source/sanctuaries/v002/`（12 份 .blend / GLB / PBR 贴图、manifest），打包到 `models/sanctuary` 和 `textures/sanctuary`。生成：`~/.local/opt/blender/blender -b --factory-startup --python scripts/art/build_sanctuaries.py -- --version v002`；校验：`python3 scripts/check-sanctuaries.py`（只读，检查源与包字节、SHA、单 UV、nearest 采样、512×64 纹理、纹理引用与节点变换）。与全部图形命令一样使用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0`。
+
+石材使用模型米制坐标投影到 8 个 64×64 材质区，约 16 texel/格；单位门模型预补偿常用 2×2 门洞缩放。林泉为带苔点的绿灰石，溪谷为蓝灰石，洞穴为深板岩色，含像素石粒、错缝和暗刻槽；水面/铭文/核心材质保持原颜色与发光。根拱基部半径 0.27（原 0.18），顶部升高 0.5，整体最高 2.79 格。v001 源保留为首轮外观参照，当前打包/校验使用 v002。
+
+Devtools `inspect_block` 新增 `sanctuary` / `clientSanctuary`，各含 present、phase、activated，便于核对区块重同步。`scripts/capture-sanctuaries.py <新目录名> gallery|legacy|insitu` 连接客户端；gallery 在 (6400,150,6400) 建展示台，legacy 读取 R114 自然世界的副本，仅使用原神龛与驿站，不重新放置遗迹模板；insitu 拍摄原自然遗迹中的地图石/两座祭坛及洞穴门，门会被真实插钥石打开，需使用未开过的测试存档副本。所有实拍结束后撤销 forceload、leave_world、quit，再运行 Gradle。
+
+本阶段小树显示名为“先祖之树 / Ancestral Tree”，ID、命令和奖励键未改。B 尚未实现，因此复苏仪式暂时仍可在原树心使用；不会在 A 提前移除唯一结局入口。
+
+
 ## R113 恢复与技能轮盘
 
 G轻按松开开原能力/碎片面板；按住250ms开技能轮盘，鼠标或滚轮选择，再按Z/X/H绑定。松G直接关闭。三个槽继承原光爆/蓄力灵焰/灵闪的按键配置，Controls中改名“技能槽1/2/3”；移动能力与武器不进轮盘。打开菜单会取消未完成引导，绑定时按住的技能键要松开重按才会施法。

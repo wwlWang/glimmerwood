@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 
 /** R50: the gloom altar in the cave altar ruin. An awakened player wakes the Gloom Heart here (one at a time). */
-public final class GloomAltarBlock extends Block {
+public final class GloomAltarBlock extends SanctuaryBlock {
     public GloomAltarBlock(Properties properties) { super(properties); }
 
     public static GloomHeart awake(ServerLevel level, BlockPos pos) {
@@ -37,6 +37,7 @@ public final class GloomAltarBlock extends Block {
         heart.setHome(pos);
         heart.moveTo(pos.getX() + .5, pos.getY() + GloomHeart.HOVER, pos.getZ() + .5, 0, 0);
         level.addFreshEntity(heart);
+        SanctuaryBlockEntity.activate(level, pos);
         level.playSound(null, pos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, .7f, 1.6f);
         cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, null);
         player.displayClientMessage(Component.translatable("message.orimod.altar_woke"), true);

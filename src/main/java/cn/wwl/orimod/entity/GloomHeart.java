@@ -231,6 +231,7 @@ public final class GloomHeart extends Monster {
 
     @Override public void die(DamageSource source) {
         super.die(source);
+        if (!level().isClientSide) cn.wwl.orimod.block.SanctuaryBlockEntity.victory(level(), home());
         if (level() instanceof ServerLevel server) {
             cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, getX(), getY(), getZ(), null);
             cn.wwl.orimod.block.GloomWaterBlock.cleanse(server, home(), (int) ARENA);   // R61

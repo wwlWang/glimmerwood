@@ -1,5 +1,25 @@
 # 回归测试
 
+## R115 A 核心建筑化
+
+全量 `build runGameTestServer compileDevtoolsJava`：**1414 JUnit / 826 GameTest，0 失败/错误/跳过**（基线 1410/814）。新增 4 个门洞几何单测、12 个 GameTest：八种旧核心无 BE 的升级与幂等、原碰撞/无邻格写入、存档与客户端 tag、两种首领实际召唤/死亡外观、插钥匙共享进度与立即变空气。原遗迹路线、桥、秘室测试原样通过；本轮没有改 NBT 或 layout。`evidence/r115-a/full-2.log`、`gametest.xml`、`counts.json` 保存证据；full-1 为新增夹具调用了不存在的 Shapes.equal 的编译错误，已换为原版形状差集比较，没有修改任何旧断言。首次 compile.log 另记录方法引用类型推断/缺失 import 两处已修正编译错误。
+
+`check-ruins.py` 默认只读模式通过，17 文件、written=0；`test_check_ruins.py` 12 tests OK。`check-sanctuaries.py` 核对 12 套原创 .blend/GLB/PBR 包装、SHA、单 UV 与资源映射。初次美术实拍发现 Blender 默认 UV 层优先于 palette，水面误采多色：生成前清除原 UV，仅导出 palette；现加入 TEXCOORD_1 拒绝检查，v003 图仅作为故障证据，不能用于外观验收。
+
+旧档验证使用 R114 `orimod_dev_r114natural` 的独立副本（`legacy-copy.json`），原存档不打开。离线读取原区块 NBT：forest (102,74,-166)、creek (205,80,-268)、cave (-529,52,606)、outpost (-285,113,31) 均有原方块、没有对应 BE。实机中三种神龛仍打开 RuinScreen，灵泉仍打开 WellScreen；`inspect_block.sanctuary/clientSanctuary` 记录两端状态，离开 500 格再返回检验 chunk resync。独立展示场以实际 useItemOn 交互驱动地图石、两种祭坛三态、两次插钥石，不用直接修改 BE tag。
+
+客户端使用 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0`；日志确认 llvmpipe / GL 4.6，Sodium 开启。前两次采样分别因脚本世界名未带 orimod_dev 前缀、初次远处区块生成超出 DevClient 等待而中断，均保留日志；确认状态后才重启采样，未把命令 timeout 当作业务失败。
+
+最终模型实拍：`evidence/r115-a-gallery-v005/`（七种独立核心日夜、地图石激活、祭坛三态、两槽钥石门与开启帧序列）；旧档实拍：`evidence/r115-a-legacy-v003/`（原安全落脚点视角、三座自然遗迹与旧驿站、交互与重同步数据）。`legacy-v001` 的森林镜头被前景石墙遮挡，仅保留中间诊断；legacy-v002 采样进程收到 SIGTERM（143）未完成，验收使用已完整结束的 v003。美术细节最终补齐羽环羽轴/叶片和圆门贴内圈门扇，没有改动玩法。 旧森林神龛位于窄台边缘，新视觉底座有悬出部分；不自动铺地、不增加碰撞，外观是否接受待审查。真实多人和第三方光影包未实测。已清 forceload、leave_world、quit，客户端正常退出。
+
+### A 外观修订（v006）
+
+首轮功能验收通过后，仅改建筑美术、客户端适配与拍摄脚本。`art/source/sanctuaries/v002/` 用 512×64 的单 UV 材质图集：石材面约 16 texel/格、nearest，常用 2×2 圆门预补偿单位模型缩放；林泉加苔点，石材有颗粒/刻槽，12 套发光配色与 v001 逐项相等（`review-emission-check.json`）。根拱基部 0.18→0.27，顶点 +0.5 格，模型最高 2.79；原碰撞不变。首次生成的门 UV 边界断言暴露单位门顶面偏移超出 tile，调整映射偏移后校验通过（`art-v002-build.log` / `art-v002-final.log`）。
+
+真实遗迹补拍暴露了两处展示场看不到的视觉适配：旧门没有朝向状态，从洞穴走廊看到背面，原先无槽；现两面同样显示两槽与共享进度。原腐光祭坛核心在地板层，底座被地板遮挡；现同层至少三个坚固邻格时仅视觉上移一格，AABB 同步扩展。没有地形/碰撞/交互或服务端逻辑变更。`build compileDevtoolsJava` 及 1414 JUnit 重新通过（`review-final-build.log`）；826 GameTest 沿用已验收的上一轮全绿，本次纯视觉修订不重复运行。
+
+最终目录：`evidence/r115-a-gallery-v006/` 和 `evidence/r115-a-insitu-v006/`。实景使用原 R114 自然世界的另一份未开门副本 `orimod_dev_r115site`（`insitu-copy.json`），不会重放模板。`*-prefit-v006` 保留适配前/机位被挡图；首次重拍因 DevClient 同名原始截图拒绝覆盖而停止，归档原始图片后重拍，未把它计作产品测试失败。
+
 ## R114 P1/P2（最终全量与客户端审查通过）
 
 最终 `build runGameTestServer compileDevtoolsJava`：**1410 JUnit / 814 GameTest，0失败/错误/跳过**；证据 `evidence/r114-p1/full-tests-10.log/xml`、`full-10-counts.json`、`final-10-junit/`。新增坡地防外溢用例已过，旧陡坡测试按总落差规则改为7格。JUnit比前轮少1是Claude删除弓弦第二只手的专属测试；其运行时代码与手部出口重载也已删除。下文保留中间失败及调查，不以最终全绿冒充原超时根因已证实。

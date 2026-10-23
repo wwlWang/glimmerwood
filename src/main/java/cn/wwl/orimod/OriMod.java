@@ -45,6 +45,7 @@ public final class OriMod {
         cn.wwl.orimod.block.OriFluids.register(modEventBus);
         cn.wwl.orimod.block.OriBlocks.register(modEventBus);
         cn.wwl.orimod.block.OriBlockEntities.register(modEventBus);
+        bus.addListener(cn.wwl.orimod.block.SanctuaryMigration::load);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.block.BlightInteractions::projectile);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::login);

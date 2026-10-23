@@ -17,6 +17,10 @@ public final class OriModClient {
         modEventBus.addListener(OriModClient::configReloaded);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritHud::hideVanilla);
         modEventBus.addListener(SpiritHud::register);
+        modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
+                e.registerBlockEntityRenderer(cn.wwl.orimod.block.OriBlockEntities.SANCTUARY.get(), cn.wwl.orimod.client.render.SanctuaryRenderer::new));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.DoorOpening::render);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.DoorOpening::logout);
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> e.registerEntityRenderer(cn.wwl.orimod.world.OriEntities.RECOVERY_ORB.get(), RecoveryOrbRenderer::new));
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritScreenFeedback::registerLayers);
         modEventBus.addListener(cn.wwl.orimod.client.fx.SpiritFxResources::register);

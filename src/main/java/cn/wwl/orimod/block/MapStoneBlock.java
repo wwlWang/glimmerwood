@@ -19,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
  * (cells this player has not taken, keystones still resting, whether a gloom altar sleeps here), grants a little
  * Spirit Light the first time and points the ruin guide at the next ruin.
  */
-public final class MapStoneBlock extends Block {
+public final class MapStoneBlock extends SanctuaryBlock {
     public static final int SURVEY_RADIUS = 28, FIRST_LIGHT = 10;
 
     public MapStoneBlock(Properties properties) { super(properties); }
@@ -46,6 +46,7 @@ public final class MapStoneBlock extends Block {
     public static Survey activate(ServerPlayer player, BlockPos pos) {
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.map_stone.dormant"), true); return null; }
         var survey = survey(player, pos);
+        SanctuaryBlockEntity.activate(player.level(), pos);
         if (cn.wwl.orimod.progression.SpiritProgression.reward(player, key(player.level(), pos), FIRST_LIGHT, 0)) {
             player.level().playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1, .8f);
             var fragment = new net.minecraft.world.item.ItemStack(cn.wwl.orimod.item.OriItems.MAP_FRAGMENT.get());   // R68

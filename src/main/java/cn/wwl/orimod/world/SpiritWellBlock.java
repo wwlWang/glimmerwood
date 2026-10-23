@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.BlockHitResult;
 
 /** Shared R41 well facing and travel identity. Ruin shrines override interaction to retain their challenge panel. */
-public class SpiritWellBlock extends Block {
+public class SpiritWellBlock extends cn.wwl.orimod.block.SanctuaryBlock {
     public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
     public SpiritWellBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH));}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING);}

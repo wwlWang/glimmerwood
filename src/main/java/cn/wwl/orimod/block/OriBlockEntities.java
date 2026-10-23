@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 public final class OriBlockEntities {
     private static final DeferredRegister<BlockEntityType<?>> TYPES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,OriMod.MOD_ID);
     public static final Supplier<BlockEntityType<GloomCoreBlockEntity>> GLOOM_CORE=TYPES.register("gloom_core",()->BlockEntityType.Builder.of(GloomCoreBlockEntity::new,OriBlocks.GLOOM_CORE.get()).build(null));
+    public static final Supplier<BlockEntityType<SanctuaryBlockEntity>> SANCTUARY=TYPES.register("sanctuary",()->BlockEntityType.Builder.of(SanctuaryBlockEntity::new,
+            OriBlocks.GLADES_WELL.get(), OriBlocks.FOREST_SHRINE.get(), OriBlocks.CREEK_SHRINE.get(), OriBlocks.CAVE_SHRINE.get(),
+            OriBlocks.GLOOM_ALTAR.get(), OriBlocks.STORM_ALTAR.get(), OriBlocks.MAP_STONE.get(), OriBlocks.KEYSTONE_DOOR.get()).build(null));
     public static void register(IEventBus bus){TYPES.register(bus);}
     private OriBlockEntities(){}
 }

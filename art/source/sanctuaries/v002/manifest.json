@@ -1,0 +1,499 @@
+{
+  "version": "v002",
+  "generator": "scripts/art/build_sanctuaries.py",
+  "coordinates": "metres, glTF Y up; bases at 0; floating components at pivot",
+  "assets": [
+    {
+      "name": "basin_well",
+      "theme": "well",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 2376,
+      "bounds_blender": [
+        [
+          -1.4887052774429321,
+          -1.4162096977233887,
+          0.0
+        ],
+        [
+          1.4887052774429321,
+          1.4162096977233887,
+          2.7923901081085205
+        ]
+      ],
+      "files": {
+        "basin_well.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/basin_well.glb",
+          "sha256": "4cfe07bb4166057afade12b1f651c57962a3957a03975e0c1d9850f2320c3029"
+        },
+        "basin_well_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_well_base.png",
+          "sha256": "b643de7053a6a286c81cd338e2aed39510aaeb813f0efc70347e2f1838f99cb8"
+        },
+        "basin_well_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_well_emission.png",
+          "sha256": "4c685a051e07d4762dc8d8edfb9e4eade278178bc484036e486131062c077c08"
+        },
+        "basin_well_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_well_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "basin_forest",
+      "theme": "forest",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 2376,
+      "bounds_blender": [
+        [
+          -1.4887052774429321,
+          -1.4162096977233887,
+          0.0
+        ],
+        [
+          1.4887052774429321,
+          1.4162096977233887,
+          2.7923901081085205
+        ]
+      ],
+      "files": {
+        "basin_forest.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/basin_forest.glb",
+          "sha256": "4f4936bc185b2218430aa78720b6e14048478a9bc98b1a1df590a52dea3412de"
+        },
+        "basin_forest_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_forest_base.png",
+          "sha256": "5e282a8ceb0084ce821da3e3a2f373c18f1ca12387266fd0cf2c9e382798906e"
+        },
+        "basin_forest_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_forest_emission.png",
+          "sha256": "6f53d41f499c5664d0210384ce3ec129dba4fa0a7ae8d1c5e5a4f6e0ac7bacc5"
+        },
+        "basin_forest_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_forest_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "basin_creek",
+      "theme": "creek",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 2376,
+      "bounds_blender": [
+        [
+          -1.4887052774429321,
+          -1.4162096977233887,
+          0.0
+        ],
+        [
+          1.4887052774429321,
+          1.4162096977233887,
+          2.7923901081085205
+        ]
+      ],
+      "files": {
+        "basin_creek.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/basin_creek.glb",
+          "sha256": "4d976633962822469b466622afed04f99923be8ca3ac7f7e54f1ad942df7c0a6"
+        },
+        "basin_creek_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_creek_base.png",
+          "sha256": "f6ab30d5500fe0e4016f4ac7cd61bf37fa7bb63826c45897e0610a58bc3fa1e2"
+        },
+        "basin_creek_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_creek_emission.png",
+          "sha256": "aba8bfb319f0d98246c2fa2c209947625d155fbe2e85faf0fa3423fc4e1e7158"
+        },
+        "basin_creek_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_creek_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "basin_cave",
+      "theme": "cave",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 2376,
+      "bounds_blender": [
+        [
+          -1.4887052774429321,
+          -1.4162096977233887,
+          0.0
+        ],
+        [
+          1.4887052774429321,
+          1.4162096977233887,
+          2.7923901081085205
+        ]
+      ],
+      "files": {
+        "basin_cave.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/basin_cave.glb",
+          "sha256": "8e6aa88f6556a07a48010166a84d22ca24d0b6e0f0a93234b2dc90aeb2407b8c"
+        },
+        "basin_cave_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_cave_base.png",
+          "sha256": "5de15d816f865abda15053d01a3a20201a2dc6e1aab4a955be235a42db2f009c"
+        },
+        "basin_cave_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_cave_emission.png",
+          "sha256": "fa7a4bb7c92b2e5fffa190baecf7f2dd228f6515fa39547e1c1349e0e036639c"
+        },
+        "basin_cave_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/basin_cave_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "altar_storm",
+      "theme": "creek",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 992,
+      "bounds_blender": [
+        [
+          -1.2343957424163818,
+          -1.2343957424163818,
+          0.0
+        ],
+        [
+          1.2343957424163818,
+          1.2343957424163818,
+          1.5447161197662354
+        ]
+      ],
+      "files": {
+        "altar_storm.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/altar_storm.glb",
+          "sha256": "96f4ed96a1b2c1f03969fbaf9948b8523f2c75724eaeb690cfcf7a88aa8023ec"
+        },
+        "altar_storm_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_storm_base.png",
+          "sha256": "f6ab30d5500fe0e4016f4ac7cd61bf37fa7bb63826c45897e0610a58bc3fa1e2"
+        },
+        "altar_storm_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_storm_emission.png",
+          "sha256": "aba8bfb319f0d98246c2fa2c209947625d155fbe2e85faf0fa3423fc4e1e7158"
+        },
+        "altar_storm_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_storm_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "altar_gloom",
+      "theme": "cave",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 992,
+      "bounds_blender": [
+        [
+          -1.2343957424163818,
+          -1.2343957424163818,
+          0.0
+        ],
+        [
+          1.2343957424163818,
+          1.2343957424163818,
+          1.5447161197662354
+        ]
+      ],
+      "files": {
+        "altar_gloom.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/altar_gloom.glb",
+          "sha256": "3ae13bd00b61c6d4bb5415636187d7b564f63d3bc54db1c3f7a1da1423925760"
+        },
+        "altar_gloom_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_gloom_base.png",
+          "sha256": "5de15d816f865abda15053d01a3a20201a2dc6e1aab4a955be235a42db2f009c"
+        },
+        "altar_gloom_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_gloom_emission.png",
+          "sha256": "fa7a4bb7c92b2e5fffa190baecf7f2dd228f6515fa39547e1c1349e0e036639c"
+        },
+        "altar_gloom_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/altar_gloom_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "storm_ring",
+      "theme": "creek",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 722,
+      "bounds_blender": [
+        [
+          -0.8120049834251404,
+          -0.8120049834251404,
+          -0.17000000178813934
+        ],
+        [
+          0.8120049834251404,
+          0.8120049834251404,
+          0.17000000178813934
+        ]
+      ],
+      "files": {
+        "storm_ring.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/storm_ring.glb",
+          "sha256": "a7fc108e1229b68c5ad24ab212277bd12b4e7545ec17e53be6b97d08964e05d8"
+        },
+        "storm_ring_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/storm_ring_base.png",
+          "sha256": "f6ab30d5500fe0e4016f4ac7cd61bf37fa7bb63826c45897e0610a58bc3fa1e2"
+        },
+        "storm_ring_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/storm_ring_emission.png",
+          "sha256": "aba8bfb319f0d98246c2fa2c209947625d155fbe2e85faf0fa3423fc4e1e7158"
+        },
+        "storm_ring_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/storm_ring_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "gloom_crystal",
+      "theme": "cave",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 84,
+      "bounds_blender": [
+        [
+          -0.43416374921798706,
+          -0.2709793448448181,
+          -0.6700000166893005
+        ],
+        [
+          0.37269753217697144,
+          0.21265999972820282,
+          0.6700000166893005
+        ]
+      ],
+      "files": {
+        "gloom_crystal.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/gloom_crystal.glb",
+          "sha256": "63218fc65f2e1c38c58cb0bcc6f40a02e82b67f66bea89f4f4ee1af2c7e0cf4b"
+        },
+        "gloom_crystal_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/gloom_crystal_base.png",
+          "sha256": "5de15d816f865abda15053d01a3a20201a2dc6e1aab4a955be235a42db2f009c"
+        },
+        "gloom_crystal_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/gloom_crystal_emission.png",
+          "sha256": "fa7a4bb7c92b2e5fffa190baecf7f2dd228f6515fa39547e1c1349e0e036639c"
+        },
+        "gloom_crystal_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/gloom_crystal_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "map_pillar",
+      "theme": "well",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 664,
+      "bounds_blender": [
+        [
+          -0.6043957471847534,
+          -0.6043957471847534,
+          0.0
+        ],
+        [
+          0.6043957471847534,
+          0.6043957471847534,
+          1.7200000286102295
+        ]
+      ],
+      "files": {
+        "map_pillar.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/map_pillar.glb",
+          "sha256": "d1301bc0800526f3a5551eea3890922559cfbbb58255e2eea386f28b606fee6a"
+        },
+        "map_pillar_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_pillar_base.png",
+          "sha256": "b643de7053a6a286c81cd338e2aed39510aaeb813f0efc70347e2f1838f99cb8"
+        },
+        "map_pillar_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_pillar_emission.png",
+          "sha256": "4c685a051e07d4762dc8d8edfb9e4eade278178bc484036e486131062c077c08"
+        },
+        "map_pillar_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_pillar_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "map_disc",
+      "theme": "well",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 1356,
+      "bounds_blender": [
+        [
+          -0.6920000314712524,
+          -0.6920000314712524,
+          -0.03500000014901161
+        ],
+        [
+          0.6919529438018799,
+          0.6920000314712524,
+          0.1550000011920929
+        ]
+      ],
+      "files": {
+        "map_disc.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/map_disc.glb",
+          "sha256": "f7fc99d860dda8392554dc6ee279bdc7ab3be716515841db2870c15c853a4114"
+        },
+        "map_disc_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_disc_base.png",
+          "sha256": "b643de7053a6a286c81cd338e2aed39510aaeb813f0efc70347e2f1838f99cb8"
+        },
+        "map_disc_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_disc_emission.png",
+          "sha256": "4c685a051e07d4762dc8d8edfb9e4eade278178bc484036e486131062c077c08"
+        },
+        "map_disc_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/map_disc_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "keystone_gate",
+      "theme": "creek",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": 2,
+      "vertices": 1436,
+      "bounds_blender": [
+        [
+          -0.5112940073013306,
+          -0.1599999964237213,
+          -0.011294066905975342
+        ],
+        [
+          0.5112940073013306,
+          0.2199999988079071,
+          1.011293888092041
+        ]
+      ],
+      "files": {
+        "keystone_gate.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/keystone_gate.glb",
+          "sha256": "572aad6bfe9b8198c1a254bb6ab30e2a7f610c9d3297ab282ce660a574e43567"
+        },
+        "keystone_gate_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_gate_base.png",
+          "sha256": "f6ab30d5500fe0e4016f4ac7cd61bf37fa7bb63826c45897e0610a58bc3fa1e2"
+        },
+        "keystone_gate_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_gate_emission.png",
+          "sha256": "aba8bfb319f0d98246c2fa2c209947625d155fbe2e85faf0fa3423fc4e1e7158"
+        },
+        "keystone_gate_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_gate_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    },
+    {
+      "name": "keystone_inset",
+      "theme": "creek",
+      "texture_size": [
+        512,
+        64
+      ],
+      "texels_per_block": 16,
+      "door_reference_size": null,
+      "vertices": 56,
+      "bounds_blender": [
+        [
+          -0.05009269714355469,
+          -0.02250000089406967,
+          -0.06642074882984161
+        ],
+        [
+          0.05009269714355469,
+          0.02250000089406967,
+          0.06642074882984161
+        ]
+      ],
+      "files": {
+        "keystone_inset.glb": {
+          "package": "src/main/resources/assets/orimod/models/sanctuary/keystone_inset.glb",
+          "sha256": "fac2b773963fd71940d9ef27f4ae3446dfc2b7755861f2a040e69cdfad6eb38b"
+        },
+        "keystone_inset_base.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_inset_base.png",
+          "sha256": "f6ab30d5500fe0e4016f4ac7cd61bf37fa7bb63826c45897e0610a58bc3fa1e2"
+        },
+        "keystone_inset_emission.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_inset_emission.png",
+          "sha256": "aba8bfb319f0d98246c2fa2c209947625d155fbe2e85faf0fa3423fc4e1e7158"
+        },
+        "keystone_inset_surface.png": {
+          "package": "src/main/resources/assets/orimod/textures/sanctuary/keystone_inset_surface.png",
+          "sha256": "c488d401aa673a2b42fd19cbd1cc1a426ba624b58863c787d5b77b3aa9a7127f"
+        }
+      }
+    }
+  ]
+}
