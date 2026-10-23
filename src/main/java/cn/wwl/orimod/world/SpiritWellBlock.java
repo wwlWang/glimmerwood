@@ -22,7 +22,7 @@ public class SpiritWellBlock extends cn.wwl.orimod.block.SanctuaryBlock {
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player p,BlockHitResult hit){
         if(p instanceof ServerPlayer player && SpiritData.isAwakened(player)){
             SpiritProgression.reward(player,"discover/"+ChallengeSession.key(level.dimension(),pos),0,0);
-            SpiritWell.refill(player); SpiritWell.open(player,pos);
+            SpiritWell.refill(player); GinsoCourse.checkpoint(player,pos); SpiritWell.open(player,pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

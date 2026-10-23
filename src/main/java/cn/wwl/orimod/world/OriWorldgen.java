@@ -17,6 +17,8 @@ public final class OriWorldgen {
     private static final DeferredRegister<StructurePieceType> PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, OriMod.MOD_ID);
     private static final DeferredRegister<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<?>> PLACEMENTS = DeferredRegister.create(Registries.STRUCTURE_PLACEMENT, OriMod.MOD_ID);
     public static final Supplier<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<GreatTreePlacement>> GREAT_TREE_PLACEMENT = PLACEMENTS.register("great_tree", () -> () -> GreatTreePlacement.CODEC);
+    public static final Supplier<StructureType<GinsoStructure>> GINSO_TREE = TYPES.register("ginso_tree", () -> () -> GinsoStructure.CODEC);
+    public static final Supplier<StructurePieceType> GINSO_PIECE = PIECES.register("ginso_tree", () -> (StructurePieceType.ContextlessType) GinsoPiece::new);
     public static final Supplier<StructureType<GreatTreeStructure>> GREAT_TREE = TYPES.register("great_spirit_tree", () -> () -> GreatTreeStructure.CODEC);
     public static final Supplier<StructurePieceType> GREAT_TREE_PIECE = PIECES.register("great_spirit_tree", () -> (StructurePieceType.ContextlessType) GreatTreePiece::new);
     public static final Supplier<StructureType<GladesOutpostStructure>> OUTPOST=TYPES.register("glades_outpost",()->()->GladesOutpostStructure.CODEC);

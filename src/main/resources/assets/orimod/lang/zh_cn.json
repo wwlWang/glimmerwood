@@ -486,5 +486,19 @@
   "guide.orimod.target.great_spirit_tree": "大灵树",
   "message.orimod.great_tree.guide": "地图已指向大灵树的根部入口。",
   "message.orimod.great_tree.map_tip": "潜行使用地图石，可指引大灵树。",
-  "block.orimod.great_spirit_root": "灵树内根"
+  "block.orimod.great_spirit_root": "灵树内根",
+  "structure.orimod.ginso_tree": "金索树",
+  "block.orimod.ginso_wood": "湿润金索木",
+  "block.orimod.ginso_leaves": "金索树叶",
+  "block.orimod.ginso_vine": "垂挂金索苔",
+  "block.orimod.ginso_fungus": "金索荧菌",
+  "hint.orimod.ginso_wall": "萤：贴墙蹬跳上去；学过攀爬也能直上。",
+  "hint.orimod.ginso_bash": "萤：借灵灯向上猛击，落在对面的根台。",
+  "hint.orimod.ginso_bash_locked": "萤：这里需要猛击。先回去学会它吧。",
+  "hint.orimod.ginso_grapple": "萤：对准上面的花，用抓钩拉上去。",
+  "hint.orimod.ginso_grapple_locked": "萤：这里需要抓钩。沿根台退回入口吧。",
+  "hint.orimod.ginso_wind": "萤：在风口上展开羽毛，升起后移向根台。",
+  "hint.orimod.ginso_wind_locked": "萤：先学会滑翔，才能乘这股灵风。",
+  "hint.orimod.ginso_jump": "萤：跳到最高处再跳一次，就能越过高台。",
+  "message.orimod.ginso.checkpoint": "金索树检查点已绑定；复活时返回这座灵泉。"
 }

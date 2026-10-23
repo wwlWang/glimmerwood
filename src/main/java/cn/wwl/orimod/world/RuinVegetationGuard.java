@@ -29,7 +29,7 @@ public final class RuinVegetationGuard {
                 // saved bounds are immutable here; no block, heightmap or neighbor feature is read.
                 var chunk = region.getChunk(x, z, ChunkStatus.STRUCTURE_STARTS);
                 for (var start : chunk.getAllStarts().values())
-                    if (start.isValid() && (start.getStructure() instanceof RuinStructure || start.getStructure() instanceof GladesOutpostStructure) && protects(start.getBoundingBox(), tree, margin)) return true;
+                    if (start.isValid() && (start.getStructure() instanceof RuinStructure || start.getStructure() instanceof GladesOutpostStructure || start.getStructure() instanceof GinsoStructure) && protects(start.getBoundingBox(), tree, margin)) return true;
             }
         return false;
     }

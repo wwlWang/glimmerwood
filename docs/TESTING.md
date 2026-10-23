@@ -1,5 +1,28 @@
 # 回归测试
 
+R115 C 课程检查点：最终 `build runGameTestServer compileDevtoolsJava` 为 **1457 JUnit / 841 GameTest，零失败/错误/跳过**（`evidence/r115-c-course-v001/full-04.log`、counts.json、gametest.xml）。`GinsoInteriorTest`覆盖交错承接层、基础跳跃/猛击余量、入口坡度/旋转、独立locked提示、检查点净空；`GinsoCourseGameTests`用自持/清理区块票的远场真实piece，覆盖四方向目标视线/范围、风柱、灵泉BE/魂链、旧NBT、只读结构引用；根阶双向按完整1.8格体型逐段扫掠。提示协议11覆盖10↔11拒绝。原遗迹路线/光桥/秘室断言未改。
+
+保留失败：full-02四方向`Landing blocked wind`证明降低楼层后净空不足；full-03四方向`Root stair headroom blocked`证明顶层护栏侵入转角。修布局，未放宽断言。实拍旧8格猛击段峰值余量仅约0.76格，已降低到6格，能力速度不改。全量后Java/模型SHA均不变，仅两条`ginso_grapple_locked`中英文提示改成沿根台返回入口，避免承诺尚未发现的灵泉目的地。见post-full04-changes.json。
+
+`evidence/r115-c-course-review-v001/`汇集成功分段录像（原v004/v006/v008及summary.json）。真实生存输入入口→五段→顶部根阶，无分段传送；控制器失误后的掉落/重试保留，不能当作一次无失误连跑。服务端增量为攀壁1次蹬墙（本次用已学Climb）、猛击1、抓钩完成1、灵风段滑翔2、末段跳跃2；两井有发现回执，最终玩家NBT魂链为(-424,137,-887)。未用这段录像证明未学Climb的替代爬法。`r115-c-course-gallery-v001/`含115118/河岸外景、五段内部日夜和河岸南入口真实步行；旁观者展示图与生存通关录像分开。
+
+llvmpipe/GL4.6、Sodium、DISPLAY=:0，无光影；已清强加载、离开世界并正常退出客户端（client-02.log）。本轮河岸切片(224,139)写2362格、29.30907ms，冷构建最高44.588088ms；worker耗时、UPDATE_CLIENTS无邻居更新，后续光照初始化不计入写入计时。数据见course-timings.json。`build_ginso_tree.py --check`44资产written=0，`git diff --check`通过。水心、逃生、水位复原、奖励和真实多人尚未进入本检查点覆盖。
+
+
+## R115 C 外形第二版
+
+`build runGameTestServer compileDevtoolsJava`：**1441 JUnit / 835 GameTest，0失败/错误/跳过**，`evidence/r115-c-shape-v002/full-01.log`、counts.json、gametest.xml；运行4m1s（包含区块保存等待）。新增64种子破冠与适量发光覆盖回归，以及菌架不阻路、普通树皮不发光、裂缝8/水滴4的GameTest；垂苔支撑允许新加的木叉滴流，原叶下悬挂约束保留。其余现有测试不改。
+
+旧版上部中央残留木块412–441，新版为0，64种子全部拒绝旧形状/通过新形状，证据chimney-regression.json。美术源v002，`--check`44资产written=0；截图使用另两个新存档、原种子与机位，避免旧chunk内仍保存第一版圆筒。最终拍摄前仅调整菌架的4个模型/纹理资源，避免底部发光圆环像符号；Java/世界生成/玩法与全绿版本相同，变更清单visual-retune-after-full01.json。截图v003保留为自检中间稿，最终使用v004。
+
+## R115 C 外形检查点
+
+最终`build runGameTestServer compileDevtoolsJava`为 **1440 JUnit / 834 GameTest，0失败/错误/跳过**，`evidence/r115-c-shape-v001/full-02.log`、`counts.json`、`gametest.xml`；包括启动阶段未发布大灵树址时拒绝金索候选的保护。新增6项JUnit：64种子竖井/入口/边界/垂苔，架空根/裸枝，不同分块访问一致，河岸占比/深度，双地标300格边界，数据密度/群系；2项GameTest：piece存档与实际写入clip、灵叶标签支撑新垂苔。原遗迹测试未改。初轮定向测试数据路径错误已按项目工作目录修正，compile-test-01保留；首轮全量full-01也全绿。
+
+自然生成实拍`r115-c-shape-capture-v001`使用两个新存档115117/115118，六次真实`/locate`都成功；分别加载最近起点验证木块存在，不以命令返回成功冒充树已生成。81候选noise探针加载块数957→957和961→961；各25网格点的密度推算与六次真实locate分开记录，不把有限窗口预测当全区域保证。完整原始记录及汇总见`evidence/r115-c-shape-v001/density-and-timing.json`。v001部分远景背景尚未出网格，v002重载原存档、延长等待后补同机位远景及自然河岸站点。llvmpipe/GL4.6、Sodium、DISPLAY=:0，无光影。
+
+最重实际写入切片为(-27,-56)，11337次写入、4.623022ms；首次纯Java形状构建29.556254ms（首次建立该树缓存，最多保留8种子），连同该空边角切片扫描为32.223788ms。时间在worldgen worker测量，不是服务端tick，也不包含后续光照初始化。UPDATE_CLIENTS=2无邻居更新；正常ProtoChunk后续光照阶段初始化。当前只审外形，不声称内部课程或涨水逃亡已通过。河岸补样最大写入3.09ms、冷构建8.66ms。v001/v002采样均passed，26张原始图；客户端已正常退出，shutdown-v001。最终src逐文件哈希与full-02一致，纹理复现25资产written=0、diff检查通过。
+
 ## R115 B 内部第二版
 
 `test --rerun build runGameTestServer compileDevtoolsJava`：**1434 JUnit / 832 GameTest，0失败/错误/跳过**，`evidence/r115-b-interior-v002/full-03.log`、`counts.json`、`gametest.xml`。内部路径/窗/根结距离的4项纯检查，以及双向无技能行走、根洞一次奖励、新心仪式/先祖拒绝、查询不加载、真实光传播和BE同步；原遗迹路线/光桥/秘室断言未改。

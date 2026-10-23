@@ -1,0 +1,99 @@
+{
+  "revision": "v002",
+  "generator": "scripts/art/build_ginso_tree.py",
+  "shape_source": "src/main/java/cn/wwl/orimod/world/GinsoShape.java",
+  "shape_sha256": "be21a9d680278ef889e04a9f4905da614fe81d015bba3409bf71a31fdc0b2cf7",
+  "recipe": "Broken hollow wet-bark bole ending in three unequal leaning forks; six drooping fans; exposed snags; world-lit brown-green bark with north/low moss; emissive crack patches, fungus shelves and water drips. Original stilt roots; interior reserved only.",
+  "texture_size": [
+    16,
+    16
+  ],
+  "filter": "nearest",
+  "metrics": [
+    {
+      "seed": 115117,
+      "height": 55,
+      "wood": 7819,
+      "leaves": 1918,
+      "vines": 313,
+      "sap": 320,
+      "x": [
+        -25,
+        23
+      ],
+      "y": [
+        -3,
+        55
+      ],
+      "z": [
+        -26,
+        24
+      ]
+    },
+    {
+      "seed": 115118,
+      "height": 53,
+      "wood": 7584,
+      "leaves": 1918,
+      "vines": 433,
+      "sap": 293,
+      "x": [
+        -26,
+        24
+      ],
+      "y": [
+        -3,
+        53
+      ],
+      "z": [
+        -22,
+        23
+      ]
+    }
+  ],
+  "assets": {
+    "src/main/resources/assets/orimod/textures/block/ginso_bark.png": "83a9e2096ef131bf598a47c5eee850380062bed51eb5565a64ee919f0634ff8b",
+    "art/source/ginso_tree/v002/ginso_bark.png": "83a9e2096ef131bf598a47c5eee850380062bed51eb5565a64ee919f0634ff8b",
+    "src/main/resources/assets/orimod/textures/block/ginso_bark_moss.png": "cc880a7e145033a84b03e6378bae77f5c2e72323b616a4e79e9a3e5d2ff703be",
+    "art/source/ginso_tree/v002/ginso_bark_moss.png": "cc880a7e145033a84b03e6378bae77f5c2e72323b616a4e79e9a3e5d2ff703be",
+    "src/main/resources/assets/orimod/textures/block/ginso_sap.png": "714f2c55e3d693b93947ca735c88e99e8f52c0230ebff4d497baf7de0dbe692d",
+    "art/source/ginso_tree/v002/ginso_sap.png": "714f2c55e3d693b93947ca735c88e99e8f52c0230ebff4d497baf7de0dbe692d",
+    "src/main/resources/assets/orimod/textures/block/ginso_moss_glow.png": "ea8f9372fabd8aad50a7bd53870302a16a158a92d83871ace14d73add87083e7",
+    "art/source/ginso_tree/v002/ginso_moss_glow.png": "ea8f9372fabd8aad50a7bd53870302a16a158a92d83871ace14d73add87083e7",
+    "src/main/resources/assets/orimod/textures/block/ginso_leaves.png": "ba546639f856d4e20305e6649e55a1df459ee0d213f401e37d918d308b7b94fc",
+    "art/source/ginso_tree/v002/ginso_leaves.png": "ba546639f856d4e20305e6649e55a1df459ee0d213f401e37d918d308b7b94fc",
+    "src/main/resources/assets/orimod/textures/block/ginso_fungus.png": "66aa07d3e87428f607793323450f6fee7ce0b5cecedef055ba9118794f238c03",
+    "art/source/ginso_tree/v002/ginso_fungus.png": "66aa07d3e87428f607793323450f6fee7ce0b5cecedef055ba9118794f238c03",
+    "src/main/resources/assets/orimod/textures/block/ginso_fungus_glow.png": "9d6b850799237d6c7b0ac690adcb00046341856f8bdc09302d06fdea6a965704",
+    "art/source/ginso_tree/v002/ginso_fungus_glow.png": "9d6b850799237d6c7b0ac690adcb00046341856f8bdc09302d06fdea6a965704",
+    "src/main/resources/assets/orimod/textures/block/ginso_fungus_edge.png": "eefff8496dae24f81735c0a87777e6bb32a7ca7e81b2cb4b58073ae1aa332d76",
+    "art/source/ginso_tree/v002/ginso_fungus_edge.png": "eefff8496dae24f81735c0a87777e6bb32a7ca7e81b2cb4b58073ae1aa332d76",
+    "src/main/resources/assets/orimod/textures/block/ginso_vine.png": "3657ddbfcc23dd5484d4106cacc5e4dfa255acab5821822fe88d8f9fa9a3a646",
+    "art/source/ginso_tree/v002/ginso_vine.png": "3657ddbfcc23dd5484d4106cacc5e4dfa255acab5821822fe88d8f9fa9a3a646",
+    "src/main/resources/assets/orimod/textures/block/ginso_vine_tip.png": "e510aa9fca322d95d068b4c9296aeb500774302c061b1e9aafb0100d57c62832",
+    "art/source/ginso_tree/v002/ginso_vine_tip.png": "e510aa9fca322d95d068b4c9296aeb500774302c061b1e9aafb0100d57c62832",
+    "src/main/resources/assets/orimod/textures/block/ginso_vine_glow.png": "e44c8c70cbb5ab4226d3ea626c8dde356b698783d11fcb3d03ac706e4d54d374",
+    "art/source/ginso_tree/v002/ginso_vine_glow.png": "e44c8c70cbb5ab4226d3ea626c8dde356b698783d11fcb3d03ac706e4d54d374",
+    "src/main/resources/assets/orimod/textures/block/ginso_vine_tip_glow.png": "49ecf37dbc761cb7a0b99cc4e037203042f1275311b83355fa027ed5e92f3e8b",
+    "art/source/ginso_tree/v002/ginso_vine_tip_glow.png": "49ecf37dbc761cb7a0b99cc4e037203042f1275311b83355fa027ed5e92f3e8b",
+    "src/main/resources/assets/orimod/models/block/ginso_wood.json": "a647b8f3a0e24e22f961b99b3c04f2986aabb304c68e6bc9a7a7b161ae8f8ba7",
+    "src/main/resources/assets/orimod/models/block/ginso_wood_sap.json": "61f8487106088a86a0846bbe643cde8223134b0348d1c81890fe6a52cd381230",
+    "src/main/resources/assets/orimod/models/block/ginso_wood_moss.json": "1310f9b098bd53c5276bbd1114e54cc5b9eb54636d0b6a3fd693bf88f264f340",
+    "src/main/resources/assets/orimod/models/block/ginso_wood_moss_sap.json": "92d5aec5c6aa196719aeced4fa867aaa0a6aebc8de5d86b79fe8abb28098502c",
+    "src/main/resources/assets/orimod/blockstates/ginso_wood.json": "199f87e6af5a4af7d341e8988c75411f23c9cbd0db815b83331061e5f28dcbec",
+    "src/main/resources/assets/orimod/models/block/ginso_leaves.json": "479aae215ba1675c499e2a8f701ca1b26eeac3d34868b533fc0f32d99bb96873",
+    "src/main/resources/assets/orimod/blockstates/ginso_leaves.json": "9bebe4819fbe36249a0455ad44555d2611e5964c58fde037954c955029853438",
+    "src/main/resources/assets/orimod/blockstates/ginso_vine.json": "bab716648712e47e088ff9919c60393240b8992bfe016fa3dcb058461bf12079",
+    "src/main/resources/assets/orimod/models/block/ginso_vine.json": "02d1f836c37e131b4991d2f7c8d707bd377ba588f286bd0cfc968024f81d0716",
+    "src/main/resources/assets/orimod/models/block/ginso_vine_tip.json": "dfd111f6384a19a513876cc2c1d35fd9e29bed62e7033d5604beb1208781b3e6",
+    "src/main/resources/assets/orimod/models/block/ginso_fungus.json": "89dc51980bc6867799d73ac02af77a0f3225f059cd55fc83ff351d294f3eecc6",
+    "src/main/resources/assets/orimod/blockstates/ginso_fungus.json": "35d1ad569050c5dab12cb977aada9b33f83caf13592dff68d964a18ec48cd738",
+    "src/main/resources/assets/orimod/models/item/ginso_fungus.json": "b2bb153f3db727b5c7711ffb8811f53edbe58f7fdca14eb49376781ccf7af547",
+    "src/main/resources/assets/orimod/models/item/ginso_wood.json": "8f859e7574517aad96b85787882e8c3e6399073703f48d0e44368050d155e861",
+    "src/main/resources/data/orimod/loot_table/blocks/ginso_wood.json": "df05c4b0849868f442e46bbee0263a5f5161e347a7223c1524eed4b8fa2c648b",
+    "src/main/resources/assets/orimod/models/item/ginso_leaves.json": "d426d16c239e048121f2414e18e6fa13a01a874accd2ebd8d8d8a876043b9154",
+    "src/main/resources/data/orimod/loot_table/blocks/ginso_leaves.json": "169c2f331cf4329155c2547fd2bc41b501a2fe42348ae15c2328fcfed1423e58",
+    "src/main/resources/assets/orimod/models/item/ginso_vine.json": "844afe340be7fb1ef0dc0fd18726bba9dd4b6c3bc09e81de56ca3fd2e36debe5",
+    "src/main/resources/data/orimod/loot_table/blocks/ginso_vine.json": "d550d5d2b8c5e31c53231f6c7105a30baf73d1543431ec77925cbb33a82c3a3e"
+  }
+}

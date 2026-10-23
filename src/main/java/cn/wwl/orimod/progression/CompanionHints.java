@@ -30,6 +30,7 @@ public final class CompanionHints {
         MAP_STONE("map_stone", 6), CELL_PEDESTAL("cell_pedestal", 6), BOSS_ALTAR("boss_altar", 10),
         GREAT_TREE("great_tree", 120), SPIRIT_TREE("spirit_tree", 24), GLOOM_CORE("gloom_core",16),
         CRACKED_WALL("cracked_wall", 8), CRACKED_FLOOR("cracked_floor", 8), GLOOM_BEETLE("gloom_beetle",12), MERCHANT("merchant",12),
+        GINSO_WALL("ginso_wall",8), GINSO_BASH("ginso_bash",8), GINSO_GRAPPLE("ginso_grapple",8), GINSO_WIND("ginso_wind",8), GINSO_JUMP("ginso_jump",8),
         LOW_ENERGY("low_energy", 0), SHARD_SLOT("shard_slot", 0);
 
         public final String id;
@@ -39,6 +40,9 @@ public final class CompanionHints {
 
         /** Only the two skill-dependent hints have a locked wording on the wire. */
         public static Hint byWireId(String id) {
+            if ("ginso_bash_locked".equals(id)) return GINSO_BASH;
+            if ("ginso_grapple_locked".equals(id)) return GINSO_GRAPPLE;
+            if ("ginso_wind_locked".equals(id)) return GINSO_WIND;
             if ("updraft_locked".equals(id)) return UPDRAFT;
             if ("grapple_flower_locked".equals(id)) return GRAPPLE_FLOWER;
             for (var hint : values()) if (hint.id.equals(id)) return hint;
@@ -87,6 +91,7 @@ public final class CompanionHints {
         var session = player.getData(SpiritData.ENERGY_STATE);
         long now = player.level().getGameTime();
         if (!ready(now, session.lastCompanionHintAt)) return;
+        if(cn.wwl.orimod.world.GinsoCourse.hint(player))return;
         var progress = player.getData(SpiritData.PROGRESS);
         var seen = seen(progress);
         int abilities = player.getData(SpiritData.ABILITIES);
@@ -116,9 +121,21 @@ public final class CompanionHints {
                 Optional.ofNullable(positions.get(hint))));
     }
 
+    /** Explicit course discoveries share the ordinary once/locked/cooldown ledger and client setting. */
+    public static boolean offer(ServerPlayer player,Hint hint,BlockPos pos){
+        if(hint==null||!SpiritData.isSpirit(player)||!player.isAlive()||player.isSpectator())return false;
+        var session=player.getData(SpiritData.ENERGY_STATE);long now=player.level().getGameTime();
+        var progress=player.getData(SpiritData.PROGRESS);String id=wireId(hint,player.getData(SpiritData.ABILITIES));
+        if(!ready(now,session.lastCompanionHintAt)||progress.rewards().containsKey(PREFIX+id))return false;
+        var rewards=new HashMap<>(progress.rewards());rewards.put(PREFIX+id,1);player.setData(SpiritData.PROGRESS,progress.withRewards(rewards));
+        session.lastCompanionHintAt=now;PacketDistributor.sendToPlayer(player,new CompanionHintPayload(id,Optional.of(pos)));return true;
+    }
+
     public static String wireId(Hint hint, int abilities) {
         boolean locked = hint == Hint.UPDRAFT && (abilities & Ability.GLIDE.bit) == 0
-                || hint == Hint.GRAPPLE_FLOWER && (abilities & Ability.GRAPPLE.bit) == 0;
+                || (hint == Hint.GRAPPLE_FLOWER || hint == Hint.GINSO_GRAPPLE) && (abilities & Ability.GRAPPLE.bit) == 0
+                || hint == Hint.GINSO_BASH && (abilities & Ability.BASH.bit) == 0
+                || hint == Hint.GINSO_WIND && (abilities & Ability.GLIDE.bit) == 0;
         return hint.id + (locked ? "_locked" : "");
     }
 

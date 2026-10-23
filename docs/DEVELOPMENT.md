@@ -1,5 +1,12 @@
 # 开发与验收工具
 
+R115 C 课程：`GinsoInterior`独立于已验收的`GinsoShape`，`GinsoPiece`持久化Entrance/Approach/CourseVersion并将契约整体旋转。`ginso_state`（devtools）返回entry、sections、两个checkpoints和预留heart世界坐标；`scripts/capture-ginso-course.py <build-id> [seed]`使用真实按键，客户端仍需llvmpipe + DISPLAY=:0。井的右键保留补满/目的地菜单，并在金索树专用点绑定SoulLink；结构引用查询不加载区块。此阶段只接课程，水心逃生留待检查点审查。
+
+课程最终层高0/8/14/20/28/31，根阶到37层平台（脚位38）；猛击、抓钩、滑翔缺技能提示各有独立locked记录。检查点局部(0,15,3)/(0,38,3)，魂链安全脚位各在井前两格，依入口方向旋转。已存旧外形piece无CourseVersion时保留外壳，不自动写入内部。
+
+最新验证1457/841全绿；分段通关/状态增量索引`evidence/r115-c-course-review-v001/README.md`，115118与河岸补图`r115-c-course-gallery-v001/`。拍摄脚本可用第三参数传上次results.json、环境变量GINSO_SECTION选重试段，继续当前玩家位置而非传送；它是实时输入采样器，计时受帧率影响，原始失败录像保留。补图脚本`scripts/capture-ginso-course-gallery.py <build-id> <course-results.json>`包含河岸入口步行，结束清票/离开/退出。实际启动仍用`LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority ./gradlew runDevtoolsClient`，客户端和测试Gradle互斥。
+
+
 ## R115 B 大灵树（外形阶段）
 
 唯一站点、原版 locate 补充和按区块裁剪生成的实现说明见 [R115 B 外形记录](drafts/R115_B_SHAPE.md)。OP 命令 `/ori great_tree site|repick|force_place`；已触及的站点不可重选。Devtools `great_tree_state` 返回站点/出生点/写入耗时；`command` 可传 `captureOutput:true` 收集真实反馈。内部玩法待外形批准后接入。
@@ -405,3 +412,10 @@ Devtools `great_tree_state` 增加世界坐标 `entrance/heart/reward/ascent/des
 R115 B 内部第二版：已通过的 `GreatTreeShape` 与外部树皮/光纹不变；`GreatTreeInterior` 独立覆盖短根拱、三圈台阶、九窗/三顶井、拱顶大厅和根洞。调色板12/13/14是内根木/暗细纹/亮度14根结，不能替换外部WOOD/VEIN。`GreatSpiritRootBlock.light` 控制真实光照，楼梯每六步放置根结；生成仍裁剪在当前区块。内根木同样禁止潮夜落点。新树心采用共享Sanctuary BE，以一个方块保持碰撞和交互，GLB根笼/晶体仅视觉，渲染AABB覆盖整体。新资产复现：`python3 scripts/art/build_great_tree_root_textures.py --check`、`build_great_tree_interior.py --check`、`build_great_heart.py --check`；源目录均为各自v002。客户端拍摄必须 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority`，并与全量Gradle互斥。
 
 R115 B 切片写入使用 `Block.UPDATE_CLIENTS`（2），不包含邻居更新。在正常 FEATURES 的 `WorldGenRegion/ProtoChunk` 中，树心BE先保存DUMMY占位，成品区块才实例化；GLB不在生成线程读取。ProtoChunk在INITIALIZE_LIGHT之后写入才进入逐格光照检查，正常新生结构的照明由后续阶段初始化。不能将该说明推广到OP在已完成区块中的强制放置：此时必须正常更新光照。第二版实测(40,23)10443写/22.42ms，日志未做BE/光照分项归因，保留此慢切片而不额外改不明标志。实拍与时序索引见 `evidence/r115-b-interior-v002/checkpoint.json`。
+
+
+R115 C 首版：`GinsoShape`是独立体素美术源，`GinsoPiece`保存原点/种子，写入仅在当前clip内。`scripts/art/build_ginso_tree.py --check`验证`art/source/ginso_tree/v001/`和包内纹理/模型，版本升级同步`.gitignore`白名单。`ginso_probe`仅在devtools，真实placement候选+noise预检，无区块载入；`ginso_state`仅查附近已加载的Ginso起点。标准定位`/locate structure orimod:ginso_tree`。当前外形检查点不启用水心或涨水；测试拍摄用`scripts/capture-ginso-tree.py <新证据名>`，llvmpipe + DISPLAY=:0，与Gradle验证互斥。
+
+`ginso_probe`的`radius`为候选区域半径（1..6，默认4即81候选），非方块半径；读取返回的`histogram/sites/chunksBefore/chunksAfter`。单次约4–6秒，仅开发验收使用，不进入正式jar。真实locate返回候选区块角，而piece原点在区块中心（x/z各+8），比对时用区块坐标。两新种子实际距离/拒绝分布、有限候选窗口推算的限制见`docs/drafts/R115_C_GINSO.md`。不更改已生成区块，后续内部版本须用新世界验收。
+
+C外观v002：当前生成器源目录`art/source/ginso_tree/v002/`，.gitignore跟踪v002。`GinsoWoodBlock`保留vein状态、增加moss状态以控制下段/北侧苔面；普通树皮世界光，发光只在独立遮罩。新增`ginso_fungus`为薄菌架模型，无碰撞、无掉落；水滴复用固定长度藤，允许从叶或木叉下垂。新外形只在新生成区块生效，旧检查点存档不自动改形。

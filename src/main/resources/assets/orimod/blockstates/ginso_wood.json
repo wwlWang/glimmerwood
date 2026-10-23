@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "moss=false,vein=false": {
+      "model": "orimod:block/ginso_wood"
+    },
+    "moss=false,vein=true": {
+      "model": "orimod:block/ginso_wood_sap"
+    },
+    "moss=true,vein=false": {
+      "model": "orimod:block/ginso_wood_moss"
+    },
+    "moss=true,vein=true": {
+      "model": "orimod:block/ginso_wood_moss_sap"
+    }
+  }
+}

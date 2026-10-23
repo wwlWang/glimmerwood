@@ -1,0 +1,49 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bark": "orimod:block/ginso_bark_moss",
+    "north": "orimod:block/ginso_bark_moss",
+    "particle": "orimod:block/ginso_bark_moss",
+    "vein": "orimod:block/ginso_moss_glow"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#north",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#bark",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#bark",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#bark",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#bark",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#bark",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

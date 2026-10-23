@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "tip=false": {
+      "model": "orimod:block/ginso_vine"
+    },
+    "tip=true": {
+      "model": "orimod:block/ginso_vine_tip"
+    }
+  }
+}

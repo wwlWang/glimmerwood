@@ -225,6 +225,14 @@ public final class DevelopmentBridge {
                             action.get("minZ").getAsInt(), action.get("maxZ").getAsInt(), action.get("step").getAsInt());
                 }).get(30, TimeUnit.SECONDS);
             }
+            case "ginso_probe", "ginso_state" -> {
+                require(mc.player!=null&&mc.getSingleplayerServer()!=null,"Single-player world required");
+                var server=mc.getSingleplayerServer();var id=mc.player.getUUID();
+                return server.submit(()->{
+                    var p=server.getPlayerList().getPlayer(id);
+                    return operation.equals("ginso_probe")?GinsoProbe.scan(p.serverLevel(),p.blockPosition(),action.has("radius")?action.get("radius").getAsInt():4):GinsoProbe.nearby(p.serverLevel(),p.blockPosition());
+                }).get(45,TimeUnit.SECONDS);
+            }
             case "great_tree_state" -> {
                 require(mc.getSingleplayerServer()!=null,"Single-player world required");
                 return mc.getSingleplayerServer().submit(()->{

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "orimod:spirit_leaves"
+    "orimod:spirit_leaves",
+    "orimod:ginso_leaves"
   ]
 }

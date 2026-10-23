@@ -19,10 +19,10 @@ class CompanionHintPayloadTest {
     @ParameterizedTest @EnumSource(Hint.class) void roundTripEveryHint(Hint hint) {
         roundTrip(new CompanionHintPayload(hint.id, hint.radius > 0 ? Optional.of(new BlockPos(-123, -64, 999)) : Optional.empty()));
     }
-    @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked"})
+    @ParameterizedTest @ValueSource(strings = {"updraft_locked", "grapple_flower_locked", "ginso_bash_locked", "ginso_grapple_locked", "ginso_wind_locked"})
     void roundTripLockedVariants(String id) { roundTrip(new CompanionHintPayload(id, Optional.of(BlockPos.ZERO))); }
 
-    @Test void explicitChannelVersion() { assertEquals("10", CompanionHintPayload.VERSION); }
+    @Test void explicitChannelVersion() { assertEquals("11", CompanionHintPayload.VERSION); }
 
     @ParameterizedTest @ValueSource(strings = {"", "unknown", "low_energy_locked", "hint/updraft", "../updraft"})
     void rejectsUnknownIds(String id) { rejected(b -> { b.writeUtf(id); b.writeByte(0); }); }
@@ -49,19 +49,19 @@ class CompanionHintPayloadTest {
         assertEquals(new BlockPos(1, 2, 3), payload.pos().orElseThrow());
     }
 
-    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(10); b.writeByte(kind); }
+    private static void header(RegistryFriendlyByteBuf b, int kind) { b.writeByte(0); b.writeByte(11); b.writeByte(kind); }
     @ParameterizedTest @EnumSource(cn.wwl.orimod.progression.CompanionLines.Line.class)
     void roundTripEveryLine(cn.wwl.orimod.progression.CompanionLines.Line line) { roundTrip(CompanionHintPayload.line(line)); }
     @ParameterizedTest @ValueSource(ints={2,127,255})
     void rejectsUnknownKind(int kind) { rejectedRaw(b -> { header(b,kind); b.writeUtf("tree_found"); b.writeByte(0); }); }
-    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,7,8,9,255})
+    @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,7,8,9,10,255})
     void rejectsOtherWireVersions(int version) { rejectedRaw(b -> { b.writeByte(0); b.writeByte(version); }); }
     @Test void rejectsOldVersionTwoPacketWithClearMessage() {
         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             b.writeUtf("low_energy"); b.writeByte(0);
             var error=assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b));
-            assertTrue(error.getMessage().contains("expected protocol 10"));
+            assertTrue(error.getMessage().contains("expected protocol 11"));
         } finally { b.release(); }
     }
     @Test void versionTwoDecoderRejectsEveryNewPacketBeforeReadingItsBody() {
@@ -82,7 +82,7 @@ class CompanionHintPayloadTest {
         var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             b.writeByte(0);b.writeByte(7);b.writeByte(0);b.writeUtf("updraft");b.writeByte(1);b.writeBlockPos(BlockPos.ZERO);
-            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 10"));
+            assertTrue(assertThrows(DecoderException.class,()->CompanionHintPayload.CODEC.decode(b)).getMessage().contains("expected protocol 11"));
             for(var packet:new CompanionHintPayload[]{new CompanionHintPayload("merchant",Optional.of(BlockPos.ZERO)),
                     CompanionHintPayload.line(cn.wwl.orimod.progression.CompanionLines.Line.FIRST_OUTPOST)}) {
                 b.clear();CompanionHintPayload.CODEC.encode(b,packet);
@@ -90,6 +90,12 @@ class CompanionHintPayloadTest {
                     if(b.readUnsignedByte()!=0 || b.readUnsignedByte()!=7)throw new DecoderException("Incompatible companion payload: expected protocol 7");
                 });
             }
+        } finally {b.release();}
+    }
+    @Test void versionTenRejectsCourseHintBeforeReadingUnknownId() {
+        var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try {CompanionHintPayload.CODEC.encode(b,new CompanionHintPayload("ginso_bash",Optional.of(BlockPos.ZERO)));
+            assertThrows(DecoderException.class,()->{if(b.readUnsignedByte()!=0||b.readUnsignedByte()!=10)throw new DecoderException("expected protocol 10");});
         } finally {b.release();}
     }
     @Test void rejectsLineIdInHintKind() { rejected(b->{b.writeUtf("tree_found");b.writeByte(0);}); }

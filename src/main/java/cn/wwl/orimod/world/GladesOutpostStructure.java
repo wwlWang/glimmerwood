@@ -42,6 +42,7 @@ public final class GladesOutpostStructure extends Structure {
     }
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext c){
         if(GreatTreeSites.reserved(c.randomState(),c.chunkPos().getMiddleBlockX(),c.chunkPos().getMiddleBlockZ(),48))return Optional.empty();
+        if(GinsoStructure.reserved(c,48))return Optional.empty();
         var site=preflight(c);if(site.reason()!=Rejection.OK)return Optional.empty();
         var door=site.placement().block(GladesOutpostPiece.ENTRY);
         return Optional.of(new GenerationStub(door,b->{

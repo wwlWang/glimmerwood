@@ -1,0 +1,7 @@
+{
+  "type": "orimod:ginso_tree",
+  "biomes": "#orimod:has_ginso_tree",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -36,6 +36,14 @@ public final class OriBlocks {
                     .strength(2).lightLevel(s -> 4).sound(SoundType.WOOD)));
     public static final DeferredBlock<GreatSpiritWoodBlock> GREAT_SPIRIT_WOOD=BLOCKS.register("great_spirit_wood",()->new GreatSpiritWoodBlock(BlockBehaviour.Properties.of()
             .strength(2).lightLevel(s->s.getValue(GreatSpiritWoodBlock.VEIN)?10:0).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GinsoWoodBlock> GINSO_WOOD=BLOCKS.register("ginso_wood",()->new GinsoWoodBlock(BlockBehaviour.Properties.of()
+            .strength(2).lightLevel(s->s.getValue(GinsoWoodBlock.VEIN)?8:0).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GinsoFungusBlock> GINSO_FUNGUS=BLOCKS.register("ginso_fungus",()->new GinsoFungusBlock(BlockBehaviour.Properties.of()
+            .instabreak().noCollission().noOcclusion().noLootTable().lightLevel(s->8).sound(SoundType.FUNGUS)));
+    public static final DeferredBlock<Block> GINSO_LEAVES=BLOCKS.registerSimpleBlock("ginso_leaves",BlockBehaviour.Properties.of()
+            .strength(.2f).noOcclusion().sound(SoundType.AZALEA_LEAVES).isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
+    public static final DeferredBlock<SpiritVineBlock> GINSO_VINE=BLOCKS.register("ginso_vine",()->new SpiritVineBlock(BlockBehaviour.Properties.of()
+            .instabreak().noCollission().noOcclusion().lightLevel(s->4).sound(SoundType.CAVE_VINES)));
     public static final DeferredBlock<GreatSpiritRootBlock> GREAT_SPIRIT_ROOT=BLOCKS.register("great_spirit_root",()->new GreatSpiritRootBlock(BlockBehaviour.Properties.of()
             .strength(2).lightLevel(s->s.getValue(GreatSpiritRootBlock.LIGHT).emission).sound(SoundType.WOOD)));
     public static final DeferredBlock<SpiritLeavesBlock> SPIRIT_LEAVES = BLOCKS.register("spirit_leaves", () -> new SpiritLeavesBlock(BlockBehaviour.Properties.of()
@@ -104,7 +112,7 @@ public final class OriBlocks {
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
                 GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+                SPIRIT_LOG, GINSO_WOOD, GINSO_FUNGUS, GINSO_LEAVES, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }
