@@ -133,7 +133,7 @@ class Template:
         write(self.root / "src/main/resources/orimod/ruin_layout" / (self.name + ".json"), layout)
         write(self.data / "worldgen/structure" / (self.name + ".json"), {
             "type": "orimod:ruin", "kind": self.name, "biomes": "#orimod:has_ruins", "spawn_overrides": {},
-            "step": "top_layer_modification", "terrain_adaptation": "none"})
+            "step": "top_layer_modification", "terrain_adaptation": "beard_thin"})
         print(f"{self.name}: {len(blocks)} blocks, {len(palette)} states, {target.stat().st_size} bytes, {len(pruned)} bypass cells pruned")
 
 

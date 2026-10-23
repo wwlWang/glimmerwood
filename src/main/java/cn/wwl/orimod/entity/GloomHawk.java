@@ -40,6 +40,14 @@ public final class GloomHawk extends Monster {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 16).add(Attributes.FOLLOW_RANGE, 32).add(Attributes.FLYING_SPEED, .6);
     }
 
+    @Override public boolean canAttack(LivingEntity target) {
+        return GloomTargets.attackable(target) && super.canAttack(target);
+    }
+
+    @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        super.setTarget(GloomTargets.attackable(target) ? target : null);
+    }
+
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(STATE, CIRCLE); builder.define(TIMER, CIRCLE_TICKS); }
     public int state() { return entityData.get(STATE); }
     public int timer() { return entityData.get(TIMER); }
@@ -69,7 +77,7 @@ public final class GloomHawk extends Monster {
     }
 
     public void telegraph(LivingEntity target) {
-        if (dazzled > 0) return;
+        if (dazzled > 0 || !GloomTargets.attackable(target)) return;
         setTarget(target);
         mark = target.position().add(0, .5, 0);
         entityData.set(STATE, TELEGRAPH); timer(TELEGRAPH_TICKS); struck = false;
@@ -79,6 +87,9 @@ public final class GloomHawk extends Monster {
     /** One step of the attack cycle (driven by tick, callable from tests). */
     public void step() {
         if (dazzled > 0) { dazzled--; retreat(); return; }
+        if (getTarget()!=null && !GloomTargets.attackable(getTarget())) {
+            setTarget(null); mark=null; timer(CIRCLE_TICKS); entityData.set(STATE,CIRCLE); setDeltaMovement(Vec3.ZERO); return;
+        }
         int s = state();
         if (s == TELEGRAPH) {
             setDeltaMovement(getDeltaMovement().scale(.5));
@@ -97,7 +108,7 @@ public final class GloomHawk extends Monster {
 
     /** Dive contact. @return whether the target was hurt. */
     public boolean strike(LivingEntity target) {
-        if (dazzled > 0) return false;
+        if (dazzled > 0 || !GloomTargets.canHit(this, target)) return false;
         boolean hurt = target.hurt(damageSources().mobAttack(this), DIVE_DAMAGE);
         if (hurt) { var push = getDeltaMovement().multiply(1, 0, 1).normalize().scale(.6); target.push(push.x, .3, push.z); target.hurtMarked = true; }
         return hurt;
@@ -108,7 +119,7 @@ public final class GloomHawk extends Monster {
         if (level().isClientSide) { cn.wwl.orimod.client.fx.GloomLook.hawk(this); return; }
         if (dazzled > 0) { step(); return; }
         if (isNoAi()) return;
-        var target = level().getNearestPlayer(getX(), getY(), getZ(), 32, p -> p instanceof Player pl && !pl.isCreative() && !pl.isSpectator());
+        var target = level().getNearestPlayer(getX(), getY(), getZ(), 32, p -> p instanceof Player pl && GloomTargets.canHit(this, pl));
         if (state() == CIRCLE) {
             if (target == null) { setDeltaMovement(getDeltaMovement().scale(.9)); return; }
             double a = tickCount * .05;

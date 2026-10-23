@@ -49,7 +49,7 @@ final class SpiritAnimation {
     private float locoWeight, locoPhase, gaitWalk = 1, gaitRun, gaitSprint, airWeight;
     float[] gait() { return new float[] {gaitWalk * locoWeight, gaitRun * locoWeight, gaitSprint * locoWeight}; }
     private float bowReleasedAt = -100, selectedPlaySpeed = 1, hammerReleasedAt = -100;
-    private boolean wasHammer, hammerLeft;
+    private boolean wasHammer, hammerLeft, wasHammerSlam;
     private Vec3 position;
     /** R92: per-segment spring chains for ears, feelers and tail (replaces R74's single ear spring). */
     private final SpiritSecondary secondary = new SpiritSecondary();
@@ -150,7 +150,7 @@ final class SpiritAnimation {
         state.rowing = player.getVehicle() instanceof net.minecraft.world.entity.vehicle.Boat boat
                 && boat.getControllingPassenger() == player && (boat.getPaddleState(0) || boat.getPaddleState(1));
         state.spin = player.isAutoSpinAttack(); state.elytra = player.isFallFlying();
-        state.crawling = player.isVisuallyCrawling(); state.water = player.isInWater(); state.submerged = player.isUnderWater();
+        state.crawling = player.isVisuallyCrawling(); state.water = cn.wwl.orimod.block.OriFluids.inWater(player); state.submerged = cn.wwl.orimod.block.OriFluids.underWater(player);
         state.climbing = player.onClimbable(); state.grounded = player.onGround(); state.mantle = mantling;
         state.burrow = player == net.minecraft.client.Minecraft.getInstance().player && cn.wwl.orimod.client.SpiritControls.burrowing(player);
         state.crouching = player.isCrouching(); state.speed = speed3; state.vertical = (float)player.getDeltaMovement().y;
@@ -206,7 +206,7 @@ final class SpiritAnimation {
             hurtImpulse = Math.max(hurtImpulse, (float)player.getDeltaMovement().subtract(hurtVelocity).length());
             hurtClip = SpiritAnimationRules.hurt(hurtFront, hurtRight, hurtDamage, player.getMaxHealth(), hurtImpulse);
         }
-        if (player.onGround() && !grounded && !player.isInWater() && !mode.equals("stomp_land")) {
+        if (player.onGround() && !grounded && !cn.wwl.orimod.block.OriFluids.inWater(player) && !mode.equals("stomp_land")) {
             float impact = Math.abs(lastVertical);
             boolean afterMantle = mantling || wasMantling || player.level().getGameTime() - cn.wwl.orimod.client.SpiritMantle.endedAt() < 4;
             // R94: touching down while still running (WotW's special land when the stick is held) keeps the run going:
@@ -276,6 +276,10 @@ final class SpiritAnimation {
         boolean hammer = player.isUsingItem() && player.getUseItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER);
         if (wasHammer && !hammer) hammerReleasedAt = now;
         wasHammer = hammer;
+        boolean hammerSlam = cn.wwl.orimod.combat.HammerSlam.falling(combat, player.level().getGameTime());
+        if (wasHammerSlam && !hammerSlam)
+            hammerReleasedAt = player.onGround() ? now - .28f * SpiritClips.get(model, "hammer_smash").duration() : -100;
+        wasHammerSlam = hammerSlam;
         if (bow) bowLeft = useLeft;
         wasBow = bow;
         boolean overlayLeft = false;
@@ -324,6 +328,11 @@ final class SpiritAnimation {
                     secondary.flick(stage == 3 ? 1.3f : 1);
                     if (stage == 3) squash.kick(-cn.wwl.orimod.movement.FeelTuning.SQUASH_JUMP);
                 }
+                mask = upperBody; below = belowUpper;
+            } else if (hammerSlam) {
+                overlay = handed("hammer_smash", hammerLeft);
+                // Stop just before the authored strike; finish it only when the server confirms contact.
+                overlayTime = .26f * SpiritClips.get(model, overlay).duration();
                 mask = upperBody; below = belowUpper;
             } else if (player.isUsingItem()) {
                 float elapsed = (player.getTicksUsingItem() + partial) / 20f;

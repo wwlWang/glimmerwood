@@ -1,6 +1,0 @@
-{
-  "type": "neoforge:add_features",
-  "biomes": "#orimod:has_blighted_grounds",
-  "features": "orimod:blighted_grounds",
-  "step": "local_modifications"
-}

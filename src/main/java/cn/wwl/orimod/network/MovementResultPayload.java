@@ -59,6 +59,16 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
             state.suspendedVelocity = player.getDeltaMovement();
             state.suspendedFallDistance = player.fallDistance;
         }
+        if (mode == BASH_AIM) {
+            var target = targetId < 0 ? null : player.level().getEntity(targetId);
+            state.aimedBash = target != null ? target.getUUID().toString()
+                    : targetId < 0 ? net.minecraft.core.BlockPos.containing(targetPosition).asLong() + ":false" : "";
+        } else if (mode == BASH_LAUNCH && !state.aimedBash.isEmpty()) {
+            state.recentBash = state.aimedBash; state.aimedBash = "";
+            state.recentBashUntil = now + cn.wwl.orimod.movement.BashSession.TARGET_COOLDOWN_TICKS;
+            state.targetCooldowns.put(state.recentBash, state.recentBashUntil);
+            state.groundLockUntil = Math.max(state.groundLockUntil, now + 4);
+        }
         state.mode = mode == RELOCATE ? IDLE : mode;
         state.activeTicks = ticks;
         state.velocity = velocity;

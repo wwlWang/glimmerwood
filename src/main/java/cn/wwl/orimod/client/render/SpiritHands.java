@@ -55,16 +55,32 @@ public final class SpiritHands {
         var itemPose = new PoseStack();
         model.applyTransform(context, itemPose, left);
         var point = new Vector3f();
-        var axis = new Vector3f();
-        SpiritItemGrip.local(item, point, axis);
+        SpiritItemGrip.local(item, point, new Vector3f());
         itemPose.last().pose().transformPosition(point);
-        itemPose.last().pose().transformDirection(axis).normalize();
+        var palm = palm(model, itemPose, left, SpiritItemGrip.lowered(item));
         stack.pushPose();
         stack.translate(point.x, point.y, point.z);
-        stack.mulPose(new Quaternionf().rotationTo(new Vector3f(0,0,1), axis));
-        stack.scale(1.25f,1.25f,1.25f);
+        stack.mulPose(palm);
+        stack.scale(PAW_SCALE, PAW_SCALE, PAW_SCALE);
         draw(left, true, stack, buffers, light);
         stack.popPose();
+    }
+
+    static final float PAW_SCALE = 1.25f;
+
+    /**
+     * The paw's orientation for an item drawn with {@code itemPose}. The paw meshes are baked in the grip bone's frame,
+     * and third person attaches items to that bone as pitch * Y180 * display. Inverting that relation gives one fixed
+     * hand-to-item grip in every view: the handle runs through the fist and the fingers wrap the same side. The old
+     * single-axis alignment left the roll free (fingers outward) and flipped near the antipode during eating motion.
+     */
+    static Quaternionf palm(net.minecraft.client.resources.model.BakedModel model, PoseStack itemPose, boolean left, boolean lowered) {
+        var held = new PoseStack();
+        held.mulPose(com.mojang.math.Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(1, lowered ? 1 : 0)));
+        held.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180));
+        model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, held, left);
+        return SpiritItemGrip.palmFromItem(itemPose.last().pose().getNormalizedRotation(new Quaternionf()),
+                held.last().pose().getNormalizedRotation(new Quaternionf()));
     }
 
     private static boolean draw(boolean left, boolean grip, PoseStack pose, MultiBufferSource buffers, int light) {

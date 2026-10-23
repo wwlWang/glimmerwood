@@ -19,7 +19,14 @@ public final class OriWorldgen {
     public static final Supplier<StructurePieceType> OUTPOST_PIECE=PIECES.register("glades_outpost",()->(StructurePieceType.StructureTemplateType)GladesOutpostPiece::new);
     public static final Supplier<StructureType<RuinStructure>> RUIN = TYPES.register("ruin", () -> () -> RuinStructure.CODEC);
     public static final Supplier<StructurePieceType> PIECE = PIECES.register("ruin", () -> (StructurePieceType.StructureTemplateType) RuinPiece::new);
+    /** R114: spirit trees and blighted grounds as structure starts, so /locate finds them. */
+    public static final Supplier<StructureType<FeatureSiteStructure>> FEATURE_SITE = TYPES.register("feature_site", () -> () -> FeatureSiteStructure.CODEC);
+    public static final Supplier<StructurePieceType> FEATURE_SITE_PIECE = PIECES.register("feature_site", () -> (StructurePieceType.ContextlessType) FeatureSitePiece::new);
     public static final Supplier<StructurePieceType> APPROACH = PIECES.register("ruin_approach", () -> (StructurePieceType.ContextlessType) RuinApproachPiece::new);
-    public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); }
+    private static final DeferredRegister<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<?>> PROCESSORS =
+            DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, OriMod.MOD_ID);
+    public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<CaveEntranceProcessor>> CAVE_ENTRANCE =
+            PROCESSORS.register("cave_entrance", () -> () -> CaveEntranceProcessor.CODEC);
+    public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); PROCESSORS.register(bus); }
     private OriWorldgen() {}
 }

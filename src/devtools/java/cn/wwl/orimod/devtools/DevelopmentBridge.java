@@ -844,6 +844,9 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) {
+            var camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+            state.put("cameraMotion", Map.of("position",java.util.List.of(camera.x,camera.y,camera.z),
+                    "follow",cn.wwl.orimod.client.render.SpiritCamera.debug(),"feel",cn.wwl.orimod.client.fx.MotionFeel.debug()));
             state.put("skillWheel",cn.wwl.orimod.client.SkillControls.diagnostics());
             state.put("bladeMotion", cn.wwl.orimod.client.SpiritControls.bladeDiagnostics());
             state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));

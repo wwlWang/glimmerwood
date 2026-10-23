@@ -9,33 +9,29 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * R61 gloom water (after Ori's poisoned water): a still pool of corruption. Walking through it hurts and slows
- * living things; it never spreads. Charge Flame, a Light Burst or the Gloom Heart's defeat cleanses it into
+ * R61 gloom water (after Ori's poisoned water): a short-spreading fluid. Swimming through it hurts and slows
+ * living things; old source blocks keep the same registry ID. Charge Flame, a Light Burst or the Gloom Heart's defeat cleanses it into
  * ordinary water.
  */
-public final class GloomWaterBlock extends Block {
+public final class GloomWaterBlock extends net.minecraft.world.level.block.LiquidBlock {
     public static final float DAMAGE = 2;
     public static final int HURT_INTERVAL = 15;
-    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 14, 16);
+    public GloomWaterBlock(Properties properties) { super(OriFluids.GLOOM_WATER.get(), properties); }
 
-    public GloomWaterBlock(Properties properties) { super(properties); }
-
-    @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return SHAPE; }
-    @Override protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return Shapes.empty(); }
+    // LiquidBlock's default implementation removes a source even when its fluid has no bucket.
+    @Override public net.minecraft.world.item.ItemStack pickupBlock(net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockState state) {
+        return net.minecraft.world.item.ItemStack.EMPTY;
+    }
 
     @Override protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide || !(entity instanceof LivingEntity living) || !living.isAlive()) return;
-        living.makeStuckInBlock(state, new net.minecraft.world.phys.Vec3(.7, .6, .7));
+        // Swimming/drag/flow come from FluidType and FluidTags.WATER, not a solid-block stuck multiplier.
         // Vanilla hurt immunity paces the damage (one hit per ~half second).
         if (living.hurt(level.damageSources().magic(), DAMAGE)) {
             living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, true, false));

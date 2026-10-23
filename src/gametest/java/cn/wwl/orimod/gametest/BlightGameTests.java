@@ -76,7 +76,7 @@ public final class BlightGameTests {
             var level=h.getLevel();
             switch(obstruction){
                 case "water"->level.setBlock(base.below(),Blocks.WATER.defaultBlockState(),2);
-                case "steep"->{for(int y=0;y<6;y++)level.setBlock(base.offset(1,y,0),Blocks.DIRT.defaultBlockState(),2);}
+                case "steep"->{for(int y=0;y<7;y++)level.setBlock(base.offset(1,y,0),Blocks.DIRT.defaultBlockState(),2);}
                 case "chest"->level.setBlock(base,Blocks.CHEST.defaultBlockState(),2);
                 case "heart"->level.setBlock(base.offset(5,0,0),OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState(),2);
                 case "log"->level.setBlock(base,Blocks.OAK_LOG.defaultBlockState(),2);

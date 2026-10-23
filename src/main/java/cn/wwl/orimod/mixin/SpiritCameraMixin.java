@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** R79: third-person follow lag + velocity lead for the spirit form (see {@link SpiritCamera}). */
+/** Third-person damped follow for the spirit form (see {@link SpiritCamera}). */
 @Mixin(Camera.class)
 public abstract class SpiritCameraMixin {
     @Shadow protected abstract void setPosition(Vec3 pos);

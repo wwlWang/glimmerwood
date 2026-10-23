@@ -150,14 +150,11 @@ class FeelTuningTest {
         for (float v = 0; v < 8; v += .05f) assertTrue(Math.abs(stride(v + .05f) - stride(v)) < .08f, "stride jumps at " + v);
     }
 
-    @Test void cameraFollowIsFrameRateIndependentAndLeadIsClamped() {
+    @Test void exponentialFollowIsFrameRateIndependent() {
         double a = 0, b = 0;
-        for (int i = 0; i < 30; i++) a += (1 - a) * follow(CAMERA_LAG_RATE, 1 / 30.0);
-        for (int i = 0; i < 144; i++) b += (1 - b) * follow(CAMERA_LAG_RATE, 1 / 144.0);
+        for (int i = 0; i < 30; i++) a += (1 - a) * follow(11, 1 / 30.0);
+        for (int i = 0; i < 144; i++) b += (1 - b) * follow(11, 1 / 144.0);
         assertEquals(a, b, 1e-6);
-        assertEquals(CAMERA_LEAD_MAX, leadTarget(new net.minecraft.world.phys.Vec3(40, 5, 0)).length(), 1e-6);
-        assertEquals(0, leadTarget(new net.minecraft.world.phys.Vec3(0, 9, 0)).length(), 1e-9);
-        assertEquals(4 * CAMERA_LEAD_SECONDS, leadTarget(new net.minecraft.world.phys.Vec3(4, 0, 0)).length(), 1e-6);
     }
 
     @Test void trailIsWhiteAtTheHeadAndCoolBlueAtTheTail() {

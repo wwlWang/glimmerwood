@@ -13,7 +13,7 @@ import java.util.UUID;
 
 /** Short-lived position ownership. Never changes the target's saved AI or gravity flags. */
 public final class BashSession {
-    public static final int AIM_TICKS = 12, TARGET_COOLDOWN_TICKS = 40;
+    public static final int AIM_TICKS = 36, TARGET_COOLDOWN_TICKS = 15;
     private static final Map<UUID, BashSession> FROZEN = new HashMap<>();
     public final SpiritTargets.Target target;
     public final Vec3 playerPosition, playerVelocity, targetPosition, targetVelocity;

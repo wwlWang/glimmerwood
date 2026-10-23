@@ -73,7 +73,8 @@ public final class OriBlocks {
             BlockBehaviour.Properties.of().strength(3, 12).noOcclusion().lightLevel(state -> state.getValue(KeystonePedestalBlock.FULL) ? 10 : 2).sound(SoundType.AMETHYST)));
     /** R61: gloom water hazard (cleansed by Charge Flame, Light Burst or the Gloom Heart's defeat). */
     public static final DeferredBlock<GloomWaterBlock> GLOOM_WATER = BLOCKS.register("gloom_water", () -> new GloomWaterBlock(
-            BlockBehaviour.Properties.of().strength(100).noLootTable().noOcclusion().replaceable().lightLevel(state -> 4).sound(SoundType.SLIME_BLOCK)));
+            BlockBehaviour.Properties.of().strength(-1, 100).noLootTable().noCollission().noOcclusion().replaceable()
+                    .liquid().lightLevel(state -> 4).sound(SoundType.EMPTY)));
     /** R64: burrowable spirit sand, placed only in ruins. */
     public static final DeferredBlock<SpiritSandBlock> SPIRIT_SAND = BLOCKS.register("spirit_sand", () -> new SpiritSandBlock(
             BlockBehaviour.Properties.of().strength(-1, 3600000).noLootTable().noOcclusion().dynamicShape().sound(SoundType.SAND)

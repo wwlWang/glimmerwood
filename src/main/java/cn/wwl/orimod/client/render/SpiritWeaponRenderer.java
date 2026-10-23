@@ -38,6 +38,10 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
     public static void register(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
         event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
             @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() { return get(); }
+            @Override public boolean applyForgeHandTransform(PoseStack pose, net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm, ItemStack stack, float partial, float equip, float swing) {
+                return SpiritFirstPerson.apply(pose, player, arm, stack, partial, equip, swing);
+            }
         }, OriItems.SPIRIT_HAMMER.get(), OriItems.SPIRIT_SPEAR.get(), OriItems.SPIRIT_BLADE.get(),
                 OriItems.SPIRIT_BOW.get(), OriItems.SPIRIT_CORE.get());
     }

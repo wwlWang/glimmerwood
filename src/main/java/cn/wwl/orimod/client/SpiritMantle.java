@@ -44,7 +44,7 @@ public final class SpiritMantle {
         long now = player.level().getGameTime();
         boolean allowedMode = state.mode == MoveMode.IDLE || state.mode == MoveMode.WALL_SLIDE;
         if (ticks >= 0) {
-            if (player != owner || jumpEdge || input.shiftKeyDown || !allowedMode || player.isInWater() || player.onClimbable()
+            if (player != owner || jumpEdge || input.shiftKeyDown || !allowedMode || cn.wwl.orimod.block.OriFluids.inWater(player) || player.onClimbable()
                     || ticks >= MovementRules.MANTLE_MAX_TICKS || over && player.onGround()) {
                 end(player); readyAt = now + MovementRules.MANTLE_COOLDOWN_TICKS; return false;
             }
@@ -58,7 +58,7 @@ public final class SpiritMantle {
             return true;
         }
         if (player.onGround() || jumpEdge || input.shiftKeyDown || !allowedMode || now < readyAt || input.forwardImpulse <= .1f
-                || player.isInWater() || player.onClimbable() || player.getDeltaMovement().y < MovementRules.MANTLE_MIN_VY) return false;
+                || cn.wwl.orimod.block.OriFluids.inWater(player) || player.onClimbable() || player.getDeltaMovement().y < MovementRules.MANTLE_MIN_VY) return false;
         var direction = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
         Direction side = SpiritMovement.touchingWall(player, direction, state.wallDirection);
         if (side == null) return false;

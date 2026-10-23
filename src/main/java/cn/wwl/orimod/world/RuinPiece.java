@@ -16,16 +16,17 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public final class RuinPiece extends TemplateStructurePiece {
+/** Surface ruins blend into the hillside (NeoForge beard hook, base at the deck); the cave altar stays buried. */
+public final class RuinPiece extends TemplateStructurePiece implements net.neoforged.neoforge.common.world.PieceBeardifierModifier {
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement) {
-        super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(placement.rotation()), placement.origin());
+        super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(kind, placement.rotation()), placement.origin());
         this.kind = kind;
         this.secret = kind.layout().secret();
         this.bridges = kind.layout().bridges();
         this.beetles = kind.layout().beetles();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
-        super(OriWorldgen.PIECE.get(), tag, manager, ignored -> settings(RuinPlacement.readRotation(tag.getString("Rot"))));
+        super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot"))));
         this.kind = kindOf(templateName);
         if (tag.contains("OriSecret", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
             var s = tag.getCompound("OriSecret");
@@ -47,7 +48,17 @@ public final class RuinPiece extends TemplateStructurePiece {
     public RuinKind kind() { return kind; }
     public RuinKind.Secret secret() { return secret; }
     private static ResourceLocation template(RuinKind kind) { return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + kind.id); }
-    private static StructurePlaceSettings settings(Rotation rotation) { return new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation); }
+    private static StructurePlaceSettings settings(RuinKind kind, Rotation rotation) {
+        var settings = new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation);
+        return kind == RuinKind.CAVE ? settings.addProcessor(CaveEntranceProcessor.INSTANCE) : settings;
+    }
+    @Override public BoundingBox getBeardifierBox() { return boundingBox; }
+    @Override public net.minecraft.world.level.levelgen.structure.TerrainAdjustment getTerrainAdjustment() {
+        return kind == null || kind == RuinKind.CAVE ? net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE
+                : net.minecraft.world.level.levelgen.structure.TerrainAdjustment.BEARD_THIN;
+    }
+    /** Beard base = the deck's walking surface, so the low side is filled and the high side eased, not cut. */
+    @Override public int getGroundLevelDelta() { return kind == null ? 0 : kind.layout().surfaceY(); }
     private static RuinKind kindOf(String template) {
         for (var kind : RuinKind.values()) if (template.endsWith("ruins/" + kind.id)) return kind;
         return null;

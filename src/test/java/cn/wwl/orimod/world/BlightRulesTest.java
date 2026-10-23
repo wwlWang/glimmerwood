@@ -86,7 +86,16 @@ class BlightRulesTest {
     }
     @Test void worldgenUsesEarlyStageAndAgreedRarity() throws Exception{
         var root=java.nio.file.Path.of(System.getProperty("orimod.projectDir","."),"src/main/resources/data/orimod");
-        var modifier=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(root.resolve("neoforge/biome_modifier/blighted_grounds.json"))).getAsJsonObject();assertEquals("local_modifications",modifier.get("step").getAsString());
-        var placed=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(root.resolve("worldgen/placed_feature/blighted_grounds.json"))).getAsJsonObject();assertEquals(160,placed.getAsJsonArray("placement").get(0).getAsJsonObject().get("chance").getAsInt());
+        // R114: a structure start (so /locate finds it); the old 1/160 chunk rarity becomes a 13-chunk spread.
+        var structure=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(root.resolve("worldgen/structure/blighted_grounds.json"))).getAsJsonObject();
+        assertEquals("local_modifications",structure.get("step").getAsString());assertEquals("blighted_grounds",structure.get("site").getAsString());
+        var placement=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(root.resolve("worldgen/structure_set/blighted_grounds.json"))).getAsJsonObject().getAsJsonObject("placement");
+        assertEquals(13,placement.get("spacing").getAsInt());
+        assertFalse(java.nio.file.Files.exists(root.resolve("neoforge/biome_modifier/blighted_grounds.json")));
+    }
+    @Test void poolsOnlyWhereNoNeighbourIsLower(){
+        assertTrue(BlightRules.poolContained(118,118));
+        assertTrue(BlightRules.poolContained(118,121));
+        assertFalse(BlightRules.poolContained(118,117),"a lower neighbour would let gloom water flow out");
     }
 }

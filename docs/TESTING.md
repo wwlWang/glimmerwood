@@ -1,5 +1,35 @@
 # 回归测试
 
+## R114 P1/P2（最终全量与客户端审查通过）
+
+最终 `build runGameTestServer compileDevtoolsJava`：**1410 JUnit / 814 GameTest，0失败/错误/跳过**；证据 `evidence/r114-p1/full-tests-10.log/xml`、`full-10-counts.json`、`final-10-junit/`。新增坡地防外溢用例已过，旧陡坡测试按总落差规则改为7格。JUnit比前轮少1是Claude删除弓弦第二只手的专属测试；其运行时代码与手部出口重载也已删除。下文保留中间失败及调查，不以最终全绿冒充原超时根因已证实。
+
+猛击使用 `distance × (1.25 − 0.45·cosθ)`：仍在6格视线范围内，背后目标可选，近似距离优先前方；刚弹出的目标在15 tick或实际落地前暂不参与选取。瞄准窗36 tick。原 `RuinBridgesGameTests` 未改动，`full-tests-3.log` 中原桥连跳/旋转用例已通过。旧灵灯测试要求立即重选同一目标，与新排除规则冲突；现在保留点亮/有效性断言，并检查立即不可重选、真实15 tick后恢复及提前落地恢复。
+
+腐光水改用同ID的LiquidBlock与 source/flowing FluidType，坡距2、每格降2级、10 tick流动、不生成无限源，无可挖轮廓/掉落/桶；旧无LEVEL属性方块按默认0读作源。接触魔法伤害和减速保留；水冲、水中姿态、滑翔和锤落水取消使用NeoForge自定义FluidType查询。三种遗迹及平地腐化地带各运行200 tick，新增腐光水坐标集合为空；本轮未改池塘模板。后续新增5格落差的台阶腐化地带：固定种子114的9个候选池中2格面向更低邻列，生成后保留为土；7格仍有水，200tick后原水源均保留且新增外溢0。旧preflight_steep夹具6格落差在新relief≤6规则下合法，full-tests-9仅该项失败；按Claude确认改成7格，保留失败零写入断言。接触夹具原先错误地断言原版isInWater（NeoForge自定义FluidType单独追踪），之后仅调用player.tick也未触发移动碰撞；改为baseTick刷新浸没状态并实际move，接触伤害回归通过。
+
+相机修前数据在 `evidence/r114-camera-hands-before-v001/results.json` 和 `r114-p1/camera-before-summary.json`：玩家X恒为6022.91，停步后相机X从6019.4063回到6018.9100，后移约0.496格；是旧lag(11/s)与lead(3.5/s)两套过滤器消退速度不同，残留正向前导回缩。新CameraFollow使用单一临界阻尼跟随（ω=22，滞后上限0.55格），取消前导；反向/骤停不越过目标，暂停不积分。JUnit覆盖4/20/60/144FPS、4/6.4/10m/s停止、反向、大速度与暂停；客户端修后 `r114-camera-after-v001`：玩家X恒6020.99，相机X从6016.7574单调收敛至6016.9900，最大反向步长0，未越过目标；Claude已确认#2通过。
+
+`fluid-tests-1/2`保留之前失败；`full-tests-3.log/xml`为812 GameTest中811通过，仅旧灵灯即时重选断言失败；JUnit1381中1失败为我写的加权样例预期错误（身后1格得分1.7，前方2格1.6），改为身后1/前方3，随后复验通过。`full-tests-4.log`是Claude世界生成文件括号错误导致的编译失败，不是测试失败。`full-tests-5.log/xml`通过1399 JUnit / 813 GameTest，纳入后续Blight诊断/裸岩地基后`full-tests-6.log/xml`通过1410 JUnit / 813 GameTest；两处测试修正已通过，正式P1逻辑未为旧断言让步。最新中位数与加密预筛、P2弓出口修正合并后，full-tests-8.log/xml为 **1411 JUnit / 813 GameTest，0失败/错误/跳过**。之前full-tests-7为1411/813中仅潮夜夹具等待失败，原文“Tide fixture ring did not load block/entity data”，未进入spawnWave。其旧等待预算80tick、整测试100tick；没有记录原失败区块明细或旧成功时长。隔离探针等待0tick（FULL获取0.66ms，总7.1ms），200波73甲虫/61鸦/296喷吐者；全量重跑也等待0tick（0.13ms/2.72ms）。准备阶段改为有界400tick、整测试420tick，原FULL/实体数据条件、票据清理、全部波次断言和生产逻辑均不变；新增旧截止点/就绪日志。延长窗口未在隔离/首轮成功运行中用到，因此根因仍未证实，也不归因于新地形预筛（GameTest为FLAT，计时从同步FULL获取后才开始）。详见r114-p1/tide-readiness-investigation.json及alone-2日志/XML；alone首轮因临时模板namespace错误未注册测试，不计为通过，临时探针已移除。 后续full-tests-9潮夜实际准备33tick（FULL0.14ms、总1912.55ms）后通过，仍低于旧80tick上限。 修前第一人称六种持物截图、视频和contact sheet在 `r114-camera-hands-before-v001`；短视频sheet末尾补重复帧，仅供观察已录动作，不作为额外采样。P2运行时代码由Claude负责。
+
+世界生成复查v002使用新存档 `orimod_dev_r114blight2`，seed114114（非v001存档）：原点与西南定位仍为空，东方核心(1256,72,-348)存在；DEBUG未启用，不能将无declined日志当作无拒绝。新存档orimod_dev_r114blight3（v003）开启world包DEBUG后，两空起点均报最终候选TERRAIN；东方核心仍存在。新存档blight4（v004）含逐候选原因及裸岩/砂砾地基修正，仍仅东方有核心；原点中心Y122、失败列Y118，西南各候选也有4格偏差，全部TERRAIN。完整日志见r114-blight-relocate-v004/declined.log。Claude随后改为各列相对地带中位数，先6格粗筛再3格细筛。全新orimod_dev_r114blight5（v005，seed114114）从原点/东方(2048,0)/西南(-2048,2048)重复定位：估计位置(-194,32)/(1249,-350)/(-2240,1072)，只有东方核心(1256,72,-348)存在；原点诊断仍有118对median122，西南新起点(-2227,64,1075)诊断为water地基。完整逐候选日志、三组全景/地面截图在r114-blight-relocate-v005。额外起点(-2217,66,952)declined日志中有两个OK；静态核对发现place内部nextLong与随后declineReason的nextLong是不同形状种子，所以这些诊断尚不能精确代表实际失败计划。已交Claude修复，未宣称世界生成验收通过。 后续修正每候选共用随机种子、移除单列偏差限制（仍总落差≤6）、过滤会漏水的池格并增加海平面+2的预筛；全新orimod_dev_r114blight6/seed114114从同三起点locate，实际核心分别(-190,122,34)、(1256,72,-348)、(-745,68,1887)，三者inspect_block均为gloom_core、生命40。world DEBUG已确认启用，本次三点采样及整个客户端会话declined均0行。六张全景/核心图、定位返回值和日志在r114-blight-relocate-v006；Claude已通过地形与池塘实拍审查。西南灰色裸岩已离线读NBT：主体stone，混gravel/granite/dirt/coal_ore，X[-1944,-1879]、Z[2059,2113]，多为Y71；不在任何附近Ori piece内，暂不归因于模组。见 `r114-blight-relocate-v002/{saved-starts,southwest-surface}.json`。
+
+R114补充实拍：`r114-gloom-fluid-v001/results.json`记录源后第1/2/3格分别LEVEL2/4/6、第4格为空，精灵接触20→18HP；全景补拍`r114-fluid-overview-v002`，首张short-flow机位过低不作全景依据。西南裸岩F3截图确认minecraft:stony_shore。P2最终接线后build/JUnit为1410项全绿；修后七组视频/sheet/motion在`r114-hands-after-v001`，含三次单刀（修后回看motion发现均为stage1，尚非三连）、弓（1发）、空中锤hammer_slam→idle、矛冷却、吃苹果、原版剑，另有左主手/Spirit Glow帧；目前满弓两条前臂交叉遮挡明显，已交Claude调姿，不宣称P2视觉验收通过。视频有丢帧，sheet短尾重复最后录制帧，不以它量测精确动画时间。 后续r114-hands-after-v002补拍五段，真实input_script按键确保服务端blade stage为1/2/3；Claude审查通过三连、锤抬举与矛朝前持握，弓满拉前臂仍穿过视线，交Claude改stringPaw前臂出口后在r114-hands-after-v003补拍idle/满拉/释放单帧及6秒video/sheet/motion；v003向下出屏仍占视线，Claude最终删除弦端第二只手，保留原版精确弓姿势与抬弓/后坐。r114-hands-after-v004的bow-idle/full-draw/release三帧经审查通过；真实满拉35tick、松手射出1发，手部不再交叉。所有实拍llvmpipe + DISPLAY=:0，客户端正常退出、清票、恢复临时world DEBUG配置。
+
+
+## R114 P0：创飞保护与灵锤接地
+
+修前证据 `evidence/r114-p0/before-tests.log`、before-gametest.xml：新增14项中13项失败（十项保留创造/旁观目标、关闭能力无敌后的鸦冲击、创造玩家受风推、灵锤空中释放立即伤害）。普通创造的原版无敌本来能挡 hurt；`/ori god` 可将能力无敌关掉，不应混同原版规则。五类怪物的目标入口、攻击开始/延续、投射物和范围攻击统一排除创造/旁观，并仍使用普通 hurt 伤害源。生存目标伤害有正向回归。
+
+灵锤新增短暂 hammer_slam 模式：松手后下落，实际地面碰撞时结算一次；水/熔岩、虚空、200tick超时、死亡、换形态/维度、传送/下线清理。沿用 COMBAT_VIEW，不新增协议。客户端下落速度在移动预测末端处理；下落期间不被被动墙附/滑翔接管。33项 gameplay_safety 覆盖上述路径及四武器结束/换槽后跳跃和空中冲刺。
+
+最终P0 `build runGameTestServer compileDevtoolsJava`：**1371 JUnit / 797 GameTest，0失败**，after-tests-final.log、after-gametest-final.xml、final-counts.json；包含Claude的世界生成修正与v014源重烘焙的第一人称v011爪模型。修前两项旧biome_modifier断言由Claude迁至structure/structure_set，未放宽游戏逻辑断言。
+
+#6b/#7记为“下砸修复后未复现”，不声称已证明是同一根因。真实输入数据在 r114-weapons-before-v001、r114-weapons-air-before-v001（60/4FPS）、r114-weapons-edge-v001（8组创造/双击飞行、6组下落/换槽）；后两项移动均可再次触发。高空锤实拍 r114-hammer-contact-v001 从y230开始，下降中维持hammer_slam，最终hammer_land并回idle。集成服务端实体先发生接地碰撞时，随后到达的客户端位置包可在单次诊断采样中仍显示稍高的Y，不能把包位置与早先碰撞tick视为同一瞬间。
+
+世界生成首轮（seed114114）六类locate与12张图在 r114-worldgen-v001，补近景在 r114-worldgen-detail-v002。腐化地带旧起点(-190,122,34)核心缺失，已报告Claude，等待扩大预检范围后的新世界复测。洞穴旁凹坑低点(-520,63,622)在piece外8格；Claude确认cave与approach均NONE，暂按原版噪声洞口处理。P1/P2另续，不计入此检查点。
+
+
 ## R113 第二批：恢复循环与技能轮盘
 
 `RecoveryTuning/RecoveryRules`集中数值与纯函数：精灵脱伤8秒后每秒0.5HP至80%，消耗后4秒回能2/秒至20（RECOVERY为3/秒）；Regenerate按住每20tick扣10能量恢复6HP，受伤含吸收伤害中断并等松键重试。80%不拦其他治疗；人形FoodData保持原版。FoodData.tick、玩家exhaustion/eat与和平aiStep分别门控，避免和平回血绕过新上限。

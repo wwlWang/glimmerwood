@@ -302,12 +302,14 @@ public final class GloomTideGameTests {
         return tests;
     }
     private static void add(List<TestFunction> list,String name,BiConsumer<GameTestHelper,Site> run) {
-        list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",100,0,true,h->{
+        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency");
+        list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",loadsRing?RING_READY_TICKS+20:100,0,true,h->{
             if(name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency")) {
                 loadedRing(h, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
             } else {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();}
         }));
     }
+    private static final int RING_READY_TICKS=400;
     private static final TicketType<ChunkPos> TIDE_TICKET=TicketType.create("orimod_gametest_tide",Comparator.comparingLong(ChunkPos::toLong));
     /** This 61x61 arena lies outside room's tickets. Block writes alone do not make entity sections ready.
      * Acquire only our own tickets, wait before touching global tide settings, and release on every exit. */
@@ -316,6 +318,7 @@ public final class GloomTideGameTests {
         var added=new ArrayList<ChunkPos>();
         var cleaned=new java.util.concurrent.atomic.AtomicBoolean();
         Runnable cleanup=()->{if(cleaned.compareAndSet(false,true))added.forEach(c->level.getChunkSource().removeRegionTicket(TIDE_TICKET,c,2,c));};
+        long began=System.nanoTime();
         try {
             for(int x=(base.getX()-30)>>4;x<=(base.getX()+30)>>4;x++)
                 for(int z=(base.getZ()-30)>>4;z<=(base.getZ()+30)>>4;z++) {
@@ -325,12 +328,21 @@ public final class GloomTideGameTests {
                     level.getChunk(x,z,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,true);
                 }
             long started=level.getGameTime();
+            double acquisitionMs=(System.nanoTime()-began)/1_000_000.;
             h.onEachTick(()->{
                 if(cleaned.get())return;
                 try {
-                    h.assertTrue(level.getGameTime()-started<80,"Tide fixture ring did not load block/entity data");
-                    if(chunks.stream().anyMatch(c->level.getChunkSource().getChunkNow(c.x,c.z)==null
-                            || !level.areEntitiesLoaded(c.toLong())))return;
+                    long waited=level.getGameTime()-started;
+                    long missingBlocks=chunks.stream().filter(c->level.getChunkSource().getChunkNow(c.x,c.z)==null).count();
+                    long missingEntities=chunks.stream().filter(c->!level.areEntitiesLoaded(c.toLong())).count();
+                    if(waited==80)com.mojang.logging.LogUtils.getLogger().info(
+                            "Tide fixture old deadline: blocks={}, entities={}, acquisition_ms={}",missingBlocks,missingEntities,acquisitionMs);
+                    if(missingBlocks!=0 || missingEntities!=0) {
+                        h.assertTrue(waited<RING_READY_TICKS,"Tide fixture ring did not load block/entity data: blocks="+missingBlocks+", entities="+missingEntities);
+                        return;
+                    }
+                    com.mojang.logging.LogUtils.getLogger().info(
+                            "Tide fixture ready: ticks={}, acquisition_ms={}, total_ms={}",waited,acquisitionMs,(System.nanoTime()-began)/1_000_000.);
                     try {test.run();} finally {cleanup.run();}
                 }catch(Throwable error){cleanup.run();throw error;}
             });

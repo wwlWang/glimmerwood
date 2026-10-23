@@ -27,6 +27,11 @@ final class SpiritItemGrip {
         return new org.joml.Quaternionf(palm).invert().mul(new org.joml.Quaternionf(display).invert());
     }
 
+    /** Paw rotation = item rotation in this view * inverse(item rotation relative to the grip bone). */
+    static org.joml.Quaternionf palmFromItem(org.joml.Quaternionf itemInView, org.joml.Quaternionf itemInPalm) {
+        return new org.joml.Quaternionf(itemInView).mul(new org.joml.Quaternionf(itemInPalm).invert()).normalize();
+    }
+
     static boolean lowered(ItemStack item) {
         // Only small things are cradled at the chest; weapons (hammer and bows included) hang in one hand, which keeps the
         // weapon on the hand instead of floating in front of the face, and leaves aiming to the authored pose.

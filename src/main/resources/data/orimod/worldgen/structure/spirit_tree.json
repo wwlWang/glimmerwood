@@ -1,0 +1,8 @@
+{
+  "type": "orimod:feature_site",
+  "site": "spirit_tree",
+  "biomes": "#orimod:has_spirit_tree",
+  "spawn_overrides": {},
+  "step": "local_modifications",
+  "terrain_adaptation": "none"
+}

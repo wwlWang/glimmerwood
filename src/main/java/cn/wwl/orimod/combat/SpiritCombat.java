@@ -158,6 +158,7 @@ public final class SpiritCombat {
         var s = player.getData(SpiritData.COMBAT);
         if (s.mode.equals("idle")) { if (player.onGround()) s.airHolds = 0; return; }
         if (player.onGround()) s.airHolds = 0;
+        if (s.mode.equals(HammerSlam.MODE)) { HammerSlam.tick(player); return; }
         if (!available(player) || movementOwnsAction(player)) { cancel(player, "unavailable"); return; }
         if (s.mode.equals("bow")) {
             if (!player.isUsingItem() || player.getUseItem() != s.weapon) cancel(player, "item");

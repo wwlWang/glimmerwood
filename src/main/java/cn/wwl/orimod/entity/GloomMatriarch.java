@@ -56,7 +56,7 @@ public final class GloomMatriarch extends Monster {
     }
 
     @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
-        super.setTarget(target);
+        super.setTarget(GloomTargets.attackable(target) ? target : null);
         cn.wwl.orimod.progression.CompanionLines.bossStarted(this, ARENA);
     }
 
@@ -84,6 +84,10 @@ public final class GloomMatriarch extends Monster {
     }
 
     // ---- state ------------------------------------------------------------------------------------------
+    @Override public boolean canAttack(LivingEntity target) {
+        return GloomTargets.attackable(target) && super.canAttack(target);
+    }
+
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(PHASE, 1); builder.define(TIMER, 0); builder.define(ENRAGE_LEFT, 0); }
     public int attack() { return entityData.get(ATTACK); }
     public int phase() { return entityData.get(PHASE); }
@@ -137,6 +141,7 @@ public final class GloomMatriarch extends Monster {
     }
 
     public void startAttack(int attack, LivingEntity target) {
+        if (!GloomTargets.attackable(target)) return;
         setTarget(target); entityData.set(ATTACK, attack); timer(telegraph(attack));
         if (attack == DIVE_TELEGRAPH) diveAt = target.position();
         level().playSound(null, getX(), getY(), getZ(), attack == DIVE_TELEGRAPH ? SoundEvents.PHANTOM_SWOOP : attack == GUST ? SoundEvents.ENDER_DRAGON_FLAP : SoundEvents.PHANTOM_AMBIENT,
@@ -151,13 +156,16 @@ public final class GloomMatriarch extends Monster {
 
     /** One AI step. @return feathers released this step (empty unless a fan was fired). */
     public List<GloomShot> step() {
+        if (getTarget()!=null && !GloomTargets.attackable(getTarget())) {
+            setTarget(null); entityData.set(ATTACK, IDLE); timer(0); diveAt=null; rest=restTicks(phase());
+        }
         var target = getTarget();
         switch (attack()) {
             case IDLE -> {
                 var h = home(); double a = tickCount * (phase() >= 2 ? .035 : .025);
                 Vec3 goal = new Vec3(h.getX() + .5 + Math.cos(a) * ORBIT, h.getY() + hover(phase()) + Math.sin(tickCount * .08) * .6, h.getZ() + .5 + Math.sin(a) * ORBIT);
                 setDeltaMovement(goal.subtract(position()).scale(.07));
-                var near = level().getNearestPlayer(getX(), getY(), getZ(), ARENA, p -> p instanceof Player pl && !pl.isCreative() && !pl.isSpectator());
+                var near = level().getNearestPlayer(getX(), getY(), getZ(), ARENA, p -> p instanceof Player pl && GloomTargets.canHit(this, pl));
                 if (near != null) target = near;
                 if (target != null && !enraging() && --rest <= 0) startAttack(nextAttack(cycle++, phase()), target);
             }
@@ -176,7 +184,7 @@ public final class GloomMatriarch extends Monster {
             }
             case DIVE -> {
                 setDeltaMovement(diveVelocity());
-                if (!diveHit) for (var e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(.6), e -> e != this && e == getTarget() && e.isAlive()))
+                if (!diveHit) for (var e : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(.6), e -> e != this && e == getTarget() && GloomTargets.canHit(this,e)))
                     if (e.hurt(damageSources().mobAttack(this), DIVE_DAMAGE)) { e.push(getDeltaMovement().x * .6, .5, getDeltaMovement().z * .6); e.hurtMarked = true; diveHit = true; }
                 if (advanceTimer() <= 0 || diveAt == null || position().distanceTo(diveAt) < 1.2 || onGround() || horizontalCollision) {
                     if (diveHit) { entityData.set(ATTACK, IDLE); rest = restTicks(phase()); } else stun();
@@ -221,7 +229,7 @@ public final class GloomMatriarch extends Monster {
     /** @return players thrown outward by the gust. */
     public int gust() {
         int hits = 0;
-        for (var p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(GUST_RADIUS), p -> p.isAlive() && !p.isSpectator() && p.distanceTo(this) <= GUST_RADIUS)) {
+        for (var p : level().getEntitiesOfClass(Player.class, getBoundingBox().inflate(GUST_RADIUS), p -> GloomTargets.canHit(this,p) && p.distanceTo(this) <= GUST_RADIUS)) {
             p.setDeltaMovement(gustVelocity(p.position().subtract(position()))); p.hurtMarked = true; hits++;
         }
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 2, .5f);

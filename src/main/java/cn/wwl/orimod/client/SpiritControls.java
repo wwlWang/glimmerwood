@@ -155,6 +155,9 @@ public final class SpiritControls {
             if (active) feel(player, state, input, (flags & MovementInputPayload.JUMP) != 0);
             else { feelControlled = false; cancelBlade(player); }
         } else { feelControlled = false; cancelBlade(player); }
+        if (active && !player.onGround() && cn.wwl.orimod.combat.HammerSlam.falling(
+                player.getData(SpiritData.COMBAT_VIEW), player.level().getGameTime()))
+            player.setDeltaMovement(cn.wwl.orimod.combat.HammerSlam.velocity(player.getDeltaMovement()));
         prevJumpHeld = (flags & MovementInputPayload.JUMP) != 0;
     }
 

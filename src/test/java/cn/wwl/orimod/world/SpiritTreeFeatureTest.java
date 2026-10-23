@@ -179,13 +179,18 @@ class SpiritTreeFeatureTest {
     }
     @Test void worldgenDataKeepsRarityAndBiomeScopeExplicit() throws Exception {
         var root = Path.of(System.getProperty("orimod.projectDir", ".")).resolve("src/main/resources/data/orimod");
-        var placed = JsonParser.parseString(Files.readString(root.resolve("worldgen/placed_feature/spirit_tree.json"))).getAsJsonObject();
-        assertEquals(220, placed.getAsJsonArray("placement").get(0).getAsJsonObject().get("chance").getAsInt());
         var biomes = Files.readString(root.resolve("tags/worldgen/biome/has_spirit_tree.json"));
         assertFalse(biomes.contains("lush_caves"));
         assertTrue(biomes.contains("minecraft:cherry_grove"));
-        var modifier = JsonParser.parseString(Files.readString(root.resolve("neoforge/biome_modifier/spirit_tree.json"))).getAsJsonObject();
-        assertEquals("local_modifications", modifier.get("step").getAsString(), "Spirit trees must precede vanilla vegetation");
-        assertEquals("#orimod:has_spirit_tree", modifier.get("biomes").getAsString());
+        // R114: a structure start (so /locate finds it), no longer a biome-modifier feature placed a second time.
+        var structure = JsonParser.parseString(Files.readString(root.resolve("worldgen/structure/spirit_tree.json"))).getAsJsonObject();
+        assertEquals("orimod:feature_site", structure.get("type").getAsString());
+        assertEquals("spirit_tree", structure.get("site").getAsString());
+        assertEquals("local_modifications", structure.get("step").getAsString(), "Spirit trees must precede vanilla vegetation");
+        assertEquals("#orimod:has_spirit_tree", structure.get("biomes").getAsString());
+        var placement = JsonParser.parseString(Files.readString(root.resolve("worldgen/structure_set/spirit_tree.json")))
+                .getAsJsonObject().getAsJsonObject("placement");
+        assertEquals(15, placement.get("spacing").getAsInt(), "~1 attempt per 220 chunks, as the old rarity filter");
+        assertFalse(Files.exists(root.resolve("neoforge/biome_modifier/spirit_tree.json")));
     }
 }

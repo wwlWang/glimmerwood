@@ -157,7 +157,7 @@ public final class SpiritChallenge {
         Vec3 relative = s.placement.local(player.position());
         var size = s.kind.layout().size();
         if (relative.x < -2 || relative.z < -2 || relative.x > size.getX() + 2 || relative.z > size.getZ() + 2
-                || relative.y < 1 || player.isInWaterOrBubble()) { finish(player, "fall", true); return; }
+                || relative.y < 1 || cn.wwl.orimod.block.OriFluids.inWater(player)) { finish(player, "fall", true); return; }
         if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.kind, s.placement)) { finish(player, "damaged", true); return; }
         if (ChallengeGhost.shouldRecord(elapsed, s.trace.size())) s.trace.add(relative);
         var ghostAt = ChallengeGhost.at(s.ghost, elapsed);

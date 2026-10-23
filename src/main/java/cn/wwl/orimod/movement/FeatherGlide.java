@@ -21,7 +21,7 @@ public final class FeatherGlide {
     public static boolean permitted(Player p) {
         return SpiritData.isSpirit(p) && (SpiritData.hasGlide(p) || migrating(p)) && !p.getAbilities().flying
                 && p.isAlive() && !p.isSpectator() && !p.isPassenger() && !p.isSleeping()
-                && !p.isInWaterOrBubble() && !p.isInLava() && !p.onClimbable()
+                && !cn.wwl.orimod.block.OriFluids.inWater(p) && !p.isInLava() && !p.onClimbable()
                 && !(p instanceof ServerPlayer s && cn.wwl.orimod.progression.Restoration.active(s));
     }
     public static boolean migrating(Player p) {

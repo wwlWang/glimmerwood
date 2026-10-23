@@ -51,16 +51,17 @@ public final class RuinStructure extends Structure {
             if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
         }
         // Include the ground immediately outside the doorway. Surface stairs cover
-        // the entire accepted four-block drop; cave stairs start at this ground height.
+        // the entire accepted four-block drop; cave stairs descend from it to the buried doorway.
         var approach = RuinApproachPiece.doorway(kind, footprint);
-        int approachHeight = samples.height(approach.block(new BlockPos(0, 0, -1)));
         for (int dx = -2; dx <= 2; dx++) {
             var sample = approach.block(new BlockPos(dx, 0, -1));
             int height = samples.height(sample);
             min = Math.min(min, height); max = Math.max(max, height);
             if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
         }
-        int surface = kind == RuinKind.CAVE ? approachHeight : max;
+        // The cave altar's roof sits at its doorway level: bury it under the lowest sampled ground so no flat
+        // deepslate plate shows; the approach stairs descend at most MAX_SLOPE + CAVE_COVER (< MAX_APPROACH_DELTA).
+        int surface = kind == RuinKind.CAVE ? min - RuinSiteRules.CAVE_COVER : max;
         var origin = footprint.origin().atY(surface - layout.surfaceY());
         var placement = new RuinPlacement(origin, rotation);
         var doorway = RuinApproachPiece.doorway(kind, placement);

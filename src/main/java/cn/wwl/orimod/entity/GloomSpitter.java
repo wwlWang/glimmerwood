@@ -37,10 +37,10 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new FloatGoal(this));
         var rangedGoal = new RangedAttackGoal(this, 1, ATTACK_INTERVAL, 14) {
-            @Override public boolean canUse() { return dazzled == 0 && super.canUse(); }
-            @Override public boolean canContinueToUse() { return dazzled == 0 && super.canContinueToUse(); }
+            @Override public boolean canUse() { return dazzled == 0 && GloomTargets.canHit(GloomSpitter.this, getTarget()) && super.canUse(); }
+            @Override public boolean canContinueToUse() { return dazzled == 0 && GloomTargets.canHit(GloomSpitter.this, getTarget()) && super.canContinueToUse(); }
             // Mob can tick running goals before its next selector cleanup pass.
-            @Override public void tick() { if (dazzled == 0) super.tick(); }
+            @Override public void tick() { if (dazzled == 0 && GloomTargets.canHit(GloomSpitter.this, getTarget())) super.tick(); }
         };
         goalSelector.addGoal(2, rangedGoal);
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, .8));
@@ -48,6 +48,14 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+    }
+
+    @Override public boolean canAttack(LivingEntity target) {
+        return GloomTargets.attackable(target) && super.canAttack(target);
+    }
+
+    @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        super.setTarget(GloomTargets.attackable(target) ? target : null);
     }
 
     @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
@@ -69,6 +77,7 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     /** Advance the telegraph; the orb leaves when it runs out. @return the shot, if one left this tick. */
     public GloomShot tickCharge() {
         if (dazzled > 0) return null;
+        if (chargeTarget != null && !GloomTargets.canHit(this, chargeTarget)) { entityData.set(CHARGE, 0); chargeTarget = null; return null; }
         int left = charge();
         if (left <= 0) return null;
         entityData.set(CHARGE, left - 1);
@@ -78,6 +87,7 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     }
 
     @Override public void tick() {
+        if (!level().isClientSide && getTarget() != null && !GloomTargets.canHit(this, getTarget())) { setTarget(null); getNavigation().stop(); }
         super.tick();
         if (!level().isClientSide) {
             if (dazzled > 0) dazzled--;
@@ -87,12 +97,13 @@ public final class GloomSpitter extends Monster implements RangedAttackMob {
     }
 
     @Override public void performRangedAttack(LivingEntity target, float power) {
-        if (dazzled > 0 || charge() > 0) return;
+        if (!GloomTargets.canHit(this, target) || dazzled > 0 || charge() > 0) return;
         chargeTarget = target; entityData.set(CHARGE, CHARGE_TICKS);
         playSound(SoundEvents.AMETHYST_BLOCK_RESONATE, 1, .6f);
     }
 
     public GloomShot spit(LivingEntity target) {
+        if (!GloomTargets.canHit(this, target)) return null;
         var shot = new GloomShot(OriMobs.GLOOM_SHOT.get(), level());
         shot.setOwner(this);
         shot.setPos(getX(), getEyeY() - .1, getZ());

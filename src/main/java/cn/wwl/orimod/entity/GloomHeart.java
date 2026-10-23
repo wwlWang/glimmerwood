@@ -48,7 +48,7 @@ public final class GloomHeart extends Monster {
     }
 
     @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
-        super.setTarget(target);
+        super.setTarget(GloomTargets.attackable(target) ? target : null);
         cn.wwl.orimod.progression.CompanionLines.bossStarted(this, ARENA);
     }
 
@@ -70,6 +70,10 @@ public final class GloomHeart extends Monster {
     public static int telegraph(int attack) { return attack == RING ? RING_TELEGRAPH : attack == SLAM ? SLAM_TELEGRAPH : VOLLEY_TELEGRAPH; }
 
     // ---- state ----------------------------------------------------------------------------------------
+    @Override public boolean canAttack(LivingEntity target) {
+        return GloomTargets.attackable(target) && super.canAttack(target);
+    }
+
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder); builder.define(ATTACK, IDLE); builder.define(TIMER, 0); builder.define(PHASE, 1); builder.define(ENRAGE_LEFT, 0);
     }
@@ -128,6 +132,7 @@ public final class GloomHeart extends Monster {
 
     /** Begin a telegraphed attack. */
     public void startAttack(int attack, LivingEntity target) {
+        if (!GloomTargets.attackable(target)) return;
         entityData.set(ATTACK, attack); entityData.set(TIMER, telegraph(attack));
         setTarget(target);
         if (attack == SLAM) slamAt = target.position();
@@ -137,6 +142,9 @@ public final class GloomHeart extends Monster {
 
     /** Advance the current telegraph. @return orbs released this tick (empty until the telegraph ends). */
     public java.util.List<GloomShot> tickAttack() {
+        if (getTarget()!=null && !GloomTargets.attackable(getTarget())) {
+            setTarget(null); entityData.set(ATTACK, IDLE); entityData.set(TIMER,0); slamAt=null; return java.util.List.of();
+        }
         int attack = attack(), left = timer();
         if (attack == IDLE) return java.util.List.of();
         if (left > 1) { entityData.set(TIMER, left - 1); return java.util.List.of(); }
@@ -189,7 +197,7 @@ public final class GloomHeart extends Monster {
         if (slamAt == null || !(level() instanceof ServerLevel server)) return 0;
         int hits = 0;
         for (var player : server.getEntitiesOfClass(Player.class, new net.minecraft.world.phys.AABB(slamAt, slamAt).inflate(SLAM_RADIUS, 1.5, SLAM_RADIUS),
-                p -> p.isAlive() && !p.isSpectator() && p.position().distanceTo(slamAt) <= SLAM_RADIUS)) {
+                p -> GloomTargets.canHit(this, p) && p.position().distanceTo(slamAt) <= SLAM_RADIUS)) {
             if (player.hurt(damageSources().mobAttack(this), SLAM_DAMAGE)) { player.push(0, .6, 0); player.hurtMarked = true; hits++; }
         }
         cn.wwl.orimod.fx.SpiritFx.emit(server, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, slamAt.x, slamAt.y, slamAt.z, null);
@@ -209,7 +217,7 @@ public final class GloomHeart extends Monster {
         double a = tickCount * (phase() >= 2 ? .03 : .02);
         Vec3 goal = new Vec3(h.getX() + .5 + Math.cos(a) * ORBIT, h.getY() + HOVER + Math.sin(tickCount * .07) * .5, h.getZ() + .5 + Math.sin(a) * ORBIT);
         setDeltaMovement(goal.subtract(position()).scale(.08));
-        var target = level().getNearestPlayer(getX(), getY(), getZ(), ARENA, p -> p instanceof Player pl && !pl.isCreative() && !pl.isSpectator());
+        var target = level().getNearestPlayer(getX(), getY(), getZ(), ARENA, p -> p instanceof Player pl && GloomTargets.canHit(this, pl));
         if (target != null) getLookControl().setLookAt(target);
         if (attack() != IDLE) { tickAttack(); return; }
         if (target == null || enraging() || --rest > 0) return;

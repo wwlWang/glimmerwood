@@ -18,8 +18,10 @@ import java.util.*;
 public final class BlightedGroundsFeature extends Feature<NoneFeatureConfiguration> {
     public BlightedGroundsFeature(){super(NoneFeatureConfiguration.CODEC);}
     public enum Reason { OK, UNLOADED, BUILD_HEIGHT, SANCTUARY, RUIN, TERRAIN, CLEARANCE }
-    public record Preflight(Reason reason,BlockPos center,Map<BlockPos,BlockState> writes) {}
-    private static Preflight no(Reason reason,BlockPos center){return new Preflight(reason,center,Map.of());}
+    /** {@code detail} names the failing check and column for decline logs; empty when OK. */
+    public record Preflight(Reason reason,BlockPos center,Map<BlockPos,BlockState> writes,String detail) {}
+    private static Preflight no(Reason reason,BlockPos center){return no(reason,center,"");}
+    private static Preflight no(Reason reason,BlockPos center,String detail){return new Preflight(reason,center,Map.of(),detail);}
     public static boolean nearBlock(WorldGenLevel level,BlockPos center,int radius,Block block){
         int minY=Math.max(level.getMinBuildHeight(),center.getY()-radius),maxY=Math.min(level.getMaxBuildHeight()-1,center.getY()+radius);
         for(int cx=(center.getX()-radius)>>4;cx<=(center.getX()+radius)>>4;cx++)for(int cz=(center.getZ()-radius)>>4;cz<=(center.getZ()+radius)>>4;cz++){
@@ -35,6 +37,24 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         }
         return false;
     }
+    /** Ground the soil disc may replace. Every floor becomes blighted soil, so exposed stone and gravel patches
+     * (common on slopes and in worn forest floors) qualify as well as dirt, sand and clay. */
+    static boolean naturalFloor(BlockState state){
+        return state.is(BlockTags.DIRT) || state.is(BlockTags.SAND) || state.is(Blocks.CLAY)
+                || state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Blocks.GRAVEL);
+    }
+    static boolean poolHolds(WorldGenLevel level,BlockPos center,BlockPos offset,Map<BlockPos,Integer> groundAt){
+        int y=groundAt.get(offset);
+        var bed=new BlockPos(center.getX()+offset.getX(),y-2,center.getZ()+offset.getZ());
+        if(!level.getBlockState(bed).isFaceSturdy(level,bed,Direction.UP))return false;
+        for(var side:Direction.Plane.HORIZONTAL){
+            var next=offset.relative(side);
+            Integer ground=groundAt.get(next);
+            int h=ground!=null?ground:level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,center.getX()+next.getX(),center.getZ()+next.getZ());
+            if(!BlightRules.poolContained(y,h))return false;
+        }
+        return true;
+    }
     public static Preflight preflight(WorldGenLevel level,BlockPos origin,long seed){
         var plan=BlightedGroundsShape.plan(seed);
         // No synchronous loads for commands; WorldGenRegion only reads its already supplied neighborhood.
@@ -45,19 +65,28 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         if(RuinVegetationGuard.blocksTree(level,center,12))return no(Reason.RUIN,center);
         if(nearBlock(level,center,12,OriBlocks.SPIRIT_TREE_HEART.get()) || nearBlock(level,center,12,OriBlocks.GLOOM_CORE.get()))return no(Reason.SANCTUARY,center);
         var surface=new HashMap<BlockPos,BlockPos>();int min=height,max=height;
-        for(var offset:plan.soil()){
+        var soil=plan.soil();var heights=new int[soil.size()];int i=0;
+        for(var offset:soil)heights[i++]=level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,center.getX()+offset.getX(),center.getZ()+offset.getZ());
+        // Only the relief across the disc caps the terrain (<= 6). The soil follows each column, and a per-column limit
+        // against the centre (or median) rejected sites over small carved dips the start's noise prefilter cannot see.
+        var groundAt=new HashMap<BlockPos,Integer>();
+        i=0;
+        for(var offset:soil){
             int x=center.getX()+offset.getX(),z=center.getZ()+offset.getZ();
-            int y=level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,x,z);
+            int y=heights[i++];
             min=Math.min(min,y);max=Math.max(max,y);
             var floor=new BlockPos(x,y-1,z);var state=level.getBlockState(floor);
-            if(max-min>6 || Math.abs(y-height)>3 || !state.isFaceSturdy(level,floor,Direction.UP) || !state.getFluidState().isEmpty()
+            if(max-min>6)return no(Reason.TERRAIN,center,"relief "+min+".."+max+" at "+floor.toShortString());
+            if(!state.isFaceSturdy(level,floor,Direction.UP) || !state.getFluidState().isEmpty()
                     || state.hasBlockEntity() || state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)
-                    || !(state.is(BlockTags.DIRT) || state.is(BlockTags.SAND) || state.is(Blocks.CLAY)))return no(Reason.TERRAIN,center);
-            surface.put(offset,floor);
+                    || !naturalFloor(state))
+                return no(Reason.TERRAIN,center,"floor "+state.getBlock()+" at "+floor.toShortString());
+            surface.put(offset,floor);groundAt.put(offset,y);
         }
         var writes=new LinkedHashMap<BlockPos,BlockState>();
         for(var floor:surface.values())writes.put(floor,OriBlocks.BLIGHTED_SOIL.get().defaultBlockState());
-        for(var offset:plan.pools())writes.put(surface.get(offset),OriBlocks.GLOOM_WATER.get().defaultBlockState());
+        // Gloom water flows: a pool cell is kept only where it cannot spill (no lower neighbour, solid bed), else it stays soil.
+        for(var offset:plan.pools())if(poolHolds(level,center,offset,groundAt))writes.put(surface.get(offset),OriBlocks.GLOOM_WATER.get().defaultBlockState());
         for(var offset:plan.thorns())writes.put(surface.get(offset).above(),OriBlocks.GLOOM_THORNS.get().defaultBlockState());
         for(var entry:plan.trees().entrySet()){
             var base=surface.get(entry.getKey()).above();int h=entry.getValue();
@@ -69,12 +98,12 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         writes.put(center,OriBlocks.GLOOM_CORE.get().defaultBlockState());
         for(var entry:writes.entrySet()){
             var p=entry.getKey();
-            if(level.isOutsideBuildHeight(p) || !level.ensureCanWrite(p))return no(Reason.BUILD_HEIGHT,center);
-            if(!surface.containsValue(p) && !SpiritTreeFeature.replaceable(level.getBlockState(p)))return no(Reason.CLEARANCE,center);
+            if(level.isOutsideBuildHeight(p) || !level.ensureCanWrite(p))return no(Reason.BUILD_HEIGHT,center,p.toShortString());
+            if(!surface.containsValue(p) && !SpiritTreeFeature.replaceable(level.getBlockState(p)))return no(Reason.CLEARANCE,center,level.getBlockState(p).getBlock()+" at "+p.toShortString());
         }
         // Ensure the approach/core headroom is genuinely accessible, not just the crystal's own block.
         for(int y=1;y<=2;y++)if(!SpiritTreeFeature.replaceable(level.getBlockState(center.above(y))))return no(Reason.CLEARANCE,center);
-        return new Preflight(Reason.OK,center,Collections.unmodifiableMap(writes));
+        return new Preflight(Reason.OK,center,Collections.unmodifiableMap(writes),"");
     }
     @Override public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context){
         var result=preflight(context.level(),context.origin(),context.random().nextLong());if(result.reason()!=Reason.OK)return false;

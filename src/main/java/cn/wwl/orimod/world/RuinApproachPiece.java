@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 
 /** The approach shape comes from saved terrain samples, independent of neighboring chunk decoration. */
-public final class RuinApproachPiece extends StructurePiece {
+public final class RuinApproachPiece extends StructurePiece implements net.neoforged.neoforge.common.world.PieceBeardifierModifier {
     public static final int WIDTH = 5, DEPTH = 9;
     private final RuinPlacement placement;
     private final int[] terrain;
@@ -48,6 +48,13 @@ public final class RuinApproachPiece extends StructurePiece {
         return new RuinPlacement(ruin.block(new BlockPos((int)kind.layout().entry().x,
                 kind == RuinKind.CAVE ? kind.layout().surfaceY() : 1, 0)), ruin.rotation());
     }
+
+    /** The stairs adapt to the sampled terrain themselves; a beard on this tall box would hollow the ground under it. */
+    @Override public BoundingBox getBeardifierBox() { return boundingBox; }
+    @Override public net.minecraft.world.level.levelgen.structure.TerrainAdjustment getTerrainAdjustment() {
+        return net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE;
+    }
+    @Override public int getGroundLevelDelta() { return 0; }
 
     private static BoundingBox bounds(RuinPlacement doorway) {
         return doorway.blocks(new BlockPos(-2, -24, -9), new BlockPos(2, 64, -1));

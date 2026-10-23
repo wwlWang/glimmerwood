@@ -311,18 +311,11 @@ public final class FeelTuning {
     }
 
     // ---- R79 third-person camera follow ------------------------------------------------------------------------------
-    public static final double CAMERA_LAG_RATE = 11, CAMERA_LAG_MAX = .55;              // 1/s exponential follow, blocks
+    public static final double CAMERA_FOLLOW_OMEGA = 22, CAMERA_LAG_MAX = .55;          // critically damped, rad/s; blocks
     public static final double CAMERA_LAG_VERTICAL = .6;                                // vertical lag share (softer jumps)
-    public static final double CAMERA_LEAD_SECONDS = .16, CAMERA_LEAD_MAX = .9, CAMERA_LEAD_RATE = 3.5;
 
     /** Exponential smoothing factor for a frame of {@code dt} seconds at {@code rate} per second (frame-rate independent). */
     public static double follow(double rate, double dt) { return 1 - Math.exp(-rate * Math.max(0, dt)); }
-
-    /** Lead target in blocks from a horizontal velocity in blocks per second, clamped. */
-    public static Vec3 leadTarget(Vec3 velocityPerSecond) {
-        var flat = new Vec3(velocityPerSecond.x, 0, velocityPerSecond.z).scale(CAMERA_LEAD_SECONDS);
-        return flat.length() > CAMERA_LEAD_MAX ? flat.normalize().scale(CAMERA_LEAD_MAX) : flat;
-    }
 
     // ---- R81 trail tone: white core fading to cool spirit blue (Ori's light is white-blue, never warm) ------------
     public static final int TRAIL_CORE = 0xF2F8FF, TRAIL_TAIL = 0x8EC8FF;

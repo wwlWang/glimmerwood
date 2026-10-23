@@ -140,7 +140,8 @@ public final class LanternGameTests {
             h.assertTrue(lit(h, near), "Charge flame did not light nearby lamp");
             h.assertFalse(lit(h, far), "Charge flame lit distant lamp");
         });
-        add(tests, "bash_release_ignites_and_lit_target_remains_valid", h -> {
+        for (boolean landing : new boolean[]{false, true}) timed(tests,
+                landing ? "lit_target_reopens_on_early_landing" : "bash_release_ignites_and_lit_target_remains_valid", h -> {
             var player = spirit(h);
             var pos = lantern(h, 5, 3, 7);
             var state = player.getData(SpiritData.MOVEMENT);
@@ -153,8 +154,20 @@ public final class LanternGameTests {
                 h.assertValueEqual(state.acceptedBashes, 1, "Bash launch count");
                 h.assertTrue(lit(h, pos), "Bash release did not light lantern");
                 h.assertTrue(target.valid(player), "LIT invalidated existing target");
-                h.assertTrue(SpiritTargets.find(player, 0, pitch(player, pos)) != null, "Lit lamp cannot be selected again");
-            } finally { SpiritMovement.cancel(player, state); }
+                h.assertTrue(SpiritTargets.find(player, 0, pitch(player, pos)) == null, "Recently bashed lamp was not excluded");
+                h.runAfterDelay(landing ? 5 : cn.wwl.orimod.movement.BashSession.TARGET_COOLDOWN_TICKS, () -> {
+                    try {
+                        if (landing) {
+                            player.setDeltaMovement(Vec3.ZERO); player.setOnGround(true);
+                            h.assertTrue(SpiritMovement.grounded(player), "Landing fixture lacks real support");
+                            h.assertTrue(h.getLevel().getGameTime() < state.recentBashUntil, "Landing test waited for timeout");
+                        }
+                        h.assertTrue(lit(h, pos), "Lamp went out during Bash exclusion");
+                        h.assertTrue(SpiritTargets.find(player, 0, pitch(player, pos)) != null, "Lit lamp cannot be selected after exclusion");
+                        h.succeed();
+                    } finally { SpiritMovement.cancel(player, state); }
+                });
+            } catch (RuntimeException | Error e) { SpiritMovement.cancel(player, state); throw e; }
         });
         add(tests, "cancelled_bash_does_not_ignite", h -> {
             var player = spirit(h);

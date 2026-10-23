@@ -12,7 +12,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 
 /** Separate from ruin contracts. Merchant slots are consumed once, even on repeated chunk postProcess. */
-public final class GladesOutpostPiece extends TemplateStructurePiece {
+public final class GladesOutpostPiece extends TemplateStructurePiece implements net.neoforged.neoforge.common.world.PieceBeardifierModifier {
     public static final BlockPos SIZE=new BlockPos(31,18,31), ENTRY=new BlockPos(15,3,0), WELL=new BlockPos(15,3,19);
     public static final java.util.List<BlockPos> MERCHANTS=java.util.List.of(new BlockPos(7,3,13),new BlockPos(23,3,13));
     private static final ResourceLocation TEMPLATE=ResourceLocation.parse("orimod:glades_outpost");
@@ -35,6 +35,10 @@ public final class GladesOutpostPiece extends TemplateStructurePiece {
     }
     public GladesOutpostPiece(StructureTemplateManager m,RuinPlacement at){super(OriWorldgen.OUTPOST_PIECE.get(),0,m,TEMPLATE,TEMPLATE.toString(),settings(at.rotation()),at.origin());}
     public GladesOutpostPiece(StructureTemplateManager m,CompoundTag tag){super(OriWorldgen.OUTPOST_PIECE.get(),tag,m,s->settings(RuinPlacement.readRotation(tag.getString("Rot"))));spawned=tag.getInt("Merchants")&3;}
+    /** Terrace edges blend into the slope instead of a five-block cut or fill wall; base = the courtyard floor. */
+    @Override public BoundingBox getBeardifierBox(){return boundingBox;}
+    @Override public TerrainAdjustment getTerrainAdjustment(){return TerrainAdjustment.BEARD_THIN;}
+    @Override public int getGroundLevelDelta(){return ENTRY.getY();}
     private static StructurePlaceSettings settings(Rotation r){return new StructurePlaceSettings().setIgnoreEntities(true).setRotation(r);}
     @Override protected void handleDataMarker(String name,BlockPos pos,ServerLevelAccessor level,RandomSource random,BoundingBox bounds) {}
     public RuinPlacement placement(){return new RuinPlacement(templatePosition,getRotation());}

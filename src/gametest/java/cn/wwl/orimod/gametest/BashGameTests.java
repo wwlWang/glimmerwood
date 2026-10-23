@@ -149,6 +149,48 @@ public final class BashGameTests {
                 h.assertTrue(target.getOwner() == skeleton, "Stationary anchor arrow changed owner");
             } finally { SpiritMovement.cancel(player, state); target.discard(); }
         });
+        add(tests, "nearest_behind_beats_forward_enemy", h -> {
+            var player=player(h);var near=spawn(h,EntityType.HUSK);var far=spawn(h,EntityType.ZOMBIE);
+            near.setPos(player.position().add(0,0,-1));far.setPos(player.position().add(0,0,3));
+            try {h.assertTrue(SpiritTargets.find(player,0,0).entity()==near,"Nearest target behind player was ignored");}
+            finally {near.discard();far.discard();}
+        });
+        add(tests, "passed_target_still_selected", h -> {
+            var player=player(h);var target=spawn(h,EntityType.HUSK);target.setPos(player.position().add(0,0,-2));
+            try {h.assertTrue(SpiritTargets.find(player,0,0).entity()==target,"Just-passed target ignored");}
+            finally {target.discard();}
+        });
+        add(tests, "forward_chain_beats_similar_target_behind", h -> {
+            var player=player(h);var behind=spawn(h,EntityType.HUSK);var ahead=spawn(h,EntityType.ZOMBIE);
+            behind.setPos(player.position().add(0,0,-2.5));ahead.setPos(player.position().add(0,0,3));
+            try {h.assertTrue(SpiritTargets.find(player,0,0).entity()==ahead,"Forward chain lost to nearby target behind");}
+            finally {behind.discard();ahead.discard();}
+        });
+        for(boolean landing:new boolean[]{false,true})add(tests,"recent_target_reopens_"+(landing?"landing":"timeout"),h->{
+            var player=player(h);var target=spawn(h,EntityType.HUSK);var s=player.getData(SpiritData.MOVEMENT);
+            try {
+                press(player,1,true);press(player,2,false);
+                h.assertTrue(SpiritTargets.find(player,0,0)==null,"Recently bashed target not excluded");
+                if(landing){s.groundLockUntil=0;player.setOnGround(true);}
+                else s.recentBashUntil=player.level().getGameTime();
+                h.assertTrue(SpiritTargets.find(player,0,0)!=null,"Recent-target exclusion did not end");
+            }finally{SpiritMovement.cancel(player,s);target.discard();}
+        });
+        add(tests, "wall_still_occludes_nearest_behind", h -> {
+            var player=player(h);var near=spawn(h,EntityType.HUSK);var far=spawn(h,EntityType.ZOMBIE);
+            near.setPos(player.position().add(0,0,-3));far.setPos(player.position().add(0,0,3));
+            var wall=player.blockPosition().offset(0,0,-1);
+            h.getLevel().setBlock(wall,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),2);
+            h.getLevel().setBlock(wall.above(),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),2);
+            try {h.assertTrue(SpiritTargets.find(player,180,0).entity()==far,"Bash selected through a wall");}
+            finally {near.discard();far.discard();}
+        });
+        add(tests, "aim_session_keeps_full_reaction_window", h -> {
+            var player=player(h);var target=spawn(h,EntityType.ZOMBIE);var state=player.getData(SpiritData.MOVEMENT);
+            try {press(player,1,true);h.assertTrue(state.bash!=null,"Aim did not start");
+                h.assertValueEqual(state.bash.expiresAt-player.level().getGameTime(),36L,"Reaction window not 1.8 seconds");}
+            finally {SpiritMovement.cancel(player,state);target.discard();}
+        });
         return tests;
     }
 

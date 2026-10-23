@@ -31,7 +31,7 @@ public final class SpiritMovement {
     public static boolean canMove(Player player) {
         if(player instanceof ServerPlayer s && cn.wwl.orimod.progression.Restoration.active(s))return false;
         return SpiritData.isSpirit(player) && player.isAlive() && !player.isSpectator() && !player.isSleeping()
-                && !player.isPassenger() && !player.isInWaterOrBubble() && !player.isInLava()
+                && !player.isPassenger() && !cn.wwl.orimod.block.OriFluids.inWater(player) && !player.isInLava()
                 && !player.onClimbable() && !player.isFallFlying() && !player.getAbilities().flying;
     }
 
@@ -134,6 +134,9 @@ public final class SpiritMovement {
             else s.bash.hold(player);
             return;
         }
+        // A hammer fall owns vertical motion until contact. Fresh jump/dash inputs still
+        // go through allowMovement(), which can cancel it; passive wall/glide rules cannot.
+        if (player.getData(SpiritData.COMBAT).mode.equals(cn.wwl.orimod.combat.HammerSlam.MODE)) return;
         if (now < s.launchHitUntil) launchContact(player, s);
         if (AirMovement.tickOwned(player, s, now, grounded)) return;
         // R38: charge a ground Launch while crouching still on the ground; a short chime marks the full charge.
@@ -354,6 +357,8 @@ public final class SpiritMovement {
 
     /** Called after an actual server position synchronization, never inferred from travel distance. */
     public static void teleported(ServerPlayer player) {
+        if (player.getData(SpiritData.COMBAT).mode.equals(cn.wwl.orimod.combat.HammerSlam.MODE))
+            cn.wwl.orimod.combat.SpiritCombat.cancel(player, "teleport");
         var s = player.getData(SpiritData.MOVEMENT);
         if (s.mode != IDLE || s.bash != null || s.grapple != null) cancel(player, s);
         s.active = false; s.activeTicks = 0; s.jumpUntil = -100; s.jumps.clear();
@@ -418,7 +423,9 @@ public final class SpiritMovement {
         session.release(direction, player);
         if (session.target.block() != null)
             cn.wwl.orimod.block.SpiritLanternBlock.ignite(player.serverLevel(), session.target.block(), cn.wwl.orimod.block.SpiritLanternBlock.LIT_TICKS);
-        s.targetCooldowns.put(session.target.key(), now + BashSession.TARGET_COOLDOWN_TICKS);
+        s.recentBash = session.target.key();
+        s.recentBashUntil = now + BashSession.TARGET_COOLDOWN_TICKS;
+        s.targetCooldowns.put(s.recentBash, s.recentBashUntil);
         s.bash = null;
         s.airJumpSpent = s.airDashSpent = false;
         s.groundJumpAvailable = false;

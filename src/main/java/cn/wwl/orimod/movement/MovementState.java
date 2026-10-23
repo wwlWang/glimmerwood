@@ -29,6 +29,8 @@ public final class MovementState {
     /** R40: the Triple Jump shard's extra air jump. */
     public boolean tripleJumpSpent;
     public float pitch;
+    public String recentBash = "", aimedBash = "";
+    public long recentBashUntil;
     public BashSession bash;
     public int targetId = -1, acceptedBashes, cancelledBashes;
     public Vec3 targetPosition = Vec3.ZERO, suspendedVelocity = Vec3.ZERO;

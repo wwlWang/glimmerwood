@@ -15,6 +15,8 @@ public final class RuinSiteRules {
     public static final int MAX_APPROACH_DELTA = 7;
     /** Blocks kept between the template origin and the bottom of the world. */
     public static final int BUILD_MARGIN = 8;
+    /** Blocks the cave altar's doorway (and roof) sit below the lowest footprint sample. */
+    public static final int CAVE_COVER = 3;
     /** Deepest support filled under an approach step or landing (carver holes). */
     public static final int MAX_FILL = 16;
 

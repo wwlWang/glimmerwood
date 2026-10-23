@@ -15,6 +15,9 @@ public final class BlightRules {
             default -> false;
         };
     }
+    /** A pool cell (water replacing the floor of a column whose ground top is {@code ground}) cannot flow sideways into a
+     * neighbour whose ground top is at least as high. */
+    public static boolean poolContained(int ground,int neighbourGround) { return neighbourGround>=ground; }
     public static int crack(int health) { return Math.min(4,Math.max(0,(HEALTH-health)/8)); }
     public static int due(double distance,double radius) { return Math.max(1,Math.min(DURATION,(int)Math.ceil(DURATION*distance/Math.max(1,radius)))); }
     public static boolean protects(double squaredDistance) { return squaredDistance<=SANCTUARY_RADIUS*SANCTUARY_RADIUS; }

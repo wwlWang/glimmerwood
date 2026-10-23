@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "orimod:blighted_grounds",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 13,
+    "separation": 5,
+    "salt": 11420123
+  }
+}

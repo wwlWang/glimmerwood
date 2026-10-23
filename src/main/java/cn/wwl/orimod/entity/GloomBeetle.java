@@ -37,6 +37,14 @@ public final class GloomBeetle extends Monster {
         if(getNavigation() instanceof GroundPathNavigation ground)ground.setCanFloat(false);
     }
     public static AttributeSupplier.Builder attributes(){return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH,18).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.FOLLOW_RANGE,16).add(Attributes.ATTACK_DAMAGE,6);}
+    @Override public boolean canAttack(LivingEntity target) {
+        return GloomTargets.attackable(target) && super.canAttack(target);
+    }
+
+    @Override public void setTarget(@javax.annotation.Nullable LivingEntity target) {
+        super.setTarget(GloomTargets.attackable(target) ? target : null);
+    }
+
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder){super.defineSynchedData(builder);builder.define(STATE,0);builder.define(LEFT,0);}
     public State state(){return State.values()[entityData.get(STATE)];}
     public String stateName(){return state().name().toLowerCase(Locale.ROOT);}
@@ -56,7 +64,7 @@ public final class GloomBeetle extends Monster {
         targetSelector.addGoal(2,new NearestAttackableTargetGoal<>(this,Player.class,true));
     }
     public boolean beginWindup(Vec3 target){
-        if(level().isClientSide || state()!=State.IDLE || clock.cooldown()>0 || isInWater())return false;
+        if(level().isClientSide || state()!=State.IDLE || clock.cooldown()>0 || cn.wwl.orimod.block.OriFluids.inWater(GloomBeetle.this))return false;
         var delta=target.subtract(position()).multiply(1,0,1);
         if(!chargeRange(delta.lengthSqr()))return false;
         chargeDirection=delta.normalize();chargeYaw=(float)Math.toDegrees(Math.atan2(-delta.x,delta.z));charged=0;
@@ -76,8 +84,12 @@ public final class GloomBeetle extends Monster {
     private void faceCharge(){setYRot(chargeYaw);yBodyRot=chargeYaw;setYHeadRot(chargeYaw);}
     @Override public void tick(){
         if(!level().isClientSide){
+            if (getTarget()!=null && !GloomTargets.canHit(this,getTarget())) {
+                setTarget(null); getNavigation().stop();
+                if(state()==State.WINDUP || state()==State.CHARGING)stopCharge(false);
+            }
             clock(clock.step());
-            if(isInWater() && (state()==State.WINDUP || state()==State.CHARGING))stopCharge(false);
+            if(cn.wwl.orimod.block.OriFluids.inWater(GloomBeetle.this) && (state()==State.WINDUP || state()==State.CHARGING))stopCharge(false);
             if(state()!=State.IDLE)getNavigation().stop();
         }
         var before=position();var box=getBoundingBox();boolean charging=state()==State.CHARGING;
@@ -90,11 +102,11 @@ public final class GloomBeetle extends Monster {
         if(charging && state()==State.CHARGING){
             var movement=position().subtract(before);charged+=movement.horizontalDistance();
             var center=box.getCenter();var end=center.add(movement);
-            var hit=level().getEntities(this,box.minmax(getBoundingBox()).inflate(.025),e->e.isAlive() && !e.isSpectator() && !e.noPhysics && !isPassengerOfSameVehicle(e)).stream()
+            var hit=level().getEntities(this,box.minmax(getBoundingBox()).inflate(.025),e->e.isAlive() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(e) && !e.noPhysics && !isPassengerOfSameVehicle(e)).stream()
                     .filter(e->{var bounds=e.getBoundingBox().inflate(getBbWidth()/2.+.025,getBbHeight()/2.+.025,getBbWidth()/2.+.025);return bounds.contains(center) || bounds.clip(center,end).isPresent();})
                     .min(Comparator.comparingDouble(e->e.distanceToSqr(before))).orElse(null);
             if(hit!=null){
-                if(hit instanceof Player player && player.hurt(damageSources().mobAttack(this),6)){
+                if(hit instanceof Player player && GloomTargets.canHit(this,player) && player.hurt(damageSources().mobAttack(this),6)){
                     player.push(chargeDirection.x*.7,.25,chargeDirection.z*.7);player.hurtMarked=true;
                 }
                 stopCharge(false); // Any entity stops the charge, including harmless bystanders; no self-stun.
@@ -138,12 +150,12 @@ public final class GloomBeetle extends Monster {
     }
     private final class ChargeGoal extends Goal {
         ChargeGoal(){setFlags(EnumSet.of(Flag.MOVE,Flag.LOOK));}
-        @Override public boolean canUse(){return !isInWater() && (state()!=State.IDLE || getTarget()!=null && getTarget().isAlive());}
+        @Override public boolean canUse(){return !cn.wwl.orimod.block.OriFluids.inWater(GloomBeetle.this) && (state()!=State.IDLE || GloomTargets.canHit(GloomBeetle.this,getTarget()));}
         @Override public boolean canContinueToUse(){return canUse();}
         @Override public boolean requiresUpdateEveryTick(){return true;}
         @Override public void tick(){
             if(state()!=State.IDLE)return;
-            var target=getTarget();if(target==null)return;
+            var target=getTarget();if(!GloomTargets.canHit(GloomBeetle.this,target))return;
             getLookControl().setLookAt(target,30,30);
             if(clock.cooldown()==0 && hasLineOfSight(target) && beginWindup(target.position()))return;
             getNavigation().moveTo(target,1);
@@ -153,7 +165,7 @@ public final class GloomBeetle extends Monster {
     private final class LeaveWaterGoal extends Goal {
         private Vec3 shore;
         LeaveWaterGoal(){setFlags(EnumSet.of(Flag.MOVE,Flag.LOOK));}
-        @Override public boolean canUse(){return isInWater() && state()!=State.FLIPPED && state()!=State.STUNNED;}
+        @Override public boolean canUse(){return cn.wwl.orimod.block.OriFluids.inWater(GloomBeetle.this) && state()!=State.FLIPPED && state()!=State.STUNNED;}
         @Override public boolean canContinueToUse(){return canUse();}
         @Override public void start(){
             // A high water malus prevents even the first escape step of this 1.1-wide mob.

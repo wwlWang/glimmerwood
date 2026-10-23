@@ -38,11 +38,10 @@ public final class SpiritTargets {
     public static Target find(Player player, float yaw, float pitch) {
         Vec3 eye = player.getEyePosition(), view = Vec3.directionFromRotation(pitch, yaw);
         Target best = null;
-        double bestScore = -1;
         for (Entity entity : player.level().getEntities(player, player.getBoundingBox().inflate(RANGE), candidate -> eligible(player, candidate))) {
             Vec3 point = entity.getBoundingBox().getCenter();
-            double score = score(eye, view, point);
-            if (score > bestScore && visible(player, point)) { best = new Target(entity, null, point, false); bestScore = score; }
+            if (!available(player,entity.getUUID().toString())) continue;
+            if (preferred(eye, view, point, best == null ? null : best.point()) && visible(player, point)) best = new Target(entity, null, point, false);
         }
         BlockPos origin = BlockPos.containing(eye);
         for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-6, -6, -6), origin.offset(6, 6, 6))) {
@@ -51,8 +50,10 @@ public final class SpiritTargets {
             boolean grapple = block.is(OriBlocks.GRAPPLE_FLOWER.get());
             if (!grapple && !block.is(OriBlocks.BASH_ANCHOR.get())) continue;
             Vec3 point = Vec3.atCenterOf(pos);
-            double score = score(eye, view, point);
-            if (score > bestScore && visible(player, point)) { best = new Target(null, pos.immutable(), point, grapple); bestScore = score; }
+            if (!available(player,pos.asLong()+":"+grapple)) continue;
+            // Grapple is still an aimed ability; only Bash gains the all-around proximity pick.
+            if (grapple && view.dot(point.subtract(eye).normalize()) < .6) continue;
+            if (preferred(eye, view, point, best == null ? null : best.point()) && visible(player, point)) best = new Target(null, pos.immutable(), point, grapple);
         }
         return best;
     }
@@ -72,12 +73,21 @@ public final class SpiritTargets {
         return entity instanceof Enemy && !player.isAlliedTo(entity);
     }
 
-    private static double score(Vec3 eye, Vec3 view, Vec3 point) {
-        Vec3 offset = point.subtract(eye);
-        double distance = offset.length();
-        if (distance > RANGE || distance < 0.1) return -1;
-        double alignment = view.dot(offset.scale(1 / distance));
-        return alignment >= 0.6 ? alignment * 10 - distance * 0.12 : -1;
+    /** A nearby target behind remains available, but forward chaining wins at comparable distances. */
+    public static double score(Vec3 eye, Vec3 view, Vec3 point) {
+        Vec3 offset=point.subtract(eye);double distance=offset.length();
+        if(distance>RANGE || distance<.1)return Double.POSITIVE_INFINITY;
+        return distance*(1.25-.45*view.dot(offset.scale(1/distance)));
+    }
+    public static boolean preferred(Vec3 eye, Vec3 view, Vec3 point, Vec3 previous) {
+        return score(eye,view,point)<(previous==null?Double.POSITIVE_INFINITY:score(eye,view,previous));
+    }
+    private static boolean available(Player player,String key) {
+        var s=player.getData(cn.wwl.orimod.spirit.SpiritData.MOVEMENT);long now=player.level().getGameTime();
+        if(!s.recentBash.isEmpty() && (now>=s.recentBashUntil || now>=s.groundLockUntil && SpiritMovement.grounded(player))){
+            s.targetCooldowns.remove(s.recentBash);s.recentBash="";
+        }
+        return s.targetCooldowns.getOrDefault(key,Long.MIN_VALUE)<=now;
     }
 
     public static boolean visible(Player player, Vec3 point) {

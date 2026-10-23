@@ -26,6 +26,10 @@ public final class GloomShot extends ThrowableProjectile {
         else if (tickCount > LIFETIME) discard();
     }
 
+    @Override protected boolean canHitEntity(Entity entity) {
+        return net.minecraft.world.entity.EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity) && super.canHitEntity(entity);
+    }
+
     @Override protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
         if (!level().isClientSide) strike(result.getEntity());
@@ -38,6 +42,7 @@ public final class GloomShot extends ThrowableProjectile {
 
     /** Damage the struck entity on behalf of the current owner (the player after a Bash redirect). */
     public boolean strike(Entity target) {
+        if (!net.minecraft.world.entity.EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(target) || !target.isAttackable()) return false;
         var owner = getOwner() instanceof LivingEntity living ? living : null;
         // R50: Bashed orbs are the main way to hurt the Gloom Heart.
         float damage = target instanceof GloomHeart && owner instanceof net.minecraft.world.entity.player.Player ? GloomHeart.REFLECT_DAMAGE : DAMAGE;

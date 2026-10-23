@@ -13,8 +13,8 @@ source_manifest=json.loads((ROOT/'art/source/character/manifest.json').read_text
 source=ROOT/source_manifest['blend']
 assert hashlib.sha256(source.read_bytes()).hexdigest()==source_manifest['blend_sha256']
 base=ROOT/'art/source/first-person'
-revision=1
-while (base/f'v{revision:03}').exists(): revision+=1
+# Continue after the highest existing revision (v001.. may have been pruned).
+revision=max([int(p.name[1:]) for p in base.glob('v[0-9][0-9][0-9]')]+[0])+1
 output=base/f'v{revision:03}'
 output.mkdir(parents=True)
 bpy.ops.wm.open_mainfile(filepath=str(source))

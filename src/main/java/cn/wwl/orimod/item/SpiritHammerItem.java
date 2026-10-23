@@ -55,7 +55,7 @@ public final class SpiritHammerItem extends Item {
         if (!SpiritProgression.spendEnergy(player, COST)) {
             player.displayClientMessage(Component.translatable("message.orimod.hammer_energy"), true); return;
         }
-        smash(player);
+        cn.wwl.orimod.combat.HammerSlam.release(player);
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
     }
 

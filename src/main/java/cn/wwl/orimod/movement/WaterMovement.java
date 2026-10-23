@@ -18,7 +18,7 @@ public final class WaterMovement {
     public static final int DASH_COOLDOWN = 14;
 
     public static boolean active(Player player) {
-        return SpiritData.isSpirit(player) && Ability.WATER_DASH.unlocked(player) && player.isInWater() && !player.isSpectator();
+        return SpiritData.isSpirit(player) && Ability.WATER_DASH.unlocked(player) && cn.wwl.orimod.block.OriFluids.inWater(player) && !player.isSpectator();
     }
 
     public static Vec3 dashVelocity(Vec3 look) { return look.normalize().scale(DASH_SPEED); }

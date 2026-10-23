@@ -29,6 +29,7 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.MotionFeel::fov);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.SpiritFxClient::loggingOut);
         modEventBus.addListener(cn.wwl.orimod.client.render.SpiritWeaponRenderer::register);
+        modEventBus.addListener(GloomFluidVisual::register);
         modEventBus.addListener(SpiritControls::registerKeys);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SkillControls::input);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SkillControls::frame);
@@ -87,6 +88,7 @@ public final class OriModClient {
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(GloomFluidVisual::setup);
         event.enqueueWork(FeatherItemAppearance::register);
         event.enqueueWork(cn.wwl.orimod.client.render.SpiritPlayerVisual::register);
         event.enqueueWork(() -> { cn.wwl.orimod.client.render.GloomCreatureVisual.register(); });
