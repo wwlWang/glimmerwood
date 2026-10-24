@@ -39,7 +39,11 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
         }
         pose.pushPose();pose.translate(.5,0,.5);
         boolean ready;
-        if (state.is(OriBlocks.GREAT_TREE_HEART)) {
+        if (state.is(OriBlocks.GINSO_WATER_HEART)) {
+            ready=mesh("ginso_water_roots",pose,buffers,light,.7f,1);
+            pose.translate(0,1.12+Math.sin(time*.04)*.035,0);pose.mulPose(Axis.YP.rotation((float)time*.006f));
+            mesh("ginso_water_crystal",pose,buffers,light,.75f,1);
+        } else if (state.is(OriBlocks.GREAT_TREE_HEART)) {
             boolean bloomed=state.getValue(SpiritTreeHeartBlock.BLOOMED);
             ready=mesh("great_heart_roots",pose,buffers,light,.45f,1);
             pose.translate(0,1.75+Math.sin(time*.025)*.035,0);

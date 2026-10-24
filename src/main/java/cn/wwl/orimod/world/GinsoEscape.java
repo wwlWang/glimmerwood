@@ -1,0 +1,164 @@
+package cn.wwl.orimod.world;
+
+import cn.wwl.orimod.block.OriBlocks;
+import cn.wwl.orimod.combat.SpiritCombat;
+import cn.wwl.orimod.movement.SpiritMovement;
+import cn.wwl.orimod.network.GinsoEscapePayload;
+import cn.wwl.orimod.progression.*;
+import cn.wwl.orimod.spirit.SpiritData;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.*;
+import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import java.util.*;
+
+/** Owner-only virtual flood. No block/fluid writes, global weather, Soul Link edits or bystander effects. */
+public final class GinsoEscape {
+    public static final String RECEIPT="escape/ginso";
+    public enum Phase { READY, PREPARE, RUNNING, SUCCESS, FAILED, COOLDOWN }
+    public enum Outcome { NONE, SUCCESS, SUBMERGED, TIMEOUT, OUTSIDE, DEAD, DISCONNECTED, DIMENSION, CHUNK, RECOVERED }
+    private static final ResourceLocation DRAG=ResourceLocation.parse("orimod:ginso_water_drag");
+    private static final Map<UUID,Session> SESSIONS=new HashMap<>();
+    public static final class Session {
+        public final UUID id=UUID.randomUUID();
+        public final ServerLevel level;public final GinsoPiece piece;public final GinsoEscapeLayout.Layout layout;public final GinsoEscapeRules.Plan plan;
+        public Phase phase=Phase.PREPARE;public Outcome outcome=Outcome.NONE;
+        public int elapsed, submerged, maximumSubmerged, cooldown, rewardedLight;public String rewardedCell="";
+        public boolean eligible, invalidated;public float startingHealth;
+        private Session(ServerPlayer p,GinsoPiece piece){this.level=p.serverLevel();this.piece=piece;layout=piece.escape();plan=GinsoEscapeRules.plan(layout);
+            eligible=SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator();startingHealth=p.getHealth();}
+        public boolean active(){return phase==Phase.PREPARE||phase==Phase.RUNNING;}
+        public double water(){return piece.origin().getY()+GinsoEscapeRules.water(plan,elapsed);}
+        public Vec3 local(Vec3 world){return localPosition(piece.origin(),piece.entrance(),world);}
+    }
+    public static Session session(ServerPlayer p){return SESSIONS.get(p.getUUID());}
+    public static boolean active(ServerPlayer p){var s=session(p);return s!=null&&s.active();}
+    public static Vec3 localPosition(BlockPos origin,int turn,Vec3 world){
+        double x=world.x-origin.getX()-.5,z=world.z-origin.getZ()-.5;
+        for(int i=0;i<Math.floorMod(-turn,4);i++){double t=x;x=-z;z=t;}
+        return new Vec3(x+.5,world.y-origin.getY(),z+.5);
+    }
+    public static boolean start(ServerPlayer p,BlockPos heart){
+        var piece=GinsoCourse.at(p.serverLevel(),heart);
+        if(piece==null||piece.escapeVersion()!=1||!piece.point(GinsoEscapeLayout.HEART).equals(heart))return reject(p,"unavailable");
+        return start(p,piece);
+    }
+    /** Same validation for placed structure fixtures and the right-click path. */
+    public static boolean start(ServerPlayer p,GinsoPiece piece){
+        var old=session(p);if(old!=null&&(old.active()||old.cooldown>0))return reject(p,old.active()?"running":"cooldown");
+        var recovery=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+        if(recovery.pending()||recovery.retryAt()>clock(p))return reject(p,"cooldown");
+        var heart=piece.point(GinsoEscapeLayout.HEART);
+        if(piece.escapeVersion()!=1||!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)
+                ||p.distanceToSqr(Vec3.atCenterOf(heart))>36||!p.isAlive()||p.isPassenger()||Restoration.active(p)
+                ||(!SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator()))return reject(p,"unavailable");
+        var s=new Session(p,piece);var at=s.local(p.position());
+        if(!s.layout.inRoute(at.x,at.y,at.z))return reject(p,"approach");
+        SESSIONS.put(p.getUUID(),s);
+        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(GinsoEscapeLayout.SAFE),true,0));
+        GinsoEscapePayload.send(p,s,true);
+        EscapeSupport.title(p,"title.orimod.ginso.prepare","subtitle.orimod.ginso.prepare",5,40,15);
+        return true;
+    }
+    private static boolean reject(ServerPlayer p,String reason){p.displayClientMessage(Component.translatable("message.orimod.ginso.escape."+reason),true);return false;}
+    private static long clock(ServerPlayer p){return p.server.overworld().getGameTime();}
+    public static void tick(PlayerTickEvent.Post e){if(e.getEntity() instanceof ServerPlayer p)tick(p);}
+    public static void tick(ServerPlayer p){
+        var s=session(p);
+        if(s==null){if(p.isAlive()&&p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending())recover(p);return;}
+        if(!s.active()){
+            if(s.phase==Phase.SUCCESS||s.phase==Phase.FAILED){s.phase=Phase.COOLDOWN;GinsoEscapePayload.send(p,s,false);}
+            if(s.cooldown>0)s.cooldown--;
+            if(s.cooldown==0&&s.phase!=Phase.READY){s.phase=Phase.READY;p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);GinsoEscapePayload.send(p,s,false);}
+            return;
+        }
+        if(!p.isAlive()){end(p,s,Outcome.DEAD,false);return;}
+        if(p.serverLevel()!=s.level){end(p,s,Outcome.DIMENSION,true);return;}
+        var heart=s.piece.point(GinsoEscapeLayout.HEART);
+        if(s.invalidated||s.level.getChunkSource().getChunkNow(heart.getX()>>4,heart.getZ()>>4)==null
+                ||!s.level.getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)) {end(p,s,Outcome.CHUNK,true);return;}
+        s.eligible &= !p.isCreative()&&!p.isSpectator();
+        s.elapsed++;if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS)s.phase=Phase.RUNNING;
+        var at=s.local(p.position());
+        if(s.phase==Phase.RUNNING&&s.layout.exit().contains(at.x,at.y,at.z)&&p.onGround()){end(p,s,Outcome.SUCCESS,false);return;}
+        if(!s.layout.inRoute(at.x,at.y,at.z)){end(p,s,Outcome.OUTSIDE,true);return;}
+        boolean wet=s.phase==Phase.RUNNING&&s.layout.inFlood(at.x,at.y,at.z)&&p.getY()<s.water();
+        drag(p,wet);
+        s.submerged=wet&&p.getEyeY()<s.water()?s.submerged+1:0;
+        s.maximumSubmerged=Math.max(s.maximumSubmerged,s.submerged);
+        if(s.submerged>0&&s.submerged%20==0&&p.getHealth()>4)
+            EscapeSupport.hurt(p,p.damageSources().drown(),Math.min(1,p.getHealth()-4));
+        if(s.submerged>=GinsoEscapeRules.SUBMERGED_TICKS){end(p,s,Outcome.SUBMERGED,true);return;}
+        if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS+s.plan.limitTicks()){end(p,s,Outcome.TIMEOUT,true);return;}
+        if(s.elapsed%5==0)GinsoEscapePayload.send(p,s,false);
+    }
+    private static void drag(ServerPlayer p,boolean wet){
+        var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);if(speed==null)return;
+        if(wet){if(!speed.hasModifier(DRAG))speed.addTransientModifier(new AttributeModifier(DRAG,-.15,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));}
+        else speed.removeModifier(DRAG);
+    }
+    private static void end(ServerPlayer p,Session s,Outcome outcome,boolean returnSafe){
+        if(!s.active())return;
+        s.outcome=outcome;s.phase=outcome==Outcome.SUCCESS?Phase.SUCCESS:Phase.FAILED;s.cooldown=GinsoEscapeRules.RETRY_TICKS;drag(p,false);
+        if(outcome==Outcome.SUCCESS){reward(p,s);EscapeSupport.title(p,"title.orimod.ginso.success","subtitle.orimod.ginso.success",5,50,20);}
+        else if(outcome!=Outcome.DEAD&&p.isAlive())p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.failed",Component.translatable("message.orimod.ginso.reason."+outcome.name().toLowerCase(Locale.ROOT))),false);
+        if(outcome==Outcome.DEAD)p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);
+        else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(GinsoEscapeLayout.SAFE),returnSafe,clock(p)+s.cooldown));
+        GinsoEscapePayload.send(p,s,false);
+        if(returnSafe&&p.isAlive())recover(p);
+    }
+    private static void reward(ServerPlayer p,Session s){
+        if(!s.eligible||p.isCreative()||p.isSpectator()||p.getData(SpiritData.PROGRESS).rewards().getOrDefault(RECEIPT,0)>0)return;
+        var progress=p.getData(SpiritData.PROGRESS);var rewards=new HashMap<>(progress.rewards());rewards.put(RECEIPT,1);p.setData(SpiritData.PROGRESS,progress.withRewards(rewards));
+        int light=100;
+        if(SpiritCells.absorb(p,SpiritCells.Kind.ENERGY))s.rewardedCell="energy";
+        else if(SpiritCells.absorb(p,SpiritCells.Kind.LIFE))s.rewardedCell="life";
+        else light+=100;
+        s.rewardedLight=light;SpiritProgression.grantLight(p,light);
+        p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.reward",light,Component.translatable("message.orimod.ginso.cell."+(s.rewardedCell.isEmpty()?"none":s.rewardedCell))),false);
+    }
+    /** Explicit recovery may load the saved safe chunk once; the active hot path never loads chunks. */
+    public static void recover(ServerPlayer p){
+        var r=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);if(!r.pending()||!p.isAlive())return;
+        ServerLevel level=null;var id=ResourceLocation.tryParse(r.dimension());if(id!=null)level=p.server.getLevel(ResourceKey.create(Registries.DIMENSION,id));
+        var safe=r.safe();if(level==null){level=p.server.overworld();safe=level.getSharedSpawnPos();}
+        level.getChunk(safe);Vec3 destination=null;
+        // Do not overwrite player builds. Find a supported, collision-free landing nearby if the platform was edited.
+        search:for(int dy:new int[]{0,1,2,3,-1,-2,-3,4,5,6})for(int radius=0;radius<=4;radius++)for(int x=-radius;x<=radius;x++)for(int z=-radius;z<=radius;z++){
+            if(Math.max(Math.abs(x),Math.abs(z))!=radius)continue;var q=safe.offset(x,dy,z);var feet=Vec3.atBottomCenterOf(q);
+            if(!level.hasChunkAt(q)||!level.getFluidState(q).isEmpty()||!level.getBlockState(q.below()).isFaceSturdy(level,q.below(),net.minecraft.core.Direction.UP))continue;
+            if(level.noCollision(p,p.getBoundingBox().move(feet.subtract(p.position())))){destination=feet;break search;}
+        }
+        if(destination==null){var fallback=level.getSharedSpawnPos();level.getChunk(fallback);destination=Vec3.atBottomCenterOf(fallback.above());}
+        p.stopRiding();p.stopUsingItem();SpiritCombat.cancel(p,"ginso_recovery");SpiritMovement.teleported(p);drag(p,false);
+        p.teleportTo(level,destination.x,destination.y,destination.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.hurtMarked=true;p.fallDistance=0;
+        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(level.dimension().location().toString(),safe,false,clock(p)+GinsoEscapeRules.RETRY_TICKS));
+    }
+    public static void unload(net.neoforged.neoforge.event.level.ChunkEvent.Unload e){
+        // Mark only: never reload a chunk from its unload callback. Recovery runs on the next player tick.
+        if(e.getLevel() instanceof ServerLevel level)for(var s:SESSIONS.values())
+            if(s.active()&&s.level==level&&new net.minecraft.world.level.ChunkPos(s.piece.point(GinsoEscapeLayout.HEART)).equals(e.getChunk().getPos()))s.invalidated=true;
+    }
+    public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p){SESSIONS.remove(p.getUUID());recover(p);GinsoEscapePayload.clear(p);}}
+    public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)disconnect(p);}
+    public static void disconnect(ServerPlayer p){var s=SESSIONS.remove(p.getUUID());drag(p,false);if(s!=null&&s.active())s.outcome=Outcome.DISCONNECTED;/* pending attachment survives player save */}
+    public static void dimension(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null&&s.active()){end(p,s,Outcome.DIMENSION,false);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(GinsoEscapeLayout.SAFE),true,0));SESSIONS.remove(p.getUUID());}}}
+    public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null&&s.active())end(p,s,Outcome.DEAD,false);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);}}
+    public static void stop(MinecraftServer server){for(var p:server.getPlayerList().getPlayers())disconnect(p);SESSIONS.clear();}
+    public static void clear(){SESSIONS.clear();}
+    public static Map<String,Object> diagnostics(ServerPlayer p){
+        var s=session(p);var out=new LinkedHashMap<String,Object>();var r=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+        out.put("phase",s==null?(r.retryAt()>clock(p)?"COOLDOWN":"READY"):s.phase.name());out.put("pendingRecovery",r.pending());out.put("receipt",p.getData(SpiritData.PROGRESS).rewards().getOrDefault(RECEIPT,0));
+        if(s!=null){out.put("session",s.id.toString());out.put("elapsedTicks",s.elapsed);out.put("waterY",s.water());out.put("submergedTicks",s.submerged);out.put("maximumSubmergedTicks",s.maximumSubmerged);out.put("outcome",s.outcome.name());out.put("cooldownTicks",s.cooldown);out.put("referenceSeconds",s.plan.referenceSeconds());out.put("limitTicks",s.plan.limitTicks());out.put("rewardLight",s.rewardedLight);out.put("rewardCell",s.rewardedCell);out.put("initialHealth",s.startingHealth);out.put("health",p.getHealth());out.put("safe",List.of(s.piece.point(GinsoEscapeLayout.SAFE).getX(),s.piece.point(GinsoEscapeLayout.SAFE).getY(),s.piece.point(GinsoEscapeLayout.SAFE).getZ()));}
+        return out;
+    }
+    private GinsoEscape(){}
+}

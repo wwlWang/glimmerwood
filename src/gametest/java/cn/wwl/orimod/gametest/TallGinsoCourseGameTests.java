@@ -30,6 +30,53 @@ public final class TallGinsoCourseGameTests {
         var tests=new ArrayList<TestFunction>();
         for(int turn=0;turn<4;turn++){
             final int rotation=turn;
+            tests.add(new TestFunction("ginso_escape_geometry","ginso.escape_geometry_rotation_"+turn,"orimod_gametest:room",180,0,true,h->{
+                try(var site=new Site(h,rotation,1);var connected=Fixtures.connectedPlayer(h)){
+                    var p=connected.player();var piece=site.piece;var level=h.getLevel();
+                    p.setGameMode(GameType.SURVIVAL);p.setData(SpiritData.FORM,false);p.setData(SpiritData.ABILITIES,0);
+                    var e=piece.escape();
+                    e.blocks().forEach((local,kind)->{
+                        if(kind==TallGinsoInterior.RAIL||kind==GinsoEscapeLayout.ROOT_LIP){
+                            var at=piece.point(local);var state=level.getBlockState(at);
+                            h.assertTrue(state.getCollisionShape(level,at).max(Direction.Axis.Y)>=1.5,"Root guard is not a real high fence "+local);
+                        }
+                    });
+                    for(var q:e.path()){
+                        var foot=localFoot(piece,q.x(),q.feet(),q.z());
+                        h.assertTrue(level.noCollision(body(foot)),"Escape body blocked "+q);
+                        h.assertFalse(level.noCollision(body(foot).move(0,-.01,0)),"Missing escape tread "+q);
+                    }
+                    for(int z=0;z<=1;z++){
+                        var door=piece.point(new BlockPos(-1,94,z));
+                        var target=new BlockHitResult(Vec3.atCenterOf(door),Direction.WEST,door,false);
+                        for(int side:new int[]{-2,0}){
+                            p.setPos(localFoot(piece,side,side==-2?93.5:94,z));
+                            h.assertTrue(level.noCollision(p),"No place to stand while using door "+side);
+                            p.gameMode.useItemOn(p,level,net.minecraft.world.item.ItemStack.EMPTY,net.minecraft.world.InteractionHand.MAIN_HAND,target);
+                            h.assertTrue(level.getBlockState(door).getValue(DoorBlock.OPEN),"Hand could not open gate from "+side);
+                            for(double t=0;t<=1.001;t+=.1){
+                                var feet=localFoot(piece,-2,94,z).lerp(localFoot(piece,0,94,z),t);
+                                h.assertTrue(level.noCollision(body(feet)),"Open gate blocks arrival/return "+side+" "+t);
+                            }
+                            p.gameMode.useItemOn(p,level,net.minecraft.world.item.ItemStack.EMPTY,net.minecraft.world.InteractionHand.MAIN_HAND,target);
+                            h.assertFalse(level.getBlockState(door).getValue(DoorBlock.OPEN),"Manual gate could not close");
+                        }
+                    }
+                    var retreat=piece.point(new BlockPos(0,94,-5));
+                    ((DoorBlock)level.getBlockState(retreat).getBlock()).setOpen(p,level,level.getBlockState(retreat),retreat,true);
+                    for(double t=0;t<=1.001;t+=.05){
+                        var feet=localFoot(piece,0,94,-3).lerp(localFoot(piece,0,94,-6),t);
+                        h.assertTrue(level.noCollision(body(feet)),"Escape overlay blocks original retreat "+t);
+                    }
+                    for(var well:piece.course().wells())if(well.getY()==94)
+                        h.assertTrue(level.getBlockState(piece.point(well)).is(OriBlocks.GLADES_WELL),"Escape erased well");
+                    h.assertTrue(p.getData(SpiritData.SOUL_LINK).isEmpty(),"Geometry/use changed SoulLink");
+                    var tag=piece.createTag(StructurePieceSerializationContext.fromLevel(level));
+                    h.assertValueEqual(new GinsoPiece(tag).escapeVersion(),1,"Escape lost on reload");
+                    tag.remove("EscapeVersion");h.assertTrue(new GinsoPiece(tag).escape().blocks().isEmpty(),"Old tree migrated");
+                    h.succeed();
+                }
+            }));
             tests.add(new TestFunction("ginso_tall_course","ginso.tall_targets_wells_collision_rotation_"+turn,"orimod_gametest:room",180,0,true,h->{
                 try(var site=new Site(h,rotation);var connected=Fixtures.connectedPlayer(h)){
                     var p=connected.player();var level=h.getLevel();var piece=site.piece;var course=piece.course();
@@ -148,17 +195,23 @@ public final class TallGinsoCourseGameTests {
         }));
         return tests;
     }
+    private static Vec3 localFoot(GinsoPiece piece,int x,double y,int z){return Vec3.atBottomCenterOf(piece.point(new BlockPos(x,(int)Math.floor(y),z))).add(0,y%1,0);}
+    private static AABB body(Vec3 at){return new AABB(at.x-.3,at.y,at.z-.3,at.x+.3,at.y+1.8,at.z+.3);}
     /** Every remote chunk is pinned, and restored on setup failure as well as assertion failure. */
     private static final class Site implements AutoCloseable {
         final ServerLevel level;final BlockPos base;final GinsoPiece piece;
         final Map<BlockPos,BlockState> saved=new HashMap<>();final List<ChunkPos> pinned=new ArrayList<>();
         final Map<LevelChunk,Map<Structure,it.unimi.dsi.fastutil.longs.LongSet>> refs=new HashMap<>();
         Map<Structure,StructureStart> starts;LevelChunk startChunk;
-        Site(GameTestHelper h,int turn){
-            level=h.getLevel();var at=h.absolutePos(new BlockPos(160,0,0));base=new BlockPos(at.getX(),80,at.getZ());piece=new GinsoPiece(base,115117,turn,0);
+        Site(GameTestHelper h,int turn){this(h,turn,0);}
+        Site(GameTestHelper h,int turn,int escape){
+            // Published c750c0a course assertions stay on EscapeVersion=0; the new cases
+            // independently verify the opened east rail and manual incoming gate.
+            level=h.getLevel();var at=h.absolutePos(new BlockPos(160,0,0));base=new BlockPos(at.getX(),80,at.getZ());piece=new GinsoPiece(base,115117,turn,0,3,2,escape);
+            int radius=escape==0?15:23;
             try{
                 var structure=level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.parse("orimod:ginso_tree"));
-                for(int x=(base.getX()-15)>>4;x<=(base.getX()+15)>>4;x++)for(int z=(base.getZ()-15)>>4;z<=(base.getZ()+15)>>4;z++){
+                for(int x=(base.getX()-radius)>>4;x<=(base.getX()+radius)>>4;x++)for(int z=(base.getZ()-radius)>>4;z<=(base.getZ()+radius)>>4;z++){
                     if(level.setChunkForced(x,z,true))pinned.add(new ChunkPos(x,z));var chunk=level.getChunk(x,z);
                     refs.put(chunk,new HashMap<>(chunk.getAllReferences()));chunk.setAllReferences(new HashMap<>(chunk.getAllReferences()));
                     chunk.addReferenceForStructure(structure,new ChunkPos(base).toLong());
@@ -166,7 +219,7 @@ public final class TallGinsoCourseGameTests {
                 }
                 startChunk=level.getChunkAt(base);starts=new HashMap<>(startChunk.getAllStarts());
                 startChunk.setStartForStructure(structure,new StructureStart(structure,new ChunkPos(base),0,new PiecesContainer(List.of(piece))));
-                var clip=new BoundingBox(base.getX()-15,base.getY()-1,base.getZ()-15,base.getX()+15,base.getY()+99,base.getZ()+15);
+                var clip=new BoundingBox(base.getX()-radius,base.getY()+(escape==0?-1:90),base.getZ()-radius,base.getX()+radius,base.getY()+(escape==0?99:124),base.getZ()+radius);
                 for(var pos:BlockPos.betweenClosed(clip.minX(),clip.minY(),clip.minZ(),clip.maxX(),clip.maxY(),clip.maxZ()))saved.put(pos.immutable(),level.getBlockState(pos));
                 piece.postProcess(level,level.structureManager(),level.getChunkSource().getGenerator(),RandomSource.create(0),clip,new ChunkPos(base),base);
             }catch(Throwable error){close();throw error;}

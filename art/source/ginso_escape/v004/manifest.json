@@ -1,0 +1,21 @@
+{
+  "version": 4,
+  "geometry": "unchanged v003 / EscapeVersion1",
+  "generator": "scripts/art/build_ginso_root_lip.py",
+  "collision": "explicit full voxel width x 1.5 blocks high, unchanged",
+  "visual": "Four deterministic positional variants x four rotations. Continuous rounded horizontal roots reach voxel boundaries. One-texel height variation, asymmetrical bark ridges, no caps or isolated posts.",
+  "files": {
+    "art/source/ginso_escape/v004/ginso_root_lip.json": "936f3961d17720c7ae7b8bd6c0006e7b144c28bdb52bd8d87bb077a29b9fbbf2",
+    "src/main/resources/assets/orimod/models/block/ginso_root_lip.json": "936f3961d17720c7ae7b8bd6c0006e7b144c28bdb52bd8d87bb077a29b9fbbf2",
+    "art/source/ginso_escape/v004/ginso_root_lip_1.json": "3bf7d741ff76278a6343799eefac1eeedcbb78c54ab842212217e938d0e31055",
+    "src/main/resources/assets/orimod/models/block/ginso_root_lip_1.json": "3bf7d741ff76278a6343799eefac1eeedcbb78c54ab842212217e938d0e31055",
+    "art/source/ginso_escape/v004/ginso_root_lip_2.json": "936f3961d17720c7ae7b8bd6c0006e7b144c28bdb52bd8d87bb077a29b9fbbf2",
+    "src/main/resources/assets/orimod/models/block/ginso_root_lip_2.json": "936f3961d17720c7ae7b8bd6c0006e7b144c28bdb52bd8d87bb077a29b9fbbf2",
+    "art/source/ginso_escape/v004/ginso_root_lip_3.json": "3bf7d741ff76278a6343799eefac1eeedcbb78c54ab842212217e938d0e31055",
+    "src/main/resources/assets/orimod/models/block/ginso_root_lip_3.json": "3bf7d741ff76278a6343799eefac1eeedcbb78c54ab842212217e938d0e31055",
+    "src/main/resources/assets/orimod/blockstates/ginso_root_lip.json": "080b2406b0cab02e712fb99e6c372a1079ebf2d8b3e16baeab9a0d1dc2c09d4f",
+    "art/source/ginso_escape/v004/blockstate.json": "080b2406b0cab02e712fb99e6c372a1079ebf2d8b3e16baeab9a0d1dc2c09d4f",
+    "src/main/resources/assets/orimod/models/item/ginso_root_lip.json": "c2c13604f3343e5227e61685fa48e3a76a92b430acf9ccd9167827a8e0b212b9",
+    "art/source/ginso_escape/v004/item.json": "c2c13604f3343e5227e61685fa48e3a76a92b430acf9ccd9167827a8e0b212b9"
+  }
+}

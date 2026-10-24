@@ -70,7 +70,7 @@ public final class EscapeSequence {
         if (!player.isAlive() || !level.dimension().location().toString().equals(s.dimension())) { fail(player); return; }
         long t = level.getGameTime() - s.start();
         double dist = Math.hypot(player.getX() - s.origin().x, player.getZ() - s.origin().z);
-        s.bar().setProgress(Math.clamp(1 - t / (float) LIMIT_TICKS, 0, 1));
+        s.bar().setProgress(EscapeSupport.remaining(t,LIMIT_TICKS));
         if (escaped(dist, level.canSeeSky(player.blockPosition().above()))) { victory(player); return; }
         if (t >= LIMIT_TICKS) { fail(player); return; }
         double radius = frontRadius(t);
@@ -127,9 +127,7 @@ public final class EscapeSequence {
     }
 
     private static void title(ServerPlayer player, String title, String subtitle, int in, int stay, int out) {
-        player.connection.send(new ClientboundSetTitlesAnimationPacket(in, stay, out));
-        player.connection.send(new ClientboundSetSubtitleTextPacket(Component.translatable(subtitle)));
-        player.connection.send(new ClientboundSetTitleTextPacket(Component.translatable(title)));
+        EscapeSupport.title(player,title,subtitle,in,stay,out);
     }
 
     private EscapeSequence() {}

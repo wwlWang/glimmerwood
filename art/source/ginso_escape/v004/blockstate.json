@@ -1,0 +1,86 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "orimod:block/ginso_root_lip",
+        "y": 0,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip",
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip",
+        "y": 180,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip",
+        "y": 270,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_1",
+        "y": 0,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_1",
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_1",
+        "y": 180,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_1",
+        "y": 270,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_2",
+        "y": 0,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_2",
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_2",
+        "y": 180,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_2",
+        "y": 270,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_3",
+        "y": 0,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_3",
+        "y": 90,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_3",
+        "y": 180,
+        "weight": 1
+      },
+      {
+        "model": "orimod:block/ginso_root_lip_3",
+        "y": 270,
+        "weight": 1
+      }
+    ]
+  }
+}

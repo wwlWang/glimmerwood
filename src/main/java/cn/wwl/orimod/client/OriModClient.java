@@ -41,6 +41,10 @@ public final class OriModClient {
         modEventBus.addListener(SpiritCombatClient::register);
         modEventBus.addListener(RuinGuideOverlay::register);
         modEventBus.addListener(RestorationClient::register);
+        modEventBus.addListener(GinsoEscapeClient::register);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GinsoEscapeClient::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GinsoEscapeClient::logout);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GinsoEscapeClient::render);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(RestorationClient::render);

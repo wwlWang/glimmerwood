@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "generator": "scripts/art/build_ginso_water_heart.py",
+  "style": "Original clear-blue faceted droplet in woven wet roots; two cyan winding filaments. Shared exporter, no imported meshes.",
+  "assets": [
+    {
+      "name": "ginso_water_roots",
+      "triangles": 1258,
+      "vertices": 2466,
+      "bounds": [
+        [
+          -0.8028416010356949,
+          -0.07199611656108024,
+          -0.8640027293408865
+        ],
+        [
+          0.8516137860232439,
+          0.7765860232007759,
+          0.7558629517874987
+        ]
+      ]
+    },
+    {
+      "name": "ginso_water_crystal",
+      "triangles": 618,
+      "vertices": 1244,
+      "bounds": [
+        [
+          -0.3698728247227621,
+          -0.44,
+          -0.36970820393249937
+        ],
+        [
+          0.3698728247227621,
+          0.75,
+          0.36970820393249937
+        ]
+      ]
+    }
+  ],
+  "runtime": "Shared Sanctuary BE, always visible; owner-only pickup motes; float pivot y=1.12",
+  "files": {
+    "art/source/ginso_water_heart/v001/ginso_water_roots.mesh.json": "465f9dc0093ae8ecd0f7572ccd8d49348224f0ef946d09c810ccf6ab4b40ed63",
+    "art/source/ginso_water_heart/v001/ginso_water_roots.glb": "5c17cb79f4bd88576bfa09668cd3fb34691a51a947c2d3bffa0ea1554c64f467",
+    "src/main/resources/assets/orimod/models/sanctuary/ginso_water_roots.glb": "5c17cb79f4bd88576bfa09668cd3fb34691a51a947c2d3bffa0ea1554c64f467",
+    "art/source/ginso_water_heart/v001/ginso_water_roots_base.png": "f6aea1d304430c5f8e63751c9968d8277ac50b1eb70258d4e85e522cc6dd7d72",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_roots_base.png": "f6aea1d304430c5f8e63751c9968d8277ac50b1eb70258d4e85e522cc6dd7d72",
+    "art/source/ginso_water_heart/v001/ginso_water_roots_emission.png": "86e5c74282fbd87be28264f3c51d878a3428335c4e0f832af6e382129e5f420e",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_roots_emission.png": "86e5c74282fbd87be28264f3c51d878a3428335c4e0f832af6e382129e5f420e",
+    "art/source/ginso_water_heart/v001/ginso_water_roots_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_roots_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "art/source/ginso_water_heart/v001/ginso_water_crystal.mesh.json": "cc677fa0cdf13cb91546a0a5ba0d4a4661ddafd2f69b810ea6419aa81da2b1b0",
+    "art/source/ginso_water_heart/v001/ginso_water_crystal.glb": "dfda0dec0222aea3ab1cb0a0e866676d8ccaa40cb99d0af273934b23009242cb",
+    "src/main/resources/assets/orimod/models/sanctuary/ginso_water_crystal.glb": "dfda0dec0222aea3ab1cb0a0e866676d8ccaa40cb99d0af273934b23009242cb",
+    "art/source/ginso_water_heart/v001/ginso_water_crystal_base.png": "f6aea1d304430c5f8e63751c9968d8277ac50b1eb70258d4e85e522cc6dd7d72",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_crystal_base.png": "f6aea1d304430c5f8e63751c9968d8277ac50b1eb70258d4e85e522cc6dd7d72",
+    "art/source/ginso_water_heart/v001/ginso_water_crystal_emission.png": "86e5c74282fbd87be28264f3c51d878a3428335c4e0f832af6e382129e5f420e",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_crystal_emission.png": "86e5c74282fbd87be28264f3c51d878a3428335c4e0f832af6e382129e5f420e",
+    "art/source/ginso_water_heart/v001/ginso_water_crystal_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/textures/sanctuary/ginso_water_crystal_surface.png": "4464e73a891536f558c94678f319a9fa8274d4895ff5c0dbde0f8e3f34d109ac",
+    "src/main/resources/assets/orimod/models/block/ginso_water_heart.json": "cd20a0460a55b97bcd0d6d2f809be189a3e8341acea63e94cce5e81a1f2d889c",
+    "art/source/ginso_water_heart/v001/ginso_water_heart.json": "cd20a0460a55b97bcd0d6d2f809be189a3e8341acea63e94cce5e81a1f2d889c",
+    "src/main/resources/assets/orimod/blockstates/ginso_water_heart.json": "b7ecaf5a280a20d8f758af237a734a52ca65c45982ec93f994c097cc4020a430",
+    "src/main/resources/assets/orimod/models/item/ginso_water_heart.json": "f7159041a5be33aa132e46c3001aa3d19d507e60597bcf816fe98f56a3b69c86"
+  }
+}

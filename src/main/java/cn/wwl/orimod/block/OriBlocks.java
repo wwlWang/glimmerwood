@@ -38,6 +38,10 @@ public final class OriBlocks {
             .strength(2).lightLevel(s->s.getValue(GreatSpiritWoodBlock.VEIN)?10:0).sound(SoundType.WOOD)));
     public static final DeferredBlock<GinsoWoodBlock> GINSO_WOOD=BLOCKS.register("ginso_wood",()->new GinsoWoodBlock(BlockBehaviour.Properties.of()
             .strength(2).lightLevel(s->s.getValue(GinsoWoodBlock.VEIN)?8:0).sound(SoundType.WOOD)));
+    public static final DeferredBlock<GinsoWaterHeartBlock> GINSO_WATER_HEART=BLOCKS.register("ginso_water_heart",()->new GinsoWaterHeartBlock(BlockBehaviour.Properties.of()
+            .strength(-1,3600000).noLootTable().noOcclusion().lightLevel(s->12).emissiveRendering((s,l,p)->true).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
+    public static final DeferredBlock<GinsoRootLipBlock> GINSO_ROOT_LIP=BLOCKS.register("ginso_root_lip",()->new GinsoRootLipBlock(BlockBehaviour.Properties.of()
+            .strength(2).noLootTable().noOcclusion().sound(SoundType.WOOD)));
     public static final DeferredBlock<GinsoLandingBlock> GINSO_LANDING=BLOCKS.register("ginso_landing",()->new GinsoLandingBlock(BlockBehaviour.Properties.of()
             .strength(2).sound(SoundType.MOSS)));
     public static final DeferredBlock<GinsoFungusBlock> GINSO_FUNGUS=BLOCKS.register("ginso_fungus",()->new GinsoFungusBlock(BlockBehaviour.Properties.of()
@@ -126,7 +130,7 @@ public final class OriBlocks {
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
         for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
                 GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, GINSO_WOOD, GINSO_LANDING, GINSO_FUNGUS, GINSO_LEAVES, GINSO_CANOPY, GINSO_LEAF_CORE, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+                SPIRIT_LOG, GINSO_WATER_HEART, GINSO_WOOD, GINSO_ROOT_LIP, GINSO_LANDING, GINSO_FUNGUS, GINSO_LEAVES, GINSO_CANOPY, GINSO_LEAF_CORE, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

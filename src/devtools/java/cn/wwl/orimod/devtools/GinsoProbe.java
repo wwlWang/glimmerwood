@@ -12,6 +12,10 @@ import java.util.*;
 
 /** Development-only noise survey, no chunk loads and no writes. Uses the real structure placement and preflight. */
 final class GinsoProbe {
+    static Map<String,Object> state(net.minecraft.server.level.ServerPlayer p){
+        var m=new LinkedHashMap<String,Object>(nearby(p.serverLevel(),p.blockPosition()));
+        m.put("escape",GinsoEscape.diagnostics(p));return m;
+    }
     static Map<String,Object> scan(ServerLevel level,BlockPos center,int radius,int spacing,int separation){
         if(radius<1||radius>6)throw new IllegalArgumentException("Region radius must be 1..6");
         if(spacing!=0&&(spacing<32||spacing>80||separation<8||separation>=spacing))throw new IllegalArgumentException("Invalid diagnostic spacing");
@@ -59,6 +63,16 @@ final class GinsoProbe {
         return Map.of("sites",found.values().stream().map(g->{
             var p=g.origin();var row=new LinkedHashMap<String,Object>();
             row.put("origin",xyz(p));row.put("height",g.sculpture().height);row.put("shapeSeed",g.shapeSeed());row.put("shapeVersion",g.shapeVersion());row.put("courseVersion",g.courseVersion());
+            row.put("escapeVersion",g.escapeVersion());
+            if(g.escapeVersion()!=0){
+                var escape=g.escape();var plan=GinsoEscapeRules.plan(escape);
+                var route=escape.path().stream().map(q->{
+                    var foot=g.point(new BlockPos(q.x(),(int)Math.floor(q.feet()),q.z()));
+                    return Map.of("position",List.of(foot.getX()+.5,foot.getY()+q.feet()%1,foot.getZ()+.5),"distance",q.distance(),"corners",q.corners());
+                }).toList();
+                row.put("escapeGeometry",Map.of("route",route,"cells",escape.blocks().size(),"floodBoxes",escape.flood().size(),
+                        "cleftIndex",escape.cleftIndex(),"branchIndex",escape.branchIndex(),"initialWater",p.getY()+plan.startWater(),"referenceSeconds",plan.referenceSeconds(),"limitTicks",plan.limitTicks(),"interactive",true,"nativeWood",Map.of("clearance",escape.audit().clearanceRemoved(),"trimmed",escape.audit().trimmed(),"maximumTrim",escape.audit().maximumTrim(),"braces",escape.audit().bracedBlocks(),"maximumSevered",escape.audit().maximumSevered())));
+            }
             row.put("rootSupports",rootSupports(level,g));
             row.put("rootArches",rootArches(level,g));
             row.put("biome",level.getBiome(p).unwrapKey().orElseThrow().location().toString());row.put("baseBlock",level.getBlockState(p).toString());

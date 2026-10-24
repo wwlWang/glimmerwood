@@ -225,12 +225,34 @@ public final class DevelopmentBridge {
                             action.get("minZ").getAsInt(), action.get("maxZ").getAsInt(), action.get("step").getAsInt());
                 }).get(30, TimeUnit.SECONDS);
             }
+            case "ginso_water_preview" -> {
+                require(mc.player!=null&&mc.getSingleplayerServer()!=null,"Single-player render probe required");
+                if(!action.get("enabled").getAsBoolean()){
+                    cn.wwl.orimod.client.GinsoEscapeClient.receive(new cn.wwl.orimod.network.GinsoEscapePayload(new UUID(0,0),cn.wwl.orimod.world.GinsoEscape.Phase.READY,net.minecraft.core.BlockPos.ZERO,0,90,0,0,0,0,List.of()));
+                    return Map.of("preview",false);
+                }
+                double water=action.get("localWaterY").getAsDouble();require(Double.isFinite(water)&&water>=90&&water<=110,"Preview water height");
+                var id=mc.player.getUUID();var packet=mc.getSingleplayerServer().submit(()->{
+                    var p=mc.getSingleplayerServer().getPlayerList().getPlayer(id);require(!cn.wwl.orimod.world.GinsoEscape.active(p),"Cannot preview during a real session");
+                    var piece=cn.wwl.orimod.world.GinsoCourse.at(p.serverLevel(),p.blockPosition());require(piece!=null&&piece.escapeVersion()==1,"New Ginso tree required");
+                    var layout=piece.escape();var plan=cn.wwl.orimod.world.GinsoEscapeRules.plan(layout);
+                    int age=60+(int)Math.round((water-plan.startWater())*80);
+                    return new cn.wwl.orimod.network.GinsoEscapePayload(UUID.randomUUID(),cn.wwl.orimod.world.GinsoEscape.Phase.RUNNING,piece.origin(),piece.entrance(),plan.startWater(),age,plan.limitTicks(),0,0,layout.flood());
+                }).get(10,TimeUnit.SECONDS);
+                cn.wwl.orimod.client.GinsoEscapeClient.receive(packet);return Map.of("preview",true,"serverSession",false,"localWaterY",water);
+            }
+            case "ginso_restore_pristine_fixture" -> {
+                require(mc.player!=null&&mc.getSingleplayerServer()!=null,"Single-player fixture required");
+                var server=mc.getSingleplayerServer();var id=mc.player.getUUID();
+                return server.submit(()->GinsoGeometryPreview.restorePristine(server.getPlayerList().getPlayer(id).serverLevel(),
+                        new net.minecraft.core.BlockPos(action.get("x").getAsInt(),action.get("y").getAsInt(),action.get("z").getAsInt()))).get(45,TimeUnit.SECONDS);
+            }
             case "ginso_probe", "ginso_state" -> {
                 require(mc.player!=null&&mc.getSingleplayerServer()!=null,"Single-player world required");
                 var server=mc.getSingleplayerServer();var id=mc.player.getUUID();
                 return server.submit(()->{
                     var p=server.getPlayerList().getPlayer(id);
-                    return operation.equals("ginso_probe")?GinsoProbe.scan(p.serverLevel(),action.has("centerX")&&action.has("centerZ")?new net.minecraft.core.BlockPos(action.get("centerX").getAsInt(),p.getBlockY(),action.get("centerZ").getAsInt()):p.blockPosition(),action.has("radius")?action.get("radius").getAsInt():4,action.has("spacing")?action.get("spacing").getAsInt():0,action.has("separation")?action.get("separation").getAsInt():24):GinsoProbe.nearby(p.serverLevel(),p.blockPosition());
+                    return operation.equals("ginso_probe")?GinsoProbe.scan(p.serverLevel(),action.has("centerX")&&action.has("centerZ")?new net.minecraft.core.BlockPos(action.get("centerX").getAsInt(),p.getBlockY(),action.get("centerZ").getAsInt()):p.blockPosition(),action.has("radius")?action.get("radius").getAsInt():4,action.has("spacing")?action.get("spacing").getAsInt():0,action.has("separation")?action.get("separation").getAsInt():24):GinsoProbe.state(p);
                 }).get(45,TimeUnit.SECONDS);
             }
             case "great_tree_state" -> {
@@ -301,6 +323,8 @@ public final class DevelopmentBridge {
             }
             case "release_keys" -> releaseKeys();
             case "focus_game" -> GLFW.glfwFocusWindow(mc.getWindow().getWindow());
+            case "walk_route" -> { releaseKeys();RouteInput.start(action.getAsJsonArray("points"));return RouteInput.state(); }
+            case "walk_route_state" -> { return RouteInput.state(); }
             case "input_script" -> {
                 require(mc.player != null && mc.screen == null, "Gameplay required");
                 releaseKeys();
@@ -775,6 +799,7 @@ public final class DevelopmentBridge {
     private void tick(ClientTickEvent.Post event) {
         ticks++;
         SpiritMotePreview.tick();
+        RouteInput.tick();
         if (Minecraft.getInstance().player == null) { releaseKeys(); return; }
         heldKeys.replaceAll((key, duration) -> duration - 1);
         heldKeys.entrySet().removeIf(entry -> {
@@ -845,6 +870,7 @@ public final class DevelopmentBridge {
     }
 
     private void releaseKeys() {
+        RouteInput.stop();
         inputScript.clear();
         heldKeys.keySet().forEach(key -> key.setDown(false));
         heldKeys.clear();
@@ -924,12 +950,14 @@ public final class DevelopmentBridge {
             state.put("tide", cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
             state.put("line", cn.wwl.orimod.client.CompanionLineOverlay.diagnostics());
             state.put("restoration",cn.wwl.orimod.client.RestorationClient.diagnostics());
+            state.put("ginso",Map.of("escape",cn.wwl.orimod.client.GinsoEscapeClient.diagnostics()));
             state.put("merchant", Minecraft.getInstance().screen instanceof cn.wwl.orimod.client.MerchantScreen screen ? screen.debug() : Map.of("open",false));
             var guide=cn.wwl.orimod.network.RuinGuidePayload.current;
             state.put("guide",guide==null?Map.of("active",false):Map.of("active",true,"kind",guide.kind(),"dimension",guide.dimension(),"entry",new int[]{guide.entry().getX(),guide.entry().getY(),guide.entry().getZ()}));
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
+            state.put("ginso",Map.of("escape",cn.wwl.orimod.world.GinsoEscape.diagnostics(serverPlayer)));
             var restoration=cn.wwl.orimod.world.RestorationData.get(serverPlayer.server);
             state.put("restoration",Map.of("active",cn.wwl.orimod.progression.Restoration.active(serverPlayer),"remaining",cn.wwl.orimod.progression.Restoration.remaining(serverPlayer),"restored",restoration.restored(),"completed",cn.wwl.orimod.progression.Restoration.completed(serverPlayer),"epoch",restoration.epoch(),"pending",cn.wwl.orimod.progression.WillWisps.pending(serverPlayer),"bloomChunks",cn.wwl.orimod.world.RestorationBloom.pending(),"bloomWrites",cn.wwl.orimod.world.RestorationBloom.lastWrites(),"bloomMs",cn.wwl.orimod.world.RestorationBloom.lastMillis()));
             state.put("merchant",cn.wwl.orimod.progression.MerchantTrading.debug(serverPlayer));

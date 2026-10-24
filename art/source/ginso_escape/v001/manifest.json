@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "shape_version": 3,
+  "course_version": 2,
+  "escape_version": 1,
+  "generator": "scripts/art/build_ginso_escape.py",
+  "phase": "geometry-only; no heart interaction, session or water runtime",
+  "recipe": "Three-wide half-step root gallery, glazed fall-proof sides, illuminated ribs, outward fork exit. The flood volume is the union of the cavity and every gallery strip. Manual return gates never auto-close.",
+  "heart": [
+    0,
+    94,
+    0
+  ],
+  "safe": [
+    0,
+    94,
+    1
+  ],
+  "water_rise_blocks_per_second": 0.25,
+  "prepare_ticks": 60,
+  "reference_speed": 2.5,
+  "decision_seconds": 8,
+  "forecourt_approach_seconds": 1.5,
+  "minimum_feet_margin_seconds": 6,
+  "sources": {
+    "src/main/java/cn/wwl/orimod/world/GinsoInterior.java": "91c93e45509588ede50e4100d4ab24ef4435da8abfd52991b6b8256b3e29d21d",
+    "src/main/java/cn/wwl/orimod/world/GinsoCourses.java": "15da2adb49840f7a5c9450e3c0265cc5163b5dd644fe2ccf1368790c331b5846",
+    "src/main/java/cn/wwl/orimod/world/TallGinsoInterior.java": "77316edfab1f309dddca94666d866791ccaaed76267949c51c1d32f0aeb0669b",
+    "src/main/java/cn/wwl/orimod/world/GinsoEscapeLayout.java": "b588c812389b20765776c977b3d414db7082c4f8b03715e56df831bf31def027",
+    "src/main/java/cn/wwl/orimod/world/GinsoEscapeRules.java": "74a77c947d9ca01286c2117ba018610d7a81749897a945fc835c954218937233"
+  },
+  "layout_sha256": {
+    "height-108.json": "53929cdfd014b1af9336fd745c7097b9c8f5a9505fa8f0143c0f3eacf804e4ac",
+    "height-109.json": "98cc0381087c4ba6fb2b2cc8dbecb4efce86849096a16e0a1ebfd79df2c62784",
+    "height-110.json": "96ced0f8c470bde12ad025d1a78a1e5d76f645cf757c317c8bf9d20b18290415",
+    "height-111.json": "6438a007206ff2bd94daa1cc8df59f50ddb5bf694786f2ea6c369e1275e71447",
+    "height-112.json": "0639bf21f5ea43efb2ed65950f66d1eeb7856f2bad0e2d61675536b8785a6e48",
+    "height-113.json": "1637c2a01cdccac064ab425de8358b6c4630172e9a612e2505a64ecfcbadccd4",
+    "height-114.json": "5b77c07364db5f20e7d51519990ed5fe6e0269881ac668ed4b712cbe46f44d9a",
+    "height-115.json": "4825a2b6cedbd5ccd8071d1dd449c2ad6c2b9c0f66568f1425a419624e23141a",
+    "height-116.json": "20371443bee73dbab2273abd01f2c0777fa2f15868376eb041e3e6dc25e648ca",
+    "height-117.json": "73dd13d55232b7be340b45a11d1f8510785ec273689a4408c494bda61bc441d9",
+    "height-118.json": "3b3b32a445286b5ee4e9ecd36d937dac42522de294ca639ff804807b84b08894"
+  }
+}

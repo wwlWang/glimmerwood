@@ -71,3 +71,16 @@ art/source/ginso_tree/v*/
 !art/source/ginso_tree/v005/
 art/source/ginso_course/v*/
 !art/source/ginso_course/v002/
+
+art/source/ginso_escape/v*/
+!art/source/ginso_escape/v001/
+!art/source/ginso_escape/v002/
+art/source/ginso_water_heart/v*/
+!art/source/ginso_water_heart/v001/
+
+!art/source/ginso_escape/v003/
+!art/source/ginso_escape/v003/**
+
+!art/source/ginso_escape/v004/
+!art/source/ginso_escape/v004/**
+!art/source/ginso_water_heart/v001/**

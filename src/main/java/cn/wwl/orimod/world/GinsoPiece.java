@@ -17,15 +17,19 @@ import java.util.*;
 /** Same seed in every chunk; immutable sculpture cached with a bounded lifetime/size. */
 public final class GinsoPiece extends StructurePiece {
     private final BlockPos origin;private final long seed;
-    private final int entrance, approach, courseVersion, shapeVersion;
+    private final int entrance, approach, courseVersion, shapeVersion, escapeVersion;
     private record ShapeKey(long seed,int version){}
     private static final Map<ShapeKey,GinsoShape> CACHE=new LinkedHashMap<>();
     public GinsoPiece(BlockPos at,long seed){this(at,seed,0,0);}
     public GinsoPiece(BlockPos at,long seed,int entrance,int approach){this(at,seed,entrance,approach,GinsoShape.VERSION,GinsoCourses.forShape(GinsoShape.VERSION));}
     public GinsoPiece(BlockPos at,long seed,int entrance,int approach,int shapeVersion,int courseVersion){
+        this(at,seed,entrance,approach,shapeVersion,courseVersion,shapeVersion==3&&courseVersion==2?GinsoEscapeLayout.VERSION:0);
+    }
+    public GinsoPiece(BlockPos at,long seed,int entrance,int approach,int shapeVersion,int courseVersion,int escapeVersion){
         super(OriWorldgen.GINSO_PIECE.get(),0,bounds(at,shapeVersion));origin=at.immutable();this.seed=seed;
         this.entrance=Math.floorMod(entrance,4);this.approach=Math.clamp(approach,-6,10);
         this.shapeVersion=GinsoShape.checkedVersion(shapeVersion);this.courseVersion=GinsoCourses.checked(shapeVersion,courseVersion);
+        this.escapeVersion=GinsoEscapeLayout.checked(shapeVersion,courseVersion,escapeVersion);
     }
     public GinsoPiece(CompoundTag tag){this(OriWorldgen.GINSO_PIECE.get(),tag);}
     // Same deserialization path in the fixed-baseline JUnit; no runtime registry creation in a fixture.
@@ -34,10 +38,14 @@ public final class GinsoPiece extends StructurePiece {
         entrance=Math.floorMod(tag.getInt("Entrance"),4);approach=Math.clamp(tag.getInt("Approach"),-6,10);
         shapeVersion=GinsoShape.checkedVersion(tag.contains("ShapeVersion")?tag.getInt("ShapeVersion"):2);
         courseVersion=GinsoCourses.checked(shapeVersion,tag.getInt("CourseVersion"));
+        // Missing is deliberately zero, even for an already generated Shape3/Course2 tree.
+        escapeVersion=GinsoEscapeLayout.checked(shapeVersion,courseVersion,tag.getInt("EscapeVersion"));
     }
     static BoundingBox bounds(BlockPos p,int version){int r=GinsoShape.radius(version);return new BoundingBox(p.getX()-r,p.getY()+GinsoShape.minY(version),p.getZ()-r,p.getX()+r,p.getY()+GinsoShape.maxY(version),p.getZ()+r);}
     public int shapeVersion(){return shapeVersion;}
     public int courseVersion(){return courseVersion;}
+    public int escapeVersion(){return escapeVersion;}
+    public GinsoEscapeLayout.Layout escape(){return escapeVersion==0?GinsoEscapeLayout.empty():GinsoEscapeLayout.forTree(seed,entrance,sculpture());}
     public GinsoShape sculpture(){return shape(seed,shapeVersion);}
     public Block leafAt(int x,int y,int z){
         return leafBlock(sculpture(),x,y,z);
@@ -52,7 +60,7 @@ public final class GinsoPiece extends StructurePiece {
     public BlockPos point(BlockPos local){return origin.offset(GinsoInterior.rotate(local,entrance));}
     public BlockPos local(BlockPos world){return GinsoInterior.rotate(world.subtract(origin),-entrance);}
     public int approachFloor(int z){return shapeVersion<=2?GinsoInterior.approachFloor(z,approach):(int)Math.round(Math.clamp((-z-8)/19.0,0,1)*approach);}
-    @Override protected void addAdditionalSaveData(StructurePieceSerializationContext c,CompoundTag tag){tag.putLong("Origin",origin.asLong());tag.putLong("ShapeSeed",seed);tag.putInt("ShapeVersion",shapeVersion);tag.putInt("Entrance",entrance);tag.putInt("Approach",approach);tag.putInt("CourseVersion",courseVersion);}
+    @Override protected void addAdditionalSaveData(StructurePieceSerializationContext c,CompoundTag tag){tag.putLong("Origin",origin.asLong());tag.putLong("ShapeSeed",seed);tag.putInt("ShapeVersion",shapeVersion);tag.putInt("Entrance",entrance);tag.putInt("Approach",approach);tag.putInt("CourseVersion",courseVersion);if(escapeVersion!=0)tag.putInt("EscapeVersion",escapeVersion);}
     public static GinsoShape shape(long seed,int version){synchronized(CACHE){
         var key=new ShapeKey(seed,version);var s=CACHE.get(key);if(s!=null)return s;
         if(CACHE.size()>=8)CACHE.remove(CACHE.keySet().iterator().next());
@@ -60,7 +68,7 @@ public final class GinsoPiece extends StructurePiece {
         OriMod.LOGGER.info("Ginso Tree shape seed {} v{} cold build {} ms",seed,version,(System.nanoTime()-started)/1e6);return s;
     }}
     @Override public void postProcess(WorldGenLevel level,StructureManager manager,ChunkGenerator generator,RandomSource random,BoundingBox clip,ChunkPos chunk,BlockPos pivot){
-        long started=System.nanoTime();var shape=sculpture();long shaped=System.nanoTime();int writes=0;
+        long started=System.nanoTime();var shape=sculpture();long shapeEnd=System.nanoTime();var escape=escape();long shaped=System.nanoTime();int writes=0;
         var wood=OriBlocks.GINSO_WOOD.get().defaultBlockState();var vine=OriBlocks.GINSO_VINE.get().defaultBlockState();var course=course();
         var p=new BlockPos.MutableBlockPos();
         for(int x=Math.max(clip.minX(),boundingBox.minX());x<=Math.min(clip.maxX(),boundingBox.maxX());x++)
@@ -108,6 +116,9 @@ public final class GinsoPiece extends StructurePiece {
                     }
                     // v2 course owns its entry stair; the old grading/overlay ordering is frozen for v1.
                     if(courseVersion==2&&inside!=0)c=inside;
+                    byte escapeCell=escape.cell(lx,dy,lz);if(escapeCell!=0)c=escapeCell;
+                    // Only newly saved EscapeVersion=1 pieces own a heart. Frozen layouts are unchanged.
+                    if(escapeVersion==1&&lx==0&&dy==94&&lz==0)c=21;
                     if(c==GinsoShape.EMPTY)continue;
                     p.set(x,origin.getY()+dy,z);if(!clip.isInside(p)||level.isOutsideBuildHeight(p))continue;
                     // Most of the tall shaft is already air. Avoid WorldGenRegion's write
@@ -129,15 +140,17 @@ public final class GinsoPiece extends StructurePiece {
                         case GinsoInterior.WELL->OriBlocks.GLADES_WELL.get().defaultBlockState().setValue(SpiritWellBlock.FACING,net.minecraft.core.Direction.from2DDataValue((2+entrance)%4));
                         case GinsoInterior.STAIR, GinsoInterior.STAIR_SOUTH->Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,net.minecraft.core.Direction.from2DDataValue(((c==GinsoInterior.STAIR?3:0)+entrance)%4));
                         case TallGinsoInterior.CUSHION->OriBlocks.GINSO_LANDING.get().defaultBlockState();
+                        case 21->OriBlocks.GINSO_WATER_HEART.get().defaultBlockState();
+                        case GinsoEscapeLayout.ROOT_LIP->OriBlocks.GINSO_ROOT_LIP.get().defaultBlockState();
                         case TallGinsoInterior.RAIL->Blocks.DARK_OAK_FENCE.defaultBlockState()
-                                .setValue(FenceBlock.NORTH,railConnection(course,lx,dy,lz,net.minecraft.core.Direction.NORTH,entrance))
-                                .setValue(FenceBlock.SOUTH,railConnection(course,lx,dy,lz,net.minecraft.core.Direction.SOUTH,entrance))
-                                .setValue(FenceBlock.WEST,railConnection(course,lx,dy,lz,net.minecraft.core.Direction.WEST,entrance))
-                                .setValue(FenceBlock.EAST,railConnection(course,lx,dy,lz,net.minecraft.core.Direction.EAST,entrance));
+                                .setValue(FenceBlock.NORTH,railConnection(course,escape,lx,dy,lz,net.minecraft.core.Direction.NORTH,entrance))
+                                .setValue(FenceBlock.SOUTH,railConnection(course,escape,lx,dy,lz,net.minecraft.core.Direction.SOUTH,entrance))
+                                .setValue(FenceBlock.WEST,railConnection(course,escape,lx,dy,lz,net.minecraft.core.Direction.WEST,entrance))
+                                .setValue(FenceBlock.EAST,railConnection(course,escape,lx,dy,lz,net.minecraft.core.Direction.EAST,entrance));
                         case TallGinsoInterior.WINDOW->Blocks.CYAN_STAINED_GLASS.defaultBlockState();
                         case TallGinsoInterior.STEP->Blocks.DARK_OAK_SLAB.defaultBlockState();
                         case TallGinsoInterior.DOOR,TallGinsoInterior.DOOR_TOP->Blocks.DARK_OAK_DOOR.defaultBlockState()
-                                .setValue(DoorBlock.FACING,net.minecraft.core.Direction.from2DDataValue(((lz==0?(lx>0?3:1):2)+entrance)%4))
+                                .setValue(DoorBlock.FACING,net.minecraft.core.Direction.from2DDataValue(((escapeCell==TallGinsoInterior.DOOR||escapeCell==TallGinsoInterior.DOOR_TOP?1:lz==0?(lx>0?3:1):2)+entrance)%4))
                                 .setValue(DoorBlock.HALF,c==TallGinsoInterior.DOOR?net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER:net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
                         case GinsoShape.FUNGUS->OriBlocks.GINSO_FUNGUS.get().defaultBlockState();
                         case GinsoShape.LEAF->leafBlock(shape,dx,dy,dz).defaultBlockState();
@@ -147,11 +160,12 @@ public final class GinsoPiece extends StructurePiece {
                     level.setBlock(p,state,Block.UPDATE_CLIENTS);writes++;
                 }
             }
-        OriMod.LOGGER.info("Ginso Tree origin {} v{} chunk {},{}: {} writes; shape {} ms; writes {} ms",origin.toShortString(),shapeVersion,chunk.x,chunk.z,writes,(shaped-started)/1e6,(System.nanoTime()-shaped)/1e6);
+        OriMod.LOGGER.info("Ginso Tree origin {} v{} chunk {},{}: {} writes; shape {} ms; escape layout {} ms; writes {} ms",origin.toShortString(),shapeVersion,chunk.x,chunk.z,writes,(shapeEnd-started)/1e6,(shaped-shapeEnd)/1e6,(System.nanoTime()-shaped)/1e6);
     }
-    private static boolean railConnection(GinsoCourses.Layout course,int x,int y,int z,net.minecraft.core.Direction world,int turns){
+    private static boolean railConnection(GinsoCourses.Layout course,GinsoEscapeLayout.Layout escape,int x,int y,int z,net.minecraft.core.Direction world,int turns){
         var d=GinsoInterior.rotate(new BlockPos(world.getStepX(),0,world.getStepZ()),-turns);
         byte c=course.cell(x+d.getX(),y,z+d.getZ());
-        return c==TallGinsoInterior.RAIL||c==GinsoInterior.WOOD||c==GinsoInterior.LIGHT||c==TallGinsoInterior.CUSHION;
+        byte e=escape.cell(x+d.getX(),y,z+d.getZ());if(e!=0)c=e;
+        return c==TallGinsoInterior.RAIL||c==GinsoInterior.WOOD||c==GinsoInterior.LIGHT||c==GinsoShape.SAP||c==TallGinsoInterior.CUSHION;
     }
 }
