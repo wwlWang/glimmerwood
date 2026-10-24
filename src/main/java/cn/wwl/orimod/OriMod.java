@@ -19,11 +19,16 @@ public final class OriMod {
         modEventBus.addListener(cn.wwl.orimod.network.RestorationPayload::register);
         modEventBus.addListener(cn.wwl.orimod.network.AnimationActionPayload::register);
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        bus.addListener(cn.wwl.orimod.world.GinsoGenerationGuard::load);
+        bus.addListener(cn.wwl.orimod.world.GinsoGenerationGuard::unload);
+        bus.addListener(cn.wwl.orimod.world.GinsoGenerationGuard::saving);
+        bus.addListener(cn.wwl.orimod.world.GinsoGenerationGuard::loaded);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::load);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::started);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::tick);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSites::unload);
         bus.addListener(cn.wwl.orimod.world.GreatTreeSanctuary::spawn);
+        bus.addListener(cn.wwl.orimod.world.GinsoSanctuary::spawn);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::damaged);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::logout);
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.progression.RecoveryOrbs::drops);

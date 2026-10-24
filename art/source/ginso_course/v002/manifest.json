@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "generator": "scripts/art/build_ginso_course.py",
+  "shape_course_pairs": {
+    "2": 1,
+    "3": 2
+  },
+  "sources": {
+    "src/main/java/cn/wwl/orimod/world/GinsoInterior.java": "91c93e45509588ede50e4100d4ab24ef4435da8abfd52991b6b8256b3e29d21d",
+    "src/main/java/cn/wwl/orimod/world/GinsoCourses.java": "15da2adb49840f7a5c9450e3c0265cc5163b5dd644fe2ccf1368790c331b5846",
+    "src/main/java/cn/wwl/orimod/world/TallGinsoInterior.java": "77316edfab1f309dddca94666d866791ccaaed76267949c51c1d32f0aeb0669b"
+  },
+  "layout_sha256": "dfefc47cc167555e42eefacd6a86670b3d67bb64822202e8077566c4c076953f",
+  "palette": {
+    "1": "ginso_wood",
+    "4": "air",
+    "7": "great_spirit_root[light=knot]",
+    "8": "bash_anchor",
+    "9": "grapple_flower",
+    "10": "updraft",
+    "11": "glades_well",
+    "12": "dark_oak_stairs[east]",
+    "13": "dark_oak_stairs[south]",
+    "14": "ginso_landing",
+    "15": "connected dark_oak_fence",
+    "16": "dark_oak_door[half=lower]",
+    "17": "dark_oak_door[half=upper]",
+    "18": "cyan_stained_glass",
+    "19": "dark_oak_slab[type=bottom]"
+  },
+  "sections": {
+    "wall": [
+      4,
+      20
+    ],
+    "bash": [
+      20,
+      38
+    ],
+    "grapple": [
+      38,
+      56
+    ],
+    "wind": [
+      56,
+      78
+    ],
+    "jump": [
+      78,
+      93
+    ]
+  },
+  "well_positions": [
+    [
+      0,
+      21,
+      3
+    ],
+    [
+      0,
+      51,
+      3
+    ],
+    [
+      0,
+      94,
+      3
+    ]
+  ],
+  "heart_reserved": [
+    0,
+    94,
+    0
+  ],
+  "recipe": "Alternating supported root landings, short unmodified ability hops, illuminated bark windows; closed-door descent lane with alternating cushioning catches. The water-heart and upper escape route remain reserved; escape is not implemented.",
+  "resource_sha256": {
+    "assets/orimod/blockstates/ginso_landing.json": "f6f4c15a83790d671b1a5b0a3de441476241e14d27147a03231ba96f1a2623f5",
+    "assets/orimod/models/block/ginso_landing.json": "2677ea7338825b3a08e2fef99b55a78c92b9fa35da3a2a1aa1504b4a5f0a0339",
+    "assets/orimod/models/item/ginso_landing.json": "0d72e1e5d7828f245debc0a619f49bf39b8eec30192b016731afe2317d065a7f",
+    "data/orimod/loot_table/blocks/ginso_landing.json": "2ea910ebe9e27cff74046ba40576106acab8455c310a37f5e5bdf13588ba2c54"
+  }
+}

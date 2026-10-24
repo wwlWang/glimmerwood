@@ -19,7 +19,7 @@ class GinsoTest {
     }
     @Test void sixtyFourSeedsKeepTowerShaftEntranceAndSilhouetteBounds(){
         for(int seed=0;seed<64;seed++){
-            var s=new GinsoShape(seed);int wood=0,leaves=0,top=0;
+            var s=new GinsoShape(seed,2);int wood=0,leaves=0,top=0;
             for(int x=-28;x<=28;x++)for(int z=-28;z<=28;z++)for(int y=-8;y<=64;y++){
                 byte c=s.cell(x,y,z);
                 if(Math.abs(x)==28||Math.abs(z)==28||y==64)assertEquals(GinsoShape.EMPTY,c,"Clipped sculpture, seed="+seed);
@@ -33,7 +33,7 @@ class GinsoTest {
         }
     }
     @Test void archedRootsLeaveGapsAndHighSnagsRemainExposed(){
-        var s=new GinsoShape(115117);int gaps=0,bare=0;
+        var s=new GinsoShape(115117,2);int gaps=0,bare=0;
         for(int x=-25;x<=25;x++)for(int z=-25;z<=25;z++){
             if(Math.hypot(x,z)<12)continue;
             if(s.cell(x,1,z)==0)for(int y=3;y<=9;y++)if(s.cell(x,y,z)==1){gaps++;break;}
@@ -43,7 +43,7 @@ class GinsoTest {
     }
     @Test void brokenForksReplaceTheChimneyAndCarryDimBioluminescence(){
         for(int seed=0;seed<64;seed++){
-            var s=new GinsoShape(seed);int highCentre=0,leaningTip=0,sap=0,shelves=0,wood=0;
+            var s=new GinsoShape(seed,2);int highCentre=0,leaningTip=0,sap=0,shelves=0,wood=0;
             for(int x=-28;x<=28;x++)for(int z=-28;z<=28;z++)for(int y=1;y<=60;y++){
                 byte c=s.cell(x,y,z);
                 if(GinsoShape.timber(c)){
@@ -60,7 +60,7 @@ class GinsoTest {
         }
     }
     @Test void separateChunkVisitsDoNotChangeTheShape(){
-        var a=new GinsoShape(115118);var b=new GinsoShape(115118);long full=0,sliced=0;
+        var a=new GinsoShape(115118,2);var b=new GinsoShape(115118,2);long full=0,sliced=0;
         for(int x=-28;x<=28;x++)for(int z=-28;z<=28;z++)for(int y=-8;y<=64;y++){assertEquals(a.cell(x,y,z),b.cell(x,y,z));full+=a.cell(x,y,z);}
         for(int cx=-2;cx<=2;cx++)for(int cz=-2;cz<=2;cz++)
             for(int x=Math.max(-28,cx*16-8);x<=Math.min(28,cx*16+7);x++)for(int z=Math.max(-28,cz*16-8);z<=Math.min(28,cz*16+7);z++)
@@ -70,7 +70,7 @@ class GinsoTest {
     @Test void placementDataKeepsRarityAndWetBiomeScopeExplicit()throws Exception{
         var root=Path.of(System.getProperty("orimod.projectDir","."),"src/main/resources/data/orimod");
         var placement=JsonParser.parseString(Files.readString(root.resolve("worldgen/structure_set/ginso_tree.json"))).getAsJsonObject().getAsJsonObject("placement");
-        assertEquals(64,placement.get("spacing").getAsInt());assertEquals(24,placement.get("separation").getAsInt());
+        assertEquals(52,placement.get("spacing").getAsInt());assertEquals(20,placement.get("separation").getAsInt());
         var biomes=Files.readString(root.resolve("tags/worldgen/biome/has_ginso_tree.json"));
         assertTrue(biomes.contains("minecraft:swamp")&&biomes.contains("minecraft:river")&&biomes.contains("minecraft:dark_forest"));
         assertFalse(biomes.contains("minecraft:desert")||biomes.contains("is_overworld"));

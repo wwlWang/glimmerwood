@@ -29,7 +29,8 @@ public final class GinsoCourseGameTests {
                 var old=new HashMap<BlockPos,BlockState>();var pinned=new ArrayList<ChunkPos>();
                 var references=new HashMap<net.minecraft.world.level.chunk.LevelChunk,Map<Structure,it.unimi.dsi.fastutil.longs.LongSet>>();
                 var structure=level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.parse("orimod:ginso_tree"));
-                var piece=new GinsoPiece(base,115117,turn,3);
+                // Freeze the accepted v2/v1 course contract while gate A changes only the v3 exterior.
+                var piece=new GinsoPiece(base,115117,turn,3,2,1);
                 Map<Structure,StructureStart> starts=null;net.minecraft.world.level.chunk.LevelChunk startChunk=null;
                 try(var connected=Fixtures.connectedPlayer(h)){
                     for(int x=(base.getX()-12)>>4;x<=(base.getX()+12)>>4;x++)for(int z=(base.getZ()-12)>>4;z<=(base.getZ()+12)>>4;z++){

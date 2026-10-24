@@ -95,12 +95,10 @@ public final class GloomTideGameTests {
         });
         add(tests,"nearby_cap_checked_after_every_spawn",(h,s)->{
             s.floor(); s.begin();
+            h.assertValueEqual(GloomTide.nearby(s.p),0,"Cap arena must start without foreign tide mobs");
             for(int i=0;i<7;i++) s.mob(s.p.position().add(i,0,2),true);
-            int before=GloomTide.nearby(s.p);int[] queries={0,0};
-            int n=GloomTide.spawnWave(s.p,RandomSource.create(2),(l,point)->{queries[0]++;boolean protectedPoint=GloomTideDefense.QUERY.protects(l,point);if(protectedPoint)queries[1]++;return protectedPoint;});
-            com.mojang.logging.LogUtils.getLogger().info("TIDE_CAP_PROBE before={} n={} after={} eligible={} active={} max={} defenseQueries={} protected={} mobs={}",
-                    before,n,GloomTide.nearby(s.p),GloomTide.eligible(s.p),GloomTide.isActive(s.level),OriServerConfig.maxNearby(),queries[0],queries[1],
-                    s.level.getEntitiesOfClass(Mob.class,s.p.getBoundingBox().inflate(48),m->GloomTide.tagged(m)).stream().map(m->m.getType()+":"+m.position()+":own="+s.owns(m)).toList());
+            h.assertValueEqual(GloomTide.nearby(s.p),7,"Seven cap fixture mobs must be visible before spawning");
+            int n=GloomTide.spawnWave(s.p,RandomSource.create(2),GloomTideDefense.QUERY);
             h.assertValueEqual(n,1,"Wave overran remaining slot");
             h.assertValueEqual(GloomTide.nearby(s.p),8,"Cap count");
             h.assertValueEqual(GloomTide.spawnWave(s.p,RandomSource.create(3),GloomTideDefense.QUERY),0,"Cap ignored");
@@ -306,19 +304,27 @@ public final class GloomTideGameTests {
         return tests;
     }
     private static void add(List<TestFunction> list,String name,BiConsumer<GameTestHelper,Site> run) {
-        boolean loadsRing=name.equals("fixed_seed_mixed_waves_include_beetles_with_expected_frequency") || name.equals("scheduler_enrolls_once_and_honors_wave_interval") || name.equals("nearby_cap_checked_after_every_spawn");
-        list.add(new TestFunction("gloom_tide","gloom_tide."+name,"orimod_gametest:room",loadsRing?RING_READY_TICKS+20:100,0,true,h->{
-            if(loadsRing) {
-                loadedRing(h,name, () -> {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();});
-            } else {try(var site=new Site(h)) {run.accept(h,site);} h.succeed();}
+        // These cases mutate the same tide/config/RestorationData and span 61x61 arenas.
+        // A per-case batch prevents a waiting case from interleaving with another case's
+        // scheduled waves. Every case needs loaded entity sections, not just the cap test:
+        // otherwise mobs added to inaccessible sections escape both observation and cleanup.
+        list.add(new TestFunction("gloom_tide_"+name,"gloom_tide."+name,"orimod_gametest:room",RING_READY_TICKS+20,0,true,h->{
+            loadedRing(h,name, () -> {try(var site=new Site(h,arena(h,name))) {run.accept(h,site);} h.succeed();});
         }));
     }
-    private static final int RING_READY_TICKS=400;
+    private static BlockPos arena(GameTestHelper h,String name) {
+        // nearby() intentionally counts all players' tide mobs. Ownership filtering in mobs()
+        // cannot isolate this cap test: delayed entity readiness lets neighbouring waves coexist.
+        // Give it a separate physical arena, with the same private tickets as its spawn ring.
+        return h.absolutePos(name.equals("nearby_cap_checked_after_every_spawn")
+                ? new BlockPos(4096,0,4096) : BlockPos.ZERO);
+    }
+    private static final int RING_READY_TICKS=2000;
     private static final TicketType<ChunkPos> TIDE_TICKET=TicketType.create("orimod_gametest_tide",Comparator.comparingLong(ChunkPos::toLong));
     /** This 61x61 arena lies outside room's tickets. Block writes alone do not make entity sections ready.
      * Acquire only our own tickets, wait before touching global tide settings, and release on every exit. */
     private static void loadedRing(GameTestHelper h,String name,Runnable test) {
-        var level=h.getLevel();var base=h.absolutePos(BlockPos.ZERO);var chunks=new ArrayList<ChunkPos>();
+        var level=h.getLevel();var base=arena(h,name);var chunks=new ArrayList<ChunkPos>();
         var added=new ArrayList<ChunkPos>();
         var cleaned=new java.util.concurrent.atomic.AtomicBoolean();
         Runnable cleanup=()->{if(cleaned.compareAndSet(false,true))added.forEach(c->level.getChunkSource().removeRegionTicket(TIDE_TICKET,c,2,c));};
@@ -341,10 +347,16 @@ public final class GloomTideGameTests {
                     long waited=level.getGameTime()-started;
                     long missingBlocks=chunks.stream().filter(c->level.getChunkSource().getChunkNow(c.x,c.z)==null).count();
                     long missingEntities=chunks.stream().filter(c->!level.areEntitiesLoaded(c.toLong())).count();
-                    if(waited==80)com.mojang.logging.LogUtils.getLogger().info(
-                            "Tide fixture old deadline: blocks={}, entities={}, acquisition_ms={}",missingBlocks,missingEntities,acquisitionMs);
+                    if(waited==80||waited==400)com.mojang.logging.LogUtils.getLogger().info(
+                            "Tide fixture readiness at {}: blocks={}, entities={}, acquisition_ms={}, total_ms={}, pending={}",waited,missingBlocks,missingEntities,acquisitionMs,(System.nanoTime()-began)/1_000_000.,
+                            chunks.stream().filter(c->!level.areEntitiesLoaded(c.toLong())).map(c->{var chunk=level.getChunkSource().getChunkNow(c.x,c.z);return c+":"+(chunk==null?"absent":chunk.getFullStatus().name());}).toList());
                     if(missingBlocks!=0 || missingEntities!=0) {
                         h.assertTrue(waited<RING_READY_TICKS,"Tide fixture ring did not load block/entity data: blocks="+missingBlocks+", entities="+missingEntities);
+                        // GameTestServer.waitUntilNextTick() does not sleep. Hundreds of test ticks
+                        // can elapse in under a second while the entity-region IO is still pending.
+                        // Yield briefly only during fixture readiness; do not change game time,
+                        // ticket levels, the wave assertions, or production scheduling.
+                        java.util.concurrent.locks.LockSupport.parkNanos(10_000_000L);
                         return;
                     }
                     com.mojang.logging.LogUtils.getLogger().info(
@@ -359,7 +371,7 @@ public final class GloomTideGameTests {
         final long time;final Difficulty difficulty;final boolean spawning,loot,enabled;final int interval,max;
         final Map<BlockPos,BlockState> saved=new LinkedHashMap<>();
         final Set<UUID> owners=new HashSet<>(), fixtureMobs=new HashSet<>();
-        Site(GameTestHelper h) {
+        Site(GameTestHelper h,BlockPos origin) {
             this.h=h;level=h.getLevel();time=level.getDayTime();difficulty=level.getDifficulty();
             spawning=level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);loot=level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
             enabled=OriServerConfig.ENABLED.get();interval=OriServerConfig.WAVE_INTERVAL.get();max=OriServerConfig.MAX_NEARBY.get();
@@ -367,7 +379,7 @@ public final class GloomTideGameTests {
             level.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(true,level.getServer());level.getGameRules().getRule(GameRules.RULE_DOMOBLOOT).set(true,level.getServer());
             OriServerConfig.ENABLED.set(true);OriServerConfig.MAX_NEARBY.set(8);OriServerConfig.WAVE_INTERVAL.set(200);
             connection=Fixtures.connectedPlayer(h);p=connection.player();owners.add(p.getUUID());
-            var origin=h.absolutePos(BlockPos.ZERO);base=new BlockPos(origin.getX(),180,origin.getZ());p.setPos(Vec3.atBottomCenterOf(base));
+            base=new BlockPos(origin.getX(),180,origin.getZ());p.setPos(Vec3.atBottomCenterOf(base));
             p.setData(SpiritData.FORM,false);p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY);
             set(base,Blocks.AIR.defaultBlockState());set(base.above(),Blocks.AIR.defaultBlockState());
         }

@@ -230,7 +230,7 @@ public final class DevelopmentBridge {
                 var server=mc.getSingleplayerServer();var id=mc.player.getUUID();
                 return server.submit(()->{
                     var p=server.getPlayerList().getPlayer(id);
-                    return operation.equals("ginso_probe")?GinsoProbe.scan(p.serverLevel(),p.blockPosition(),action.has("radius")?action.get("radius").getAsInt():4):GinsoProbe.nearby(p.serverLevel(),p.blockPosition());
+                    return operation.equals("ginso_probe")?GinsoProbe.scan(p.serverLevel(),action.has("centerX")&&action.has("centerZ")?new net.minecraft.core.BlockPos(action.get("centerX").getAsInt(),p.getBlockY(),action.get("centerZ").getAsInt()):p.blockPosition(),action.has("radius")?action.get("radius").getAsInt():4,action.has("spacing")?action.get("spacing").getAsInt():0,action.has("separation")?action.get("separation").getAsInt():24):GinsoProbe.nearby(p.serverLevel(),p.blockPosition());
                 }).get(45,TimeUnit.SECONDS);
             }
             case "great_tree_state" -> {
@@ -663,6 +663,9 @@ public final class DevelopmentBridge {
                 cn.wwl.orimod.config.OriClientConfig.SPEC.save();
                 return Map.of("visuals", cn.wwl.orimod.config.OriClientConfig.visuals().toString());
             }
+            case "ginso_render_probe" -> {
+                GinsoRenderProbe.set(mc,action.get("hide").getAsBoolean());
+            }
             case "perf_sample" -> {
                 // PERF02: live effect, particle and heap counters; gc=true collects first so samples compare retained memory.
                 if (action.has("gc") && action.get("gc").getAsBoolean()) { System.gc(); System.gc(); }
@@ -674,6 +677,7 @@ public final class DevelopmentBridge {
                 values.put("entities", mc.level == null ? 0 : mc.level.getEntityCount());
                 values.put("fxLifecycle", cn.wwl.orimod.client.fx.SpiritFxClient.lifecycle());
                 values.put("tick", ticks);
+                values.put("chunkCompile", ChunkCompileProbe.read(mc));
                 // PERF05: integrated-server tick durations over the last 100 ticks (vanilla's own ring buffer).
                 var server = mc.getSingleplayerServer();
                 if (server != null) {

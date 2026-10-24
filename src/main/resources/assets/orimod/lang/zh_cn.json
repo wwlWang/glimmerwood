@@ -490,6 +490,8 @@
   "structure.orimod.ginso_tree": "金索树",
   "block.orimod.ginso_wood": "湿润金索木",
   "block.orimod.ginso_leaves": "金索树叶",
+  "block.orimod.ginso_canopy": "金索苔冠",
+  "block.orimod.ginso_leaf_core": "金索密叶",
   "block.orimod.ginso_vine": "垂挂金索苔",
   "block.orimod.ginso_fungus": "金索荧菌",
   "hint.orimod.ginso_wall": "萤：贴墙蹬跳上去；学过攀爬也能直上。",
@@ -503,5 +505,6 @@
   "message.orimod.ginso.checkpoint": "金索树检查点已绑定；复活时返回这座灵泉。",
   "block.orimod.great_tree_leaf_core": "致密灵叶",
   "block.orimod.great_tree_wind": "灵树风脉",
-  "block.orimod.great_tree_landing": "灵树缓冲根台"
+  "block.orimod.great_tree_landing": "灵树缓冲根台",
+  "block.orimod.ginso_landing": "缓冲苔根"
 }

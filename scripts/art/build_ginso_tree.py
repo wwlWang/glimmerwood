@@ -3,7 +3,7 @@
 from pathlib import Path
 import argparse,hashlib,json,math,os,struct,subprocess,tempfile,zlib
 ROOT=Path(__file__).resolve().parents[2]
-SRC=ROOT/'art/source/ginso_tree/v002'
+SRC=ROOT/'art/source/ginso_tree/v005'
 ASSET=ROOT/'src/main/resources/assets/orimod'
 JAVA=ROOT/'src/main/java/cn/wwl/orimod/world/GinsoShape.java'
 def noise(x,y,s=0):return ((x*374761393 ^ y*668265263 ^ s*982451653)*1274126177&0xffffffff)/0xffffffff
@@ -34,6 +34,9 @@ def leaves(x,y):
  if noise(x,y,13)<.25:return(0,0,0,0)
  n=round((noise(x,y,8)-.5)*23)
  return(43+n,76+n,55+n,255)
+def leaf_core(x,y):
+ n=round((noise(x,y,8)-.5)*23)
+ return (43+n,76+n,55+n,255)
 def vine(x,y,tip,glow=False):
  stem=7+round(1.2*math.sin(y*.6))
  if glow:
@@ -51,7 +54,7 @@ def png(f):
 files={}
 def js(path,obj):files[path]=(json.dumps(obj,indent=2)+'\n').encode()
 for name,f in [('ginso_bark',bark),('ginso_bark_moss',lambda x,y:bark(x,y,True)),
-               ('ginso_sap',sap),('ginso_moss_glow',lambda x,y:sap(x,y,True)),('ginso_leaves',leaves),
+               ('ginso_sap',sap),('ginso_moss_glow',lambda x,y:sap(x,y,True)),('ginso_leaves',leaves),('ginso_leaf_core',leaf_core),
                ('ginso_fungus',fungus),('ginso_fungus_glow',lambda x,y:fungus(x,y,True)),('ginso_fungus_edge',fungus_edge),
                ('ginso_vine',lambda x,y:vine(x,y,False)),('ginso_vine_tip',lambda x,y:vine(x,y,True)),
                ('ginso_vine_glow',lambda x,y:vine(x,y,False,True)),('ginso_vine_tip_glow',lambda x,y:vine(x,y,True,True))]:
@@ -74,6 +77,13 @@ for moss in (False,True):
 js(ASSET/'blockstates/ginso_wood.json',{'variants':variants})
 js(ASSET/'models/block/ginso_leaves.json',{'parent':'minecraft:block/cube_all','render_type':'minecraft:cutout_mipped','textures':{'all':'orimod:block/ginso_leaves'}})
 js(ASSET/'blockstates/ginso_leaves.json',{'variants':{'':{'model':'orimod:block/ginso_leaves'}}})
+for name,layer,texture in [('ginso_canopy','cutout_mipped','ginso_leaves'),('ginso_leaf_core','solid','ginso_leaf_core')]:
+ js(ASSET/f'models/block/{name}.json',{'parent':'minecraft:block/cube_all','render_type':'minecraft:'+layer,'textures':{'all':'orimod:block/'+texture}})
+ js(ASSET/f'blockstates/{name}.json',{'variants':{'':{'model':'orimod:block/'+name}}})
+ js(ASSET/f'models/item/{name}.json',{'parent':'orimod:block/'+name})
+ # Same leaf drop as the old tree, rather than introducing a separate material economy.
+ files[ROOT/f'src/main/resources/data/orimod/loot_table/blocks/{name}.json']=(ROOT/'src/main/resources/data/orimod/loot_table/blocks/ginso_leaves.json').read_bytes()
+
 js(ASSET/'blockstates/ginso_vine.json',{'variants':{f'tip={str(t).lower()}':{'model':'orimod:block/ginso_vine'+('_tip' if t else '')} for t in (False,True)}})
 for suffix in ('','_tip'):
  elements=[]
@@ -107,14 +117,14 @@ with tempfile.TemporaryDirectory(prefix='ginso-art-') as temp:
  (temp/'Report.java').write_text('''import cn.wwl.orimod.world.GinsoShape;
 public class Report {public static void main(String[] args){for(long seed:new long[]{115117,115118}){
  var s=new GinsoShape(seed);int[] n=new int[7];int low=99,high=-99,mx=99,Mx=-99,mz=99,Mz=-99;
- for(int x=-28;x<=28;x++)for(int z=-28;z<=28;z++)for(int y=-8;y<=64;y++){byte c=s.cell(x,y,z);n[c]++;if(c==1||c==2||c==5){low=Math.min(low,y);high=Math.max(high,y);mx=Math.min(mx,x);Mx=Math.max(Mx,x);mz=Math.min(mz,z);Mz=Math.max(Mz,z);}}
+ for(int x=-GinsoShape.RADIUS;x<=GinsoShape.RADIUS;x++)for(int z=-GinsoShape.RADIUS;z<=GinsoShape.RADIUS;z++)for(int y=GinsoShape.MIN_Y;y<=GinsoShape.MAX_Y;y++){byte c=s.cell(x,y,z);n[c]++;if(c==1||c==2||c==5){low=Math.min(low,y);high=Math.max(high,y);mx=Math.min(mx,x);Mx=Math.max(Mx,x);mz=Math.min(mz,z);Mz=Math.max(Mz,z);}}
  System.out.printf("{\\"seed\\":%d,\\"height\\":%d,\\"wood\\":%d,\\"leaves\\":%d,\\"vines\\":%d,\\"sap\\":%d,\\"x\\":[%d,%d],\\"y\\":[%d,%d],\\"z\\":[%d,%d]}%n",seed,s.height,n[1],n[2],n[3],n[5],mx,Mx,low,high,mz,Mz);
 }}}''')
- subprocess.run([str(java/'javac'),'-d',str(temp),str(JAVA),str(temp/'Report.java')],check=True)
+ subprocess.run([str(java/'javac'),'-d',str(temp),str(JAVA),str(JAVA.with_name('LegacyGinsoShape.java')),str(JAVA.with_name('TallGinsoShape.java')),str(temp/'Report.java')],check=True)
  metrics=[json.loads(l) for l in subprocess.check_output([str(java/'java'),'-cp',str(temp),'Report'],text=True).splitlines()]
-js(SRC/'manifest.json',{'revision':'v002','generator':'scripts/art/build_ginso_tree.py','shape_source':str(JAVA.relative_to(ROOT)),'shape_sha256':hashlib.sha256(JAVA.read_bytes()).hexdigest(),'recipe':'Broken hollow wet-bark bole ending in three unequal leaning forks; six drooping fans; exposed snags; world-lit brown-green bark with north/low moss; emissive crack patches, fungus shelves and water drips. Original stilt roots; interior reserved only.','texture_size':[16,16],'filter':'nearest','metrics':metrics,'assets':{str(p.relative_to(ROOT)):hashlib.sha256(b).hexdigest() for p,b in files.items()}})
+js(SRC/'manifest.json',{'revision':'v005','generator':'scripts/art/build_ginso_tree.py','shape_source':str(JAVA.relative_to(ROOT)),'shape_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (JAVA,JAVA.with_name('LegacyGinsoShape.java'),JAVA.with_name('TallGinsoShape.java'))},'shape_version':3,'course_version':2,'legacy_baseline':'src/test/resources/cn/wwl/orimod/world/ginso-v2-42a50ec/baseline.json','recipe':'108–118-block twisted hollow wet cypress, 20–22-wide base, stilt feet at radius 22–24, crown within 70 blocks; three unequal leaning broken forks; three offset fork-aligned curved moss skirts, 11-block height steps, thick saddles and 5–8-block bent hems with bare broken tips and 12–25-block vine curtains; eight thinner connected root arches with rounded walk-through openings, unchanged support endpoints; exposed low snags; world-lit brown-green bark with north/low moss; emissive crack patches, fungus shelves and water drips. World-lit textures deliberately unchanged from v002; shape 3 binds to course 2; released shape 2 retains course 1 byte for byte.','canopy_rendering':'v3-only cutout ginso_canopy culls adjacent canopy faces; fully surrounded leaves become opaque world-lit ginso_leaf_core. Legacy ginso_leaves unchanged. Sparse interior drips and long outer curtains.', 'texture_size':[16,16],'filter':'nearest','metrics':metrics,'assets':{str(p.relative_to(ROOT)):hashlib.sha256(b).hexdigest() for p,b in files.items()}})
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');a=p.parse_args()
 for path,b in files.items():
  if a.check:assert path.read_bytes()==b,f'Stale {path}'
  else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b)
-print(f'Ginso v002: {len(files)} assets; written={0 if a.check else len(files)}; metrics={metrics}')
+print(f'Ginso v005: {len(files)} assets; written={0 if a.check else len(files)}; metrics={metrics}')

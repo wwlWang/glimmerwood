@@ -23,6 +23,7 @@ final class WorldgenAudit {
     private WorldgenAudit() {}
 
     static void started(ServerStartedEvent event) {
+        if (System.getProperty("orimod.worldgen.audit.mode", "").startsWith("ginso_")) { GinsoUpgradeAudit.started(event); return; }
         if (System.getProperty("orimod.worldgen.audit.mode", "").startsWith("outpost")) { outposts(event); return; }
         if ("site".equals(System.getProperty("orimod.worldgen.audit.mode"))) { sites(event); return; }
         var server = event.getServer();

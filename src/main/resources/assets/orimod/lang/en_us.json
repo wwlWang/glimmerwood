@@ -490,6 +490,8 @@
   "structure.orimod.ginso_tree": "Ginso Tree",
   "block.orimod.ginso_wood": "Wet Ginso Wood",
   "block.orimod.ginso_leaves": "Ginso Leaves",
+  "block.orimod.ginso_canopy": "Ginso Canopy",
+  "block.orimod.ginso_leaf_core": "Dense Ginso Leaves",
   "block.orimod.ginso_vine": "Trailing Ginso Moss",
   "block.orimod.ginso_fungus": "Ginso Glow Shelf",
   "hint.orimod.ginso_wall": "Glimmer: Jump off the walls, or climb if you know how.",
@@ -503,5 +505,6 @@
   "message.orimod.ginso.checkpoint": "Ginso checkpoint bound. Respawning returns you to this well.",
   "block.orimod.great_tree_leaf_core": "Dense Spirit Foliage",
   "block.orimod.great_tree_wind": "Spirit Tree Updraft",
-  "block.orimod.great_tree_landing": "Spirit Tree Root Cushion"
+  "block.orimod.great_tree_landing": "Spirit Tree Root Cushion",
+  "block.orimod.ginso_landing": "Cushioning Moss Root"
 }

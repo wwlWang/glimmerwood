@@ -152,6 +152,10 @@ public final class GreatTreeSites {
                 int[] entries=new int[1024];Path file=directory.resolve("r."+rx+"."+rz+".mca");
                 if(!Files.exists(file))return entries;
                 try(var channel=FileChannel.open(file,StandardOpenOption.READ)){
+                    // RegionFile opens CREATE even for a read of an absent chunk. Until the
+                    // first write that is a legitimate zero-byte file, not a corrupt old region.
+                    if(channel.size()==0)return entries;
+                    if(channel.size()<8192)throw new IOException("Truncated region header");
                     var bytes=ByteBuffer.allocate(4096);while(bytes.hasRemaining())if(channel.read(bytes)<0)throw new IOException("Truncated location table");
                     bytes.flip();for(int i=0;i<entries.length;i++)entries[i]=bytes.getInt();
                 }catch(IOException exception){Arrays.fill(entries,1);}
