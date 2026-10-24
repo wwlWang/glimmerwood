@@ -25,7 +25,7 @@ for name,pixel in [('great_root_bark',bark),('great_root_sap',sap),('great_root_
  data=png(pixel);files[PACK/'textures/block'/f'{name}.png']=data;files[SOURCE/f'{name}.png']=data
 faces=['north','south','east','west','up','down']
 for kind in ['none','vein','knot']:
- model={'render_type':'minecraft:cutout','textures':{'particle':'orimod:block/great_root_bark','bark':'orimod:block/great_root_bark'},'elements':[{'from':[0,0,0],'to':[16,16,16],'faces':{f:{'texture':'#bark','cullface':f} for f in faces}}]}
+ model={'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':{'particle':'orimod:block/great_root_bark','bark':'orimod:block/great_root_bark'},'elements':[{'from':[0,0,0],'to':[16,16,16],'faces':{f:{'texture':'#bark','cullface':f} for f in faces}}]}
  if kind!='none':
   model['textures']['glow']='orimod:block/great_root_'+('sap' if kind=='vein' else 'knot')
   model['elements'].append({'from':[-.006]*3,'to':[16.006]*3,'shade':False,'neoforge_data':{'block_light':15,'sky_light':15,'ambient_occlusion':False},'faces':{f:{'texture':'#glow','uv':[0,0,16,16],'cullface':f} for f in faces}})

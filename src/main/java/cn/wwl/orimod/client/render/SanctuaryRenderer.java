@@ -38,6 +38,18 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
             door(shape,0,pose,buffers,light);pose.popPose();return;
         }
         pose.pushPose();pose.translate(.5,0,.5);
+        var companion=legacyNeighbour(b);
+        var fit=SanctuaryPresentation.fit(companion,state.is(OriBlocks.CAVE_SHRINE));
+        pose.translate(fit.x(),0,fit.z());pose.scale(fit.horizontal(),fit.vertical(),fit.horizontal());
+        if(state.is(OriBlocks.GLOOM_ALTAR)||state.is(OriBlocks.STORM_ALTAR))pose.translate(0,floorLift(b),0);
+        boolean ready=assembly(state,b.phase(),b.activated(),time,pose,buffers,light);
+        pose.popPose();
+        if (!ready) fallback(b,pose,buffers,light,overlay);
+    }
+
+    /** Shared world/item assembly; the caller owns placement, scale, legacy fitting and render context. */
+    static boolean assembly(net.minecraft.world.level.block.state.BlockState state,SanctuaryBlockEntity.Phase phase,
+                            boolean activated,double time,PoseStack pose,MultiBufferSource buffers,int light) {
         boolean ready;
         if (state.is(OriBlocks.GINSO_WATER_HEART)) {
             ready=mesh("ginso_water_roots",pose,buffers,light,.7f,1);
@@ -54,13 +66,12 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
             String theme=state.is(OriBlocks.FOREST_SHRINE)?"forest":state.is(OriBlocks.CREEK_SHRINE)?"creek":state.is(OriBlocks.CAVE_SHRINE)?"cave":"well";
             ready=mesh("basin_"+theme,pose,buffers,light,1,1);
         } else if (state.is(OriBlocks.MAP_STONE)) {
-            ready=mesh("map_pillar",pose,buffers,light,b.activated()?1:.08f,1);
+            ready=mesh("map_pillar",pose,buffers,light,activated?1:.08f,1);
             pose.translate(0,2.02+Math.sin(time*.035)*.035,0);pose.mulPose(Axis.YP.rotation((float)time*.006f));
-            pose.mulPose(Axis.XP.rotationDegrees(12));mesh("map_disc",pose,buffers,light,b.activated()?1:.12f,1);
+            pose.mulPose(Axis.XP.rotationDegrees(12));mesh("map_disc",pose,buffers,light,activated?1:.12f,1);
         } else {
-            pose.translate(0,floorLift(b),0);
-            boolean storm=state.is(OriBlocks.STORM_ALTAR);boolean active=b.phase()==SanctuaryBlockEntity.Phase.ACTIVE;
-            boolean won=b.phase()==SanctuaryBlockEntity.Phase.DEFEATED;
+            boolean storm=state.is(OriBlocks.STORM_ALTAR);boolean active=phase==SanctuaryBlockEntity.Phase.ACTIVE;
+            boolean won=phase==SanctuaryBlockEntity.Phase.DEFEATED;
             float glow=active?1.1f:won?.65f:.18f;
             ready=mesh(storm?"altar_storm":"altar_gloom",pose,buffers,light,glow,1);
             pose.translate(0,1.92+Math.sin(time*.045)*.06,0);
@@ -70,8 +81,16 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
             mesh(storm?"storm_ring":"gloom_crystal",pose,buffers,light,glow,won?.65f:1);
             if (won) {pose.scale(.5f,.5f,.5f);mesh("keystone_inset",pose,buffers,LightTexture.FULL_BRIGHT,1,1);}
         }
-        pose.popPose();
-        if (!ready) fallback(b,pose,buffers,light,overlay);
+        return ready;
+    }
+    private static net.minecraft.core.Direction legacyNeighbour(SanctuaryBlockEntity b) {
+        var state=b.getBlockState();
+        if(b.getLevel()==null || !(state.is(OriBlocks.CAVE_SHRINE)||state.is(OriBlocks.MAP_STONE)))return null;
+        for(var dir:net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            var p=b.getBlockPos().relative(dir);
+            if(b.getLevel().hasChunkAt(p) && b.getLevel().getBlockState(p).is(state.is(OriBlocks.CAVE_SHRINE)?OriBlocks.MAP_STONE:OriBlocks.CAVE_SHRINE))return dir;
+        }
+        return null;
     }
     public static void door(KeystoneDoorShape s,float opening,PoseStack pose,MultiBufferSource buffers,int light) {
         var centre=s.bounds().getCenter();
@@ -124,7 +143,7 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
         }
         return true;
     }
-    private static boolean available(String name) {
+    static boolean available(String name) {
         var model=GemRenderModels.handle(ResourceLocation.fromNamespaceAndPath("orimod","models/sanctuary/"+name+".glb")).get();
         return model!=null && model.model().meshes().stream().allMatch(p->Minecraft.getInstance().getTextureManager().getTexture(p.material().texture(),null)!=null);
     }

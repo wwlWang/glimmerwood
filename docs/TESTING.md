@@ -1,5 +1,15 @@
 # 回归测试
 
+## 试玩 P1/P2、B1/B2
+
+手持尺寸返修最终见 `evidence/playtest-b2-size-20261024-v001/`：**1590 JUnit / 932 GameTest，0失败/错误/跳过，6m43s**；targeted-02的43项全部通过。新增BuildingItemFramingTest的10×两形态/两手完整投影、10项第三人称尺寸上限先红20项；另2项普通cube继承测试。firstperson后撤调整过程中门的保守角点曾越过5%边距（targeted.log），调整display后同一断言通过。原GLB/PNG不改，三项item/heart生成器--check written=0。人形/精灵各48张同机位原版参照+修后，human-reference-grid/spirit-reference-grid统一画面缩放；普通块不加专属缩放。仅手持display返修，B3/B4不在本轮范围。
+
+下面1568/932为返修前已审的上一检查点，不能替代本次完整验证。
+
+`playtest-b-final-20261024-v001/full-04.log`：最终1568 JUnit、932 GameTest全过，6m45s，final-junit/、final-gametest.xml及final-counts.json备份在同目录。首轮full.log为1567/932；实拍发现底沿光晕未将百分比设置归一化，增加bottomGlowUsesAPercentSettingWithoutAmplification先红后修，最终统计多1项。P1/P2先测3个失败（方向/长度、近镜头点数/尺寸）；B1先测2个模型空间失败；B2先测12个显示模型失败。修后定向20条全部通过。8条`sanctuary.cave_map_saved_position_*`覆盖四朝向×新旧NBT重载、再次保存、实际分块postProcess沿保存坐标放置，不移动/复制地图石。原遗迹路线、秘室、光桥、旋转组照旧通过；Python12项和check-ruins通过，原路线hash没有替换。
+
+新资源`sanctuary_items/v001`和既有金索木/内根/树心生成器均--check一致，FX25项和角色/爪子GLB检查通过。商人异步定位夹具的结构起点注入/恢复必须先让8区块引用读者范围达到FULL并持票至恢复后，否则新生成邻区块createReferences会并发遍历被修改的HashMap（本轮full-03保留崩溃栈，已补夹具前置，断言未改）。建筑模型复用世界网格；最终playtest-b-review-20261024-v002实拍GUI即时buffer、手持、掉落和展示框。复原采用独立v003真实输入HP8→14；v002因形态前置错误未治疗的图排除。旧神龛等待交互包后打开RuinScreen，客户端正常退出。不能只靠模型JSON测试宣布视觉通过。
+
 ## 试玩修复 A（2026-10-24）
 
 新增：SkillTargetGameTests（bits0/2/8/10与两种近端目标、未学实体不抢花），FeatherAdmissionGameTests（装备OR技能四组合、一次教程/提示不写技能位、批次位移维持），RegenerateFxGameTests（实际治疗/事件否决、一次脉冲/取消），BladeTempoGameTests（7tick命中、3/4/5伤害、他人插入保留原版无敌），以及TargetPermissionTest、FeatherPoseTest、FallCurveTest与旧FX解码拒绝更新。`a1-red`、`a2-red`、`a3-red`、`a4-red`、`a5-red`、`a6-red`保留失败，针对性绿色与全量结果都在`evidence/playtest-a-20261024-v001`。额外A3平行握轴探针先产生NaN，修后hidden；相应断言纳入单测。

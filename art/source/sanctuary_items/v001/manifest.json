@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "generator": "scripts/art/build_sanctuary_items.py",
+  "renderer": "SanctuaryItemRenderer -> SanctuaryRenderer.assembly, shared with placed cores",
+  "files": {
+    "src/main/resources/assets/orimod/models/item/glades_well.json": "a8f074116ba9baa289cc202e8ec293b14692ae04b97866367574c0501bbae298",
+    "src/main/resources/assets/orimod/models/item/forest_spring_shrine.json": "a8f074116ba9baa289cc202e8ec293b14692ae04b97866367574c0501bbae298",
+    "src/main/resources/assets/orimod/models/item/creek_ruins_shrine.json": "fe9fd19f674f4e95ebfdf0c359e5aaca6d95c338af21d506ffdf920c51132c55",
+    "src/main/resources/assets/orimod/models/item/cave_altar_shrine.json": "8115ba83522a51b774dd5daf434379191f97ab25579d38e5a9c72e02ab8588f9",
+    "src/main/resources/assets/orimod/models/item/gloom_altar.json": "bc445ac63e176899d96f11cfb4925fb8788c727af056b953b2ccb46732da1c26",
+    "src/main/resources/assets/orimod/models/item/storm_altar.json": "456a285acce283959215e51dd49938164eca3a87602d2feb251d0edfcb786a81",
+    "src/main/resources/assets/orimod/models/item/map_stone.json": "c5feb26db40ac8d9c7efe69abb384940ac40f71db92e6e6ceec6f82adf1b0510",
+    "src/main/resources/assets/orimod/models/item/keystone_door.json": "fa11edecd6993833afa4a610fd76e5ca817f5b80e765d05af1bca2e4c4ff3baf",
+    "src/main/resources/assets/orimod/models/item/great_tree_heart.json": "d06867a07917e8a22b3c6417fb3aaa70b7115af57e5e823a1ee2dc65393bfd0c",
+    "src/main/resources/assets/orimod/models/item/ginso_water_heart.json": "92f023e176c6d9edb5eb2794ed87582e5bcefd87dee4ec4b763b2a4253f7e1f9",
+    "art/source/sanctuary_items/v001/glades_well.json": "a8f074116ba9baa289cc202e8ec293b14692ae04b97866367574c0501bbae298",
+    "art/source/sanctuary_items/v001/forest_spring_shrine.json": "a8f074116ba9baa289cc202e8ec293b14692ae04b97866367574c0501bbae298",
+    "art/source/sanctuary_items/v001/creek_ruins_shrine.json": "fe9fd19f674f4e95ebfdf0c359e5aaca6d95c338af21d506ffdf920c51132c55",
+    "art/source/sanctuary_items/v001/cave_altar_shrine.json": "8115ba83522a51b774dd5daf434379191f97ab25579d38e5a9c72e02ab8588f9",
+    "art/source/sanctuary_items/v001/gloom_altar.json": "bc445ac63e176899d96f11cfb4925fb8788c727af056b953b2ccb46732da1c26",
+    "art/source/sanctuary_items/v001/storm_altar.json": "456a285acce283959215e51dd49938164eca3a87602d2feb251d0edfcb786a81",
+    "art/source/sanctuary_items/v001/map_stone.json": "c5feb26db40ac8d9c7efe69abb384940ac40f71db92e6e6ceec6f82adf1b0510",
+    "art/source/sanctuary_items/v001/keystone_door.json": "fa11edecd6993833afa4a610fd76e5ca817f5b80e765d05af1bca2e4c4ff3baf",
+    "art/source/sanctuary_items/v001/great_tree_heart.json": "d06867a07917e8a22b3c6417fb3aaa70b7115af57e5e823a1ee2dc65393bfd0c",
+    "art/source/sanctuary_items/v001/ginso_water_heart.json": "92f023e176c6d9edb5eb2794ed87582e5bcefd87dee4ec4b763b2a4253f7e1f9"
+  }
+}

@@ -29,6 +29,14 @@ R115 C 旧课程（Course 1，历史维护）：`GinsoInterior`独立于已验�
 唯一站点、原版 locate 补充和按区块裁剪生成的实现说明见 [R115 B 外形记录](drafts/R115_B_SHAPE.md)。OP 命令 `/ori great_tree site|repick|force_place`；已触及的站点不可重选。Devtools `great_tree_state` 返回站点/出生点/写入耗时；`command` 可传 `captureOutput:true` 收集真实反馈。此段是最初外形检查点说明；已接入的新旧版内部及验收见本页顶部。
 
 
+## 试玩建筑/羽毛显示维护
+
+`SanctuaryItemRenderer`的10种BlockItem统一调用`SanctuaryRenderer.assembly`，物品单位空间适配与GUI/ground/fixed/左右手display分开。`scripts/art/build_sanctuary_items.py --check`负责新源`art/source/sanctuary_items/v001`，两树心生成器复用同一个Python契约；不要用旧block/item父模型覆盖builtin/entity。普通金索木和内根在保留元素的同时继承minecraft:block/block的显示变换。 手持尺寸以同形态原版oak_log/cauldron/lectern/bell为标尺：普通cube无专属缩放；建筑firstperson缩放0.40、translation[-1.5,3.5,-4]，thirdperson缩放0.375，GUI/ground/fixed不变。`BuildingItemFramingTest`使用两形态、左右手视空间起点和70°手投影锁住完整入画。`scripts/capture-building-size.py`生成相同FOV/机位的16物品×3上下文人形/精灵图，不能用逐物品缩放裁图掩盖尺寸问题。
+
+洞穴新地图石局部(3,2,15)，旧(7,2,15)。RuinPiece写OriMapStone坐标；缺字段按legacy_map_stone加载，已保存piece后续生成不能改用最新layout坐标。相邻CAVE_SHRINE/MAP_STONE才启用`SanctuaryPresentation`紧凑视觉适配；只读已加载邻格，不写方块或挪交互点。
+
+羽毛`FeatherPose`按渲染身体后向/两爪中点组成矩阵，不以两手连线作羽轴。本人复原走`RecoveryView`近镜头点数/尺寸限制；底沿光晕的screenFlash设置是0–100百分比，必须先归一化。第三人称/远端仍用标准FX定义。`scripts/capture-playtest-b.py <新证据名>`覆盖P1/P2、普通物品四种上下文、新洞穴模板夹具和既有自然洞穴旧档；仅在dev测试世界使用，DISPLAY=:0，结束清票/离开/关闭。
+
 ## R115 A 建筑模型与旧档升级
 
 灵泉、三种遗迹神龛、两座首领祭坛、地图石、钥石门保留原注册 ID / 原碰撞 / 原交互。`SanctuaryBlock` 提供共享 BE；`SanctuaryMigration` 在区块加载时先用 section palette `maybeHas` 预筛，只对含核心的区段补缺失 BE，不查询邻区块。服务端在发区块包前补建，客户端加载/重同步也能补建；`getUpdateTag` 和更新包同步地图石与祭坛的外观状态。旧档已领取奖励仍以原 rewards 为准，旧地图石的外观首次再次使用后点亮，不推测历史回执。
@@ -56,7 +64,7 @@ G轻按松开开原能力/碎片面板；按住250ms开技能轮盘，鼠标或�
 
 ## R113 羽毛与灵泉验证
 
-人形使用原版鞘翅；精灵装备同一个 minecraft:elytra 得到羽毛滑翔升级，仍需GLIDE。仅客户端默认名称/物品模型切换，服务器保存和物品ID不变；其他模组鞘翅不接管。`ori awaken`、`ori unlock all`、`ori form on|off`、`ori energy set <n>`可准备场景。左下主HUD的回退设置为客户端 `vanillaHud`。灵泉用右键发现/补满并打开同维度选择列表；遗迹面板的灵泉按钮也打开该列表。
+人形使用原版鞘翅；精灵装备同一个 minecraft:elytra 即可滑翔并得到升级；已学GLIDE则可免装备滑翔。仅客户端默认名称/物品模型切换，服务器保存和物品ID不变；其他模组鞘翅不接管。`ori awaken`、`ori unlock all`、`ori form on|off`、`ori energy set <n>`可准备场景。左下主HUD的回退设置为客户端 `vanillaHud`。灵泉用右键发现/补满并打开同维度选择列表；遗迹面板的灵泉按钮也打开该列表。
 
 `spirit_state.client/server.feather`给出wearing/permitted/gliding/handoff/migrationRemaining/displayName；服务端displayName保持原物品名，客户端随本地形态切换。`container_state.slots[].name`便于比对名称；脚本用XTest在DISPLAY=:0移动真实鼠标，截图原版工具提示。验证脚本为 scripts/verify-r113.py。客户端启动遵守 llvmpipe + DISPLAY=:0；测试运行时关闭客户端。
 

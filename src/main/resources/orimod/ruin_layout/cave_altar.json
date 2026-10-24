@@ -191,6 +191,11 @@
     ]
   },
   "map_stone": [
+    3,
+    2,
+    15
+  ],
+  "legacy_map_stone": [
     7,
     2,
     15

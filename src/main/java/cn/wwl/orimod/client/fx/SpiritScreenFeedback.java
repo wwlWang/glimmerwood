@@ -58,6 +58,9 @@ public final class SpiritScreenFeedback {
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
         var mc = Minecraft.getInstance();
         var visuals = OriClientConfig.visuals();
+        float recovery=RecoveryView.alpha(SpiritFxClient.recoveryGlow(delta.getGameTimeDeltaPartialTick(false)),visuals.screenFlash());
+        if(recovery>0)graphics.fillGradient(0,graphics.guiHeight()*9/10,graphics.guiWidth(),graphics.guiHeight(),
+                0x0068D8AD,Math.round(recovery*255)<<24|0x68D8AD);
         if (mc.player != null) {
             float exposure = cn.wwl.orimod.fx.FlashLight.exposure(SpiritFxClient.flashAmount(mc.player, delta.getGameTimeDeltaPartialTick(false)),
                     visuals.quality(), visuals.advancedParticles(), visuals.screenFlash());

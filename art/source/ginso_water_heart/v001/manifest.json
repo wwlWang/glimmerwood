@@ -61,6 +61,6 @@
     "src/main/resources/assets/orimod/models/block/ginso_water_heart.json": "cd20a0460a55b97bcd0d6d2f809be189a3e8341acea63e94cce5e81a1f2d889c",
     "art/source/ginso_water_heart/v001/ginso_water_heart.json": "cd20a0460a55b97bcd0d6d2f809be189a3e8341acea63e94cce5e81a1f2d889c",
     "src/main/resources/assets/orimod/blockstates/ginso_water_heart.json": "b7ecaf5a280a20d8f758af237a734a52ca65c45982ec93f994c097cc4020a430",
-    "src/main/resources/assets/orimod/models/item/ginso_water_heart.json": "f7159041a5be33aa132e46c3001aa3d19d507e60597bcf816fe98f56a3b69c86"
+    "src/main/resources/assets/orimod/models/item/ginso_water_heart.json": "92f023e176c6d9edb5eb2794ed87582e5bcefd87dee4ec4b763b2a4253f7e1f9"
   }
 }

@@ -13,9 +13,9 @@
     "art/source/great_tree_interior/v002/great_root_sap.png": "03812a30d852141d5044f92059582bc00801d26850392312735982f33cee85ec",
     "src/main/resources/assets/orimod/textures/block/great_root_knot.png": "b0f8e69cc05e256134306c0af6c963f81540d468bb24dcf6ed916b2a782ed36a",
     "art/source/great_tree_interior/v002/great_root_knot.png": "b0f8e69cc05e256134306c0af6c963f81540d468bb24dcf6ed916b2a782ed36a",
-    "src/main/resources/assets/orimod/models/block/great_spirit_root_none.json": "e2e26e2845dd7fac47695470f0b67bc814b1814e7c77b881f6681e139a6e183a",
-    "src/main/resources/assets/orimod/models/block/great_spirit_root_vein.json": "25c0cf9556cb31624232a216e06c25348300609381ac75cfc729b9407d9dea8e",
-    "src/main/resources/assets/orimod/models/block/great_spirit_root_knot.json": "c4ae5fff369cd9dc9c6854b952901a39b4866b65337a6f3ee2d7317665528247",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_none.json": "70490bde36421986dde56075267335104f4b4b30119efafc74f478492ec1fef2",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_vein.json": "9fd650c17cfc24ea7770e4d3b53294055e332e7d5f4953b3585860a782769bee",
+    "src/main/resources/assets/orimod/models/block/great_spirit_root_knot.json": "50212018fda33cd7421bccfb24c975b517071523fabf672adfaf49ae79ef5ee1",
     "src/main/resources/assets/orimod/blockstates/great_spirit_root.json": "3fd562fa649fbe8fa1dc0e77978201fe793b5c417f92eaeae99c9cba968016ff",
     "src/main/resources/assets/orimod/models/item/great_spirit_root.json": "791a6b7edcb482f41ff3d34668e0cadc32b55f748b33f454182e46c2a082871b"
   }

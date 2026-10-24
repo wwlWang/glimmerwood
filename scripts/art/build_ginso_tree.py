@@ -66,7 +66,7 @@ for moss in (False,True):
  for lit in (False,True):
   name='ginso_wood'+('_moss' if moss else '')+('_sap' if lit else '')
   base='orimod:block/ginso_bark'+('_moss' if moss else '')
-  model={'render_type':'minecraft:cutout','textures':{'bark':base,'north':'orimod:block/ginso_bark_moss','particle':base,
+  model={'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':{'bark':base,'north':'orimod:block/ginso_bark_moss','particle':base,
          'vein':'orimod:block/ginso_moss_glow' if moss else 'orimod:block/ginso_sap'},'elements':[{
          'from':[0,0,0],'to':[16,16,16],'faces':{d:{'texture':'#north' if d=='north' else '#bark','cullface':d} for d in faces}}]}
   if lit:

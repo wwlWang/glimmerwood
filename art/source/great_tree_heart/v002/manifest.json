@@ -63,6 +63,6 @@
     "src/main/resources/assets/orimod/models/block/great_tree_heart_bloomed.json": "572522ea9e0201a1f11190a866d98a3904d3324c87a52a632b1c83926962134b",
     "art/source/great_tree_heart/v002/great_tree_heart_bloomed.json": "572522ea9e0201a1f11190a866d98a3904d3324c87a52a632b1c83926962134b",
     "src/main/resources/assets/orimod/blockstates/great_tree_heart.json": "07c8d0488b3c862f66ad9f2a139be239241b2b92eec3033c7433c3c95064c3d7",
-    "src/main/resources/assets/orimod/models/item/great_tree_heart.json": "3ab80f7e5e516498a1754626d1d557d8f5b0a44e26150074134f27c1f40512f2"
+    "src/main/resources/assets/orimod/models/item/great_tree_heart.json": "d06867a07917e8a22b3c6417fb3aaa70b7115af57e5e823a1ee2dc65393bfd0c"
   }
 }

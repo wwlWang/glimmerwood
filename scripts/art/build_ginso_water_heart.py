@@ -3,6 +3,7 @@
 Shared exporter only; no modification of the accepted Great Heart or imported artwork.
 """
 import argparse,hashlib,json,math
+from sanctuary_items import model as item_model
 from pathlib import Path
 import build_great_heart as meshlib
 ROOT=Path(__file__).resolve().parents[2];PACK=ROOT/'src/main/resources/assets/orimod';SOURCE=ROOT/'art/source/ginso_water_heart/v001'
@@ -45,7 +46,7 @@ def main():
  model={'ambientocclusion':False,'textures':{'particle':'orimod:block/spirit_tree_heart','crystal':'orimod:block/spirit_tree_heart'},'elements':[{'from':[5,4,5],'to':[11,20,11],'shade':False,'neoforge_data':{'block_light':15},'rotation':{'origin':[8,8,8],'axis':'y','angle':45},'faces':faces}]}
  outputs[PACK/'models/block/ginso_water_heart.json']=enc(model);outputs[SOURCE/'ginso_water_heart.json']=enc(model)
  outputs[PACK/'blockstates/ginso_water_heart.json']=enc({'variants':{'':{'model':'orimod:block/ginso_water_heart'}}})
- outputs[PACK/'models/item/ginso_water_heart.json']=enc({'parent':'orimod:block/ginso_water_heart'})
+ outputs[PACK/'models/item/ginso_water_heart.json']=enc(item_model("ginso_water_heart"))
  outputs[SOURCE/'manifest.json']=enc({'version':1,'generator':'scripts/art/build_ginso_water_heart.py','style':'Original clear-blue faceted droplet in woven wet roots; two cyan winding filaments. Shared exporter, no imported meshes.','assets':assets,'runtime':'Shared Sanctuary BE, always visible; owner-only pickup motes; float pivot y=1.12','files':{str(p.relative_to(ROOT)):hashlib.sha256(v).hexdigest() for p,v in outputs.items()}})
  for p,v in outputs.items():
   if args.check:assert p.exists() and p.read_bytes()==v,f'Mismatch: {p}'

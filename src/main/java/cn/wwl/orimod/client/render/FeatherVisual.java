@@ -7,7 +7,6 @@ import com.wf.gemrender.gltf.GltfAnimation;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 /** One feather per spirit glider, following the valid rendered two-paw pose. */
@@ -24,8 +23,9 @@ final class FeatherVisual extends GemRenderEntityVisual<Player> {
             var a=frame.boneMatrix("grip_l",new Matrix4f());var b=frame.boneMatrix("grip_r",new Matrix4f());
             var first=frame.transform().transformPosition(a.getTranslation(new Vector3f()));
             var second=frame.transform().transformPosition(b.getTranslation(new Vector3f()));
-            float yaw=-Mth.rotLerp(partial,entity.yBodyRotO,entity.yBodyRot)*Mth.DEG_TO_RAD;
-            var pose=FeatherPose.matrix(first,second,new Vector3f(0,0,1).rotateY(yaw));
+            // Use the body's rendered facing (including its turning blend), not the raw entity yaw.
+            var forward=frame.transform().transformDirection(new Vector3f(0,0,1));
+            var pose=FeatherPose.matrix(first,second,forward);
             if(pose==null)target.scale(0);else target.mul(pose);
         }else target.scale(0); // No stale body-position fallback when a pose disappears or the form changes.
     }

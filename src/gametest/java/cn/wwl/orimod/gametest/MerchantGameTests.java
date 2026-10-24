@@ -93,7 +93,11 @@ public final class MerchantGameTests {
                 long beforeTime=level.getDayTime();level.setDayTime(Math.floorDiv(beforeTime,24000)*24000+6000);
                 com.mojang.logging.LogUtils.getLogger().info("Merchant async {} fixture time {} -> {}",outcome,beforeTime,level.getDayTime());
                 var potential=fixture.placement.getPotentialStructureChunk(level.getSeed(),s.p.chunkPosition().x,s.p.chunkPosition().z);
-                s.pin(potential.getWorldPosition(),0);
+                // createReferences iterates starts from an eight-chunk neighbourhood on worldgen workers.
+                // Finish every possible reader before injecting/restoring this synthetic start. Keeping
+                // them loaded through cleanup avoids racing HashMap iteration during async locate.
+                s.pin(potential.getWorldPosition(),8*16);
+                com.mojang.logging.LogUtils.getLogger().info("Merchant async {} start {}: reference-reader radius 8 FULL before injection",outcome,potential);
                 var chunk=level.getChunk(potential.x,potential.z);var starts=new HashMap<>(chunk.getAllStarts());
                 s.searchCleanup=()->{try{chunk.setAllStarts(starts);}finally{fixture.close();}};
                 var at=new RuinPlacement(potential.getWorldPosition().atY(180),net.minecraft.world.level.block.Rotation.NONE);

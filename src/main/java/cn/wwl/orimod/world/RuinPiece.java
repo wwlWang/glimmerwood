@@ -24,10 +24,13 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this.secret = kind.layout().secret();
         this.bridges = kind.layout().bridges();
         this.beetles = kind.layout().beetles();
+        this.mapStone = kind.layout().mapStone();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot"))));
         this.kind = kindOf(templateName);
+        this.mapStone=tag.contains("OriMapStone",net.minecraft.nbt.Tag.TAG_LONG)?BlockPos.of(tag.getLong("OriMapStone"))
+                :kind==null?null:kind.layout().legacyMapStone();
         if (tag.contains("OriSecret", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
             var s = tag.getCompound("OriSecret");
             this.secret = new RuinKind.Secret(BlockPos.of(s.getLong("Entrance")), net.minecraft.core.Direction.byName(s.getString("Facing")), s.getString("Blocks"));
@@ -45,6 +48,8 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     public java.util.List<RuinKind.Bridge> bridges() { return bridges; }
     private final RuinKind kind;
     private final RuinKind.Secret secret;
+    private final BlockPos mapStone;
+    public BlockPos mapStone(){return mapStone;}
     public RuinKind kind() { return kind; }
     public RuinKind.Secret secret() { return secret; }
     private static ResourceLocation template(RuinKind kind) { return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + kind.id); }
@@ -68,6 +73,7 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
+        if(mapStone!=null)tag.putLong("OriMapStone",mapStone.asLong());
         if(!beetles.isEmpty()){
             tag.putLongArray("OriBeetles",beetles.stream().mapToLong(BlockPos::asLong).toArray());
             synchronized(spawnedBeetles){tag.putLongArray("OriBeetlesSpawned",spawnedBeetles.stream().mapToLong(Long::longValue).toArray());}
@@ -88,7 +94,7 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         for (int x = Math.max(boundingBox.minX(), chunkBounds.minX()); x <= Math.min(boundingBox.maxX(), chunkBounds.maxX()); x++)
             for (int z = Math.max(boundingBox.minZ(), chunkBounds.minZ()); z <= Math.min(boundingBox.maxZ(), chunkBounds.maxZ()); z++)
                 RuinApproachPiece.clearCanopy(level, chunkBounds, x, z, boundingBox.maxY() + 1, boundingBox.maxY() + 48);
-        if (kind != null) placeCells(level, kind, placement(), chunkBounds);
+        if (kind != null) placeCells(level, kind, placement(), chunkBounds,mapStone);
         spawnBeetles(level,chunkBounds);
     }
 
@@ -110,6 +116,9 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
 
     /** R44: put the layout's cell pedestals into the ruin (only the parts inside the chunk being generated). */
     public static int placeCells(net.minecraft.world.level.LevelAccessor level, RuinKind kind, RuinPlacement placement, BoundingBox bounds) {
+        return placeCells(level,kind,placement,bounds,kind.layout().mapStone());
+    }
+    private static int placeCells(net.minecraft.world.level.LevelAccessor level,RuinKind kind,RuinPlacement placement,BoundingBox bounds,BlockPos mapStone) {
         int placed = 0;
         if (kind.layout().spiritSand() != null) {   // R64: burrow tunnel through the solid wall, plus a lit pocket at its end
             var a = kind.layout().spiritSand()[0]; var b = kind.layout().spiritSand()[1];
@@ -164,8 +173,8 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
                 if (bounds.isInside(pos) && level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.WATER)) {
                     level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.GLOOM_WATER.get().defaultBlockState(), 2); placed++; }
             }
-        if (kind.layout().mapStone() != null) {   // R62
-            var pos = placement.block(kind.layout().mapStone());
+        if (mapStone != null) {   // Saved starts keep their old coordinate even when an adjacent chunk generates later.
+            var pos = placement.block(mapStone);
             if (bounds.isInside(pos)) { level.setBlock(pos, cn.wwl.orimod.block.OriBlocks.MAP_STONE.get().defaultBlockState(), 2); placed++; }
         }
         // R46: updraft vents over the creek gaps, so the glide route can climb.

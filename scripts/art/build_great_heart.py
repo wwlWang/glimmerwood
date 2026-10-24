@@ -6,6 +6,7 @@ No imported art, downloaded models, or edits to the accepted sanctuary assets.
 --check regenerates every packaged byte in memory without writing.
 """
 import argparse,hashlib,json,math,struct,zlib
+from sanctuary_items import model as item_model
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2];PACK=ROOT/'src/main/resources/assets/orimod';SOURCE=ROOT/'art/source/great_tree_heart/v002'
 TILE=64;WIDTH=512;HEIGHT=64
@@ -125,7 +126,7 @@ def main():
   model={'ambientocclusion':False,'textures':{'particle':'orimod:block/spirit_tree_heart','bark':'orimod:block/great_root_bark','heart':'orimod:block/spirit_tree_heart'+('_bloomed' if bloomed else '')},'elements':[cube([1,0,1],[15,3,15],'bark'),cube([5,3,5],[11,21,11],'heart',45)]}
   outputs[PACK/'models/block'/f'{name}.json']=enc(model);outputs[SOURCE/f'{name}.json']=enc(model)
  outputs[PACK/'blockstates/great_tree_heart.json']=enc({'variants':{'bloomed=false':{'model':'orimod:block/great_tree_heart'},'bloomed=true':{'model':'orimod:block/great_tree_heart_bloomed'}}})
- outputs[PACK/'models/item/great_tree_heart.json']=enc({'parent':'orimod:block/great_tree_heart','display':{'gui':{'rotation':[30,225,0],'translation':[0,-2,0],'scale':[.65,.65,.65]}}})
+ outputs[PACK/'models/item/great_tree_heart.json']=enc(item_model("great_tree_heart"))
  outputs[SOURCE/'manifest.json']=enc({'version':2,'generator':'scripts/art/build_great_heart.py','style':'Faceted pointed crystal with three satellite shards, five curved tapering roots; 16 texels/block on wood, nearest-filtered PBR/emission','runtime':'Sanctuary BE, crystal pivot at y=1.75, slight float and slow rotation; full AABB; same one-block collision','assets':assets,'files':{str(p.relative_to(ROOT)):hashlib.sha256(v).hexdigest() for p,v in outputs.items()}})
  for path,data in outputs.items():
   if args.check:assert path.exists() and path.read_bytes()==data,f'Mismatch: {path}'

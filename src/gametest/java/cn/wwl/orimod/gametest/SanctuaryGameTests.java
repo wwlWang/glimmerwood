@@ -70,6 +70,31 @@ public final class SanctuaryGameTests {
                 for(var pos:cells)h.assertTrue(h.getLevel().isEmptyBlock(pos) && h.getLevel().getBlockEntity(pos)==null,"Animation delayed collision removal");
             }
         });
+        for(var rotation:net.minecraft.world.level.block.Rotation.values())for(boolean legacy:List.of(false,true))
+            add(tests,"cave_map_saved_position_"+rotation.name().toLowerCase(Locale.ROOT)+"_"+legacy,h->{
+                var level=h.getLevel();var kind=cn.wwl.orimod.world.RuinKind.CAVE;
+                var local=kind.layout().mapStone();
+                var rotated=new cn.wwl.orimod.world.RuinPlacement(BlockPos.ZERO,rotation).block(local);
+                var placement=new cn.wwl.orimod.world.RuinPlacement(h.absolutePos(new BlockPos(7,3,7)).subtract(rotated),rotation);
+                var context=net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext.fromLevel(level);
+                var tag=new cn.wwl.orimod.world.RuinPiece(level.getStructureManager(),kind,placement).createTag(context);
+                if(legacy)tag.remove("OriMapStone");
+                var saved=new cn.wwl.orimod.world.RuinPiece(level.getStructureManager(),tag);
+                var expected=legacy?kind.layout().legacyMapStone():local;
+                h.assertValueEqual(saved.mapStone(),expected,"Saved map coordinate migrated");
+                var twice=new cn.wwl.orimod.world.RuinPiece(level.getStructureManager(),saved.createTag(context));
+                h.assertValueEqual(twice.mapStone(),expected,"Map coordinate changed on second reload");
+                var pos=placement.block(expected);var other=placement.block(legacy?local:kind.layout().legacyMapStone());
+                var previous=level.getBlockState(pos);var previousOther=level.getBlockState(other);
+                try {
+                    level.setBlock(pos,Blocks.AIR.defaultBlockState(),2);level.setBlock(other,Blocks.AIR.defaultBlockState(),2);
+                    var bounds=new net.minecraft.world.level.levelgen.structure.BoundingBox(pos);
+                    twice.postProcess(level,level.structureManager(),level.getChunkSource().getGenerator(),net.minecraft.util.RandomSource.create(1),
+                            bounds,new net.minecraft.world.level.ChunkPos(pos),BlockPos.ZERO);
+                    h.assertTrue(level.getBlockState(pos).is(OriBlocks.MAP_STONE),"Saved map missing on late chunk generation");
+                    h.assertTrue(level.getBlockState(other).isAir(),"Map duplicated or moved to another layout coordinate");
+                }finally{level.setBlock(pos,previous,2);level.setBlock(other,previousOther,2);}
+            });
         return tests;
     }
     private static void add(List<TestFunction> tests,String name,Consumer<GameTestHelper> run) {

@@ -37,6 +37,14 @@ public final class SpiritFxClient {
     private static Object trackedLevel;
     private static final it.unimi.dsi.fastutil.ints.Int2ObjectMap<cn.wwl.orimod.fx.FlashLight> FLASHES = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
     private static int started, stopped;
+    private static int recoveryPulse;
+
+    static float recoveryGlow(float partial) {
+        var mc=Minecraft.getInstance();
+        if(mc.player==null || mc.screen!=null || !mc.options.getCameraType().isFirstPerson())return 0;
+        return Math.max(TRACKER.isActive(mc.player.getId(),SpiritFxKind.REGENERATE)?.018f:0,
+                Math.max(0,recoveryPulse-partial)/10*.035f);
+    }
 
     /** Read-only lifecycle state for the development bridge and smoke scripts. */
     public static java.util.Map<String, Object> lifecycle() {
@@ -67,8 +75,9 @@ public final class SpiritFxClient {
     public static void tick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
-        if (level != trackedLevel) { TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); trackedLevel = level; }
+        if (level != trackedLevel) { TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); recoveryPulse=0; trackedLevel = level; }
         if (level == null || mc.isPaused()) { CompanionMotion.tick(); return; }
+        if(recoveryPulse>0)recoveryPulse--;
         TRACKER.tick(level.getGameTime(), id -> { var e = level.getEntity(id); return e != null && e.isAlive() && !e.isRemoved(); })
                 .forEach(SpiritFxClient::end);
         for (var key : TRACKER.active()) if (key.kind() == SpiritFxKind.FLASH) FLASHES.computeIfAbsent(key.entity(), id -> new cn.wwl.orimod.fx.FlashLight());
@@ -113,7 +122,7 @@ public final class SpiritFxClient {
     }
 
     public static void loggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
-        TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); trackedLevel = null; CompanionMotion.clear();
+        TRACKER.clear().forEach(SpiritFxClient::end); FLASHES.clear(); recoveryPulse=0; trackedLevel = null; CompanionMotion.clear();
     }
 
     public static boolean flashing(int entity) { return TRACKER.isActive(entity, SpiritFxKind.FLASH); }
@@ -171,8 +180,8 @@ public final class SpiritFxClient {
         boolean healing = kind == SpiritFxKind.REGENERATE || kind == SpiritFxKind.REGENERATE_HEAL || kind == SpiritFxKind.REGENERATE_END;
         boolean firstPersonHeal = healing && sourceEntity == mc.player && mc.options.getCameraType().isFirstPerson();
         if (firstPersonHeal) {
-            var at = mc.player.getEyePosition().add(mc.player.getLookAngle().scale(.7)).add(0,-.28,0);
-            px=at.x; py=at.y; pz=at.z;
+            firstPersonRecovery(kind,definition,split.total());
+            return;
         }
         // Facing for arcs and motion for trails: the source's own look and velocity (fallbacks for markers).
         net.minecraft.world.phys.Vec3 look = sourceEntity == null ? new net.minecraft.world.phys.Vec3(0, 0, 1) : sourceEntity.getLookAngle();
@@ -229,9 +238,9 @@ public final class SpiritFxClient {
                     if (sourceEntity != null) {
                         double friction = layer.particle().equals("orimod:spirit_spark") ? SpiritParticle.SPARK_FRICTION : SpiritParticle.MOTE_FRICTION;
                         double travel = (1 - Math.pow(friction, layer.lifetime())) / (1 - friction);
-                        vx = ((firstPersonHeal ? px : sourceEntity.getX()) - x) / travel;
-                        vy = ((firstPersonHeal ? py : sourceEntity.getY() + sourceEntity.getBbHeight() * .6) - y) / travel;
-                        vz = ((firstPersonHeal ? pz : sourceEntity.getZ()) - z) / travel;
+                        vx = (sourceEntity.getX() - x) / travel;
+                        vy = (sourceEntity.getY() + sourceEntity.getBbHeight() * .6 - y) / travel;
+                        vz = (sourceEntity.getZ() - z) / travel;
                     }
                 }
                 default -> {}
@@ -245,6 +254,27 @@ public final class SpiritFxClient {
         }
         if (kind == SpiritFxKind.STOMP_IMPACT && mc.player != null && source == mc.player.getId()) {
             SpiritScreenFeedback.stomp(visuals);
+        }
+    }
+
+    private static void firstPersonRecovery(SpiritFxKind kind,cn.wwl.orimod.fx.SpiritFxDefinition definition,int budget) {
+        var mc=Minecraft.getInstance();
+        if(kind==SpiritFxKind.REGENERATE_HEAL)recoveryPulse=10;
+        var camera=mc.gameRenderer.getMainCamera();
+        var eye=camera.getPosition();
+        var look=new net.minecraft.world.phys.Vec3(camera.getLookVector()).normalize();
+        var right=new net.minecraft.world.phys.Vec3(camera.getLeftVector()).scale(-1);
+        var up=new net.minecraft.world.phys.Vec3(camera.getUpVector());
+        int count=RecoveryView.count(budget,.85);
+        for(int i=0;i<count;i++) {
+            var p=RecoveryView.point(i,mc.level.getGameTime()*.25);
+            var at=eye.add(look.scale(p.forward())).add(right.scale(p.side())).subtract(up.scale(p.down()));
+            double distance=at.distanceTo(eye);
+            var layer=definition.slot(i,count).layer();
+            var options=new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(),
+                    layer.rgb(),RecoveryView.size(layer.size(),distance),6);
+            var velocity=up.scale(kind==SpiritFxKind.REGENERATE_END?-.002:.002);
+            mc.level.addParticle(options,false,at.x,at.y,at.z,velocity.x,velocity.y,velocity.z);
         }
     }
 }

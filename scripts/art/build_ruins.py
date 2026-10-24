@@ -290,7 +290,8 @@ def cave(root):
         "door": [t.shifted((vault_to[0], y, z))
                  for y in range(vault_from[1], vault_to[1])
                  for z in range(vault_from[2] + 1, vault_to[2])]}
-    t.features["map_stone"] = t.shifted((7, 2, 15))  # R62: beside the shrine.
+    t.features["map_stone"] = t.shifted((3, 2, 15))  # Full-size pillar and basin leave a walkable gap.
+    t.features["legacy_map_stone"] = t.shifted((7, 2, 15))  # Saved pre-fit pieces retain their interaction coordinate.
     t.features["spirit_sand"] = [t.shifted(sand_from), t.shifted(sand_to)]
     # R103: south of (not inside or through) the key vault; east-facing three-block-thick seal.
     t.secret(((1, 1, 22), (7, 5, 26)), ((2, 2, 23), (4, 4, 25)),

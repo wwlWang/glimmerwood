@@ -144,6 +144,11 @@ class RuinCheckTest(unittest.TestCase):
         for name,digest in expected.items():
             layout=json.loads(self.assets[Path(f"src/main/resources/orimod/ruin_layout/{name}.json")])
             del layout["secret"];del layout["vessels"];del layout["bridges"];layout.pop("beetles",None)
+            # Approved presentation repair moves only new cave map stones. Recheck the saved old coordinate
+            # against the unchanged complete pre-R103 contract, rather than replacing its baseline hash.
+            if "legacy_map_stone" in layout:
+                self.assertEqual(layout["map_stone"],[3,2,15])
+                layout["map_stone"]=layout.pop("legacy_map_stone")
             layout["size"]=[layout["size"][0],layout["size"][2]]
             layout["critical"]=[{"position":c["position"]} for c in layout["critical"]]
             self.assertEqual(hashlib.sha256(json.dumps(layout,sort_keys=True,separators=(",",":")).encode()).hexdigest(),digest,name)
