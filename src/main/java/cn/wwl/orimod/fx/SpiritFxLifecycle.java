@@ -31,6 +31,7 @@ public final class SpiritFxLifecycle {
         if (s.grapple != null) set.add(SpiritFxKind.GRAPPLE_TETHER);
         if (s.bash != null) set.add(SpiritFxKind.BASH_AIM);
         if (cn.wwl.orimod.combat.Flash.active(player)) set.add(SpiritFxKind.FLASH);
+        if (cn.wwl.orimod.progression.Regenerate.active(player)) set.add(SpiritFxKind.REGENERATE);
         return set;
     }
 

@@ -436,3 +436,10 @@ R115 C 首版：`GinsoShape`是独立体素美术源，`GinsoPiece`保存原点/
 `ginso_probe`的`radius`为候选区域半径（1..6，默认4即81候选），非方块半径；读取返回的`histogram/sites/chunksBefore/chunksAfter`。单次约4–6秒，仅开发验收使用，不进入正式jar。真实locate返回候选区块角，而piece原点在区块中心（x/z各+8），比对时用区块坐标。两新种子实际距离/拒绝分布、有限候选窗口推算的限制见`docs/drafts/R115_C_GINSO.md`。不更改已生成区块，后续内部版本须用新世界验收。
 
 C外观v002：当前生成器源目录`art/source/ginso_tree/v002/`，.gitignore跟踪v002。`GinsoWoodBlock`保留vein状态、增加moss状态以控制下段/北侧苔面；普通树皮世界光，发光只在独立遮罩。新增`ginso_fungus`为薄菌架模型，无碰撞、无掉落；水滴复用固定长度藤，允许从叶或木叉下垂。新外形只在新生成区块生效，旧检查点存档不自动改形。
+
+
+### 试玩A取景夹具（仅devtools）
+
+`spirit_capture_actor`仅集成开发世界可用，mode为idle/glide/regenerate/human/remove，可设x/y/z/yaw。建立嵌入连接的ServerPlayer，让观察客户端经正常网络渲染RemotePlayer；glide位置/模式为固定取景夹具，regenerate调用实际服务端技能并发tracking FX。不得把夹具模式误标为另一真人按键验证。leave_world或ServerStopping会移除演员并关闭连接；正式jar不含此类。角色切形态可检查羽毛消失与人形原版翅膀，正常本地滑翔仍用key短按+自动释放+空中再按住取证。图形进程固定llvmpipe+DISPLAY=:0，客户端与build/GameTest互斥。
+
+本轮SpiritFx协议10新增REGENERATE(22)、REGENERATE_HEAL(23)、REGENERATE_END(24)，资源源文件在art/source/effects/spirit/，统一export-spirit-fx.py导出/--check。授权新手感：普通下落1.25/−1.0、外力结束指数35%回归；灵刃7tick命中间隔、3/4/5，阶段时钟继续为COMBAT_VIEW的stage+startedAt。

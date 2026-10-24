@@ -5,8 +5,9 @@ import cn.wwl.orimod.combat.SpiritCombat;
 import cn.wwl.orimod.network.AnimationActionPayload;
 import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import cn.wwl.orimod.fx.SpiritFx;
+import cn.wwl.orimod.fx.SpiritFxKind;
+import cn.wwl.orimod.fx.SpiritFxLifecycle;
 
 /** An awakened baseline skill, derived from AWAKENED rather than changing the purchased ability mask. */
 public final class Regenerate {
@@ -32,6 +33,7 @@ public final class Regenerate {
         long now = p.level().getGameTime();
         if (s.began == Long.MIN_VALUE || now >= s.until) s.began = now;
         s.until = now + RecoveryTuning.LEASE_TICKS;
+        SpiritFxLifecycle.sync(p, now);
         AnimationActionPayload.spell(p, AnimationActionPayload.Action.CAST_HOLD);
         return true;
     }
@@ -43,9 +45,11 @@ public final class Regenerate {
         if (now >= s.until || refusal(p) != null) { cancel(p, false); return; }
         if (now - s.began < RecoveryTuning.CHANNEL_TICKS) return;
         if (!SpiritProgression.spendEnergy(p, RecoveryTuning.CAST_COST)) { cancel(p, false); return; }
+        float before = p.getHealth();
         p.heal(RecoveryTuning.CAST_HEAL);
+        if (p.getHealth() > before) SpiritFx.emit(p.serverLevel(), SpiritFxKind.REGENERATE_HEAL,
+                p.getX(), p.getY() + p.getBbHeight() * .6, p.getZ(), p);
         AnimationActionPayload.spell(p, AnimationActionPayload.Action.CAST_RELEASE);
-        p.level().playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, .4f, 1.3f);
         s.began = now;
         if (p.getHealth() >= p.getMaxHealth()) cancel(p, false);
     }
@@ -58,5 +62,6 @@ public final class Regenerate {
             if (damaged) s.interrupted = true;
         }
         s.began = s.until = Long.MIN_VALUE;
+        SpiritFxLifecycle.sync(p, p.level().getGameTime());
     }
 }

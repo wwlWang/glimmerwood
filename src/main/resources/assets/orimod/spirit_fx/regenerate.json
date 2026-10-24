@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "kind": "regenerate",
+  "layers": [
+    {
+      "color": "#72f2bf",
+      "length": 0.2,
+      "lifetime": 12,
+      "outward": 0,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.48,
+      "shape": "gather",
+      "share": 1.0,
+      "size": 0.16,
+      "speed": 0.002,
+      "spread": [
+        0.035,
+        0.045,
+        0.035
+      ]
+    }
+  ]
+}

@@ -28,13 +28,12 @@ public final class FeelTuning {
     public static final double WALL_JUMP_CONTROL_SCALE = .25;
     // ---- vertical ----------------------------------------------------------------------------------------
     public static final double GRAVITY = .08;            // vanilla
-    // R88: playtest said the fall had "no acceleration": the R85 curve itself accelerated, but holding jump turned
-    // every fall into a constant-speed glide (fixed in MovementRules.glideArmed). The fall now also ramps its gravity
-    // from 1.25x at the apex to 1.85x by 0.6 b/t down, so the speed-up is visible instead of an instant snap.
+    // Playtest A: fixed falling gravity; active ability motion is owned by its own mode.
     public static final double RISE_GRAVITY_SCALE = .8;  // jump held while rising (R85 .9, R73 .72)
     public static final double APEX_SPEED = .07, APEX_GRAVITY_SCALE = .6;  // short hang at the top (R85 .08/.8)
-    public static final double FALL_GRAVITY_START = 1.25, FALL_GRAVITY_SCALE = 1.85, FALL_RAMP_SPEED = .6;
-    public static final double MAX_FALL = -1.4;          // 28 m/s terminal (R85 -1.55)
+    public static final double FALL_GRAVITY_SCALE = 1.25;
+    public static final double FALL_RETURN_RATE = .35, FALL_RETURN_EPSILON = .075;
+    public static final double MAX_FALL = -1.0;          // 20 m/s ordinary terminal
     public static final double JUMP_CUT = .4, JUMP_CUT_MIN = .1;
     // ---- dash ---------------------------------------------------------------------------------------------
     /** Dash speed multiplier by tick (DASH_TICKS long): a burst, then ease out instead of a hard stop. */
@@ -229,6 +228,13 @@ public final class FeelTuning {
      * @return the adjusted vertical velocity.
      */
     public static double vertical(double vy, boolean jumpHeld, boolean released) {
+        if (vy < MAX_FALL) {
+            // This function only runs after ability ownership ends. Ease excess downward momentum,
+            // rather than exempting it forever or braking all of it in one frame.
+            double next = MAX_FALL + (vy - MAX_FALL) * (1 - FALL_RETURN_RATE);
+            if (MAX_FALL - next <= FALL_RETURN_EPSILON) next = MAX_FALL;
+            return next / .98 + GRAVITY;
+        }
         if (released && vy > JUMP_CUT_MIN) return vy * JUMP_CUT;
         double scale;
         if (Math.abs(vy) < APEX_SPEED && jumpHeld) scale = APEX_GRAVITY_SCALE;
@@ -236,15 +242,11 @@ public final class FeelTuning {
         else scale = fallGravityScale(vy);
         // Vanilla subtracts GRAVITY next; pre-compensate so the effective gravity is GRAVITY * scale.
         double adjusted = vy + GRAVITY * (1 - scale);
-        // Terminal fall speed; faster external motion (Stomp etc.) is left alone.
-        return vy < MAX_FALL - .05 ? adjusted : Math.max(adjusted, MAX_FALL / .98 + GRAVITY);
+        return Math.max(adjusted, MAX_FALL / .98 + GRAVITY);
     }
 
-    /** R88: falling gravity grows with fall speed: {@link #FALL_GRAVITY_START} at the apex to {@link #FALL_GRAVITY_SCALE}. */
-    public static double fallGravityScale(double vy) {
-        double k = Math.max(0, Math.min(1, -vy / FALL_RAMP_SPEED));
-        return FALL_GRAVITY_START + (FALL_GRAVITY_SCALE - FALL_GRAVITY_START) * k;
-    }
+    /** Constant downward acceleration; jump count never changes gravity. */
+    public static double fallGravityScale(double vy) { return FALL_GRAVITY_SCALE; }
 
     /** Dash speed for a dash with {@code ticksLeft} of DASH_TICKS remaining. */
     public static double dashScale(int ticksLeft) {

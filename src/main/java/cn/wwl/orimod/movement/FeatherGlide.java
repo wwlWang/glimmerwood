@@ -18,8 +18,12 @@ public final class FeatherGlide {
         public String dimension = "";
     }
     public static boolean wearing(Player p) { return p.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA); }
+    /** Equipment is an alternative to buying Glide, not a grant of its saved ability bit. */
+    public static boolean available(Player p) {
+        return FeatherRules.permitted(SpiritData.isSpirit(p), SpiritData.hasGlide(p), wearing(p), p.getAbilities().flying);
+    }
     public static boolean permitted(Player p) {
-        return SpiritData.isSpirit(p) && (SpiritData.hasGlide(p) || migrating(p)) && !p.getAbilities().flying
+        return (available(p) || migrating(p))
                 && p.isAlive() && !p.isSpectator() && !p.isPassenger() && !p.isSleeping()
                 && !cn.wwl.orimod.block.OriFluids.inWater(p) && !p.isInLava() && !p.onClimbable()
                 && !(p instanceof ServerPlayer s && cn.wwl.orimod.progression.Restoration.active(s));
@@ -73,6 +77,7 @@ public final class FeatherGlide {
     }
     public static void tick(PlayerTickEvent.Post event) {
         if(!(event.getEntity() instanceof ServerPlayer p))return;
+        if (p.level().getGameTime() % 20 == 0) offerTutorial(p);
         State f=p.getData(SpiritData.FEATHER_STATE);String dim=p.level().dimension().location().toString();
         if(!f.dimension.isEmpty() && !f.dimension.equals(dim) || !permitted(p) || p.onGround() || p.isShiftKeyDown() || p.horizontalCollision)stopHandoff(p);
         f.dimension=dim;
@@ -82,6 +87,20 @@ public final class FeatherGlide {
         if(active){p.fallDistance=0;if(p.connection instanceof cn.wwl.orimod.mixin.ServerFloatingAccessor a)a.orimod$setAboveGroundTickCount(0);}
         else f.fireworkNotified=false;
         if(p.getData(SpiritData.FEATHER_GLIDING)!=active)p.setData(SpiritData.FEATHER_GLIDING,active);
+    }
+    public static final String TUTORIAL_RECEIPT = "hint/kuro_feather_controls";
+    /** Inventory, armor and offhand all count; the receipt survives death and shape changes. */
+    public static boolean offerTutorial(ServerPlayer p) {
+        var progress = p.getData(SpiritData.PROGRESS);
+        if (!p.isAlive() || p.isSpectator() || progress.rewards().containsKey(TUTORIAL_RECEIPT)) return false;
+        boolean owns = false;
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++)
+            if (p.getInventory().getItem(i).is(Items.ELYTRA)) { owns = true; break; }
+        if (!owns) return false;
+        p.displayClientMessage(Component.translatable("message.orimod.feather.controls", Component.keybind("key.jump")), false);
+        var rewards = new java.util.HashMap<>(progress.rewards()); rewards.put(TUTORIAL_RECEIPT, 1);
+        p.setData(SpiritData.PROGRESS, progress.withRewards(rewards));
+        return true;
     }
     public static boolean refuseFirework(Player p) {
         if(!SpiritData.isSpirit(p) || !gliding(p) || p.onGround())return false;

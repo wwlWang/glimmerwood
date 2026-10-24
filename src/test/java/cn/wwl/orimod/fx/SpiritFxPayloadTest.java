@@ -33,9 +33,9 @@ class SpiritFxPayloadTest {
         assertEquals(SpiritFxPhase.BURST, new SpiritFxPayload(SpiritFxKind.DASH, 0, 0, 0, 1).phase());
     }
 
-    @Test void channelVersionBumpedForRestoration() { assertEquals("9", SpiritFxPayload.VERSION); }
+    @Test void channelVersionBumpedForRegenerate() { assertEquals("10", SpiritFxPayload.VERSION); }
 
-    @ParameterizedTest @ValueSource(ints = {-1, 22, 99})
+    @ParameterizedTest @ValueSource(ints = {-1, 25, 99})
     void unknownKindRejected(int id) {
         assertRejected(buffer -> { buffer.writeVarInt(id); buffer.writeByte(0); body(buffer); });
     }
@@ -69,6 +69,13 @@ class SpiritFxPayloadTest {
         try{SpiritFxPayload.CODEC.encode(b,new SpiritFxPayload(SpiritFxKind.byWireId(id),0,0,0,-1));
             assertThrows(DecoderException.class,()->{int oldId=b.readVarInt();if(oldId<0||oldId>19)throw new DecoderException("Unknown spirit effect kind "+oldId);});
         }finally{b.release();}
+    }
+    @ParameterizedTest @ValueSource(ints={22,23,24})
+    void versionNineDecoderRejectsRegenerateKinds(int id){
+        var b=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try { SpiritFxPayload.CODEC.encode(b,new SpiritFxPayload(SpiritFxKind.byWireId(id),0,0,0,-1));
+            assertThrows(DecoderException.class,()->{int old=b.readVarInt();if(old<0||old>21)throw new DecoderException("Unknown spirit effect kind "+old);});
+        } finally { b.release(); }
     }
     private static void body(RegistryFriendlyByteBuf buffer) { buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeDouble(0); buffer.writeVarInt(-1); }
 

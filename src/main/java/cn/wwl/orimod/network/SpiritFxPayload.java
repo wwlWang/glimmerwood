@@ -15,8 +15,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  */
 public record SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, double y, double z, int sourceEntity) implements CustomPacketPayload {
     public static final int NO_SOURCE = -1;
-    /** R108: version 9 adds Wisp Collect and Restoration; incompatible peers fail channel negotiation. */
-    public static final String VERSION = "9";
+    /** Playtest A: version 10 adds Regenerate gathering, actual-heal pulse and release. */
+    public static final String VERSION = "10";
     public static final Type<SpiritFxPayload> TYPE = new Type<>(ResourceLocation.parse("orimod:spirit_fx"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SpiritFxPayload> CODEC = StreamCodec.of(
             (buf, v) -> { buf.writeVarInt(v.kind.wireId()); buf.writeByte(v.phase.wireId()); buf.writeDouble(v.x); buf.writeDouble(v.y); buf.writeDouble(v.z); buf.writeVarInt(v.sourceEntity); },

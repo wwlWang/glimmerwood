@@ -59,7 +59,7 @@ public final class BladeGameTests {
                 helper.assertTrue(state.hitTargets.contains(target.getUUID()), "Hostile target not reached by swing");
                 float afterHit = target.getHealth();
                 helper.assertTrue(afterHit < before, "Hostile target took no actual damage");
-                if (target.getArmorValue() == 0) Fixtures.near(helper, afterHit, before - 4, "Unarmored blade damage");
+                if (target.getArmorValue() == 0) Fixtures.near(helper, afterHit, before - 3, "Unarmored blade damage");
                 helper.assertValueEqual(state.bladeHits, 1, "One successful blade hit");
                 // Clear vanilla immunity so only our per-swing ledger prevents a duplicate hit.
                 target.invulnerableTime = 0;

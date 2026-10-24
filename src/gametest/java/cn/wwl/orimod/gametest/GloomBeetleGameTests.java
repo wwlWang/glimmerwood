@@ -37,7 +37,7 @@ public final class GloomBeetleGameTests {
             SpiritCombat.attack(s.p);var combat=s.p.getData(SpiritData.COMBAT);combat.startedAt-=SpiritCombat.windup(1);
             SpiritCombat.tick(new PlayerTickEvent.Post(s.p));
             h.assertTrue(combat.hitTargets.contains(s.b.getUUID()),"Blade did not reach beetle");
-            Fixtures.near(h,s.b.getHealth(),18-(front?.8:4),"Body-relative blade armor");
+            Fixtures.near(h,s.b.getHealth(),18-(front?.6:3),"Body-relative blade armor");
         });
         for(String side:List.of("front","back","side"))add(tests,"projectile_incoming_"+side,(h,s)->{
             s.b.yBodyRot=0;s.p.setPos(s.b.position().add(0,0,4));

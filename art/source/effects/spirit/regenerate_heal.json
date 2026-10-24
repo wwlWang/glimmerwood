@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "kind": "regenerate_heal",
+  "notes": "Playtest A: original teal-green recovery feedback. Counts owned by FxBudget; channel gathered once every four client ticks.",
+  "layers": [
+    {
+      "particle": "orimod:spirit_mote",
+      "share": 1.0,
+      "shape": "ring",
+      "radius": 0.34,
+      "length": 0,
+      "outward": 0.045,
+      "spread": [
+        0.035,
+        0.045,
+        0.035
+      ],
+      "speed": 0.002,
+      "size": 0.26,
+      "lifetime": 16,
+      "color": "#a9ffd2"
+    }
+  ]
+}

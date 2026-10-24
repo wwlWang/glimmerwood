@@ -43,7 +43,7 @@ class FxBudgetTest {
     }
 
     @Test void wireIdsAreStableAndUnique() {
-        int[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+        int[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
         var kinds = SpiritFxKind.values();
         assertEquals(expected.length, kinds.length, "new kinds need a new id and test entry");
         for (int i = 0; i < kinds.length; i++) {
@@ -51,7 +51,7 @@ class FxBudgetTest {
             assertSame(kinds[i], SpiritFxKind.byWireId(expected[i]));
         }
         assertNull(SpiritFxKind.byWireId(-1));
-        assertNull(SpiritFxKind.byWireId(22));
+        assertNull(SpiritFxKind.byWireId(25));
     }
 
     @Test void unknownQualityNamesFallBackToBalanced() {

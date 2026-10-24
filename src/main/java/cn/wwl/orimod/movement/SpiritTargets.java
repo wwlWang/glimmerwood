@@ -1,6 +1,7 @@
 package cn.wwl.orimod.movement;
 
 import cn.wwl.orimod.block.OriBlocks;
+import cn.wwl.orimod.spirit.SpiritData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +29,7 @@ public final class SpiritTargets {
         public String key() { return entity != null ? entity.getUUID().toString() : block.asLong() + ":" + grapple; }
         public AABB bounds() { return entity != null ? entity.getBoundingBox().inflate(0.08) : new AABB(block).deflate(0.18); }
         public boolean valid(Player player) {
+            if (!permitted(player, grapple)) return false;
             if (entity != null && !eligible(player, entity)) return false;
             if (block != null && (!player.level().hasChunkAt(block) || !player.level().getBlockState(block)
                     .is(grapple ? OriBlocks.GRAPPLE_FLOWER.get() : OriBlocks.BASH_ANCHOR.get()))) return false;
@@ -35,10 +37,21 @@ public final class SpiritTargets {
         }
     }
 
+    /** The same per-kind permission gates selection, prediction and active-target validation. */
+    public static boolean permitted(Player player, boolean grapple) {
+        return permitted(SpiritData.isSpirit(player), SpiritData.hasBash(player), SpiritData.hasGrapple(player), grapple);
+    }
+
+    public static boolean permitted(boolean spirit, boolean bashLearned, boolean grappleLearned, boolean grapple) {
+        return spirit && (grapple ? grappleLearned : bashLearned);
+    }
+
     public static Target find(Player player, float yaw, float pitch) {
+        boolean bashAllowed = permitted(player, false), grappleAllowed = permitted(player, true);
+        if (!bashAllowed && !grappleAllowed) return null;
         Vec3 eye = player.getEyePosition(), view = Vec3.directionFromRotation(pitch, yaw);
         Target best = null;
-        for (Entity entity : player.level().getEntities(player, player.getBoundingBox().inflate(RANGE), candidate -> eligible(player, candidate))) {
+        for (Entity entity : player.level().getEntities(player, player.getBoundingBox().inflate(RANGE), candidate -> bashAllowed && eligible(player, candidate))) {
             Vec3 point = entity.getBoundingBox().getCenter();
             if (!available(player,entity.getUUID().toString())) continue;
             if (preferred(eye, view, point, best == null ? null : best.point()) && visible(player, point)) best = new Target(entity, null, point, false);
@@ -49,6 +62,7 @@ public final class SpiritTargets {
             var block = player.level().getBlockState(pos);
             boolean grapple = block.is(OriBlocks.GRAPPLE_FLOWER.get());
             if (!grapple && !block.is(OriBlocks.BASH_ANCHOR.get())) continue;
+            if (!(grapple ? grappleAllowed : bashAllowed)) continue;
             Vec3 point = Vec3.atCenterOf(pos);
             if (!available(player,pos.asLong()+":"+grapple)) continue;
             // Grapple is still an aimed ability; only Bash gains the all-around proximity pick.

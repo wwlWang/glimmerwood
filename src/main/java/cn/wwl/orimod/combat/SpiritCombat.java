@@ -25,10 +25,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class SpiritCombat {
     public static final int BOW_MIN_CHARGE = 5, BOW_FULL_CHARGE = 20;
     public static final float BOW_COST = 12;
-    private static final int[] WINDUP = {0, 2, 3, 4}, RECOVERY = {0, 8, 8, 12};
-    private static final float[] DAMAGE = {0, 4, 5, 7};
+    private static final int[] WINDUP = {0, 2, 3, 4}, RECOVERY = {0, 8, 8, 6};
+    private static final float[] DAMAGE = {0, 3, 4, 5};
     private SpiritCombat() {}
 
+    /** Stages start six ticks apart; their windups increase by one, so hit cadence is seven ticks. */
+    public static final int CHAIN_TICKS = 6, BUFFER_FROM = 1;
     public static int windup(int stage) { return WINDUP[Math.clamp(stage, 1, 3)]; }
     public static int recoveryStart(int stage) { return windup(stage) + 2; }
     public static int duration(int stage) { return recoveryStart(stage) + RECOVERY[Math.clamp(stage, 1, 3)]; }
@@ -54,13 +56,14 @@ public final class SpiritCombat {
         long now = player.level().getGameTime();
         if (s.mode.equals("blade")) {
             long elapsed = now - s.startedAt;
-            if (s.stage < 3 && elapsed >= windup(s.stage) && elapsed < duration(s.stage)) s.buffered = true;
+            if (s.stage < 3 && elapsed >= BUFFER_FROM && elapsed < duration(s.stage)) s.buffered = true;
         } else if (s.mode.equals("idle")) startBlade(player, 1);
     }
 
     private static void startBlade(ServerPlayer player, int stage) {
         Flash.stop(player);
         var s = player.getData(SpiritData.COMBAT);
+        if (stage == 1) s.comboHits.clear();
         s.mode = "blade"; s.stage = stage; s.startedAt = player.level().getGameTime();
         s.weapon = player.getMainHandItem(); s.buffered = false; s.hitTargets.clear(); s.bladeStarts++;
         publish(player);
@@ -142,7 +145,7 @@ public final class SpiritCombat {
     public static void cancel(ServerPlayer player, String reason) {
         var s = player.getData(SpiritData.COMBAT);
         if (s.mode.equals("idle")) return;
-        s.mode = "idle"; s.stage = 0; s.buffered = false; s.weapon = ItemStack.EMPTY; s.hitTargets.clear();
+        s.mode = "idle"; s.stage = 0; s.buffered = false; s.weapon = ItemStack.EMPTY; s.hitTargets.clear(); s.comboHits.clear();
         s.lastCancel = reason; s.cancellations++;
         if (player.isUsingItem() && player.getUseItem().is(OriItems.SPIRIT_BOW)) player.stopUsingItem();
         publish(player);
@@ -166,9 +169,10 @@ public final class SpiritCombat {
         }
         if (player.getMainHandItem() != s.weapon || !s.weapon.is(OriItems.SPIRIT_BLADE)) { cancel(player, "item"); return; }
         long elapsed = player.level().getGameTime() - s.startedAt;
+        if (s.buffered && s.stage < 3 && elapsed >= CHAIN_TICKS) { startBlade(player, s.stage + 1); return; }
         if (elapsed >= duration(s.stage)) {
             if (s.buffered && s.stage < 3) startBlade(player, s.stage + 1);
-            else { s.mode = "idle"; s.stage = 0; s.weapon = ItemStack.EMPTY; publish(player); }
+            else { s.mode = "idle"; s.stage = 0; s.weapon = ItemStack.EMPTY; s.comboHits.clear(); publish(player); }
             return;
         }
         if (elapsed >= windup(s.stage) && elapsed < recoveryStart(s.stage)) hitBlade(player, s);
@@ -186,7 +190,7 @@ public final class SpiritCombat {
             if (!BladeArc.contains(origin, yaw, closest, s.stage)
                     || !SpiritTargets.visible(player, closest) || s.hitTargets.contains(target.getUUID())) continue;
             s.hitTargets.add(target.getUUID()); // A failed/invulnerable hit cannot retry within this swing.
-            if (target.hurt(player.damageSources().playerAttack(player), DAMAGE[s.stage])) {
+            if (BladeDamage.hurt(player, target, s, DAMAGE[s.stage])) {
                 s.bladeHits++;
                 Vec3 away = target.position().subtract(player.position()).multiply(1, 0, 1);
                 if (away.lengthSqr() < 1e-4) away = BladeArc.facing(yaw);

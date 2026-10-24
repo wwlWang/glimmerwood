@@ -45,7 +45,8 @@ public final class FeatherWellGameTests {
         add(tests,"handoff_release_creative_and_skill_boundary",(h,p)->{
             air(h,p);p.setData(SpiritData.FORM,true);p.startFallFlying();FeatherGlide.startHandoff(p);
             FeatherGlide.input(p,true,true,false);FeatherGlide.input(p,true,false,false);
-            h.assertFalse(FeatherGlide.migrating(p),"Release did not stop handoff");h.assertFalse(FeatherGlide.permitted(p),"Handoff granted permanent skill");
+            h.assertFalse(FeatherGlide.migrating(p),"Release did not stop handoff");h.assertTrue(FeatherGlide.permitted(p),"Equipped feather should remain usable after handoff");
+            p.setItemSlot(EquipmentSlot.CHEST,ItemStack.EMPTY);h.assertFalse(FeatherGlide.permitted(p),"Handoff granted permanent skill");
             p.setData(SpiritData.ABILITIES,4);h.assertTrue(FeatherGlide.permitted(p),"Skill denied");
             p.getAbilities().flying=true;h.assertFalse(FeatherGlide.permitted(p),"Creative flight overridden");
         });

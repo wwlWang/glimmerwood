@@ -62,7 +62,7 @@
   "ability.orimod.bash": "Bash",
   "ability.orimod.bash.description": "Hold the target key to aim, then release to launch. Use ordinary enemies, foreign projectiles or spirit anchors. Your projectiles, fishing hooks and giant enemies are excluded. Each target has a short reuse delay.",
   "ability.orimod.glide": "Glide",
-  "ability.orimod.glide.description": "Hold jump while falling to slow descent and steer. Release jump, crouch, touch a wall or enter water to fold away.",
+  "ability.orimod.glide.description": "Glide without equipping a feather. Release jump after takeoff, then hold it while falling; steer with movement. An equipped feather improves speed and slows descent.",
   "ability.orimod.grapple": "Grapple",
   "ability.orimod.grapple.description": "Use the target key on a green grapple flower to pull toward it. Crouch or press again to cancel. Obstructions and missing anchors interrupt the pull.",
   "ability.orimod.stomp": "Stomp",
@@ -530,5 +530,8 @@
   "subtitle.orimod.ginso.success": "Clear water flows through the Ginso Tree again.",
   "hud.orimod.ginso.prepare": "Water rises in %s s",
   "hud.orimod.ginso.escape": "Reach the crown · %s s",
-  "hud.orimod.ginso.submerged": "Surface now! %s s left"
+  "hud.orimod.ginso.submerged": "Surface now! %s s left",
+  "message.orimod.feather.controls": "In spirit form, equip the feather, jump, release %s, then hold it again while falling to glide. No Glide skill needed.",
+  "tooltip.orimod.feather.spirit": "Spirit: equip to glide without a skill; no durability wear, even when damaged.",
+  "tooltip.orimod.feather.human": "Human: vanilla elytra flight and durability wear."
 }

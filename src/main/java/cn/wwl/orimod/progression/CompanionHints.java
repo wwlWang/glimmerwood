@@ -94,7 +94,7 @@ public final class CompanionHints {
         if(cn.wwl.orimod.world.GinsoCourse.hint(player))return;
         var progress = player.getData(SpiritData.PROGRESS);
         var seen = seen(progress);
-        int abilities = player.getData(SpiritData.ABILITIES);
+        int abilities = hintAbilities(player);
         var unseen = unseen(seen, abilities);
         if (unseen.isEmpty()) return;
         var positions = scan(player, unseen);
@@ -125,10 +125,16 @@ public final class CompanionHints {
     public static boolean offer(ServerPlayer player,Hint hint,BlockPos pos){
         if(hint==null||!SpiritData.isSpirit(player)||!player.isAlive()||player.isSpectator())return false;
         var session=player.getData(SpiritData.ENERGY_STATE);long now=player.level().getGameTime();
-        var progress=player.getData(SpiritData.PROGRESS);String id=wireId(hint,player.getData(SpiritData.ABILITIES));
+        var progress=player.getData(SpiritData.PROGRESS);String id=wireId(hint,hintAbilities(player));
         if(!ready(now,session.lastCompanionHintAt)||progress.rewards().containsKey(PREFIX+id))return false;
         var rewards=new HashMap<>(progress.rewards());rewards.put(PREFIX+id,1);player.setData(SpiritData.PROGRESS,progress.withRewards(rewards));
         session.lastCompanionHintAt=now;PacketDistributor.sendToPlayer(player,new CompanionHintPayload(id,Optional.of(pos)));return true;
+    }
+
+    /** Equipment changes tutorial wording, never saved skill ownership or purchase prerequisites. */
+    public static int hintAbilities(ServerPlayer player) {
+        int bits = player.getData(SpiritData.ABILITIES);
+        return cn.wwl.orimod.movement.FeatherGlide.available(player) ? bits | Ability.GLIDE.bit : bits;
     }
 
     public static String wireId(Hint hint, int abilities) {
@@ -141,7 +147,7 @@ public final class CompanionHints {
 
     /** Loaded chunks only; palette prefilter skips sections with no unseen hint blocks before visiting their cells. */
     public static EnumMap<Hint, BlockPos> scan(ServerPlayer player, Set<String> seen) {
-        return scan(player, unseen(seen, player.getData(SpiritData.ABILITIES)));
+        return scan(player, unseen(seen, hintAbilities(player)));
     }
 
     private static EnumMap<Hint, BlockPos> scan(ServerPlayer player, EnumSet<Hint> unseen) {

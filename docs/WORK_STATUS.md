@@ -1,5 +1,13 @@
 # 当前工作状态
 
+## 试玩修复 A：目标许可、羽毛、下落、复原FX、灵刃（已审核提交；羽毛朝向与第一人称复原粒子待打磨）
+
+A1统一SpiritTargets按形态/技能/目标种类过滤；A2精灵穿戴羽毛或已学GLIDE均可滑翔，装备不写技能位，教程一次、tooltip区分两形态耐久，人形完全原版。A3羽毛两手握点+身体前向确定承风面，限制18°倾斜，缺帧/退化隐藏，不回退穿身点。A4批准B_balanced：固定1.25倍下落、普通终速−1.0；外力结束35%指数回归，−1.6五tick回归（−1.390/−1.2535/−1.164775/−1.107104/−1.000），活动技能阶段不改。A5青绿引导/实际heal脉冲/取消散光，协议10。A6命中2/9/16tick，24tick结束，3/4/5伤害、10DPS（比旧+34.4%）；仅同玩家同combo上一段成功命中窗口可跨越，别人的成功伤害插入使收据失效，不改全局无敌帧。
+
+新增回归逐项先红后绿，证据`evidence/playtest-a-20261024-v001/README.md`。full-01保留旧FX枚举1JUnit与旧甲虫首刀伤害2GT失败；改为批准新数值后full-02为1550/923全绿。实拍又发现已成立GLIDE因−.028/零位移采样被取消；先新增GameTest复现，再仅放宽维持门槛（下降/零保持、首次仍须下落，向上外力/松键等照旧取消）。最终full-03：**1550 JUnit / 924 GameTest，零失败/错误/跳过**。精确日志/XML/候选与最终表保留。无结构或多方块重建、冲刺gate不改、无git写操作。
+
+新美术源：`art/source/effects/spirit/regenerate.json`、`regenerate_heal.json`、`regenerate_end.json`；导出25effects的--check一致。GLB不变。A5在`playtest-a-capture-20261024-v001`：第一/第三视角真实按键8→20，提前取消12不变，远端使用有嵌入连接的ServerPlayer正常发FX（仅位置/滑翔取景固定，明确不冒充另一位真人）。羽毛初轮client/server不一致原样保留；修后`playtest-a-feather-20261024-v002`含自身与远端前/侧/后、双向切形态、人形原版鞘翅、无装备技能滑翔。未学GLIDE仅穿羽毛的连续60样本跨170服务端tick，client/server始终GLIDE、启动计数恒定。DISPLAY=:0、llvmpipe；2026-10-24 08:53 PDT客户端正常保存退出，Gradle/客户端空闲，停下待审。49文件清单见证据目录`changed-files.txt`，排除evidence/.agentbridge/AGENTS.md/CLAUDE.md。
+
 ## R115 C 逃亡 F1/F2 修复（已审核提交；待用户试玩）
 
 先在5cad1b6生产代码上补回归：900 GameTest中仅新增10项失败，其余890项通过。四朝向二段/三段跳在上升2.67–3.06格时被OUTSIDE取消；真实换下界和tick兜底均拉回原树。修复只改`GinsoEscape`：运行时路线容许上界+4/下界−1（通常踏面+6.5/−1.5），XZ不扩张；出口仍为原始盒+onGround，水体积/追逐/几何/美术不改。换维度取消后pending=false，清减速、保留100tick冷却，不传送；断线/停服恢复照旧。

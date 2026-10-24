@@ -61,13 +61,13 @@ class FeelTuningTest {
         assertTrue(vy >= MAX_FALL - 1e-6, "terminal " + vy);
     }
 
-    /** R88: a fall from the apex visibly accelerates: every tick adds more speed than the one before, up to the cap. */
+    /** Playtest A: speed still grows, but gravity no longer ramps with fall speed. */
     @Test void fallAccelerates() {
         double vy = -.001, prevStep = 0;
         for (int t = 0; t < 6; t++) {
             double next = (vertical(vy, false, false) - GRAVITY) * .98, step = vy - next;
-            assertTrue(step > GRAVITY * 1.15, "tick " + t + " gains only " + step);
-            assertTrue(step >= prevStep - 1e-9, "tick " + t + " gravity shrank");
+            assertEquals(GRAVITY * 1.25 * .98 + vy * .02, step, 1e-9);
+            if (t > 0) assertTrue(step <= prevStep + 1e-9, "drag should gently reduce the speed increment");
             prevStep = step; vy = next;
         }
         assertTrue(vy < -.55, "6 ticks into the fall only " + vy);

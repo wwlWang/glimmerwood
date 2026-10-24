@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "kind": "regenerate_heal",
+  "layers": [
+    {
+      "color": "#a9ffd2",
+      "length": 0,
+      "lifetime": 16,
+      "outward": 0.045,
+      "particle": "orimod:spirit_mote",
+      "radius": 0.34,
+      "shape": "ring",
+      "share": 1.0,
+      "size": 0.26,
+      "speed": 0.002,
+      "spread": [
+        0.035,
+        0.045,
+        0.035
+      ]
+    }
+  ]
+}

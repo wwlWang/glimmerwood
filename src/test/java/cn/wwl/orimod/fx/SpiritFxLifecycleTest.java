@@ -34,7 +34,7 @@ class SpiritFxLifecycleTest {
 
     @Test void persistentKindsIncludeTrailsBashAimAndFlash() {
         var persistent = java.util.Arrays.stream(SpiritFxKind.values()).filter(SpiritFxKind::persistent).toList();
-        assertEquals(List.of(SpiritFxKind.GLIDE, SpiritFxKind.GRAPPLE_TETHER, SpiritFxKind.BASH_AIM, SpiritFxKind.FLASH), persistent);
+        assertEquals(List.of(SpiritFxKind.GLIDE, SpiritFxKind.GRAPPLE_TETHER, SpiritFxKind.BASH_AIM, SpiritFxKind.FLASH, SpiritFxKind.REGENERATE), persistent);
     }
 
     @Test void startStopAndHeartbeat() {

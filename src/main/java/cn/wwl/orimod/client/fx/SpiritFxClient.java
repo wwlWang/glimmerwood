@@ -82,6 +82,7 @@ public final class SpiritFxClient {
         companions(mc, level);
         for (var key : TRACKER.active()) {
             var entity = level.getEntity(key.entity());
+            if (key.kind() == SpiritFxKind.REGENERATE && (level.getGameTime() + key.entity()) % 4 != 0) continue;
             if (entity != null) burst(key.kind(), entity.getX(), entity.getY() + entity.getBbHeight() * .5, entity.getZ(), key.entity());
         }
     }
@@ -136,6 +137,12 @@ public final class SpiritFxClient {
 
     private static void end(cn.wwl.orimod.fx.SpiritFxTracker.Key key) {
         stopped++;
+        if (key.kind() == SpiritFxKind.REGENERATE) {
+            var level = Minecraft.getInstance().level;
+            var entity = level == null ? null : level.getEntity(key.entity());
+            if (entity != null && entity.isAlive()) burst(SpiritFxKind.REGENERATE_END,
+                    entity.getX(), entity.getY() + entity.getBbHeight()*.6, entity.getZ(), key.entity());
+        }
         var loop = LOOPS.remove(key);
         if (loop != null) { loop.end(); Minecraft.getInstance().getSoundManager().stop(loop); }
     }
@@ -161,6 +168,12 @@ public final class SpiritFxClient {
         if (!kind.persistent()) received++;
         LAST.put(kind.name(), java.util.Map.of("essential", split.essential(), "decorative", split.decorative(), "quality", visuals.quality().name(), "advanced", visuals.advancedParticles()));
         var sourceEntity = level.getEntity(source);
+        boolean healing = kind == SpiritFxKind.REGENERATE || kind == SpiritFxKind.REGENERATE_HEAL || kind == SpiritFxKind.REGENERATE_END;
+        boolean firstPersonHeal = healing && sourceEntity == mc.player && mc.options.getCameraType().isFirstPerson();
+        if (firstPersonHeal) {
+            var at = mc.player.getEyePosition().add(mc.player.getLookAngle().scale(.7)).add(0,-.28,0);
+            px=at.x; py=at.y; pz=at.z;
+        }
         // Facing for arcs and motion for trails: the source's own look and velocity (fallbacks for markers).
         net.minecraft.world.phys.Vec3 look = sourceEntity == null ? new net.minecraft.world.phys.Vec3(0, 0, 1) : sourceEntity.getLookAngle();
         net.minecraft.world.phys.Vec3 motion = sourceEntity == null ? net.minecraft.world.phys.Vec3.ZERO : sourceEntity.getDeltaMovement();
@@ -216,9 +229,9 @@ public final class SpiritFxClient {
                     if (sourceEntity != null) {
                         double friction = layer.particle().equals("orimod:spirit_spark") ? SpiritParticle.SPARK_FRICTION : SpiritParticle.MOTE_FRICTION;
                         double travel = (1 - Math.pow(friction, layer.lifetime())) / (1 - friction);
-                        vx = (sourceEntity.getX() - x) / travel;
-                        vy = (sourceEntity.getY() + sourceEntity.getBbHeight() * .6 - y) / travel;
-                        vz = (sourceEntity.getZ() - z) / travel;
+                        vx = ((firstPersonHeal ? px : sourceEntity.getX()) - x) / travel;
+                        vy = ((firstPersonHeal ? py : sourceEntity.getY() + sourceEntity.getBbHeight() * .6) - y) / travel;
+                        vz = ((firstPersonHeal ? pz : sourceEntity.getZ()) - z) / travel;
                     }
                 }
                 default -> {}

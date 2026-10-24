@@ -3,9 +3,10 @@ import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class FeatherRulesTest {
-    @Test void humanNeverUsesFeatherAndSpiritNeedsSkill(){
+    @Test void humanNeverUsesFeatherAndSpiritUsesEquipmentOrSkill(){
         assertFalse(FeatherRules.permitted(false,false,true,false));assertFalse(FeatherRules.permitted(false,true,false,false));
-        assertTrue(FeatherRules.permitted(true,true,false,false));assertFalse(FeatherRules.permitted(true,false,true,false));
+        assertTrue(FeatherRules.permitted(true,true,false,false));assertTrue(FeatherRules.permitted(true,false,true,false));
+        assertFalse(FeatherRules.permitted(true,false,false,false));
         assertFalse(FeatherRules.permitted(true,true,true,true));assertFalse(FeatherRules.permitted(false,false,true,true));
     }
     @Test void equipmentUpgradeIsFasterAndFallsSlower(){

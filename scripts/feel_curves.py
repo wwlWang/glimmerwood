@@ -34,6 +34,10 @@ def new_ground(ticks, inp, start=0.0, ground=True):
     return xs
 
 def vertical_new(vy, held, released):
+    if vy < C['MAX_FALL'] and 'FALL_RETURN_RATE' in C:
+        nxt = C['MAX_FALL'] + (vy - C['MAX_FALL']) * (1 - C['FALL_RETURN_RATE'])
+        if C['MAX_FALL'] - nxt <= C['FALL_RETURN_EPSILON']: nxt = C['MAX_FALL']
+        return nxt / .98 + G
     if released and vy > C['JUMP_CUT_MIN']: return vy * C['JUMP_CUT']
     if abs(vy) < C['APEX_SPEED'] and held: s = C['APEX_GRAVITY_SCALE']
     elif vy > 0: s = C['RISE_GRAVITY_SCALE'] if held else 1

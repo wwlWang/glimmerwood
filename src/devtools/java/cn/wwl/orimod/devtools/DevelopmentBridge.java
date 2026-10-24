@@ -77,6 +77,7 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(this::frame);
         NeoForge.EVENT_BUS.addListener(this::playerTick);
         NeoForge.EVENT_BUS.addListener(this::serverTick);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppingEvent e) -> SpiritCaptureActor.close());
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::serverStopped);
         NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
         NeoForge.EVENT_BUS.addListener(LayerPreview::tick);
@@ -178,6 +179,7 @@ public final class DevelopmentBridge {
             }
             case "leave_world" -> {
                 releaseKeys();
+                if (mc.getSingleplayerServer() != null) mc.getSingleplayerServer().submit(SpiritCaptureActor::close).get(10, TimeUnit.SECONDS);
                 if (mc.level != null) mc.level.disconnect();
                 mc.disconnect();
                 mc.setScreen(new TitleScreen());
@@ -718,6 +720,11 @@ public final class DevelopmentBridge {
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()),
                         "aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
             }
+            case "spirit_capture_actor" -> {
+                require(mc.player != null && mc.getSingleplayerServer() != null,"Integrated world required");
+                var server=mc.getSingleplayerServer(); var id=mc.player.getUUID();
+                return server.submit(() -> SpiritCaptureActor.configure(server.getPlayerList().getPlayer(id),action)).get(10,TimeUnit.SECONDS);
+            }
             case "layer_preview" -> { return LayerPreview.configure(action); }
             case "preview_effect" -> {
                 return SpiritMotePreview.start(directory, new net.minecraft.core.BlockPos(
@@ -836,7 +843,7 @@ public final class DevelopmentBridge {
                 "regionTickets", searchRegionTickets(server),
                 "locator", cn.wwl.orimod.world.RuinLocator.lifecycleState());
     }
-    private void serverTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) { captureLifecycle(event.getServer()); }
+    private void serverTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) { SpiritCaptureActor.tick(event.getServer()); captureLifecycle(event.getServer()); }
     private void serverStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) { captureLifecycle(event.getServer()); }
 
     private static int searchRegionTickets(net.minecraft.server.MinecraftServer server) {

@@ -35,7 +35,10 @@ public enum SpiritFxKind {
     TREE_BLESSING(18, 40, 10, .1, .1, .1, .01),
     PURIFY(19, 48, 12, .1, .1, .1, .01),
     WISP_COLLECT(20,24,8,.2,.4,.2,.02),
-    RESTORATION(21,48,16,.3,.5,.3,.03);
+    RESTORATION(21,48,16,.3,.5,.3,.03),
+    REGENERATE(22, 6, 3, .03, .03, .03, .003, true),
+    REGENERATE_HEAL(23, 24, 8, .04, .08, .04, .005),
+    REGENERATE_END(24, 8, 3, .12, .1, .12, .01);
 
     private final int wireId, base, essential;
     private final double spreadX, spreadY, spreadZ, speed;

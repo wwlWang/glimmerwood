@@ -1,5 +1,15 @@
 # 回归测试
 
+## 试玩修复 A（2026-10-24）
+
+新增：SkillTargetGameTests（bits0/2/8/10与两种近端目标、未学实体不抢花），FeatherAdmissionGameTests（装备OR技能四组合、一次教程/提示不写技能位、批次位移维持），RegenerateFxGameTests（实际治疗/事件否决、一次脉冲/取消），BladeTempoGameTests（7tick命中、3/4/5伤害、他人插入保留原版无敌），以及TargetPermissionTest、FeatherPoseTest、FallCurveTest与旧FX解码拒绝更新。`a1-red`、`a2-red`、`a3-red`、`a4-red`、`a5-red`、`a6-red`保留失败，针对性绿色与全量结果都在`evidence/playtest-a-20261024-v001`。额外A3平行握轴探针先产生NaN，修后hidden；相应断言纳入单测。
+
+full-01：1550JUnit中1项旧FX枚举期待22；923GT中2项旧甲虫刀伤期待首刀4。新FX25类型与批准首刀3同步断言后full-02全绿1550/923。首轮实拍暴露低FPS位置包之间observedDy小于阈值导致server退出GLIDE，新增held_glide_survives_batched_position_packets在−.028失败（6项中1红），再修已有GLIDE维持，最终full-03 **1550JUnit / 924GT，0失败/错误/跳过**。首启仍需下降，正向外力取消、按键松开取消均测试。全量包括旧树冻结/金索逃亡，不改几何。
+
+A4用HEAD与新FeelTuning实编离线积分，CSV每tick记录pre/post feel与原版重力/drag；候选是离线模型，最终表`a4-comparison.md`，不冒称实际玩家输入。A6实际hurt函数在确定时钟夹具下命中2/9/16、完整24tick，3/4/5；别人8伤插入后第二段拒绝、第三段窗口自然结束后正常5。没有重置target.invulnerableTime，也没有设置全局伤害tag。所有FX遵守FxBudget，协议10/旧9拒绝新22–24，`export-spirit-fx.py --check`25effects无变化。
+
+最终full-03日志及XML备份：`final-junit/`、`final-gametest.xml`，6m37s。修后羽毛实拍`playtest-a-feather-20261024-v002`：真实装备无技能输入，60次连续观测跨170服务端tick均为GLIDE且启动计数恒定；另含技能无装备、切人形原版飞行、回精灵迁移。远端取景使用开发专用ServerPlayer固定姿态夹具，单独标注。复原`playtest-a-capture-20261024-v001`第一/第三/远端的聚光、脉冲、散去及视频齐全；10TPS仅为可读取景，技能数值仍按游戏tick。全部原始低FPS异常与初轮错误保留。
+
 ## R115 C F1/F2：跳跃容许范围与维度取消
 
 `evidence/r115-c-escape-fixes-v001/before-02.log`在未修生产代码上跑900项：890通过、10失败。失败名称：`ginso_escape.open_branch_double_jump_0..3`、`open_branch_triple_jump_0..3`、`dimension_change_stays_in_nether_with_cooldown`、`dimension_tick_fallback_does_not_return_to_tree`。前8条在2.67–3.06格被OUTSIDE取消（三段跳甚至来不及触发第三跳）；后2条把玩家从下界拉回原树。before-01仅为新夹具BoundingBox构造器编译错误，已保留，不能作为bug复现。

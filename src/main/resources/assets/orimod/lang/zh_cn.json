@@ -62,7 +62,7 @@
   "ability.orimod.bash": "猛击",
   "ability.orimod.bash.description": "按住目标键瞄准，松开发射。可借普通敌人、非本人投射物或灵光锚点弹射；自己的投射物、浮标和巨型敌人无效。同一目标有短暂冷却。",
   "ability.orimod.glide": "滑翔",
-  "ability.orimod.glide.description": "下落时按住跳跃键减缓下降，可用移动键转向。松开跳跃、潜行、贴墙或入水时收起。",
+  "ability.orimod.glide.description": "无需装备羽毛也能滑翔。起跳后松开跳跃，下落时再按住并用移动键转向；装备羽毛可飞得更快、下沉更慢。",
   "ability.orimod.grapple": "牵引",
   "ability.orimod.grapple.description": "对准绿色牵引花按目标键，沿路径靠近锚点。潜行或再次按目标键取消。障碍物与消失的锚点会中断牵引。",
   "ability.orimod.stomp": "下砸",
@@ -530,5 +530,8 @@
   "subtitle.orimod.ginso.success": "金索树的清水再次流淌。",
   "hud.orimod.ginso.prepare": "涨水还有 %s 秒",
   "hud.orimod.ginso.escape": "逃向树冠 · %s 秒",
-  "hud.orimod.ginso.submerged": "浮出水面！剩余 %s 秒"
+  "hud.orimod.ginso.submerged": "浮出水面！剩余 %s 秒",
+  "message.orimod.feather.controls": "精灵形态装备羽毛即可滑翔，无需技能：起跳后松开%s，下落时再按住。",
+  "tooltip.orimod.feather.spirit": "精灵：装备即可滑翔，不耗耐久，破损也可用。",
+  "tooltip.orimod.feather.human": "人形：原版鞘翅飞行，照常损耗耐久。"
 }

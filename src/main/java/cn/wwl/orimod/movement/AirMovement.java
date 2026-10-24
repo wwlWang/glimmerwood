@@ -86,8 +86,9 @@ public final class AirMovement {
     }
 
     public static void glide(ServerPlayer player, MovementState s, long now, boolean grounded, boolean touchingWall) {
-        if ((SpiritData.hasGlide(player) || FeatherGlide.migrating(player)) && (s.jumpHeld || FeatherGlide.migrating(player)) && (s.mode == GLIDE || FeatherGlide.migrating(player) || MovementRules.glideArmed(s.jumpEdgeAt, s.jumpPerformedAt)) && !s.crouching && !grounded && !touchingWall
-                && now >= s.groundLockUntil && (s.observedDy < -.03 || FeatherGlide.migrating(player) || s.mode == GLIDE && cn.wwl.orimod.block.UpdraftBlock.lifting(player.level(), player))) {
+        if (FeatherGlide.permitted(player) && (s.jumpHeld || FeatherGlide.migrating(player)) && (s.mode == GLIDE || FeatherGlide.migrating(player) || MovementRules.glideArmed(s.jumpEdgeAt, s.jumpPerformedAt)) && !s.crouching && !grounded && !touchingWall
+                && now >= s.groundLockUntil && (s.observedDy < -.03 || FeatherGlide.migrating(player) || s.mode == GLIDE && (s.observedDy <= 0 || cn.wwl.orimod.block.UpdraftBlock.lifting(player.level(), player)))) {
+            // Held glide tolerates a server tick between position packets; only initial activation needs a falling sample.
             // R40: rising in an updraft keeps the glide; the lift is server-sanctioned, so do not count it as flying.
             if (s.observedDy >= -.03 && player.connection instanceof cn.wwl.orimod.mixin.ServerFloatingAccessor floating) floating.orimod$setAboveGroundTickCount(0);
             if (s.mode != GLIDE) s.startedGlides++;

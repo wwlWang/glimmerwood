@@ -2,12 +2,12 @@ package cn.wwl.orimod.movement;
 
 import net.minecraft.world.phys.Vec3;
 
-/** Feather permission and motion are shared by the server lease and local movement. */
+/** Feather permission and motion are shared by the server, prediction and presentation. */
 public final class FeatherRules {
     public static final int MIGRATION_TICKS = 40;
     private FeatherRules() {}
     public static boolean permitted(boolean spirit, boolean glideSkill, boolean feather, boolean flying) {
-        return spirit && glideSkill && !flying;
+        return spirit && (glideSkill || feather) && !flying;
     }
     public static Vec3 velocity(Vec3 current, Vec3 wish, boolean upgraded, boolean airControl) {
         double acceleration = upgraded ? FeelTuning.FEATHER_SPIRIT_ACCEL : FeelTuning.FEATHER_ACCEL;

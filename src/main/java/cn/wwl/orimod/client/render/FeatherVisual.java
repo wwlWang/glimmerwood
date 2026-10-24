@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-/** One static feather per glider; visible in first person when looking up, without forcing a camera. */
+/** One feather per spirit glider, following the valid rendered two-paw pose. */
 final class FeatherVisual extends GemRenderEntityVisual<Player> {
     FeatherVisual(VisualizationContext context,Player player,float partial){
         super(context,player,partial,GemRenderModels.handle(ResourceLocation.parse("orimod:models/entity/kuro_feather.glb")));
@@ -18,17 +18,16 @@ final class FeatherVisual extends GemRenderEntityVisual<Player> {
     @Override protected void transform(Matrix4f target,float partial){
         var at=getVisualPosition(partial);
         target.translation(at);
+        if (entity.isInvisible() || !FeatherGlide.gliding(entity)) { target.scale(0); return; }
         var frame=SpiritPlayerVisual.frame(entity);
         if(SpiritData.isSpirit(entity) && frame!=null){
             var a=frame.boneMatrix("grip_l",new Matrix4f());var b=frame.boneMatrix("grip_r",new Matrix4f());
-            var centre=new Vector3f((a.m30()+b.m30())*.5f,(a.m31()+b.m31())*.5f,(a.m32()+b.m32())*.5f);
-            frame.transform().transformPosition(centre);
-            target.translate(centre).rotateY(-Mth.rotLerp(partial,entity.yBodyRotO,entity.yBodyRot)*Mth.DEG_TO_RAD).scale(.85f).translate(0,-.10f,0);
-        }else{
-            target.rotateY(-Mth.rotLerp(partial,entity.yBodyRotO,entity.yBodyRot)*Mth.DEG_TO_RAD)
-                    .translate(0,1.5f,.28f).scale(.85f);
-        }
-        if(entity.isInvisible() || !FeatherGlide.gliding(entity))target.scale(0);
+            var first=frame.transform().transformPosition(a.getTranslation(new Vector3f()));
+            var second=frame.transform().transformPosition(b.getTranslation(new Vector3f()));
+            float yaw=-Mth.rotLerp(partial,entity.yBodyRotO,entity.yBodyRot)*Mth.DEG_TO_RAD;
+            var pose=FeatherPose.matrix(first,second,new Vector3f(0,0,1).rotateY(yaw));
+            if(pose==null)target.scale(0);else target.mul(pose);
+        }else target.scale(0); // No stale body-position fallback when a pose disappears or the form changes.
     }
     @Override protected void animate(float partial,GltfAnimation[] clips,float[] times){clips[0]=null;times[0]=0;}
 }
