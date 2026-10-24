@@ -23,6 +23,9 @@ import java.util.*;
 /** Owner-only virtual flood. No block/fluid writes, global weather, Soul Link edits or bystander effects. */
 public final class GinsoEscape {
     public static final String RECEIPT="escape/ginso";
+    // Runtime tolerance only: frozen route/flood geometry and the grounded exit test stay unchanged.
+    // Route boxes end 2.5 above the tread; four extra blocks cover triple jump plus headroom.
+    private static final double JUMP_HEADROOM=4, DROP_TOLERANCE=1;
     public enum Phase { READY, PREPARE, RUNNING, SUCCESS, FAILED, COOLDOWN }
     public enum Outcome { NONE, SUCCESS, SUBMERGED, TIMEOUT, OUTSIDE, DEAD, DISCONNECTED, DIMENSION, CHUNK, RECOVERED }
     private static final ResourceLocation DRAG=ResourceLocation.parse("orimod:ginso_water_drag");
@@ -46,6 +49,11 @@ public final class GinsoEscape {
         for(int i=0;i<Math.floorMod(-turn,4);i++){double t=x;x=-z;z=t;}
         return new Vec3(x+.5,world.y-origin.getY(),z+.5);
     }
+    public static boolean inPlayableRoute(List<GinsoEscapeLayout.Box> route,double x,double y,double z){
+        for(var b:route)if(x>=b.x0()&&x<b.x1()&&z>=b.z0()&&z<b.z1()
+                &&y>=b.y0()-DROP_TOLERANCE&&y<b.y1()+JUMP_HEADROOM)return true;
+        return false;
+    }
     public static boolean start(ServerPlayer p,BlockPos heart){
         var piece=GinsoCourse.at(p.serverLevel(),heart);
         if(piece==null||piece.escapeVersion()!=1||!piece.point(GinsoEscapeLayout.HEART).equals(heart))return reject(p,"unavailable");
@@ -61,7 +69,7 @@ public final class GinsoEscape {
                 ||p.distanceToSqr(Vec3.atCenterOf(heart))>36||!p.isAlive()||p.isPassenger()||Restoration.active(p)
                 ||(!SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator()))return reject(p,"unavailable");
         var s=new Session(p,piece);var at=s.local(p.position());
-        if(!s.layout.inRoute(at.x,at.y,at.z))return reject(p,"approach");
+        if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z))return reject(p,"approach");
         SESSIONS.put(p.getUUID(),s);
         p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(GinsoEscapeLayout.SAFE),true,0));
         GinsoEscapePayload.send(p,s,true);
@@ -81,7 +89,7 @@ public final class GinsoEscape {
             return;
         }
         if(!p.isAlive()){end(p,s,Outcome.DEAD,false);return;}
-        if(p.serverLevel()!=s.level){end(p,s,Outcome.DIMENSION,true);return;}
+        if(p.serverLevel()!=s.level){end(p,s,Outcome.DIMENSION,false);return;}
         var heart=s.piece.point(GinsoEscapeLayout.HEART);
         if(s.invalidated||s.level.getChunkSource().getChunkNow(heart.getX()>>4,heart.getZ()>>4)==null
                 ||!s.level.getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)) {end(p,s,Outcome.CHUNK,true);return;}
@@ -89,7 +97,7 @@ public final class GinsoEscape {
         s.elapsed++;if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS)s.phase=Phase.RUNNING;
         var at=s.local(p.position());
         if(s.phase==Phase.RUNNING&&s.layout.exit().contains(at.x,at.y,at.z)&&p.onGround()){end(p,s,Outcome.SUCCESS,false);return;}
-        if(!s.layout.inRoute(at.x,at.y,at.z)){end(p,s,Outcome.OUTSIDE,true);return;}
+        if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z)){end(p,s,Outcome.OUTSIDE,true);return;}
         boolean wet=s.phase==Phase.RUNNING&&s.layout.inFlood(at.x,at.y,at.z)&&p.getY()<s.water();
         drag(p,wet);
         s.submerged=wet&&p.getEyeY()<s.water()?s.submerged+1:0;
@@ -150,7 +158,11 @@ public final class GinsoEscape {
     public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p){SESSIONS.remove(p.getUUID());recover(p);GinsoEscapePayload.clear(p);}}
     public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)disconnect(p);}
     public static void disconnect(ServerPlayer p){var s=SESSIONS.remove(p.getUUID());drag(p,false);if(s!=null&&s.active())s.outcome=Outcome.DISCONNECTED;/* pending attachment survives player save */}
-    public static void dimension(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null&&s.active()){end(p,s,Outcome.DIMENSION,false);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(GinsoEscapeLayout.SAFE),true,0));SESSIONS.remove(p.getUUID());}}}
+    public static void dimension(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p){
+        var s=session(p);
+        // Cancelling clears drag and persists the retry deadline, but must never arm a return teleport.
+        if(s!=null&&s.active())end(p,s,Outcome.DIMENSION,false);
+    }}
     public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p){var s=session(p);if(s!=null&&s.active())end(p,s,Outcome.DEAD,false);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);}}
     public static void stop(MinecraftServer server){for(var p:server.getPlayerList().getPlayers())disconnect(p);SESSIONS.clear();}
     public static void clear(){SESSIONS.clear();}

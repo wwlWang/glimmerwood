@@ -1,8 +1,16 @@
 # 回归测试
 
+## R115 C F1/F2：跳跃容许范围与维度取消
+
+`evidence/r115-c-escape-fixes-v001/before-02.log`在未修生产代码上跑900项：890通过、10失败。失败名称：`ginso_escape.open_branch_double_jump_0..3`、`open_branch_triple_jump_0..3`、`dimension_change_stays_in_nether_with_cooldown`、`dimension_tick_fallback_does_not_return_to_tree`。前8条在2.67–3.06格被OUTSIDE取消（三段跳甚至来不及触发第三跳）；后2条把玩家从下界拉回原树。before-01仅为新夹具BoundingBox构造器编译错误，已保留，不能作为bug复现。
+
+修后full-01的1520 JUnit全过；902 GameTest仅新增跌落夹具1失败：所选枝道与较低邻阶包络重叠，下降2格仍在有效区。夹具改为跌穿该XZ列的整个包络，OUTSIDE断言不改。最终full-02运行`cleanTest build runGameTestServer compileDevtoolsJava`：**1520 JUnit / 902 GameTest，0失败/错误/跳过**。四朝向使用真实生产跳跃输入、TRIPLE_JUMP装备和移动碰撞；头部无障碍枝道上完整二段/三段跳至3.2005/4.7777格并落地，会话继续。服务端测试没有LocalPlayer，所以夹具显式推进生产FeelTuning与原版重力/drag，不冒称客户端按键实拍。新增2条JUnit锁住垂直余量、XZ/下落边界及四朝向路线全节点；另2条GameTest锁住原出口盒+onGround和枝下跌出，原91层/外叶测试不变。真实changeDimension→Nether校验留在目标维度、清减速、pending=false、冷却保留、登录不回树；tick兜底单独覆盖。原`recovery_dimension`只模拟事件并重载旧pending附件，已移除，用真实转换替代；logout/shutdown测试不改。
+
+`before-gametest.xml`、`after-gametest.xml`、JUnit XML与counts保留。`build_ginso_escape.py --check`264布局written=0；Layout/Rules/Piece与修前SHA一致，未更新冻结基准、追逐参数或美术。
+
 ## R115 C 逃亡关2：个人虚拟水/恢复/奖励
 
-`cleanTest build runGameTestServer compileDevtoolsJava`最终full-04：1518 JUnit / 891 GameTest，失败/错误/跳过均0；full-03同样通过。新增8项JUnit覆盖版本拒绝/解码限界、连续坐标旋转、精确水面并集/出口干区、恢复Codec；新增25项GameTest覆盖四朝向成功、重复交互/跨树回执、淹没失败→冷却→成功、HP4地板/无敌帧、门退91/外叶/超时/水心拆除、真实genericKill死亡、断线/停服/换维度恢复、双人+下层旁观、创飞/旁观、满格奖励、真实新旧piece水心/BE、区块卸载、零块/流体变化、1/8人热路径。测试场地自持区块票并finally恢复，附件无copyOnDeath，不改SoulLink。
+`cleanTest build runGameTestServer compileDevtoolsJava`最终full-04：1518 JUnit / 891 GameTest，失败/错误/跳过均0；full-03同样通过。新增8项JUnit覆盖版本拒绝/解码限界、连续坐标旋转、精确水面并集/出口干区、恢复Codec；新增25项GameTest覆盖四朝向成功、重复交互/跨树回执、淹没失败→冷却→成功、HP4地板/无敌帧、门退91/外叶/超时/水心拆除、真实genericKill死亡、断线/停服恢复与旧换维度模拟（覆盖缺口见上）、双人+下层旁观、创飞/旁观、满格奖励、真实新旧piece水心/BE、区块卸载、零块/流体变化、1/8人热路径。测试场地自持区块票并finally恢复，附件无copyOnDeath，不改SoulLink。
 
 证据 `evidence/r115-c-escape-gate2-v001/`：full-01保留5失败（4个水心底座挡旧门通路→去碰撞；1个新玩家60tick登录保护挡正常hurt→夹具先tick61），full-02构造器编译失败，full-03/04最终全绿与XML。没有以bypass伤害绕开正常无敌帧。断线/停服是事件+序列化恢复测试，非进程重启实拍。
 

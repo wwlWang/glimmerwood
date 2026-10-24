@@ -71,7 +71,9 @@ v1全量1507 JUnit / 866 GameTest零失败，安全/版本/纯规则通过，但
 常显水之心模型/方块；个人独立会话与虚拟清水面；成功/淹没/出界/死亡/断线/重启恢复；独立GINSO_ESCAPE_RECOVERY附件；escape/ginso跨树一次奖励；不改SoulLink或腐光之心逃亡语义；创飞/旁观无正式奖励。成功1能量格+100灵光，能量满则生命格，再满则额外灵光。资源在art/source/ginso_water_heart/v001，根沿视觉在ginso_escape/v004，两者白名单已更新。真实输入与1/8人统计见下文。
 
 
-关2当前实现：`GinsoEscape` 独立个人状态机、`GINSO_ESCAPE_RECOVERY` 保存安全点而不保存可续跑时钟。水只通过 owner payload 的 flood box 并集绘制，开始同步几何一次，运行每5 tick小包校时；旁观者没有水包、伤害或拖慢。PREPARE 60tick，水速0.25格/秒，眼位连续淹没60tick失败，重试100tick。浸身减速15%；眼位每20tick普通 drown hurt 1 HP，生命≤4不再扣，保留正常无敌帧。死亡清理恢复标记，正常SoulLink/原版重生；断线/停服记录保留，登录一次安全返回，不续跑。离开维度同样安全返回。
+关2当前实现：`GinsoEscape` 独立个人状态机、`GINSO_ESCAPE_RECOVERY` 保存安全点而不保存可续跑时钟。水只通过 owner payload 的 flood box 并集绘制，开始同步几何一次，运行每5 tick小包校时；旁观者没有水包、伤害或拖慢。PREPARE 60tick，水速0.25格/秒，眼位连续淹没60tick失败，重试100tick。浸身减速15%；眼位每20tick普通 drown hurt 1 HP，生命≤4不再扣，保留正常无敌帧。死亡清理恢复标记，正常SoulLink/原版重生；断线/停服记录保留，登录一次安全返回，不续跑。换维度仅取消会话、清减速，pending=false且保留100tick重试冷却；留在目标维度，重登也不拉回原树。
+
+运行时跳跃容许范围与冻结几何分离：路线盒上界额外放宽4格（通常为踏面+6.5），下界额外容许1格（通常为踏面−1.5），XZ范围不扩张。二段/三段跳继续会话，退落91层或包络外叶面仍判负；出口仍使用原始盒且要求onGround。水体积、追逐曲线、生成体素和EscapeVersion均不改。
 
 水心常显，原生3/2且EscapeVersion缺省0不升级；仅Escape1新增心块。水晶可瞄准但无碰撞，保证旧94层双门/课程到达/退路原测试不变。`escape/ginso` 首胜能量格+100灵光；能量满改生命格，两者满改200灵光。重复挑战及creative/spectator不发奖励。所有失败返回不改SoulLink。
 

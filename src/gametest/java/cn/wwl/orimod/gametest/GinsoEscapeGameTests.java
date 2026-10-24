@@ -4,6 +4,7 @@ import cn.wwl.orimod.block.*;
 import cn.wwl.orimod.world.*;
 import cn.wwl.orimod.spirit.*;
 import cn.wwl.orimod.progression.*;
+import cn.wwl.orimod.movement.FeelTuning;
 import net.minecraft.core.*;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.*;
@@ -14,6 +15,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.*;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -48,11 +52,87 @@ public final class GinsoEscapeGameTests {
             s.start();var before=s.p.position();s.p.hurt(s.p.damageSources().genericKill(),Float.MAX_VALUE);
             h.assertTrue(s.p.isDeadOrDying(),"Normal death was blocked");h.assertFalse(s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Death left pending return");h.assertValueEqual(s.p.position(),before,"Death teleported");h.assertValueEqual(s.p.getData(SpiritData.SOUL_LINK),s.link,"Death changed link");
         });
-        for(String path:List.of("logout","shutdown","dimension"))add(tests,"recovery_"+path,(h,s)->{
+        for(int jumps:List.of(2,3))for(int turn=0;turn<4;turn++){
+            int orientation=turn;
+            add(tests,"open_branch_"+(jumps==2?"double":"triple")+"_jump_"+turn,(h,s)->{
+                s.piece=new GinsoPiece(s.piece.origin(),115117,orientation,0,3,2,1);s.ready();
+                if(jumps==3)s.p.setData(SpiritData.PROGRESS,s.p.getData(SpiritData.PROGRESS)
+                        .withOwned(Shard.TRIPLE_JUMP.bit).withEquipped(Shard.TRIPLE_JUMP.bit));
+                s.start();s.tick(60);var foot=s.openBranch();var p=s.p;var movement=p.getData(SpiritData.MOVEMENT);
+                p.setPos(foot);p.setOnGround(true);p.setDeltaMovement(Vec3.ZERO);movement.groundLockUntil=0;
+                movement.wallReadyAt=Long.MAX_VALUE;int sequence=1;ParityGameTests.jump(p,sequence++,true);
+                double peak=0;boolean landed=false;
+                for(int tick=0;tick<100;tick++){
+                    if(p.getDeltaMovement().y<=.06&&movement.acceptedJumps<jumps){
+                        ParityGameTests.jump(p,sequence++,false);ParityGameTests.jump(p,sequence++,true);
+                    }
+                    // Headless player has no LocalPlayer travel. Use the production jump handler,
+                    // FeelTuning shaping and vanilla move/gravity/drag, with real block collision.
+                    double vy=FeelTuning.vertical(p.getDeltaMovement().y,true,false);
+                    p.move(MoverType.SELF,new Vec3(0,vy,0));peak=Math.max(peak,p.getY()-foot.y);
+                    s.tick(1);
+                    h.assertTrue(GinsoEscape.active(p)&&GinsoEscape.session(p).outcome==GinsoEscape.Outcome.NONE,
+                            "Jump cancelled: jumps="+movement.acceptedJumps+" rise="+peak+" outcome="+GinsoEscape.session(p).outcome);
+                    if(p.onGround()){landed=true;break;}
+                    p.setDeltaMovement(0,(vy-FeelTuning.GRAVITY)*.98,0);
+                }
+                h.assertTrue(landed,"Jump never landed");h.assertValueEqual(movement.acceptedJumps,jumps,"Jump input rejected");
+                h.assertTrue(peak>2.5,"Fixture did not cross the old route ceiling: "+peak);
+                cn.wwl.orimod.OriMod.LOGGER.info("Ginso escape jump regression jumps={} turn={} peak={} health={}",jumps,orientation,peak,p.getHealth());
+            });
+        }
+        add(tests,"dimension_change_stays_in_nether_with_cooldown",(h,s)->{
+            s.start();var run=GinsoEscape.session(s.p);
+            // Wet body but dry eyes: attach the real drag modifier before crossing dimensions.
+            run.elapsed=60+(int)Math.ceil((94.25-run.plan.startWater())/GinsoEscapeRules.RISE_PER_SECOND*20);s.tick(1);
+            var drag=net.minecraft.resources.ResourceLocation.parse("orimod:ginso_water_drag");
+            h.assertTrue(s.p.getAttribute(Attributes.MOVEMENT_SPEED).hasModifier(drag),"Wet fixture lacked drag");
+            var nether=s.p.server.getLevel(Level.NETHER);h.assertTrue(nether!=null,"Nether missing");
+            var at=new Vec3(0,100,0);s.p.changeDimension(new DimensionTransition(nether,at,Vec3.ZERO,0,0,DimensionTransition.DO_NOTHING));
+            h.assertTrue(s.p.serverLevel()==nether,"Dimension fixture failed");s.tick(5);
+            h.assertTrue(s.p.serverLevel()==nether&&s.p.position().distanceTo(at)<.01,"Dimension change pulled player back to tree");
+            h.assertFalse(GinsoEscape.active(s.p),"Session survived dimension change");
+            h.assertFalse(s.p.getAttribute(Attributes.MOVEMENT_SPEED).hasModifier(drag),"Water drag survived dimension change");
+            var r=s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);h.assertFalse(r.pending(),"Dimension left pending recovery");
+            h.assertTrue(r.retryAt()>s.p.server.overworld().getGameTime(),"Dimension change lost retry cooldown");
+            h.assertValueEqual(s.p.getData(SpiritData.SOUL_LINK),s.link,"Dimension change rewrote Soul Link");
+            GinsoEscape.login(new PlayerEvent.PlayerLoggedInEvent(s.p));s.tick(1);
+            h.assertTrue(s.p.serverLevel()==nether&&s.p.position().distanceTo(at)<.01,"Reconnect pulled player back after dimension cancel");
+        });
+        add(tests,"dimension_tick_fallback_does_not_return_to_tree",(h,s)->{
+            s.start();var run=GinsoEscape.session(s.p);var nether=s.p.server.getLevel(Level.NETHER);var at=new Vec3(0,100,0);
+            // Isolate the tick fallback from the normal dimension event; restore the entity's level in finally.
+            s.p.setServerLevel(nether);s.p.setPos(at);
+            try{s.tick(1);h.assertTrue(s.p.serverLevel()==nether&&s.p.position().equals(at),"Tick fallback pulled player back");
+                h.assertValueEqual(run.outcome,GinsoEscape.Outcome.DIMENSION,"Wrong cancellation outcome");
+                h.assertFalse(s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Tick fallback left recovery armed");
+            }finally{s.p.setServerLevel(h.getLevel());}
+        });
+        add(tests,"exit_requires_landing_in_original_box",(h,s)->{
+            s.start();s.tick(60);var e=s.piece.escape().exit();
+            var foot=Vec3.atBottomCenterOf(s.piece.point(new BlockPos((int)Math.floor((e.x0()+e.x1())*.5),
+                    (int)Math.floor(e.y0()),(int)Math.floor((e.z0()+e.z1())*.5)))).add(0,e.y0()%1,0);
+            // Even a grounded flag on a higher branch must not enlarge the success volume.
+            s.p.setPos(foot.add(0,4,0));s.p.setOnGround(true);s.tick(1);
+            h.assertTrue(GinsoEscape.active(s.p),"Above exit cancelled or won");
+            s.p.setPos(foot);s.p.setOnGround(false);s.tick(1);
+            h.assertTrue(GinsoEscape.active(s.p),"Airborne exit won");
+            s.p.setOnGround(true);s.tick(1);
+            h.assertValueEqual(GinsoEscape.session(s.p).outcome,GinsoEscape.Outcome.SUCCESS,"Grounded exit failed");
+        });
+        add(tests,"fall_below_open_branch_still_returns_to_safe_point",(h,s)->{
+            s.start();s.tick(60);var foot=s.openBranch();var at=GinsoEscape.session(s.p).local(foot);
+            // Adjacent descending treads overlap here. Fall below the entire column, not merely
+            // two blocks below a higher tread while still inside its lower neighbour's envelope.
+            double bottom=s.piece.escape().route().stream().filter(b->at.x>=b.x0()&&at.x<b.x1()&&at.z>=b.z0()&&at.z<b.z1())
+                    .mapToDouble(GinsoEscapeLayout.Box::y0).min().orElseThrow();
+            s.p.setPos(foot.add(0,bottom-2-at.y,0));s.p.setOnGround(false);s.tick(1);
+            h.assertValueEqual(GinsoEscape.session(s.p).outcome,GinsoEscape.Outcome.OUTSIDE,"Fell below route without failing");s.assertSafe();
+        });
+        for(String path:List.of("logout","shutdown"))add(tests,"recovery_"+path,(h,s)->{
             s.start();s.tick(40);var original=s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
             var serialized=GinsoEscapeRecovery.CODEC.encodeStart(NbtOps.INSTANCE,original).getOrThrow();
-            if(path.equals("dimension"))GinsoEscape.dimension(new PlayerEvent.PlayerChangedDimensionEvent(s.p,Level.OVERWORLD,Level.NETHER));
-            else if(path.equals("shutdown"))GinsoEscape.stop(s.p.server);else GinsoEscape.disconnect(s.p);
+            if(path.equals("shutdown"))GinsoEscape.stop(s.p.server);else GinsoEscape.disconnect(s.p);
             s.p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.CODEC.parse(NbtOps.INSTANCE,serialized).getOrThrow());s.p.setPos(s.p.position().add(20,-5,0));
             GinsoEscape.login(new PlayerEvent.PlayerLoggedInEvent(s.p));s.assertSafe();h.assertFalse(GinsoEscape.active(s.p),"Recovery resumed timer");h.assertFalse(s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Recovery not consumed");h.assertValueEqual(s.p.getData(SpiritData.SOUL_LINK),s.link,"Recovery overwrote link");
         });
@@ -116,6 +196,29 @@ public final class GinsoEscapeGameTests {
                 for(int i=0;i<61;i++)p.tick();p.invulnerableTime=0;ready();
             }catch(Throwable e){close();throw e;}}
         void write(BlockPos at,BlockState state){before.putIfAbsent(at.immutable(),h.getLevel().getBlockState(at));h.getLevel().setBlock(at,state,2);}
+        Vec3 openBranch(){
+            var e=piece.escape();
+            for(int i=e.path().size()-5;i>=e.branchIndex();i--){
+                var q=e.path().get(i);if(e.exit().contains(q.x()+.5,q.feet(),q.z()+.5))continue;
+                boolean open=true;
+                for(int y=(int)Math.ceil(q.feet());y<=q.feet()+8;y++){
+                    byte c=e.cell(q.x(),y,q.z());if(c==0)c=piece.course().cell(q.x(),y,q.z());
+                    var world=GinsoInterior.rotate(new BlockPos(q.x(),y,q.z()),piece.entrance());
+                    if(c==0)c=piece.sculpture().cell(world.getX(),y,world.getZ());
+                    if(c!=0&&c!=GinsoShape.AIR&&c!=GinsoShape.VINE){open=false;break;}
+                }
+                if(!open)continue;
+                var at=piece.point(new BlockPos(q.x(),(int)Math.floor(q.feet()),q.z()));
+                var box=new BoundingBox(at.getX()-1,at.getY()-1,at.getZ()-1,at.getX()+1,at.getY()+9,at.getZ()+1);
+                for(var p:BlockPos.betweenClosed(box.minX(),box.minY(),box.minZ(),box.maxX(),box.maxY(),box.maxZ()))before.putIfAbsent(p.immutable(),h.getLevel().getBlockState(p));
+                for(int x=box.minX()>>4;x<=box.maxX()>>4;x++)for(int z=box.minZ()>>4;z<=box.maxZ()>>4;z++){
+                    var chunk=h.getLevel().getChunk(x,z);Heightmap.primeHeightmaps(chunk,EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG));
+                    piece.postProcess(h.getLevel(),h.getLevel().structureManager(),h.getLevel().getChunkSource().getGenerator(),net.minecraft.util.RandomSource.create(0),box,new ChunkPos(x,z),piece.origin());
+                }
+                return Vec3.atBottomCenterOf(at).add(0,q.feet()%1,0);
+            }
+            throw new IllegalStateException("No open branch jump column");
+        }
         void ready(){var safe=piece.point(GinsoEscapeLayout.SAFE);for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++){write(safe.offset(x,-1,z),Blocks.STONE.defaultBlockState());for(int y=0;y<3;y++)if(!safe.offset(x,y,z).equals(heart))write(safe.offset(x,y,z),Blocks.AIR.defaultBlockState());}p.setPos(Vec3.atBottomCenterOf(safe));p.setOnGround(true);p.setDeltaMovement(Vec3.ZERO);}
         void start(){h.assertTrue(GinsoEscape.start(p,piece),"Start refused");}
         void tick(int n){for(int i=0;i<n;i++){if(p.invulnerableTime>0)p.invulnerableTime--;GinsoEscape.tick(p);}}

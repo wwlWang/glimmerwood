@@ -2,6 +2,8 @@
 
 金索个人逃亡：只在新生成 `ShapeVersion=3/CourseVersion=2/EscapeVersion=1` 的94层放 `orimod:ginso_water_heart`；旧NBT缺字段=0，不迁移。右键常显水心开始个人水位，既有 `/locate structure orimod:ginso_tree` 可找新树。`ginso_state.escape` 与 `spirit_state.server.ginso.escape` 返回phase、outcome、elapsedTicks、waterY、submergedTicks/maximumSubmergedTicks、cooldownTicks、receipt、rewardCell/rewardLight、safe；客户端 `spirit_state.client.ginso.escape` 返回active、phase、waterY、floodBoxes/surfaceRects。运行包只发owner，首包有盒子几何，后续5tick校时。`GinsoEscapeRecovery`附件只记返回点与冷却，不保存续跑时钟、不改SoulLink、不copyOnDeath。
 
+`GinsoEscape.inPlayableRoute` 仅调整运行时容许范围：上界+4格、下界−1格，XZ不变；不修改冻结Layout/Rules及同步水体积。换维度事件与tick兜底均以DIMENSION取消，不设置pending恢复；保留100tick冷却并清水中减速。断线/停服恢复策略仍保留。
+
 取证脚本 `capture-ginso-escape-play.py <新证据名>` 用真实右键和短W脉冲录成功/原地淹没/重试；可设 `ORIMOD_ESCAPE_WORLD`重开已有**Escape1**世界，不能借此迁移旧树。`walk_route`/`walk_route_state`仅devtools，以客户端KeyMapping和yaw驱动、失焦立即释放，不写位置/速度。连续录像只截Minecraft窗口，DISPLAY=:0；客户端与测试互斥。`capture-ginso-escape-water.py`为固定水位的**渲染预览**（`ginso_water_preview`仅单人、server session非活动），测FPS时先队列归零+预热，不能用它证明通关。结束必须preview关、释放按键、清forceload、leave_world、quit。
 
 美术复现：`python3 scripts/art/build_ginso_escape.py --check`核对冻结几何v003；`build_ginso_root_lip.py --check`负责近景根唇v004；`build_ginso_water_heart.py --check`负责水心v001（纯程序mesh→GLB/PBR→manifest）。v001–v003几何历史源保留，新视觉脚本不覆盖旧源；修改版本须同步.gitignore白名单。关2验证/录像索引在 `evidence/r115-c-escape-gate2-v001/README.md`，详细取舍见 `docs/drafts/R115_C_ESCAPE.md`。
