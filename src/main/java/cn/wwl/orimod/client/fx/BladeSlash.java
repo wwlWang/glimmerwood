@@ -36,6 +36,14 @@ public final class BladeSlash {
         return elapsed <= hold ? 1 : Mth.clamp(1 - (elapsed - hold) / FADE, 0, 1);
     }
 
+    /** Near-eye ribbons disappear by recovery; their last .75 hit-tick fades instead of leaving a line on the reticle.
+     * The world-space crescent seen by other players keeps its existing seven-tick tail. */
+    public static float opacity(int stage, float elapsed, boolean firstPerson) {
+        if (!firstPerson) return opacity(stage, elapsed);
+        float end = SpiritCombat.recoveryStart(stage);
+        return opacity(stage, elapsed) * Mth.clamp((end - elapsed) / .75f, 0, 1);
+    }
+
     public static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         var mc = Minecraft.getInstance();
@@ -50,7 +58,8 @@ public final class BladeSlash {
             var view = player.getData(SpiritData.COMBAT_VIEW);
             if (!view.mode().equals("blade")) continue;
             float elapsed = mc.level.getGameTime() - view.startedAt() + partial;
-            float alpha = opacity(view.stage(), elapsed), progress = sweep(view.stage(), elapsed);
+            boolean ownEye = player == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson();
+            float alpha = opacity(view.stage(), elapsed, ownEye), progress = sweep(view.stage(), elapsed);
             if (alpha <= 0 || progress <= 0) continue;
             if (out == null) out = buffers.getBuffer(SpiritEnergy.ribbon());
             draw(out, pose, player, partial, view.stage(), progress, alpha, camera);

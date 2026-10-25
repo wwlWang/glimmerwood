@@ -28,11 +28,12 @@ public final class SpiritFirstPersonMotion {
     static float easeIn(float t) { t = Math.clamp(t, 0, 1); return t * t; }
 
     // Spirit Edge combo: 1 = forehand sweep toward the off side, 2 = backhand sweep back, 3 = overhead downward cut.
-    // The blade lies flat for the sweeps (pitch about -80) so the arc reads across the view, matching BladeSlash.
+    // Poses are checked after the two-bone wrist fit: raw pitch alone can be cancelled by the wrist limit.
+    // Pull the first cut sideways, keep the overhead tip farther away, then cut across/down through the hit window.
     private static final Pose[] BLADE_COCK = {REST(),
-            new Pose(.16f, .10f, .06f, -72, -78, -12),
+            new Pose(-.10f, .14f, -.08f, 6, 9, -38),
             new Pose(-.44f, -.10f, -.04f, -82, 68, 22),
-            new Pose(-.08f, .32f, .14f, 38, 8, 0)};
+            new Pose(-.27f, .34f, -.03f, -88, -97, 8)};
     private static final Pose[] BLADE_END = {REST(),
             new Pose(-.52f, -.12f, -.16f, -82, 72, 22),
             new Pose(.22f, .10f, -.12f, -66, -82, -10),

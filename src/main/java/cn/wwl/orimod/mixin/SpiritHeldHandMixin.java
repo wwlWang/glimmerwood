@@ -17,7 +17,7 @@ abstract class SpiritHeldHandMixin {
     @Inject(method = "renderItem", at = @At("HEAD"))
     private void orimod$heldOrigin(LivingEntity entity, ItemStack item, ItemDisplayContext context, boolean left,
                                  PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo ci) {
-        if (SpiritHands.held(entity, item, context)) SpiritHands.beginHeld(pose, left);
+        if (SpiritHands.held(entity, item, context)) SpiritHands.beginHeld(entity, item, context, pose, left);
     }
 
     @Inject(method = "renderItem", at = @At("TAIL"))

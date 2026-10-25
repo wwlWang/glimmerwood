@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** R114: first-person weapon curves return to rest, never jump, and keep one fixed paw-to-item grip. */
 class SpiritFirstPersonMotionTest {
-    // Mirrors SpiritCombat's WINDUP {2,3,4}, hit 2 and RECOVERY {8,8,12}.
-    private static final int[] WINDUP = {0, 2, 3, 4}, RECOVERY = {0, 8, 8, 12};
+    // Mirrors SpiritCombat's WINDUP {2,3,4}, hit 2 and RECOVERY {8,8,6}.
+    private static final int[] WINDUP = {0, 2, 3, 4}, RECOVERY = {0, 8, 8, 6};
 
     private static Pose blade(int stage, float t, Pose from) {
         return SpiritFirstPersonMotion.blade(stage, t, WINDUP[stage], 2, RECOVERY[stage], from);
@@ -45,11 +45,11 @@ class SpiritFirstPersonMotionTest {
 
     @Test void bladeSweepsAlternateAcrossTheViewAndTheFinisherCutsDown() {
         var cock1 = blade(1, WINDUP[1], Pose.REST); var end1 = blade(1, WINDUP[1] + 2, Pose.REST);
-        assertTrue(cock1.x() > 0 && end1.x() < 0 && cock1.yaw() < 0 && end1.yaw() > 0, "forehand toward the off side");
+        assertTrue(cock1.roll() < -30 && end1.x() < cock1.x() - .3f && end1.yaw() > cock1.yaw() + 45, "forehand toward the off side");
         var cock2 = blade(2, WINDUP[2], Pose.REST); var end2 = blade(2, WINDUP[2] + 2, Pose.REST);
         assertTrue(cock2.x() < 0 && end2.x() > 0 && cock2.yaw() > 0 && end2.yaw() < 0, "backhand returns");
         var cock3 = blade(3, WINDUP[3], Pose.REST); var end3 = blade(3, WINDUP[3] + 2, Pose.REST);
-        assertTrue(cock3.y() > end3.y() + .4f && cock3.pitch() > 0 && end3.pitch() < -90, "overhead cut ends forward/down");
+        assertTrue(cock3.y() > end3.y() + .4f && cock3.z() < 0 && end3.pitch() < -90, "overhead cut ends forward/down");
     }
 
     @Test void chainedStageWindsUpFromWhereThePreviousLeftTheBlade() {

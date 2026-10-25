@@ -348,9 +348,13 @@ public final class DevelopmentBridge {
                 inputScriptStart = ticks + 1;
             }
             case "record_motion" -> { motion.clear(); recordingMotion = true; }
-            case "record_pose" -> { poses.clear(); recordingPose = true; }
+            case "record_pose" -> {
+                poses.clear(); recordingPose = true;
+                cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.recording(true);
+            }
             case "save_pose" -> {
                 recordingPose = false;
+                cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.recording(false);
                 Path file = directory.resolve(fileName(action, ".json"));
                 require(!Files.exists(file), "Pose recording already exists");
                 Files.writeString(file, JSON.toJson(Map.of("samples", poses, "state", state())));
@@ -868,7 +872,19 @@ public final class DevelopmentBridge {
         var mc = Minecraft.getInstance();
         if (recordingPose && !mc.isPaused() && mc.player != null && poses.size() < 120_000) {
             poses.add(Map.of("frame", frames, "nanos", now, "tick", mc.player.tickCount,
-                    "onGround", mc.player.onGround(), "animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(mc.player)));
+                    "onGround", mc.player.onGround(), "animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(mc.player),
+                    "arms",cn.wwl.orimod.client.render.SpiritHands.diagnostics(),
+                    "combat",mc.player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW),
+                    "gameTime",mc.level.getGameTime()+mc.getTimer().getGameTimeDeltaPartialTick(false)));
+        }
+        var handDiagnostics = cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS;
+        handDiagnostics.frameComplete();
+        if (mc.player == null || mc.level == null) {
+            recordingPose = false;
+            handDiagnostics.reset();
+        } else if (poses.size() >= 120_000) {
+            recordingPose = false;
+            handDiagnostics.recording(false);
         }
         if (recordingFrames && previousFrame != 0 && frameTimes.size() < 300_000) {
             frameTimes.add((now - previousFrame) / 1_000_000.0);
@@ -885,6 +901,7 @@ public final class DevelopmentBridge {
 
     private Map<String, Object> state() {
         var mc = Minecraft.getInstance();
+        if (mc.player != null) cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.requestSample();
         Map<String, Object> state = new LinkedHashMap<>();
         state.put("tick", ticks);
         state.put("serverLifecycle", lifecycleSnapshot);
@@ -946,10 +963,12 @@ public final class DevelopmentBridge {
                 "selectedItem", player.getMainHandItem().getItem().toString(),
                 "position", new double[]{player.getX(), player.getY(), player.getZ()}));
         if (player.level().isClientSide) {
+            cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.requestSample();
             var camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             state.put("cameraMotion", Map.of("position",java.util.List.of(camera.x,camera.y,camera.z),
                     "follow",cn.wwl.orimod.client.render.SpiritCamera.debug(),"feel",cn.wwl.orimod.client.fx.MotionFeel.debug()));
             state.put("skillWheel",cn.wwl.orimod.client.SkillControls.diagnostics());
+            state.put("arms",cn.wwl.orimod.client.render.SpiritHands.diagnostics());
             state.put("bladeMotion", cn.wwl.orimod.client.SpiritControls.bladeDiagnostics());
             state.put("animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(player));
             state.put("companion", cn.wwl.orimod.client.fx.CompanionMotion.diagnostics(player));
