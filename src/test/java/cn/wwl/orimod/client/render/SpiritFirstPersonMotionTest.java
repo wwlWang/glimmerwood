@@ -73,15 +73,26 @@ class SpiritFirstPersonMotionTest {
         assertEquals(0, distance(Pose.REST, SpiritFirstPersonMotion.hammerLower(5, .6f)), 1e-5);
     }
 
-    @Test void spearCoilsThrustsDropsAndReforms() {
-        var carry = SpiritFirstPersonMotion.spearCarry();
-        assertEquals(0, distance(carry, SpiritFirstPersonMotion.spearThrow(0, 1)), 1e-5);
-        float coil = SpiritFirstPersonMotion.SPEAR_COIL_TICKS, thrust = coil + SpiritFirstPersonMotion.SPEAR_THRUST_TICKS;
-        assertTrue(SpiritFirstPersonMotion.spearThrow(coil, 1).z() > carry.z() + .1f, "drawn back beside the head");
-        assertTrue(SpiritFirstPersonMotion.spearThrow(thrust, 1).z() < -.4f, "whipped forward");
-        assertTrue(SpiritFirstPersonMotion.spearThrow(thrust + 4, 1).y() < -.6f, "thrown spear leaves the hand");
-        assertEquals(0, distance(carry, SpiritFirstPersonMotion.spearThrow(thrust + 6, 0)), 1e-5);
-        continuous(t -> SpiritFirstPersonMotion.spearThrow(t, Math.max(0, 1 - t / 24)), 30, .5f);
+    @Test void spearFollowsTheImmediateThrowInsteadOfInventingACharge() {
+        var carry=SpiritFirstPersonMotion.spearCarry();
+        assertEquals(carry,SpiritFirstPersonMotion.spearThrow(0));
+        var follow=SpiritFirstPersonMotion.spearThrow(1.5f);
+        assertTrue(follow.x()<-.3 && follow.z()<-.2,"hand travels forward and across immediately");
+        assertEquals(follow,SpiritFirstPersonMotion.spearThrow(3));
+        assertEquals(carry,SpiritFirstPersonMotion.spearThrow(8));
+        continuous(t->SpiritFirstPersonMotion.spearThrow(t),24,.5f);
+    }
+
+    @Test void spearLeavesWithinTwoTicksEvenIfTheCooldownPacketIsLate() {
+        for(float cooldown:new float[]{0,.5f,1}) {
+            assertEquals(1,SpiritFirstPersonMotion.spearPresence(0,cooldown),1e-6);
+            assertEquals(.5f,SpiritFirstPersonMotion.spearPresence(1,cooldown),1e-6);
+            assertEquals(0,SpiritFirstPersonMotion.spearPresence(2,cooldown),1e-6);
+            assertEquals(0,SpiritFirstPersonMotion.spearPresence(3,cooldown),1e-6);
+        }
+        assertEquals(0,SpiritFirstPersonMotion.spearPresence(12,.5f),1e-6);
+        assertEquals(.5f,SpiritFirstPersonMotion.spearPresence(20,.125f),1e-6);
+        assertEquals(1,SpiritFirstPersonMotion.spearPresence(24,0),1e-6);
     }
 
     @Test void bowFollowsVanillasDrawCurveAndLowersAfterTheKick() {

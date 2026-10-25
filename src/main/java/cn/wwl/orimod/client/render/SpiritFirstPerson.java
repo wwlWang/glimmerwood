@@ -29,6 +29,11 @@ public final class SpiritFirstPerson {
     private static boolean wasHammer, wasSlam, wasBow, releasedOnGround, landedOnGround;
     private static float hammerCharge, releasedCharge, hammerReleasedAt = -100, slamStartedAt = -100, slamEndedAt = -100,
             bowStartedAt, bowReleasedAt = -100;
+    private static SpiritFirstPersonMotion.BowPose bowShown = new SpiritFirstPersonMotion.BowPose(0,0,0);
+    private static float equipShown, viewTick, spearPresence=1;
+    static float spearPresence() { return spearPresence; }
+    static SpiritFirstPersonMotion.BowPose bowShown() { return bowShown; }
+    static float equipShown() { return equipShown; }
 
     public static boolean apply(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack, float partial,
                                 float equip, float swing) {
@@ -38,12 +43,15 @@ public final class SpiritFirstPerson {
         // Edge flags belong to the item last drawn: switching away mid-draw must not replay a release on return.
         if (stack.getItem() != lastItem) { lastItem = stack.getItem(); wasHammer = wasSlam = wasBow = false; }
         float now = player.tickCount + partial;
+        viewTick = now;
         boolean left = arm == HumanoidArm.LEFT;
         int side = left ? -1 : 1;
+        equipShown = equip; spearPresence=1;
         // Vanilla's private applyItemArmTransform: the resting arm position, lowered while re-equipping.
         if (stack.is(OriItems.SPIRIT_BOW)) {
             pose.translate(side * .56f, -.52f + equip * -.6f, -.72f);
-            bowPose(pose, bow(player, stack, now), side, now);
+            bowShown = bow(player, stack, now);
+            equipShown = SpiritFirstPersonMotion.equipLowering(equip,bowShown.raise()>0);
             shown = Pose.REST;
             return true;
         }
@@ -51,9 +59,10 @@ public final class SpiritFirstPerson {
                 : stack.is(OriItems.SPIRIT_HAMMER) ? hammer(player, stack, now)
                 : stack.is(OriItems.SPIRIT_SPEAR) ? spear(player, stack, now, partial) : null;
         if (target == null) return false;
+        if (!stack.is(OriItems.SPIRIT_BLADE)) equipShown=SpiritFirstPersonMotion.equipLowering(equip,!target.equals(Pose.REST));
         shown = target;
         var sided = target.side(left);
-        pose.translate(side * .56f, -.52f + equip * -.6f, -.72f);
+        pose.translate(side * .56f, -.52f + equipShown * -.6f, -.72f);
         pose.translate(sided.x(), sided.y(), sided.z());
         pose.mulPose(Axis.YP.rotationDegrees(sided.yaw()));
         pose.mulPose(Axis.ZP.rotationDegrees(sided.roll()));
@@ -118,8 +127,11 @@ public final class SpiritFirstPerson {
         float cooldown = player.getCooldowns().getCooldownPercent(stack.getItem(), partial);
         if (observed.action == AnimationActionPayload.Action.SPEAR_THROW) {
             float elapsed = now - observed.actionAt * 20;
-            float settle = SpiritFirstPersonMotion.SPEAR_COIL_TICKS + SpiritFirstPersonMotion.SPEAR_THRUST_TICKS + 6;
-            if (elapsed >= 0 && (elapsed < settle || cooldown > 0)) return SpiritFirstPersonMotion.spearThrow(elapsed, cooldown);
+            float settle = SpiritFirstPersonMotion.SPEAR_FOLLOW_TICKS + SpiritFirstPersonMotion.SPEAR_RECOVER_TICKS;
+            if (elapsed >= 0 && (elapsed < settle || cooldown > 0)) {
+                spearPresence=SpiritFirstPersonMotion.spearPresence(elapsed,cooldown);
+                return SpiritFirstPersonMotion.spearThrow(elapsed);
+            }
         }
         return SpiritFirstPersonMotion.spearCarry();
     }
@@ -134,15 +146,18 @@ public final class SpiritFirstPerson {
         return new SpiritFirstPersonMotion.BowPose(0, 0, 0);
     }
 
-    /** ItemInHandRenderer's BOW case, weighted by the raise; the z-stretch is left out so the paws keep their shape. */
-    private static void bowPose(PoseStack pose, SpiritFirstPersonMotion.BowPose bow, int side, float now) {
-        float w = bow.raise(), f = bow.pull();
-        pose.translate(side * -.2785682f * w, .18344387f * w + .04f * bow.kick(), .15731531f * w - .16f * bow.kick());
-        pose.mulPose(Axis.XP.rotationDegrees(-13.935f * w));
-        pose.mulPose(Axis.YP.rotationDegrees(side * 35.3f * w));
-        pose.mulPose(Axis.ZP.rotationDegrees(side * -9.785f * w));
-        if (f > .1f) pose.translate(0, (float) Math.sin((now - bowStartedAt - .1f) * 1.3f) * (f - .1f) * .004f, 0);
-        pose.translate(0, 0, f * .04f);
-        pose.mulPose(Axis.YN.rotationDegrees(side * 45 * w));
+    /** Called only by the development bridge while collecting poses/state. */
+    public static java.util.Map<String,Object> diagnostics() {
+        if(owner == null)return java.util.Map.of();
+        var observed=SpiritAnimationEvents.of(owner);
+        return java.util.Map.of("item",lastItem==null?"none":lastItem.toString(),"playerTick",owner.tickCount,
+                "useTicks",owner.getTicksUsingItem(),"using",owner.isUsingItem(),"bow",bowShown,"pose",shown,
+                "action",observed.action==null?"none":observed.action.name(),"actionAt",observed.actionAt*20,
+                "hammerReleasedAt",hammerReleasedAt,
+                "timing",java.util.Map.of("now",viewTick,"bowStart",bowStartedAt,"bowRelease",bowReleasedAt,"spearPresence",spearPresence,
+                        "yaw",owner.getYRot(),"pitch",owner.getXRot(),"projectiles",owner.level().getEntitiesOfClass(cn.wwl.orimod.combat.SpiritSpear.class,
+                                owner.getBoundingBox().inflate(80),s->s.getOwner()==owner).stream().map(s->java.util.Map.of(
+                                "id",s.getId(),"age",s.tickCount,"distance",s.position().distanceTo(owner.getEyePosition()),
+                                "opacity",SpiritSpearView.opacity(s,s.position(),s.tickCount))).toList()));
     }
 }

@@ -27,6 +27,11 @@ public final class SpiritFirstPersonMotion {
     static float easeOut(float t) { t = Math.clamp(t, 0, 1); return 1 - (1 - t) * (1 - t); }
     static float easeIn(float t) { t = Math.clamp(t, 0, 1); return t * t; }
 
+    // Vanilla's attack-strength equip dip must not be added on top of a custom active action.
+    // In particular it pulls the bow nock outside the other arm's reach and the spear toward the camera.
+    // Actual item changes while idle retain vanilla's equip animation.
+    static float equipLowering(float vanilla, boolean active) { return active ? 0 : vanilla; }
+
     // Spirit Edge combo: 1 = forehand sweep toward the off side, 2 = backhand sweep back, 3 = overhead downward cut.
     // Poses are checked after the two-bone wrist fit: raw pitch alone can be cancelled by the wrist limit.
     // Pull the first cut sideways, keep the overhead tip farther away, then cut across/down through the hit window.
@@ -56,7 +61,7 @@ public final class SpiritFirstPersonMotion {
 
     // Hammer: lifted upright overhead, then slammed forward and down. Pitch moves the weapon along the view axis and
     // barely reads on screen, so the lift is mostly height and roll; pitching it back hid the head behind the camera.
-    private static final Pose HAMMER_RAISED = new Pose(-.12f, .30f, .08f, 18, 8, 22);
+    private static final Pose HAMMER_RAISED = new Pose(-.15f, .30f, -.10f, 0, 0, 65);
     private static final Pose HAMMER_STRUCK = new Pose(-.18f, -.10f, -.30f, -118, 0, 10);
     /** Held while plunging in an air slam: head down, ready to strike the ground. */
     private static final Pose HAMMER_PLUNGE = new Pose(-.14f, .04f, -.24f, -128, 0, 10);
@@ -64,7 +69,7 @@ public final class SpiritFirstPersonMotion {
 
     /** Winding up: {@code charge} 0..1 lifts the hammer; a full charge trembles slightly. */
     public static Pose hammerCharge(float charge, float time) {
-        var pose = Pose.REST.lerp(HAMMER_RAISED, easeOut(charge));
+        var pose = Pose.REST.lerp(HAMMER_RAISED, smooth(charge));
         return charge >= 1 ? pose.plus(.006f * (float) Math.sin(time * 37), .006f * (float) Math.sin(time * 29), 0) : pose;
     }
 
@@ -88,34 +93,33 @@ public final class SpiritFirstPersonMotion {
 
     /** Cancelled wind-up (released before full charge): lower back to rest. */
     public static Pose hammerLower(float elapsed, float charge) {
-        return Pose.REST.lerp(HAMMER_RAISED, easeOut(charge)).lerp(Pose.REST, smooth(elapsed / 5));
+        return Pose.REST.lerp(HAMMER_RAISED, smooth(charge)).lerp(Pose.REST, smooth(elapsed / 5));
     }
 
-    // Spear: carried level and pointing at the crosshair, drawn back beside the head, whipped forward, then re-forms.
-    // The coil stays clear of the near plane (a closer hand fills the view with the forearm).
-    private static final Pose SPEAR_CARRY = new Pose(-.04f, .14f, .02f, -84, 10, 0);
-    private static final Pose SPEAR_COIL = new Pose(.06f, .20f, .14f, -88, 2, -6);
-    private static final Pose SPEAR_THRUST = new Pose(-.16f, .12f, -.44f, -92, 12, 2);
-    public static final float SPEAR_COIL_TICKS = 5.5f, SPEAR_THRUST_TICKS = 3.5f;
+    // Right-click throws immediately on the server. This is the throw's follow-through, never a pre-throw charge.
+    private static final Pose SPEAR_CARRY = Pose.REST;
+    private static final Pose SPEAR_FOLLOW = new Pose(-.35f, .25f, -.30f, 0, 0, -35);
+    public static final float SPEAR_FOLLOW_TICKS = 3, SPEAR_LEAVE_TICKS = 2, SPEAR_RECOVER_TICKS = 5;
 
     public static Pose spearCarry() { return SPEAR_CARRY; }
 
-    /**
-     * {@code elapsed} ticks since the throw; {@code cooldown} 0..1 of the item cooldown left. After the thrust the
-     * (thrown) spear drops out of view and rises back as its cooldown ends.
-     */
-    public static Pose spearThrow(float elapsed, float cooldown) {
-        if (elapsed < SPEAR_COIL_TICKS) return SPEAR_CARRY.lerp(SPEAR_COIL, easeOut(elapsed / SPEAR_COIL_TICKS));
-        float thrust = elapsed - SPEAR_COIL_TICKS;
-        if (thrust < SPEAR_THRUST_TICKS) return SPEAR_COIL.lerp(SPEAR_THRUST, easeIn(thrust / SPEAR_THRUST_TICKS));
-        float after = thrust - SPEAR_THRUST_TICKS;
-        var settle = SPEAR_THRUST.lerp(SPEAR_CARRY, smooth(after / 6));
-        return settle.plus(0, -.75f * smooth(Math.min(1, after / 3)) * smooth(cooldown * 1.4f), 0);
+    /** Same local use event as the immediate server throw: forward flick, brief follow-through, return to the grip. */
+    public static Pose spearThrow(float elapsed) {
+        if (elapsed < 1.5f) return SPEAR_CARRY.lerp(SPEAR_FOLLOW, smooth(elapsed / 1.5f));
+        if (elapsed < SPEAR_FOLLOW_TICKS) return SPEAR_FOLLOW;
+        return SPEAR_FOLLOW.lerp(SPEAR_CARRY, smooth((elapsed-SPEAR_FOLLOW_TICKS)/SPEAR_RECOVER_TICKS));
+    }
+
+    /** Dissolve within two ticks of use, even before the cooldown packet arrives; re-form at the fixed grip. */
+    public static float spearPresence(float elapsed,float cooldown) {
+        if (elapsed < SPEAR_LEAVE_TICKS) return 1-smooth(elapsed/SPEAR_LEAVE_TICKS);
+        if (elapsed < SPEAR_FOLLOW_TICKS+SPEAR_RECOVER_TICKS) return 0;
+        return 1-smooth(cooldown/.25f);
     }
 
     /**
-     * Bow: vanilla's own draw pose (its final -45 degree yaw is what aims the arrow at the crosshair), weighted by
-     * {@code raise} for the lift and the lowering, with {@code pull} on vanilla's curve and a forward {@code kick} on release.
+     * Bow: side/front assembly with two fixed-length arm chains. Raise controls the lift, pull follows vanilla's
+     * curve, and kick moves the assembly forward on release.
      */
     public record BowPose(float raise, float pull, float kick) { }
     public static final float BOW_RAISE_TICKS = 4, BOW_RECOIL_TICKS = 6;

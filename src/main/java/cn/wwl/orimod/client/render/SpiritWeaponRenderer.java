@@ -55,6 +55,16 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
         float pulse = .88f + .12f * (float) Math.sin(t * 2.4f);
         float charge = charge(stack);
         var pose = poses.last();
+        // First-person throw only: keep the IK grip fixed while the energy vanishes/re-forms.
+        var local=Minecraft.getInstance().player;
+        if(stack.is(OriItems.SPIRIT_SPEAR) && local!=null && cn.wwl.orimod.spirit.SpiritData.isSpirit(local)
+                && local.getMainHandItem().is(stack.getItem())
+                && SpiritFirstPersonGrip.mainHandView(context,local.getMainArm())) {
+            float presence=SpiritFirstPerson.spearPresence();
+            if(presence<.001f)return;
+            pose=pose.copy();pose.pose().translate(.44f,.44f,.5f).scale(presence).translate(-.44f,-.44f,-.5f);
+            pose.pose().normal(pose.normal());
+        }
         // Fetch the consumer per call: in the GUI's immediate buffer source, asking for another render type ends the
         // previous builder, so holding two consumers at once crashes ("Not building!").
         java.util.function.Supplier<com.mojang.blaze3d.vertex.VertexConsumer> streakS = () -> buffers.getBuffer(SpiritEnergy.streak());
@@ -66,7 +76,10 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
         // Icons are tiny: thicker light so the shape reads in the hotbar and inventory.
         float w = context == ItemDisplayContext.GUI ? 1.8f : 1f;
         if (stack.is(OriItems.SPIRIT_BOW)) {
-            float pull = bowPull(stack), stage = SpiritWeaponShape.pullStage(pull);
+            var player=Minecraft.getInstance().player;
+            boolean fp=player!=null&&SpiritFirstPersonGrip.mainHandView(context,player.getMainArm())
+                    &&cn.wwl.orimod.spirit.SpiritData.isSpirit(player)&&player.getMainHandItem().is(stack.getItem());
+            float pull = fp?SpiritFirstPerson.bowShown().pull():bowPull(stack), stage = SpiritWeaponShape.pullStage(pull);
             Vector3f previous = SpiritWeaponShape.bowLimb(-1);
             for (int i = 1; i <= 20; i++) {
                 float from = -1 + (i - 1) / 10f, to = -1 + i / 10f;
@@ -78,7 +91,7 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
                 curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .065f * w, CORE, .88f + stage * .12f);
                 previous = next;
             }
-            var string = SpiritWeaponShape.bowString(pull);
+            var string = SpiritWeaponShape.bowString(pull,fp);
             for (float end : new float[]{-1, 1}) {
                 var tip = SpiritWeaponShape.bowLimb(end);
                 var side = new Vector3f(tip).sub(string).cross(0, 0, 1).normalize();

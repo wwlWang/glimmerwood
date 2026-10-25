@@ -13,6 +13,8 @@ public final class SpiritSpearRenderer extends EntityRenderer<SpiritSpear> {
     public SpiritSpearRenderer(EntityRendererProvider.Context context) { super(context); }
 
     @Override public void render(SpiritSpear spear, float yaw, float partial, PoseStack poses, MultiBufferSource buffers, int light) {
+        float opacity=SpiritSpearView.opacity(spear,spear.getPosition(partial),spear.tickCount+partial);
+        if(opacity<=0)return;
         var v = spear.getDeltaMovement();
         if (v.lengthSqr() < 1e-6) return;
         var dir = new Vector3f((float) v.x, (float) v.y, (float) v.z).normalize();
@@ -21,9 +23,9 @@ public final class SpiritSpearRenderer extends EntityRenderer<SpiritSpear> {
         var tip = new Vector3f(dir).mul(.55f).add(0, .15f, 0);
         var tail = new Vector3f(dir).mul(-1.1f).add(0, .15f, 0);
         float pulse = .9f + .1f * (float) Math.sin(SpiritEnergy.time() * 18);
-        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .34f, side, SpiritWeaponRenderer.MID, .35f * pulse);
-        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .12f, side, SpiritWeaponRenderer.CORE, .95f);
-        SpiritEnergy.orb(buffers.getBuffer(SpiritEnergy.glow()), pose, new Vector3f(dir).mul(.4f).add(0, .15f, 0), .28f, SpiritWeaponRenderer.MID, .5f * pulse);
+        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .34f, side, SpiritWeaponRenderer.MID, .35f * pulse * opacity);
+        SpiritEnergy.beam(buffers.getBuffer(SpiritEnergy.streak()), pose, tail, tip, .12f, side, SpiritWeaponRenderer.CORE, .95f * opacity);
+        SpiritEnergy.orb(buffers.getBuffer(SpiritEnergy.glow()), pose, new Vector3f(dir).mul(.4f).add(0, .15f, 0), .28f, SpiritWeaponRenderer.MID, .5f * pulse * opacity);
         super.render(spear, yaw, partial, poses, buffers, light);
     }
 

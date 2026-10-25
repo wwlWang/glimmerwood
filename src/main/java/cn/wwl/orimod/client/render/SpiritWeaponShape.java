@@ -14,7 +14,10 @@ final class SpiritWeaponShape {
                 BOW_Y + (across - back) * .7071068f, .5f);
     }
     static Vector3f bowString(float pull) {
-        float back = .30f + .30f * pullStage(pull);
+        return bowString(pull,false);
+    }
+    static Vector3f bowString(float pull,boolean continuous) {
+        float back = .30f + .30f * (continuous?Math.clamp(pull,0,1):pullStage(pull));
         return new Vector3f(BOW_X + back * .7071068f, BOW_Y - back * .7071068f, .5f);
     }
 

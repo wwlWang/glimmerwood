@@ -7,9 +7,19 @@ import cn.wwl.orimod.item.OriItems;
 import org.joml.Vector3f;
 
 /** Contact contract in centred item coordinates, before display transforms. Left hands reflect the complete
- * transformed basis, not a single handle vector. Secondary contacts are reserved for the bow/hammer review. */
+ * transformed basis, not a single handle vector. The bow string contact is driven continuously by SpiritWeaponRig. */
 final class SpiritFirstPersonGrip {
     enum Kind { EMPTY, BLOCK, ITEM, BLADE, BOW, HAMMER, SPEAR, ARCHITECTURE }
+    static boolean newRig(Kind kind) {
+        return kind == Kind.EMPTY || kind == Kind.BLOCK || kind == Kind.BLADE
+                || kind == Kind.BOW || kind == Kind.HAMMER || kind == Kind.SPEAR;
+    }
+    /** Item identity alone is insufficient when the same weapon is also equipped in the off hand. */
+    static boolean mainHandView(net.minecraft.world.item.ItemDisplayContext context, net.minecraft.world.entity.HumanoidArm mainArm) {
+        return context == (mainArm == net.minecraft.world.entity.HumanoidArm.LEFT
+                ? net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                : net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+    }
     record Contact(Kind kind,Vector3f primary,Vector3f axis,Vector3f palmNormal) { }
     /** Pick the viewer-facing, inner side after the complete item transform. Vanilla's left
      * block display has a half-turn, so mirroring an untransformed point is incorrect. */
@@ -29,6 +39,7 @@ final class SpiritFirstPersonGrip {
         if(!stack.isEmpty())SpiritItemGrip.local(stack,point,axis);
         // Support a cube at its near lower edge, where the paw is visible, rather than buried at its centre.
         if(kind==Kind.BLOCK)point.set(-.52f,.42f,0);
+        if(kind==Kind.SPEAR)point.set(SpiritWeaponRig.grip(kind));
         return new Contact(kind,point,axis.normalize(),new Vector3f(0,0,1));
     }
 }

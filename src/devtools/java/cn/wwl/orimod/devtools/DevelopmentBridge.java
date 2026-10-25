@@ -351,6 +351,7 @@ public final class DevelopmentBridge {
             case "record_pose" -> {
                 poses.clear(); recordingPose = true;
                 cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.recording(true);
+                cn.wwl.orimod.client.render.SpiritHands.DIAGNOSTICS.isolateWeapon(action.has("isolateWeapon") && action.get("isolateWeapon").getAsBoolean());
             }
             case "save_pose" -> {
                 recordingPose = false;
@@ -874,6 +875,7 @@ public final class DevelopmentBridge {
             poses.add(Map.of("frame", frames, "nanos", now, "tick", mc.player.tickCount,
                     "onGround", mc.player.onGround(), "animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(mc.player),
                     "arms",cn.wwl.orimod.client.render.SpiritHands.diagnostics(),
+                    "firstPerson",cn.wwl.orimod.client.render.SpiritFirstPerson.diagnostics(),
                     "combat",mc.player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW),
                     "gameTime",mc.level.getGameTime()+mc.getTimer().getGameTimeDeltaPartialTick(false)));
         }

@@ -11,9 +11,19 @@ class SpiritHandDiagnosticsTest {
     @Test
     void shippingRendererDefaultsToNoMeasurements() {
         assertFalse(SpiritHands.DIAGNOSTICS.enabled());
+        assertFalse(SpiritHands.DIAGNOSTICS.isolateWeapon());
         var gate = new SpiritHandDiagnostics();
         for (int i = 0; i < 100; i++) gate.frameComplete();
         assertFalse(gate.enabled());
+    }
+
+    @Test
+    void isolatedItemViewIsRecordingOnlyAndRestoresOnSaveOrDisconnect() {
+        var gate=new SpiritHandDiagnostics();
+        gate.isolateWeapon(true);assertFalse(gate.isolateWeapon());
+        gate.recording(true);gate.isolateWeapon(true);assertTrue(gate.isolateWeapon());
+        gate.recording(false);assertFalse(gate.isolateWeapon());
+        gate.recording(true);gate.isolateWeapon(true);gate.reset();assertFalse(gate.isolateWeapon());
     }
 
     @Test

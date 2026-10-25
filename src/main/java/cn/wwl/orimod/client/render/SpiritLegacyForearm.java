@@ -5,7 +5,7 @@ import com.wf.gemrender.gltf.MeshGeometry;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-/** Retained for weapon classes pending the next B3 review. Curves from the gripping palm toward a visible forearm at the lower corner of the view. */
+/** Remaining ordinary items, vanilla tools, architecture and off-hand weapon items. The reviewed main-hand spirit weapons use SpiritArmRig. */
 final class SpiritLegacyForearm {
     private final PoseStack.Pose pose;
     private final float centerX, centerZ;

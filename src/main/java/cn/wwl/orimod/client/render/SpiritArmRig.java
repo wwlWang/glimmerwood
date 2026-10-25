@@ -34,20 +34,29 @@ public final class SpiritArmRig {
         return solve(left,requested,requestedRotation,new Vector3f(left?.03425f:-.03425f,-.09f,.008f));
     }
     public static Frame solve(boolean left,Vector3f requested,Quaternionf requestedRotation,Vector3f wristSocket) {
+        return solve(left,requested,requestedRotation,wristSocket,false);
+    }
+    private static Frame solve(boolean left,Vector3f requested,Quaternionf requestedRotation,Vector3f wristSocket,boolean twoHand) {
+        return solve(left,requested,requestedRotation,wristSocket,twoHand,.66f);
+    }
+    private static Frame solve(boolean left,Vector3f requested,Quaternionf requestedRotation,Vector3f wristSocket,boolean twoHand,float outside) {
         float side=left?-1:1;
-        var shoulder=new Vector3f(side*.50f,-.66f,-.22f);
+        // A drawn bow brings both shoulders inward; bone lengths and the elbow pole remain unchanged.
+        var shoulder=new Vector3f(side*(twoHand?.30f:.50f),twoHand?-.60f:-.66f,-.22f);
         var palm=new Vector3f(requested);
         // Keep the hand at the lower edge; the weapon tip can still sweep above it.
-        palm.z=Math.clamp(palm.z,-.84f,-.44f);
-        palm.x=side*Math.clamp(side*palm.x,.34f,.66f);
+        palm.z=Math.clamp(palm.z,-.84f,twoHand?-.31f:-.44f);
+        palm.x=twoHand?Math.clamp(palm.x,-.66f,.66f):side*Math.clamp(side*palm.x,.34f,outside);
         float halfHeight=-palm.z*.7002075f; // vanilla hand projection, vertical FOV 70
-        palm.y=Math.clamp(palm.y,-halfHeight*1.15f,-halfHeight*.55f);
+        palm.y=Math.clamp(palm.y,-halfHeight*1.15f,-halfHeight*(twoHand?.35f:.55f));
         var reach=new Vector3f(palm).sub(shoulder);
-        float maximum=UPPER+FOREARM-WRIST_OFFSET-.005f;
+        float maximum=UPPER+FOREARM-(twoHand||outside>.66f?.02f:WRIST_OFFSET+.005f);
         if(reach.length()>maximum)palm.set(shoulder).add(reach.normalize(maximum));
         // Solve bones once. Fit the complete palm basis to the wrist; the weapon follows that
         // small correction rather than stretching the forearm or iterating unstable wrist rolls.
         var wrist=new Vector3f(palm).add(new Vector3f(wristSocket).mul(PAW_SCALE));
+        if((twoHand||outside>.66f)&&wrist.distanceSquared(shoulder)>(UPPER+FOREARM-.001f)*(UPPER+FOREARM-.001f))
+            wrist.sub(shoulder).normalize(UPPER+FOREARM-.001f).add(shoulder);
         var elbow=new Vector3f();elbow(shoulder,wrist,side,elbow);
         var neutral=basis(new Vector3f(wrist).sub(elbow).normalize());
         var rotation=limited(neutral,requestedRotation);
@@ -60,9 +69,18 @@ public final class SpiritArmRig {
         return surface(left,target,rotation,new Vector3f(left?.03425f:-.03425f,-.09f,.008f));
     }
     static Frame surface(boolean left,Vector3f target,Quaternionf rotation,Vector3f socket) {
-        var request=new Vector3f(target);var frame=solve(left,request,rotation,socket);
+        return surface(left,target,rotation,socket,false);
+    }
+    static Frame surface(boolean left,Vector3f target,Quaternionf rotation,Vector3f socket,boolean twoHand) {
+        return surface(left,target,rotation,socket,twoHand,.66f);
+    }
+    static Frame toolSurface(boolean left,Vector3f target,Quaternionf rotation) {
+        return surface(left,target,rotation,new Vector3f(left?.03425f:-.03425f,-.09f,.008f),false,.86f);
+    }
+    private static Frame surface(boolean left,Vector3f target,Quaternionf rotation,Vector3f socket,boolean twoHand,float outside) {
+        var request=new Vector3f(target);var frame=solve(left,request,rotation,socket,twoHand,outside);
         for(int i=0;i<8&&frame.palm().distanceSquared(target)>1e-10f;i++) {
-            request.add(new Vector3f(target).sub(frame.palm()));frame=solve(left,request,rotation,socket);
+            request.add(new Vector3f(target).sub(frame.palm()));frame=solve(left,request,rotation,socket,twoHand,outside);
         }
         return frame;
     }
