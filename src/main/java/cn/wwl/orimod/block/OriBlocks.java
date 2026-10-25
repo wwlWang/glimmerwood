@@ -127,8 +127,9 @@ public final class OriBlocks {
         OriItems.ITEMS.registerSimpleBlockItem(BASH_ANCHOR);
         OriItems.ITEMS.registerSimpleBlockItem(GRAPPLE_FLOWER);
         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
+        OriItems.ITEMS.register("keystone_door", () -> new cn.wwl.orimod.item.KeystoneDoorItem(KEYSTONE_DOOR.get(), new net.minecraft.world.item.Item.Properties()));
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
-        for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, KEYSTONE_DOOR, MAP_STONE, SPIRIT_SAND,
+        for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, MAP_STONE, SPIRIT_SAND,
                 GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
                 SPIRIT_LOG, GINSO_WATER_HEART, GINSO_WOOD, GINSO_ROOT_LIP, GINSO_LANDING, GINSO_FUNGUS, GINSO_LEAVES, GINSO_CANOPY, GINSO_LEAF_CORE, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
