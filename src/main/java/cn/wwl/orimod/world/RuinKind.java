@@ -17,7 +17,10 @@ public enum RuinKind {
 
     public final String id;
     public final int abilities;
-    private Layout layout;
+    private final java.util.Map<Integer, Layout> layouts = new java.util.HashMap<>();
+    public int currentVersion() { return this == CAVE ? 1 : 0; }
+    public ResourceLocation template(int version) { checkVersion(version); return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + id + (version == 0 ? "" : "_v" + version)); }
+    private void checkVersion(int version) { if (version < 0 || version > currentVersion()) throw new IllegalArgumentException("Unsupported ruin layout " + id + ":" + version); }
     RuinKind(String id, int abilities) { this.id = id; this.abilities = abilities; }
     public ResourceLocation location() { return ResourceLocation.fromNamespaceAndPath("orimod", id); }
     public Component title() { return Component.translatable("ruin.orimod." + id); }
@@ -25,9 +28,11 @@ public enum RuinKind {
         for (var kind : values()) if (kind.id.equals(id)) return kind;
         throw new IllegalArgumentException("Unknown ruin " + id);
     }
-    public synchronized Layout layout() {
-        if (layout != null) return layout;
-        String path = "/orimod/ruin_layout/" + id + ".json";
+    public Layout layout() { return layout(0); }
+    public synchronized Layout layout(int version) {
+        checkVersion(version);
+        if (layouts.containsKey(version)) return layouts.get(version);
+        String path = "/orimod/ruin_layout/" + id + (version == 0 ? "" : "_v" + version) + ".json";
         try (var stream = RuinKind.class.getResourceAsStream(path)) {
             if (stream == null) throw new IllegalStateException("Missing layout " + path);
             var root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -82,11 +87,12 @@ public enum RuinKind {
                         positions(b.getAsJsonArray("lanterns")), positions(b.getAsJsonArray("platforms")), positions(b.getAsJsonArray("escape")),
                         net.minecraft.core.Direction.byName(b.get("facing").getAsString())));
             }
-            layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
+            var layout = new Layout(BlockPos.containing(vector(root.getAsJsonArray("size"))),
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
                     List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret, List.copyOf(bridges), root.has("beetles")?positions(root.getAsJsonArray("beetles")):List.of(),
                     root.has("legacy_map_stone")?BlockPos.containing(vector(root.getAsJsonArray("legacy_map_stone"))):mapStone);
+            layouts.put(version, layout);
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
     }

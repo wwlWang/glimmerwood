@@ -57,17 +57,17 @@ public final class SpiritChallenge {
         if (!SpiritData.isSpirit(player)) return "form";
         if ((player.getData(SpiritData.ABILITIES) & kind.abilities) != kind.abilities) return "abilities";
         if (kind == RuinKind.CAVE && player.getInventory().items.stream().noneMatch(stack -> stack.is(OriItems.SPIRIT_BLADE))) return "blade";
-        var placement = RuinPlacement.atShrine(kind, shrine, player.level().getBlockState(shrine));
-        if (!routeValid(player.serverLevel(), player, kind, placement)) return "damaged";
+        var site = RuinLayouts.atShrine(player.serverLevel(), kind, shrine);
+        if (!routeValid(player.serverLevel(), player, site.layout(), site.placement())) return "damaged";
         return "";
     }
 
-    private static boolean routeValid(ServerLevel level, ServerPlayer player, RuinKind kind, RuinPlacement placement) {
-        for (var anchor : kind.layout().critical()) {
+    private static boolean routeValid(ServerLevel level, ServerPlayer player, RuinKind.Layout layout, RuinPlacement placement) {
+        for (var anchor : layout.critical()) {
             var pos = placement.block(anchor.position());
             if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(BuiltInRegistries.BLOCK.get(anchor.block()))) return false;
         }
-        for (var clearance : kind.layout().clearances()) {
+        for (var clearance : layout.clearances()) {
             var from = placement.block(clearance.from()); var to = placement.block(clearance.to());
             if (!level.hasChunkAt(from) || !level.hasChunkAt(to)
                     || !level.hasChunkAt(new BlockPos(from.getX(), from.getY(), to.getZ()))
@@ -75,8 +75,8 @@ public final class SpiritChallenge {
             var bounds = placement.clearance(clearance).deflate(.001);
             for (var shape : level.getBlockCollisions(player, bounds)) if (!shape.isEmpty()) return false;
         }
-        if (!safe(level, player, placement.point(kind.layout().safe()))) return false;
-        for (var point : kind.layout().checkpoints())
+        if (!safe(level, player, placement.point(layout.safe()))) return false;
+        for (var point : layout.checkpoints())
             if (!safe(level, player, placement.point(point.position()))) return false;
         return true;
     }
@@ -102,15 +102,15 @@ public final class SpiritChallenge {
         if (!(player.level().getBlockState(shrine).getBlock() instanceof RuinShrineBlock block)) return;
         String problem = requirement(player, shrine, block.kind);
         if (!problem.isEmpty()) { offer(player, shrine, block.kind); return; }
-        var placement = RuinPlacement.atShrine(block.kind, shrine, player.level().getBlockState(shrine));
-        var s = new ChallengeSession(block.kind, shrine, placement, player.level().dimension(), player.level().getGameTime());
-        s.baseline = actionCount(player, s.kind.layout().checkpoints().getFirst().action());
+        var site = RuinLayouts.atShrine(player.serverLevel(), block.kind, shrine);
+        var s = new ChallengeSession(block.kind, site.layout(), shrine, site.placement(), player.level().dimension(), player.level().getGameTime());
+        s.baseline = actionCount(player, s.layout.checkpoints().getFirst().action());
         player.setData(SpiritData.CHALLENGE_RECOVERY, new ChallengeRecovery(s.dimension.location().toString(),
-                BlockPos.containing(s.placement.point(s.kind.layout().safe()))));
+                BlockPos.containing(s.placement.point(s.layout.safe()))));
         s.ghost = ghost(player, s.key());
         SESSIONS.put(player.getUUID(), s);
         player.setData(SpiritData.CHALLENGE_ACTIVE, true);
-        returnSafely(player, player.serverLevel(), s.placement.point(s.kind.layout().safe()));
+        returnSafely(player, player.serverLevel(), s.placement.point(s.layout.safe()));
         player.displayClientMessage(Component.translatable("challenge.orimod.started", s.kind.title(), Component.keybind("key.orimod.panel")), false);
     }
 
@@ -136,7 +136,7 @@ public final class SpiritChallenge {
         if (ownsTarget(player, target)) complete(player, session(player));
     }
     private static void spawnTarget(ServerPlayer player, ChallengeSession s) {
-        var point = s.placement.point(s.kind.layout().checkpoints().get(s.checkpoint).position());
+        var point = s.placement.point(s.layout.checkpoints().get(s.checkpoint).position());
         var target = OriEntities.PRACTICE_TARGET.get().create(player.serverLevel());
         if (target == null) { finish(player, "target", true); return; }
         target.owner = player.getUUID(); target.session = s.id;
@@ -155,17 +155,17 @@ public final class SpiritChallenge {
         long elapsed = player.level().getGameTime() - s.started;
         if (elapsed >= LIMIT) { finish(player, "timeout", true); return; }
         Vec3 relative = s.placement.local(player.position());
-        var size = s.kind.layout().size();
+        var size = s.layout.size();
         if (relative.x < -2 || relative.z < -2 || relative.x > size.getX() + 2 || relative.z > size.getZ() + 2
                 || relative.y < 1 || cn.wwl.orimod.block.OriFluids.inWater(player)) { finish(player, "fall", true); return; }
-        if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.kind, s.placement)) { finish(player, "damaged", true); return; }
+        if (elapsed % 20 == 0 && !routeValid(player.serverLevel(), player, s.layout, s.placement)) { finish(player, "damaged", true); return; }
         if (ChallengeGhost.shouldRecord(elapsed, s.trace.size())) s.trace.add(relative);
         var ghostAt = ChallengeGhost.at(s.ghost, elapsed);
         if (ghostAt != null && elapsed % ChallengeGhost.STEP == 0) {
             var g = s.placement.point(ghostAt);
             cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.RACE_GHOST, g.x, g.y, g.z, null);
         }
-        var checkpoint = s.kind.layout().checkpoints().get(s.checkpoint);
+        var checkpoint = s.layout.checkpoints().get(s.checkpoint);
         Vec3 destination = s.placement.point(checkpoint.position());
         if (!checkpoint.action().equals("blade") && landed(player, destination)) {
             // R88: the playtest could never clear a pad: landing only counted with the exact suggested action count
@@ -174,21 +174,21 @@ public final class SpiritChallenge {
             if (actionCount(player, checkpoint.action()) - s.baseline < checkpoint.count()) s.improvised++;
             cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, destination.x, destination.y + .5, destination.z, player);
             s.checkpoint++;
-            if (s.checkpoint >= s.kind.layout().checkpoints().size()) { complete(player, s); return; }
-            var next = s.kind.layout().checkpoints().get(s.checkpoint);
+            if (s.checkpoint >= s.layout.checkpoints().size()) { complete(player, s); return; }
+            var next = s.layout.checkpoints().get(s.checkpoint);
             s.baseline = actionCount(player, next.action());
             if (next.action().equals("blade")) spawnTarget(player, s);
         }
         if (elapsed % 10 == 0) {
-            var next = s.kind.layout().checkpoints().get(s.checkpoint);
+            var next = s.layout.checkpoints().get(s.checkpoint);
             var point = s.placement.point(next.position());
             cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.ROUTE_MARKER, point.x, point.y + .2, point.z, player);
-            player.displayClientMessage(Component.translatable("challenge.orimod.status", s.checkpoint + 1, s.kind.layout().checkpoints().size(),
+            player.displayClientMessage(Component.translatable("challenge.orimod.status", s.checkpoint + 1, s.layout.checkpoints().size(),
                     Component.translatable("challenge.orimod.action." + next.action()), (LIMIT - elapsed + 19) / 20), true);
         }
         if (s.target != null) {
             var target = player.serverLevel().getEntity(s.target);
-            var targetPoint = s.placement.point(s.kind.layout().checkpoints().get(s.checkpoint).position());
+            var targetPoint = s.placement.point(s.layout.checkpoints().get(s.checkpoint).position());
             if (!(target instanceof PracticeTarget crystal) || !s.id.equals(crystal.session) || target.position().distanceToSqr(targetPoint) > 4)
                 finish(player, "target", true);
         }
@@ -239,7 +239,7 @@ public final class SpiritChallenge {
         cleanup(player, s);
         var level = player.server.getLevel(s.dimension);
         if (teleport && player.isAlive() && level != null && player.level() == level)
-            returnSafely(player, level, s.placement.point(s.kind.layout().safe()));
+            returnSafely(player, level, s.placement.point(s.layout.safe()));
         if (player.isAlive() && !reason.equals("death")) player.displayClientMessage(Component.translatable("challenge.orimod.ended." + reason), false);
     }
 

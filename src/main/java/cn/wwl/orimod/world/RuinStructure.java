@@ -22,12 +22,14 @@ public final class RuinStructure extends Structure {
     public RuinStructure(StructureSettings settings, RuinKind kind) { super(settings); this.kind = kind; }
 
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
-        if(GreatTreeSites.reserved(context.randomState(),context.chunkPos().getMiddleBlockX(),context.chunkPos().getMiddleBlockZ(),56))return Optional.empty();
-        if(GinsoStructure.reserved(context,56))return Optional.empty();
-        var layout = kind.layout();
+        int version = kind.currentVersion();
+        var layout = kind.layout(version);
+        int reservation = version == 0 ? 56 : (int)Math.ceil(Math.hypot(layout.size().getX()-8,layout.size().getZ()-8));
+        if(GreatTreeSites.reserved(context.randomState(),context.chunkPos().getMiddleBlockX(),context.chunkPos().getMiddleBlockZ(),reservation))return Optional.empty();
+        if(GinsoStructure.reserved(context,reservation))return Optional.empty();
         int x = context.chunkPos().getMinBlockX(), z = context.chunkPos().getMinBlockZ();
         var rotation = Rotation.getRandom(context.random());
-        var footprint = RuinPlacement.atMinimum(kind, new BlockPos(x, 0, z), rotation);
+        var footprint = RuinPlacement.atMinimum(layout, new BlockPos(x, 0, z), rotation);
         var entryColumn = BlockPos.containing(footprint.point(layout.entry()));
         // Reject impossible biome columns before expensive noise sampling. Check every possible
         // final entry quart-height, so this cannot reject a start the vanilla biome check accepts.
@@ -50,23 +52,28 @@ public final class RuinStructure extends Structure {
         for (var sample : footprintPoints) {
             int y = samples.height(sample);
             min = Math.min(min, y); max = Math.max(max, y);
-            if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
+            if (version == 0 ? !RuinSiteRules.footprintOk(min, max) : !RuinSiteRules.surfaceInRange(y)) return Optional.empty();
         }
         // Include the ground immediately outside the doorway. Surface stairs cover
         // the entire accepted four-block drop; cave stairs descend from it to the buried doorway.
-        var approach = RuinApproachPiece.doorway(kind, footprint);
+        var approach = RuinApproachPiece.doorway(kind, layout, footprint);
+        int entryMin=Integer.MAX_VALUE,entryMax=Integer.MIN_VALUE;
         for (int dx = -2; dx <= 2; dx++) {
             var sample = approach.block(new BlockPos(dx, 0, -1));
             int height = samples.height(sample);
             min = Math.min(min, height); max = Math.max(max, height);
-            if (!RuinSiteRules.footprintOk(min, max)) return Optional.empty();
+            entryMin=Math.min(entryMin,height);entryMax=Math.max(entryMax,height);
+            if (version == 0 ? !RuinSiteRules.footprintOk(min, max) : !RuinSiteRules.footprintOk(entryMin,entryMax)) return Optional.empty();
         }
         // The cave altar's roof sits at its doorway level: bury it under the lowest sampled ground so no flat
         // deepslate plate shows; the approach stairs descend at most MAX_SLOPE + CAVE_COVER (< MAX_APPROACH_DELTA).
         int surface = kind == RuinKind.CAVE ? min - RuinSiteRules.CAVE_COVER : max;
+        // A buried vault may sit below a hill: only the doorway needs a gentle slope.
+        // Keep the highest template roof at least CAVE_COVER below the lowest terrain sample.
+        if (version > 0) surface -= layout.size().getY()-1-layout.surfaceY();
         var origin = footprint.origin().atY(surface - layout.surfaceY());
         var placement = new RuinPlacement(origin, rotation);
-        var doorway = RuinApproachPiece.doorway(kind, placement);
+        var doorway = RuinApproachPiece.doorway(kind, layout, placement);
         int[] terrain = new int[RuinApproachPiece.WIDTH * RuinApproachPiece.DEPTH];
         for (int dx = -2; dx <= 2; dx++) for (int dz = -9; dz <= -1; dz++) {
             var sample = doorway.block(new BlockPos(dx, 0, dz));
@@ -78,11 +85,14 @@ public final class RuinStructure extends Structure {
         if (!context.validBiome().test(context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(entry.getX()), QuartPos.fromBlock(entry.getY()),
                 QuartPos.fromBlock(entry.getZ()), context.randomState().sampler()))) return Optional.empty();
         if (!samples.dry()) return Optional.empty();
+        if (version > 0 && !GinsoGenerationGuard.checkBounds(context.randomState(),placement.blocks(BlockPos.ZERO,layout.size().offset(-1,-1,-1))).allowed()) return Optional.empty();
         if (!RuinSiteRules.fitsWorld(origin.getY(), layout.size().getY(),
                 context.heightAccessor().getMinBuildHeight(), context.heightAccessor().getMaxBuildHeight())) return Optional.empty();
         return Optional.of(new GenerationStub(entry, builder -> {
-            builder.addPiece(new RuinPiece(context.structureTemplateManager(), kind, placement));
-            builder.addPiece(new RuinApproachPiece(doorway, terrain));
+            long profileStart = Boolean.getBoolean("orimod.profileRuins") ? System.nanoTime() : 0;
+            builder.addPiece(new RuinPiece(context.structureTemplateManager(), kind, placement, version));
+            if (profileStart != 0) cn.wwl.orimod.OriMod.LOGGER.info("RUIN_TEMPLATE kind={} version={} ms={}",kind.id,version,(System.nanoTime()-profileStart)/1e6);
+            builder.addPiece(new RuinApproachPiece(doorway, terrain,kind==RuinKind.CAVE && version>0));
         }));
     }
     private static final class TerrainSamples {

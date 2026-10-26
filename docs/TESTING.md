@@ -1,5 +1,26 @@
 # 回归测试
 
+## C cave_altar 美术 v002 返修
+
+最终补光验证：`evidence/playtest-c-cave-gallery-light-v001/full.log`，**1670 JUnit / 1073 GameTest，0失败/错误/跳过**，5m44s正常退出。`walkable_block_light`追加起跳台三格邻域及花本体/六邻格门槛。原模板RED仅此1项失败（49个起跳周边站位全部<7）；修后定向13/7全绿。去除所有容器的真实块光：起跳最低7/平均9.612、花最低11/平均11.429，画廊平均7.179；其余厅室≥1、焦点≥7。全量与定向的15行光照统计完全一致。固定灯不占中央抓钩线；四朝向真实抓钩、寻路、钥石、多方块、含水层200tick与旧档冻结照旧全过。新版生成器--check复现，旧版两个SHA不变。
+
+以下为这次补光前的已审记录：
+
+`evidence/playtest-c-cave-v002/full-05.log`：**1670 JUnit / 1073 GameTest，零失败/跳过**，5m9s正常退出。新增 `sparseRootsAreContinuousAttachedAndTheirKnotsDoNotTile` 校验7条根逐格连续、接地接顶、原805根木至少减60%、每根≤2结点且间距≥4；`cave_rebuild.walkable_block_light` 移除可打碎的全部容器，等实际光照160tick，半格精度扫描站立面，入口/九个房间光照≥1，神龛/地图/祭坛/门三格邻域≥7。用的是 `LightLayer.BLOCK`，不把天光计入。数值表见 `light-table.csv/json`。
+
+full-01保留四朝向真实寻路失败（新楼梯末端被自身壳体封住），full-02保留22个暗站位（模板分片验证时跨区块地衣依附丢失）；修壳体出口及地衣同列竖向依附后全绿。旧版资源冻结、四朝向多方块/路线/抓钩/钥石门、200tick含水层不渗、旧生成器和Python12项检查照旧通过。旧模板在full-03出现一次4270.323ms写片离群值，完整保留，不据此宣称新版比旧版快；自然生成与离线冷NBT的计时分开记录。
+
+
+## C cave_altar LayoutVersion 1（历史首版，工程已审）
+
+`evidence/playtest-c-cave-v001/full-final-03.log`：**1669 JUnit / 1072 GameTest，0失败/错误/跳过**，4m59s正常结束；`junit-full-final-03.zip`、`gametest-full-final-03.xml`留存原始结果。相对e623678新增12项JUnit、6项GameTest。旧cave模板与契约SHA-256在生产修改前固定，缺LayoutVersion仍0；原路线、光桥、秘密和冻结测试断言未改。
+
+`CaveAltarLayoutGameTests`在四朝向逆序分块生成，校验核心BE与每个部件的offset/facing/归属、地图石新布局统计2格/2钥石/1祭坛、九格门；使用0.6×1.8体型、半格站位、全步幅头顶扫掠证明入口到祭坛/神龛/地图石/西钥石可达，关门宝库不可达、插两钥石后可达。东钥石先验证实际目标选择/视线与不放大的6格范围，再运行服务端抓钩并由假客户端消费MovementState.velocity，验证落台到钥石步行可达。所有远场区块自持票，成功/异常均撤销。
+
+自然截图发现含水层穿过穹顶和入口的未写格，原始失败保留。`vaultAirHasASolidAuthoredBoundaryAgainstAquifers`先RED（118处，扩大入口范围后另23处）再修完整六邻域边界；`aquifer_keeps_rooms_dry`把整个地下部分包在水库中，逆序写片后等待200tick，所有模板空气/垂根/台阶均不含水。新版独立IGNORE_WATERLOGGING；旧版配置不变。摄影场景与另置模板切面明确分开，传送取景不作为真实输入通关证据。全部迭代原因见ITERATIONS.md。
+
+离线 `scripts/probes/CaveLayoutProbe.java` 以plain java读取NBT/契约，不初始化GreatTreeSites；新源--check、旧check-ruins及test_check_ruins.py 12项均通过。冷模板加载和写入切片分别记时；计时原始行见timings.json，不丢弃早期慢样本。
+
 ## 试玩 P1/P2、B1/B2
 
 手持尺寸返修最终见 `evidence/playtest-b2-size-20261024-v001/`：**1590 JUnit / 932 GameTest，0失败/错误/跳过，6m43s**；targeted-02的43项全部通过。新增BuildingItemFramingTest的10×两形态/两手完整投影、10项第三人称尺寸上限先红20项；另2项普通cube继承测试。firstperson后撤调整过程中门的保守角点曾越过5%边距（targeted.log），调整display后同一断言通过。原GLB/PNG不改，三项item/heart生成器--check written=0。人形/精灵各48张同机位原版参照+修后，human-reference-grid/spirit-reference-grid统一画面缩放；普通块不加专属缩放。仅手持display返修，B3/B4不在本轮范围。

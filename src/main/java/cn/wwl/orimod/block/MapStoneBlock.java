@@ -27,7 +27,18 @@ public final class MapStoneBlock extends SanctuaryBlock {
     public record Survey(int cells, int keystones, int altars) {}
 
     public static Survey survey(ServerPlayer player, BlockPos center) {
-        var level = player.level(); int cells = 0, keys = 0, altars = 0;
+        var level = player.serverLevel(); int cells = 0, keys = 0, altars = 0;
+        var piece=cn.wwl.orimod.world.RuinLayouts.find(level,center,p->p.layoutVersion()>0 && p.mapStone()!=null && p.placement().block(p.mapStone()).equals(center));
+        if(piece!=null){
+            // Versioned large ruins exceed the legacy radius. Query their saved contract, never load chunks.
+            for(var cell:piece.layout().cells()) {var pos=piece.placement().block(cell.position());
+                if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof CellPedestalBlock && !CellPedestalBlock.claimed(player,level,pos))cells++;}
+            for(var local:piece.layout().keystones()) {var pos=piece.placement().block(local);
+                if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof KeystonePedestalBlock && level.getBlockState(pos).getValue(KeystonePedestalBlock.FULL))keys++;}
+            if(piece.layout().bossAltar()!=null){var pos=piece.placement().block(piece.layout().bossAltar());
+                if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof GloomAltarBlock)altars++;}
+            return new Survey(cells,keys,altars);
+        }
         for (var pos : BlockPos.betweenClosed(center.offset(-SURVEY_RADIUS, -12, -SURVEY_RADIUS), center.offset(SURVEY_RADIUS, 16, SURVEY_RADIUS))) {
             if (!level.isLoaded(pos)) continue;
             var state = level.getBlockState(pos);

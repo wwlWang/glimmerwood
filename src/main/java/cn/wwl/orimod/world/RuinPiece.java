@@ -19,16 +19,20 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 /** Surface ruins blend into the hillside (NeoForge beard hook, base at the deck); the cave altar stays buried. */
 public final class RuinPiece extends TemplateStructurePiece implements net.neoforged.neoforge.common.world.PieceBeardifierModifier {
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement) {
-        super(OriWorldgen.PIECE.get(), 0, manager, template(kind), template(kind).toString(), settings(kind, placement.rotation()), placement.origin());
+        this(manager, kind, placement, 0); // Existing callers/tests explicitly retain the legacy contract.
+    }
+    public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement, int layoutVersion) {
+        super(OriWorldgen.PIECE.get(), 0, manager, kind.template(layoutVersion), kind.template(layoutVersion).toString(), settings(kind, placement.rotation(), layoutVersion), placement.origin());
         this.kind = kind;
-        this.secret = kind.layout().secret();
-        this.bridges = kind.layout().bridges();
-        this.beetles = kind.layout().beetles();
-        this.mapStone = kind.layout().mapStone();
+        this.layoutVersion = layoutVersion;
+        this.secret = layout().secret(); this.bridges = layout().bridges();
+        this.beetles = layout().beetles(); this.mapStone = layout().mapStone();
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
-        super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot"))));
+        super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot")), tag.getInt("LayoutVersion")));
         this.kind = kindOf(templateName);
+        this.layoutVersion = tag.getInt("LayoutVersion");
+        if (kind == null || !kind.template(layoutVersion).toString().equals(templateName)) throw new IllegalArgumentException("Ruin version/template mismatch: " + templateName);
         this.mapStone=tag.contains("OriMapStone",net.minecraft.nbt.Tag.TAG_LONG)?BlockPos.of(tag.getLong("OriMapStone"))
                 :kind==null?null:kind.layout().legacyMapStone();
         if (tag.contains("OriSecret", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
@@ -47,15 +51,18 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     private final java.util.List<RuinKind.Bridge> bridges;
     public java.util.List<RuinKind.Bridge> bridges() { return bridges; }
     private final RuinKind kind;
+    private final int layoutVersion;
+    public int layoutVersion() { return layoutVersion; }
+    public RuinKind.Layout layout() { return kind.layout(layoutVersion); }
     private final RuinKind.Secret secret;
     private final BlockPos mapStone;
     public BlockPos mapStone(){return mapStone;}
     public RuinKind kind() { return kind; }
     public RuinKind.Secret secret() { return secret; }
-    private static ResourceLocation template(RuinKind kind) { return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + kind.id); }
-    private static StructurePlaceSettings settings(RuinKind kind, Rotation rotation) {
+    private static StructurePlaceSettings settings(RuinKind kind, Rotation rotation, int version) {
         var settings = new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation);
-        return kind == RuinKind.CAVE ? settings.addProcessor(CaveEntranceProcessor.INSTANCE) : settings;
+        if (version > 0) settings.setLiquidSettings(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING);
+        return kind == RuinKind.CAVE && version == 0 ? settings.addProcessor(CaveEntranceProcessor.INSTANCE) : settings;
     }
     @Override public BoundingBox getBeardifierBox() { return boundingBox; }
     @Override public net.minecraft.world.level.levelgen.structure.TerrainAdjustment getTerrainAdjustment() {
@@ -63,9 +70,9 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
                 : net.minecraft.world.level.levelgen.structure.TerrainAdjustment.BEARD_THIN;
     }
     /** Beard base = the deck's walking surface, so the low side is filled and the high side eased, not cut. */
-    @Override public int getGroundLevelDelta() { return kind == null ? 0 : kind.layout().surfaceY(); }
+    @Override public int getGroundLevelDelta() { return kind == null ? 0 : layout().surfaceY(); }
     private static RuinKind kindOf(String template) {
-        for (var kind : RuinKind.values()) if (template.endsWith("ruins/" + kind.id)) return kind;
+        for (var kind : RuinKind.values()) for (int v = 0; v <= kind.currentVersion(); v++) if (template.equals(kind.template(v).toString())) return kind;
         return null;
     }
     public BlockPos origin() { return templatePosition; }
@@ -73,6 +80,7 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
+        tag.putInt("LayoutVersion", layoutVersion);
         if(mapStone!=null)tag.putLong("OriMapStone",mapStone.asLong());
         if(!beetles.isEmpty()){
             tag.putLongArray("OriBeetles",beetles.stream().mapToLong(BlockPos::asLong).toArray());
@@ -88,14 +96,16 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     }
     @Override public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator,
                                       RandomSource random, BoundingBox chunkBounds, ChunkPos chunk, BlockPos pivot) {
+        long profileStart = Boolean.getBoolean("orimod.profileRuins") ? System.nanoTime() : 0;
         super.postProcess(level, manager, generator, random, chunkBounds, chunk, pivot);
         // The template clears its interior. Remove the crowns of trunks cut at
         // its top edge too, so the entrance does not leave floating log columns.
-        for (int x = Math.max(boundingBox.minX(), chunkBounds.minX()); x <= Math.min(boundingBox.maxX(), chunkBounds.maxX()); x++)
+        if (layoutVersion == 0) for (int x = Math.max(boundingBox.minX(), chunkBounds.minX()); x <= Math.min(boundingBox.maxX(), chunkBounds.maxX()); x++)
             for (int z = Math.max(boundingBox.minZ(), chunkBounds.minZ()); z <= Math.min(boundingBox.maxZ(), chunkBounds.maxZ()); z++)
                 RuinApproachPiece.clearCanopy(level, chunkBounds, x, z, boundingBox.maxY() + 1, boundingBox.maxY() + 48);
-        if (kind != null) placeCells(level, kind, placement(), chunkBounds,mapStone);
+        if (kind != null && layoutVersion == 0) placeCells(level, kind, placement(), chunkBounds,mapStone);
         spawnBeetles(level,chunkBounds);
+        if (profileStart != 0) cn.wwl.orimod.OriMod.LOGGER.info("RUIN_WRITE kind={} version={} chunk={} ms={}",kind.id,layoutVersion,chunk,(System.nanoTime()-profileStart)/1e6);
     }
 
     /** Like monument guardians, use the generation accessor to publish into the correct protochunk.

@@ -489,7 +489,7 @@ public final class DevelopmentBridge {
                     result.put("recovery", player.getData(cn.wwl.orimod.spirit.SpiritData.CHALLENGE_RECOVERY));
                     var starts = new ArrayList<Map<String, Object>>();
                     var chunkPos = player.chunkPosition();
-                    for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
+                    for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {
                         var chunk = player.serverLevel().getChunkSource().getChunkNow(chunkPos.x + dx, chunkPos.z + dz);
                         if (chunk == null) continue;
                         for (var start : chunk.getAllStarts().values()) {
@@ -497,7 +497,7 @@ public final class DevelopmentBridge {
                             for (var piece : start.getPieces()) if (piece instanceof cn.wwl.orimod.world.RuinPiece part) {
                                 var origin = part.origin();
                                 starts.add(Map.of("kind", ruin.kind.id, "origin", new int[]{origin.getX(), origin.getY(), origin.getZ()},
-                                        "rotation", part.getRotation().name(), "bounds", part.getBoundingBox().toString()));
+                                        "rotation", part.getRotation().name(), "bounds", part.getBoundingBox().toString(), "layoutVersion", part.layoutVersion()));
                             }
                         }
                     }

@@ -1,0 +1,174 @@
+{
+  "size": [
+    47,
+    32,
+    71
+  ],
+  "shrine": [
+    10,
+    6,
+    29
+  ],
+  "safe": [
+    14.5,
+    6,
+    29.5
+  ],
+  "entry": [
+    23.5,
+    29,
+    0.5
+  ],
+  "surface_y": 29,
+  "checkpoints": [
+    {
+      "position": [
+        36.5,
+        11,
+        44.5
+      ],
+      "action": "grapple",
+      "count": 1
+    },
+    {
+      "position": [
+        28.5,
+        6,
+        48.5
+      ],
+      "action": "stomp",
+      "count": 1
+    },
+    {
+      "position": [
+        23.5,
+        6,
+        53.5
+      ],
+      "action": "blade",
+      "count": 1
+    }
+  ],
+  "critical": [
+    {
+      "position": [
+        10,
+        6,
+        29
+      ],
+      "block": "orimod:cave_altar_shrine"
+    },
+    {
+      "position": [
+        36,
+        6,
+        29
+      ],
+      "block": "orimod:map_stone"
+    },
+    {
+      "position": [
+        23,
+        7,
+        60
+      ],
+      "block": "orimod:gloom_altar"
+    },
+    {
+      "position": [
+        36,
+        12,
+        42
+      ],
+      "block": "orimod:grapple_flower"
+    }
+  ],
+  "clearances": [
+    {
+      "from": [
+        22,
+        6,
+        26
+      ],
+      "to": [
+        24,
+        8,
+        54
+      ]
+    },
+    {
+      "from": [
+        35,
+        11,
+        44
+      ],
+      "to": [
+        37,
+        12,
+        45
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "position": [
+        34,
+        11,
+        46
+      ],
+      "kind": "life"
+    },
+    {
+      "position": [
+        7,
+        6,
+        44
+      ],
+      "kind": "energy"
+    }
+  ],
+  "keystones": [
+    [
+      10,
+      9,
+      35
+    ],
+    [
+      38,
+      11,
+      46
+    ]
+  ],
+  "boss_altar": [
+    23,
+    7,
+    60
+  ],
+  "map_stone": [
+    36,
+    6,
+    29
+  ],
+  "secret": {
+    "entrance": [
+      11,
+      6,
+      55
+    ],
+    "facing": "east",
+    "blocks": "wall"
+  },
+  "beetles": [
+    [
+      30,
+      6,
+      38
+    ],
+    [
+      17,
+      6,
+      58
+    ]
+  ],
+  "bridges": []
+}

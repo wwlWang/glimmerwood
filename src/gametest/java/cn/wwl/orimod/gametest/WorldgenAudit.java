@@ -65,7 +65,7 @@ final class WorldgenAudit {
                         var piece = start.getPieces().stream().filter(RuinPiece.class::isInstance).map(RuinPiece.class::cast).findFirst().orElseThrow();
                         row.put("templateOrigin", coordinates(piece.origin()));
                         row.put("rotation", piece.getRotation().name());
-                        var entry = BlockPos.containing(piece.placement().point(kind.layout().entry()));
+                        var entry = BlockPos.containing(piece.placement().point(piece.layout().entry()));
                         row.put("entry", coordinates(entry));
                         double ex = entry.getX() - origin.getX(), ez = entry.getZ() - origin.getZ();
                         row.put("entryDistance", Math.sqrt(ex * ex + ez * ez));
@@ -119,12 +119,12 @@ final class WorldgenAudit {
                 for (int cx = (bounds.minX() >> 4) - 1; cx <= (bounds.maxX() >> 4) + 1; cx++)
                     for (int cz = (bounds.minZ() >> 4) - 1; cz <= (bounds.maxZ() >> 4) + 1; cz++) level.getChunk(cx, cz);
                 var piece = start.getPieces().stream().filter(RuinPiece.class::isInstance).map(RuinPiece.class::cast).findFirst().orElseThrow();
-                var result = cn.wwl.orimod.world.RuinSiteInspector.inspect(level, kind, piece.placement());
+                var result = cn.wwl.orimod.world.RuinSiteInspector.inspect(level, kind, piece.layout(), piece.placement());
                 var row = new LinkedHashMap<String, Object>();
                 row.put("kind", kind.id);
                 row.put("origin", coordinates(piece.origin()));
                 row.put("rotation", piece.getRotation().name());
-                var entry = BlockPos.containing(piece.placement().point(kind.layout().entry()));
+                var entry = BlockPos.containing(piece.placement().point(piece.layout().entry()));
                 row.put("biome", level.getBiome(entry).unwrapKey().map(key -> key.location().toString()).orElse("?"));
                 row.putAll(result.metrics());
                 row.put("issues", result.issues());

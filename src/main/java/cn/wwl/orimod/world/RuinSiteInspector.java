@@ -40,9 +40,11 @@ public final class RuinSiteInspector {
     }
 
     public static Report inspect(Level level, RuinKind kind, RuinPlacement placement) {
+        return inspect(level,kind,kind.layout(),placement);
+    }
+    public static Report inspect(Level level, RuinKind kind, RuinKind.Layout layout, RuinPlacement placement) {
         var issues = new ArrayList<String>();
         var metrics = new LinkedHashMap<String, Object>();
-        var layout = kind.layout();
         for (var anchor : layout.critical())
             if (!level.getBlockState(placement.block(anchor.position())).is(BuiltInRegistries.BLOCK.get(anchor.block())))
                 issues.add("critical:" + anchor.block());
@@ -57,7 +59,7 @@ public final class RuinSiteInspector {
             if (!standable(level, placement.point(layout.checkpoints().get(i).position()))) issues.add("checkpoint:" + i);
 
         // Approach: the three middle columns are the walkway; the outer two are trim.
-        var doorway = RuinApproachPiece.doorway(kind, placement);
+        var doorway = RuinApproachPiece.doorway(kind, layout, placement);
         int doorY = doorway.origin().getY();
         Integer firstStep = null;
         for (int dx = -1; dx <= 1; dx++) for (int i = 0; i < 8; i++) {

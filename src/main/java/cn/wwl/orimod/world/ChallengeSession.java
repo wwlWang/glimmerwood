@@ -8,6 +8,7 @@ import java.util.UUID;
 public final class ChallengeSession {
     public final UUID id = UUID.randomUUID();
     public final RuinKind kind;
+    public final RuinKind.Layout layout;
     public final BlockPos shrine, origin;
     public final RuinPlacement placement;
     public final ResourceKey<Level> dimension;
@@ -20,6 +21,10 @@ public final class ChallengeSession {
     public final java.util.ArrayList<net.minecraft.world.phys.Vec3> trace = new java.util.ArrayList<>();
     public java.util.List<net.minecraft.world.phys.Vec3> ghost;
     public ChallengeSession(RuinKind kind, BlockPos shrine, RuinPlacement placement, ResourceKey<Level> dimension, long started) {
+        this(kind, kind.layout(), shrine, placement, dimension, started);
+    }
+    public ChallengeSession(RuinKind kind, RuinKind.Layout layout, BlockPos shrine, RuinPlacement placement, ResourceKey<Level> dimension, long started) {
+        this.layout = layout;
         this.kind = kind; this.shrine = shrine.immutable(); this.placement = placement; this.origin = placement.origin();
         this.dimension = dimension; this.started = started;
     }

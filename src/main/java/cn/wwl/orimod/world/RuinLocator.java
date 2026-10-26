@@ -112,10 +112,10 @@ public final class RuinLocator {
                 for(var piece:start.getPieces()){
                     Found found=null;
                     if(search.mode!=Mode.OUTPOST && piece instanceof RuinPiece ruin){
-                        var kind=ruin.kind();var shrine=ruin.placement().block(kind.layout().shrine());
+                        var kind=ruin.kind();var shrine=ruin.placement().block(ruin.layout().shrine());
                         String key="clear/"+ChallengeSession.key(search.level.dimension(),shrine);
                         if(player.getData(SpiritData.PROGRESS).rewards().getOrDefault(key,0)>0)continue;
-                        found=new Found(kind.id,BlockPos.containing(ruin.placement().point(kind.layout().entry())),key);
+                        found=new Found(kind.id,BlockPos.containing(ruin.placement().point(ruin.layout().entry())),key);
                     }else if(search.mode!=Mode.RUINS && piece instanceof GladesOutpostPiece outpost){
                         String key="discover/"+ChallengeSession.key(search.level.dimension(),outpost.placement().block(GladesOutpostPiece.WELL));
                         if(search.mode==Mode.ANY && player.getData(SpiritData.PROGRESS).rewards().containsKey(key))continue;

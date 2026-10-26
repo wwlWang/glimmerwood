@@ -51,11 +51,17 @@ public final class GinsoGenerationGuard {
 
     /** No getChunk, generation futures, joins, server-thread work, or mutable region cache. */
     public static Result check(RandomState state,BlockPos origin,int version){
+        int r=GinsoShape.radius(version);
+        return checkBounds(state,new net.minecraft.world.level.levelgen.structure.BoundingBox(origin.getX()-r,0,origin.getZ()-r,origin.getX()+r,0,origin.getZ()+r));
+    }
+    /** Shared read-only boundary guard for a versioned ruin's rectangular template footprint. */
+    public static Result checkBounds(RandomState state,net.minecraft.world.level.levelgen.structure.BoundingBox bounds){
         long started=System.nanoTime();var runtime=ACTIVE.get(state);
+        var origin=new BlockPos(bounds.minX(),0,bounds.minZ());
         if(runtime==null)return new Result(new ChunkPos(origin),"level-unavailable",0,(System.nanoTime()-started)/1e6);
         // Each query owns its header snapshot. Never retain a negative disk result across queries.
         var disk=new GreatTreeSites.RegionHeaders(runtime.region);
-        var result=scan(origin,GinsoShape.radius(version),(x,z)->{
+        var result=scanBounds(bounds,(x,z)->{
             if(runtime.saving.contains(x,z))return "loaded-or-saving";
             // ChunkMap publishes a volatile cloned visible map; Holder reads AtomicReferenceArray
             // futures using getNow. EMPTY/STRUCTURE_STARTS holders are normal generation work,
@@ -67,9 +73,12 @@ public final class GinsoGenerationGuard {
         return new Result(result.blocked,result.source,result.checked,(System.nanoTime()-started)/1e6);
     }
     static Result scan(BlockPos origin,int radius,BiFunction<Integer,Integer,String> occupied){
+        return scanBounds(new net.minecraft.world.level.levelgen.structure.BoundingBox(origin.getX()-radius,0,origin.getZ()-radius,origin.getX()+radius,0,origin.getZ()+radius),occupied);
+    }
+    static Result scanBounds(net.minecraft.world.level.levelgen.structure.BoundingBox bounds,BiFunction<Integer,Integer,String> occupied){
         int checked=0;
-        for(int x=(origin.getX()-radius)>>4;x<=(origin.getX()+radius)>>4;x++)
-            for(int z=(origin.getZ()-radius)>>4;z<=(origin.getZ()+radius)>>4;z++){
+        for(int x=bounds.minX()>>4;x<=bounds.maxX()>>4;x++)
+            for(int z=bounds.minZ()>>4;z<=bounds.maxZ()>>4;z++){
                 checked++;String reason=occupied.apply(x,z);
                 if(reason!=null)return new Result(new ChunkPos(x,z),reason,checked,0);
             }

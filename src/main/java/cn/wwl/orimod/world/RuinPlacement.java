@@ -46,7 +46,10 @@ public record RuinPlacement(BlockPos origin, Rotation rotation) {
         return new RuinPlacement(shrine.subtract(kind.layout().shrine().rotate(rotation)), rotation);
     }
     public static RuinPlacement atMinimum(RuinKind kind, BlockPos minimum, Rotation rotation) {
-        var size = kind.layout().size();
+        return atMinimum(kind.layout(), minimum, rotation);
+    }
+    public static RuinPlacement atMinimum(RuinKind.Layout layout, BlockPos minimum, Rotation rotation) {
+        var size = layout.size();
         var zeroBounds = new RuinPlacement(BlockPos.ZERO, rotation).blocks(BlockPos.ZERO, size.offset(-1, -1, -1));
         return new RuinPlacement(minimum.offset(-zeroBounds.minX(), 0, -zeroBounds.minZ()), rotation);
     }
