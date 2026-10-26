@@ -116,9 +116,25 @@ public final class SpiritWell {
         var state=level.getBlockState(shrine);
         if (!(state.getBlock() instanceof SpiritWellBlock)) return null;
         var candidates=new java.util.ArrayList<BlockPos>();
-        candidates.add(shrine.relative(state.getValue(SpiritWellBlock.FACING)));
-        candidates.add(shrine.above());
-        for (var d: net.minecraft.core.Direction.Plane.HORIZONTAL) candidates.add(shrine.relative(d));
+        if (cn.wwl.orimod.block.SanctuaryAssembly.assembled(state)) {
+            // The 3x3 basin owns its rim: arrival must be outside that footprint.
+            var front=state.getValue(SpiritWellBlock.FACING);
+            for(int radius=2;radius<=3;radius++) {
+                candidates.add(shrine.relative(front,radius));
+                for(var d:net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    candidates.add(shrine.relative(d,radius));
+                    for(int side=1;side<radius;side++) {
+                        candidates.add(shrine.relative(d,radius).relative(d.getClockWise(),side));
+                        candidates.add(shrine.relative(d,radius).relative(d.getCounterClockWise(),side));
+                    }
+                }
+            }
+        } else {
+            // Preserve existing saves, structure shrines and course checkpoints exactly.
+            candidates.add(shrine.relative(state.getValue(SpiritWellBlock.FACING)));
+            candidates.add(shrine.above());
+            for (var d: net.minecraft.core.Direction.Plane.HORIZONTAL) candidates.add(shrine.relative(d));
+        }
         for(var stand:candidates) {
             if(!level.getWorldBorder().isWithinBounds(stand) || !cn.wwl.orimod.progression.SoulLink.usable(level,stand)) continue;
             var at=Vec3.atBottomCenterOf(stand);

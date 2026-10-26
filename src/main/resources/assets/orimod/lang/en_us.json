@@ -404,6 +404,7 @@
   "line.orimod.first_purify": "Glimmer: Listen. The forest is breathing.",
   "commands.orimod.blight.nearest": "Gloom Core %s, %s blocks away (loaded area, radius %s).",
   "commands.orimod.blight.none": "No Gloom Core within %s blocks in loaded chunks.",
+  "block.orimod.sanctuary_part": "Sanctuary Part",
   "block.orimod.glades_well": "Glades Spirit Well",
   "entity.orimod.glades_merchant": "Glades Merchant",
   "merchant.orimod.mosswhisper": "Mosswhisper · Shard Merchant",

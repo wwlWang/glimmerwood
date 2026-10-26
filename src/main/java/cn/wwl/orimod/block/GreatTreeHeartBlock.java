@@ -13,8 +13,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /** The great heart grants no skill. Three wisps alone admit an awakened spirit to the ritual. */
 public final class GreatTreeHeartBlock extends SanctuaryBlock {
-    public GreatTreeHeartBlock(Properties properties){super(properties);registerDefaultState(stateDefinition.any().setValue(SpiritTreeHeartBlock.BLOOMED,false));}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(SpiritTreeHeartBlock.BLOOMED);}
+    public GreatTreeHeartBlock(Properties properties){super(properties);registerDefaultState(defaultBlockState().setValue(SpiritTreeHeartBlock.BLOOMED,false));}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){super.createBlockStateDefinition(b);b.add(SpiritTreeHeartBlock.BLOOMED);}
     @Override protected InteractionResult useWithoutItem(BlockState state,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(player instanceof ServerPlayer p)Restoration.start(p,pos);
         return InteractionResult.sidedSuccess(level.isClientSide);

@@ -404,6 +404,7 @@
   "line.orimod.first_purify": "萤：你听，森林在呼吸了。",
   "commands.orimod.blight.nearest": "腐化之核 %s，距离 %s 格（已加载区域，半径 %s）。",
   "commands.orimod.blight.none": "已加载区域 %s 格内没有腐化之核。",
+  "block.orimod.sanctuary_part": "建筑部件",
   "block.orimod.glades_well": "林栖灵泉",
   "entity.orimod.glades_merchant": "林栖商人",
   "merchant.orimod.mosswhisper": "苔语 · 碎片商",

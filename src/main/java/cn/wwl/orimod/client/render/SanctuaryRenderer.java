@@ -41,6 +41,10 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
         var companion=legacyNeighbour(b);
         var fit=SanctuaryPresentation.fit(companion,state.is(OriBlocks.CAVE_SHRINE));
         pose.translate(fit.x(),0,fit.z());pose.scale(fit.horizontal(),fit.vertical(),fit.horizontal());
+        if(SanctuaryAssembly.assembled(state)){
+            var kind=SanctuaryKind.of(state.getBlock());pose.translate(0,kind.floorLift(),0);
+            if(!kind.basin())pose.mulPose(Axis.YP.rotationDegrees(180-state.getValue(SanctuaryBlock.FACING).toYRot()));
+        }
         if(state.is(OriBlocks.GLOOM_ALTAR)||state.is(OriBlocks.STORM_ALTAR))pose.translate(0,floorLift(b),0);
         boolean ready=assembly(state,b.phase(),b.activated(),time,pose,buffers,light);
         pose.popPose();
@@ -85,10 +89,10 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
     }
     private static net.minecraft.core.Direction legacyNeighbour(SanctuaryBlockEntity b) {
         var state=b.getBlockState();
-        if(b.getLevel()==null || !(state.is(OriBlocks.CAVE_SHRINE)||state.is(OriBlocks.MAP_STONE)))return null;
+        if(b.getLevel()==null || !SanctuaryAssembly.legacy(state) || !(state.is(OriBlocks.CAVE_SHRINE)||state.is(OriBlocks.MAP_STONE)))return null;
         for(var dir:net.minecraft.core.Direction.Plane.HORIZONTAL) {
             var p=b.getBlockPos().relative(dir);
-            if(b.getLevel().hasChunkAt(p) && b.getLevel().getBlockState(p).is(state.is(OriBlocks.CAVE_SHRINE)?OriBlocks.MAP_STONE:OriBlocks.CAVE_SHRINE))return dir;
+            if(b.getLevel().hasChunkAt(p) && SanctuaryAssembly.legacy(b.getLevel().getBlockState(p)) && b.getLevel().getBlockState(p).is(state.is(OriBlocks.CAVE_SHRINE)?OriBlocks.MAP_STONE:OriBlocks.CAVE_SHRINE))return dir;
         }
         return null;
     }
@@ -111,7 +115,7 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
     /** Old cave altars replace a floor block; a placed-on-top altar keeps its usual origin.
      * This is only a visual offset, with the render bounds following it; no terrain or collision writes. */
     private static int floorLift(SanctuaryBlockEntity b) {
-        if (b.getLevel()==null || !(b.getBlockState().is(OriBlocks.GLOOM_ALTAR) || b.getBlockState().is(OriBlocks.STORM_ALTAR))) return 0;
+        if (b.getLevel()==null || !SanctuaryAssembly.legacy(b.getBlockState()) || !(b.getBlockState().is(OriBlocks.GLOOM_ALTAR) || b.getBlockState().is(OriBlocks.STORM_ALTAR))) return 0;
         int supports=0;
         for (var dir:net.minecraft.core.Direction.Plane.HORIZONTAL) {
             var pos=b.getBlockPos().relative(dir);

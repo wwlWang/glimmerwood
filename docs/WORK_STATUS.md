@@ -1,5 +1,13 @@
 # 当前工作状态
 
+## B4 第二段：建筑多方块（已审核提交；下一步 C 遗迹重建与大灵树 ShapeVersion 3）
+
+基准8bc3e4f。范围灵泉、三神龛、地图石、大灵树之心、两祭坛；金索水之心不动。物品放置3×3×3（地图石1×1×3），共用无BE/不可见/不遮光的偏移部件，核心保留原BE/奖励/交互。全格预检、部分失败/异常回滚、NeoForge取消恢复；拆换任一格清精确所属组，单次核心掉落路径，不误合并相邻/Legacy。每格最多4个粗碰撞box，低裙座/台面/根拱与空气分开，心的底部根环中心为空；地图石上盘保留0.10格稳定薄层碰撞（平均高度2.02），周围通空。大灵树之心仅新放置向上校正0.062622093齐地。
+
+默认/缺属性NBT继续Legacy，所有结构模板及生成器未动；洞穴紧凑组合/埋地祭坛抬高只在Legacy。灵泉新组只找盆外半径2–3安全位置，Legacy顺序不变。**三神龛可挖但无原始掉落表（不掉物品），其余五类不可生存挖掘；本轮不改变该权限/掉落设计。**
+
+证据入口 `evidence/playtest-b4-sanctuary-20261025-v001/README.md`；`RED.md`逐条确认原20条缺失行为（1028项中1008通过/20失败，非编译/夹具错误）。实现碰撞后保留旧灵泉落点，第二阶段1028通过/仅1条落点失败，再修盆外搜索。最终 `build runGameTestServer compileDevtoolsJava` **1657 JUnit / 1066 GameTest，0失败/错误/跳过**（最终full-final-02，4m54s）；其中新GameTest59条、JUnit5条。碰撞叠图主动发现心的空心根环被填板，追加失败回归后修掉；地图石质浮盘追加RED后改为薄面，旧日志/图均保留。日志/XML/计数已归档。截图 `evidence/playtest-b4-sanctuary-capture-20261025-v002/` 完整8种；心/地图修后v003补拍。v003的final-new-grid / final-legacy-pair-grid / final-collision-grid合并8种最终图，grid-sources.json列来源。截图脚本 `capture-sanctuary-multiblocks.py` 使用实际物品放置，新组与默认Legacy并排；devtools `sanctuary_collision` 绘制实际碰撞盒，仅开发包可用。无新art/source或GLB/PNG变更。24文件清单 files-b4.txt 已归档，客户端正常关闭、Gradle完成，无git写操作，停下待审。
+
 ## B3 第二段：弓 / 锤 / 矛固定骨长（已审核提交；下一步 B4 其余多方块、C 遗迹重建）
 
 实现基准a85a8e8；原RED、静止标尺、完整新骨架方案在 `evidence/playtest-b3-weapons-20261025-v001/README.md`。弓双手/锤矛静止已获视觉通过，保持不变。新IK固定上臂0.36/前臂0.38，腕弯≤55°/旋前后≤75°；普通物品/原版武器/建筑/实际副手仍使用旧路径，故SpiritLegacyForearm/1.25保留，不误删。

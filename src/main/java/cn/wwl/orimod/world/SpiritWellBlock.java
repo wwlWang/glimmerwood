@@ -15,8 +15,8 @@ import net.minecraft.world.phys.BlockHitResult;
 /** Shared R41 well facing and travel identity. Ruin shrines override interaction to retain their challenge panel. */
 public class SpiritWellBlock extends cn.wwl.orimod.block.SanctuaryBlock {
     public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
-    public SpiritWellBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH));}
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING);}
+    public SpiritWellBlock(Properties p){super(p);registerDefaultState(defaultBlockState().setValue(FACING,Direction.NORTH));}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){super.createBlockStateDefinition(b);}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player p,BlockHitResult hit){

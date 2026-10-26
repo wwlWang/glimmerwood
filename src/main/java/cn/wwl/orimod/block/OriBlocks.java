@@ -26,6 +26,9 @@ public final class OriBlocks {
                     .isSuffocating((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))
                     .isViewBlocking((s,l,p) -> s.getValue(SpiritPlatformBlock.LIT))));
     public static final DeferredBlock<cn.wwl.orimod.world.SpiritWellBlock> GLADES_WELL=BLOCKS.register("glades_well",()->new cn.wwl.orimod.world.SpiritWellBlock(BlockBehaviour.Properties.of().strength(-1,3600000).noLootTable().lightLevel(s->10).sound(SoundType.AMETHYST)));
+    public static final DeferredBlock<SanctuaryPartBlock> SANCTUARY_PART=BLOCKS.register("sanctuary_part",()->new SanctuaryPartBlock(BlockBehaviour.Properties.of()
+            .strength(-1,3600000).noLootTable().noOcclusion().sound(SoundType.AMETHYST).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
+            .isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false)));
     public static final DeferredBlock<Block> BLIGHTED_SOIL=BLOCKS.registerSimpleBlock("blighted_soil",BlockBehaviour.Properties.of().strength(.6f).sound(SoundType.GRAVEL));
     public static final DeferredBlock<GloomThornsBlock> GLOOM_THORNS=BLOCKS.register("gloom_thorns",()->new GloomThornsBlock(BlockBehaviour.Properties.of().strength(-1,1200).noCollission().noOcclusion().sound(SoundType.SWEET_BERRY_BUSH)));
     public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> WITHERED_SPIRIT_LOG=BLOCKS.register("withered_spirit_log",()->new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of().strength(2).sound(SoundType.WOOD)));
@@ -129,9 +132,11 @@ public final class OriBlocks {
         OriItems.ITEMS.registerSimpleBlockItem(UPDRAFT);
         OriItems.ITEMS.register("keystone_door", () -> new cn.wwl.orimod.item.KeystoneDoorItem(KEYSTONE_DOOR.get(), new net.minecraft.world.item.Item.Properties()));
         // R83: every placeable ruin block gets an item so builders and testers can use it from the creative tab.
-        for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, MAP_STONE, SPIRIT_SAND,
-                GLADES_WELL, BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER, GLOOM_ALTAR, STORM_ALTAR, FOREST_SHRINE, CREEK_SHRINE, CAVE_SHRINE,
-                SPIRIT_LOG, GINSO_WATER_HEART, GINSO_WOOD, GINSO_ROOT_LIP, GINSO_LANDING, GINSO_FUNGUS, GINSO_LEAVES, GINSO_CANOPY, GINSO_LEAF_CORE, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, GREAT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
+        for(var block:java.util.List.of(GLADES_WELL,FOREST_SHRINE,CREEK_SHRINE,CAVE_SHRINE,MAP_STONE,GREAT_TREE_HEART,GLOOM_ALTAR,STORM_ALTAR))
+            OriItems.ITEMS.register(block.getId().getPath(),()->new cn.wwl.orimod.item.SanctuaryItem(block.get(),new net.minecraft.world.item.Item.Properties()));
+        for (var block : java.util.List.of(LIFE_CELL_PEDESTAL, ENERGY_CELL_PEDESTAL, KEYSTONE_PEDESTAL, SPIRIT_SAND,
+                BLIGHTED_SOIL, GLOOM_THORNS, WITHERED_SPIRIT_LOG, GLOOM_CORE, GLOOM_WATER,
+                SPIRIT_LOG, GINSO_WATER_HEART, GINSO_WOOD, GINSO_ROOT_LIP, GINSO_LANDING, GINSO_FUNGUS, GINSO_LEAVES, GINSO_CANOPY, GINSO_LEAF_CORE, GINSO_VINE, GREAT_SPIRIT_WOOD, GREAT_SPIRIT_ROOT, SPIRIT_LEAVES, GREAT_TREE_LEAF_CORE, SPIRIT_VINE, SPIRIT_TREE_HEART, CRACKED_RUIN_WALL, CRACKED_RUIN_FLOOR, SPIRIT_LIGHT_VESSEL, SPIRIT_PLATFORM))
             OriItems.ITEMS.registerSimpleBlockItem(block);
         BLOCKS.register(bus);
     }

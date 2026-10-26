@@ -81,6 +81,7 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, this::serverStopped);
         NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
         NeoForge.EVENT_BUS.addListener(LayerPreview::tick);
+        NeoForge.EVENT_BUS.addListener(SanctuaryCollisionPreview::render);
     }
 
     private void setup(FMLClientSetupEvent event) {
@@ -294,6 +295,12 @@ public final class DevelopmentBridge {
                     result.put("groundLight",GreatTreeLightProbe.scan(level,site));
                     return result;
                 }).get(10,TimeUnit.SECONDS);
+            }
+            case "sanctuary_collision" -> {
+                require(mc.level!=null,"World required");
+                boolean enabled=action.has("enabled")&&action.get("enabled").getAsBoolean();
+                var pos=enabled?new net.minecraft.core.BlockPos(action.get("x").getAsInt(),action.get("y").getAsInt(),action.get("z").getAsInt()):net.minecraft.core.BlockPos.ZERO;
+                return SanctuaryCollisionPreview.select(pos,enabled);
             }
             case "inspect_block" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");

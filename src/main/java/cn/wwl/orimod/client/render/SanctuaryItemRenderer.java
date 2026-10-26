@@ -12,6 +12,7 @@ public final class SanctuaryItemRenderer extends BlockEntityWithoutLevelRenderer
     private static SanctuaryItemRenderer instance;
     private SanctuaryItemRenderer() {super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),Minecraft.getInstance().getEntityModels());}
     public static void register(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        SanctuaryPartEffects.register(event);
         event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
             @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if(instance==null)instance=new SanctuaryItemRenderer();return instance;

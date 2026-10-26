@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "kind=glades_well": {"model": "orimod:block/forest_spring_shrine"},
+    "kind=forest_spring_shrine": {"model": "orimod:block/forest_spring_shrine"},
+    "kind=creek_ruins_shrine": {"model": "orimod:block/creek_ruins_shrine"},
+    "kind=cave_altar_shrine": {"model": "orimod:block/cave_altar_shrine"},
+    "kind=map_stone": {"model": "orimod:block/map_stone"},
+    "kind=great_tree_heart": {"model": "orimod:block/great_tree_heart"},
+    "kind=gloom_altar": {"model": "orimod:block/gloom_altar"},
+    "kind=storm_altar": {"model": "orimod:block/storm_altar"}
+  }
+}
