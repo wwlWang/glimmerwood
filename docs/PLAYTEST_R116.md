@@ -96,3 +96,27 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 祭坛（`gloom_altar`）无需任何能力/挑战就能走到并唤醒（只检查「已觉醒」）。设计确认：[怀疑] 若期望「祭坛在抓钩/下砸之后」，现在是纯步行直达（BFS：入口→祭坛不依赖任何能力）。钥石 #1（10,9,35）与锁门区也是步行可达；钥石 #2（38,11,46）和 life cell（34,11,46）在抓钩平台上（需抓钩）。
 - **Gloom Heart 击杀后的逃生（EscapeSequence）：[复现，major/怀疑平衡]** 玩家在祭坛附近杀死 Heart → 「污染前沿」半径 3+0.2·t（4 格/s），前沿内缓慢 II + 每 10 tick 3 伤害，且必须「天空可见 + 距祭坛 ≥12」才算逃生。cave_altar 祭坛到地表出口直线 ≈60 格、路径 ≈75+ 格（含上楼阶梯跳跃）。实测：生命上限 40，从离祭坛 15.7 格处击杀并冲刺跑，被前沿追上（t≈140）后在 t=240 死亡（前沿内每秒掉 6 血），未逃出（脚本控制器比真人慢，可能偏悲观）。贴着祭坛杀死 Heart 则 130 tick 内即死。逃生不成 = 无奖励，需再唤醒祭坛。→ 需要真人 + 冲刺/冲刺技能再验证；基础 20 血玩家几乎不可能。
 - 祭坛可重复唤醒（`phase=DEFEATED` 仍可再次召唤），且 `EscapeSequence.victory` 每次逃生都 `grantLight(+100)`，只有生命格/能量格是首次限定 → **[怀疑，balance] 可无限刷 100 灵光**。
+
+## P2-E 前哨/商人/传送井/上升气流/地图石/容器（真实使用）
+- 商人（通过 `key.use` 对准实体打开，devtools 无 entity-interact）、制图师购买（40 光→异步导引）、泉井传送、虚空容器(+40 灵光)、地图石(+10 一次，二次无奖励) **[通过]**，截图 `*-cartographer/well-screen/merchant-*/map-stone`。
+- 上升气流：单个通风口滑翔升力 ≈12 格；**叠放多个通风口会阻挡跳跃与滑翔**（每个都带碰撞）——[信息/minor] 作者若想做高烟囱要用单口+多格 shaft，不要叠方块。
+- 钥石：踏板（KeystonePedestal）是一次性、不补、无配方。**[复现/代码确认，major soft-lock]** 钥石丢失/被误用（如放到别的踏板）后，该世界的钥石门及其后的能量格（cave_altar v1 门 `x=15,z=43..45` 守 `(7,6,44)`）永久不可达；per-world，非 per-player。建议：踏板可回收或给钥石一个合成/商人兜底。
+
+## P2-F 灵树（Spirit Tree）
+- 真实输入整段上升：基部 → 气流柱 → 瞭望台 y≈290 **[通过]**，`gt-ascent / gt-lookout`。
+- 从 y=280 摔到根部缓冲垫：落地 y≈96.25、HP 40.0、fallDistance 0 **[通过]**（缓冲垫有效，零伤害）。
+
+## P2-G 腐化地面/净化（Blight）
+- `locate structure orimod:blighted_grounds` → `-512,-384`；`/ori blight nearest` 在区块未加载时返回「没有腐化之核」（设计，需靠近加载），到达后 7.8 格内可找到核 **[通过]**。
+- 核 40 HP；锤击 10/次（真实按住 use 20 tick 松开）→ damage 0→1→2→3→破，4 击；破核后 `BlightData.begin` 开始 600 tick 净化，期间逐只刷防守者（限 3）；结束后 +60 灵光、`purify/…` 奖励键、`line/first_purify` **[通过]**。
+- 近战空手/普通方块打核只会 `reject`（火花声）；用 attack 打核不掉血，符合 R-设计。
+
+## P2-H 刷怪蛋
+- gloom_beetle / gloom_hawk / gloom_heart / gloom_matriarch / gloom_spitter 蛋均能正常刷出（heart 悬空 ~9 格、matriarch 悬空 ~13 格，推测是悬浮 boss，高度需确认）**[通过]**。
+- **[复现，minor] `practice_target` 刷怪蛋无用**：蛋被消耗，实体在 `PracticeTarget.tick` 里因 `owner==null` 立刻被 `discard()`——创造栏里点了什么也没有。建议从创造栏移除或给提示。
+- 刷怪蛋 spawner 对 heart/matriarch 没有校验祭坛（可在任意处召唤 boss，仅 creative 内容，info）。
+
+## P2-I Ginso Tree（仅代码+API，未走完整行程）
+- `ginso_state`：origin `-632,71,-1160` height 109，shapeVersion 3 / courseVersion 2 / escapeVersion 1，逃生路线 66 个洪水 box、`interactive:true`、`referenceSeconds` ≈36.5 s **[已读数据，未实跑]**。
+- 内部分区 bash(20–38)→grapple(38–56)→wind/glide(56–78) 对应能力链 DASH→BASH→GLIDE→GRAPPLE，grapple 区之前玩家必已拥有 glide（前置），无顺序卡死 **[代码确认]**。
+- **[未测]** Ginso 整条课程的真实手玩、水心逃生/涨水。
