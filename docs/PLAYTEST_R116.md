@@ -15,3 +15,20 @@
 - 翻上沿（mantle）：墙顶高于脚 2、3 格可翻上；4 格退化为蹬墙。lastAction 不记录 mantle（仅客户端 SpiritMantle），无法由状态字段验证，只由终点位置推断 **[通过/信息]**
 - 游泳：不按疾跑 = 站姿下沉（原版行为）；疾跑+前进 → `SWIMMING`、速度正常、第三人称为俯冲姿势 **[通过]**
 - 截图：`shots/playtest-r116-swim-*.png`、`fp-*`、`tpf-*`
+
+## 区域 1b：落地接跑
+- 疾跑中起跳落地：水平速度全程 0.32/tick，无停顿 **[通过]**
+
+## 区域 2：第一人称双骨手臂 / 持物
+- 空手/方块/刃/弓/锤/矛/箭 一人称截图：白色手臂 + 能量武器，姿态正常，无原版人形手臂闪现 `shots/playtest-r116-fp-sheet.png` **[通过]**
+- 精灵形态第三人称（前视）：光晕、耳尾、多段形态正常；但**白天光晕过曝，持有的武器在背面/前视图都看不见**（`tpf-crops2.png`、`tp-sheet.png`）**[怀疑 / cosmetic]**：无法确认第三人称握持武器是否渲染，未做侧视特写。
+- 切 `form off/on`：命令正常；本轮自动截图未捕获到原版人形闪帧 **[未复现]**
+
+## 区域 3：命令 / 创造栏 / 技能轮盘 / HUD / 设置
+- `/ori` 全部子命令（awaken/form/unlock/giveall/energy/light/cells/god/locate ×3/spawn ×6/reset/status/great_tree/blight）均返回成功；非法参数（`cells life 99`、`locate bogus`、`spawn bogus`）正确报错 **[通过]**
+- `/ori status` 通过 `sendSystemMessage` 输出，devtools captureOutput 只能看到“已应用到 1 名玩家”（`commands.orimod.done` 为 `/orimod %s`）——**cosmetic**：反馈把内部参数名当命令名显示（`/orimod all`、`/orimod off`、`/orimod fill`），不是用户输入的 `/ori ...`。
+- `/ori giveall` **不幂等且会溢出**：清空后单次 giveall 36 件进背包，另有 22 件掉在脚下（共 58 件 > 36 格）；再调一次又整套再给 **[复现，minor]**。
+- 创造栏：「OriMod 精灵」标签在第 2 页，图标/物品齐，`orimod:ginso_root_lip`（金索苔根护沿）GUI 图标比格子高，**溢出到上方 `spirit_sand` 的格子里**（`playtest-r116-creative-tab2-zoom.png`）**[复现，cosmetic]**。
+- 技能轮盘（长按 G）：打开、四扇区、热键徽标与槽位一致（复原 Z/光爆 X/蓄力灵焰 H）**[通过]**。
+- 设置：客户端设置→画面→「Spirit Glow 光影」标签是中英混排 **[cosmetic]**；开启后 Iris 加载 Spirit Glow.zip，bloom/阴影正常渲染，关闭后恢复，无异常日志（仅 Iris 的 tag 缺失 WARN：`minecraft:bars/chains/carpets/lightning_rods/wooden_shelves`，来自 Iris 版本与 MC 版本不匹配，非本模组）**[通过]**
+- 死亡/重生（被自己刷出的 heart/matriarch 杀死）：死亡界面正常；重生后保留觉醒/形态/技能槽，血量满 26（3 生命格），背包只剩 `ruin_guide`（keepInventory=false，物品掉落）**[通过]**
