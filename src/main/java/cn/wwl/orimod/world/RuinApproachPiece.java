@@ -55,7 +55,7 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
     }
     public static RuinPlacement doorway(RuinKind kind, RuinKind.Layout layout, RuinPlacement ruin) {
         return new RuinPlacement(ruin.block(new BlockPos((int)layout.entry().x,
-                kind == RuinKind.CAVE ? layout.surfaceY() : 1, 0)), ruin.rotation());
+                layout.approachY(), 0)), ruin.rotation());
     }
 
     /** The stairs adapt to the sampled terrain themselves; a beard on this tall box would hollow the ground under it. */

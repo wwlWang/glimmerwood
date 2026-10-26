@@ -1,5 +1,25 @@
 # 回归测试
 
+## 森林泉最终美术/地形返修（v009 已审）
+
+全量 `evidence/playtest-c-forest-v002/full-02.log`：**1682 JUnit / 1090 GameTest，失败/错误/跳过均0**。XML分别归档在`junit-full-02/`和`gametest-full-02.xml`。森林定向50/17通过，namespace `orimod_forest_rebuild`。
+
+新增四朝向`graded_rim_*`：完整底层DIRT占地含门柱/根脚；模拟天然深沟、入口接坡下方洞隙和已有花；新piece使用保存的45列接坡高度，逆序分片写入后再放实际接坡；探针检查所有相邻地面（含第4→5列）、真实陡坎的完整挡土面与1.5高护沿、无无故护沿/无入口护沿、门柱连续支撑、保存重读、环外天然地面无技能走进入口。强化夹具护沿13/165列=7.88%。WorldGenLevel延迟shape更新夹具先稳定RED（azure_bluet占位未写护沿），显式花替换后GREEN；普通ServerLevel即时更新会自动拔花、掩盖该问题。所有失败日志与误判修正见`RIM.md`，不跳过失败坐标。
+
+最终新档种子116117、顺时针90°：1247环带列，第4→5列最大高差1，未保护违规相邻落差0；仅20/165外边界列（12.12%）有护沿、入口0。588泉源、模板空气无水/岩浆、地基悬空/流体0、接坡阻挡0。自然保存态扫描与引擎碰撞寻路分别留证，摄影传送不冒充真人通关。最重自然写片18.548ms；20片总223.531ms；首次模板读97.574ms。
+
+所有容器移除且浆果berries=false（AGE25防止再长果）后实际LightLayer.BLOCK扫描1606半格站位：最低1、所有焦点/玩法目标≥7。`LIGHTING.md`/`lighting-final.json`记录全量结果与定向结果；外沿地衣位置跟世界格点有关，两次均值有小幅差异，最低值一致。普通新叶persistent=true。原有暗桥防绕行/安全退路、真实猛击/双钥石、220tick雨水/含水层/流水与Legacy哈希测试全保留。
+
+Gradle `cleanGameTestWorld` 在`runGameTestServer`前只删除`run-gametest/world`（followSymlinks=false），每轮临时夹具重建；不影响任何客户端存档。最终清单`files-forest.txt`含28文件及本任务；新art/source森林v001/v002均保留。最终摄影`evidence/playtest-c-forest-art-v009`五张，四张主图和v005相机参数完全相同。
+
+## 森林泉 LayoutVersion 1 首版（历史工程记录）
+
+`evidence/playtest-c-forest-v001`：全量1679 JUnit / 1086 GameTest，零失败/错误/跳过。定向命名空间`orimod_forest_rebuild`有13项：四朝向真实所属部件/保存重读/版本神龛/地图调查、碰撞路径、入口中心四角实际猛击点灯落桥、两钥石开门；全模板+外围填高暗桥不可绕过/安全退路；去容器永久方块光；220tick含水层/雨水/流水；缺版本读取Legacy。远场夹具自持chunk票，finally撤销。 新增四朝向天然洞隙地基先RED后GREEN，验证仅作者底层泥土向下支撑、模板外自然泥土不增柱、Legacy不改。
+
+单测以编辑前f3cc83c哈希冻结旧NBT/契约，检查新版封边水源、实际根材连通/节点稀疏、B4部件数量、地表/洞穴选址区别与四朝向入口。plain java探针只读NBT/契约，避免GreatTreeSites初始化。新生成器`build_forest_spring.py --check`、旧`check-ruins.py`以及`test_check_ruins.py`12项均通过；Python须使用已安装nbtlib的美术venv。
+
+光照扫描用引擎实际LightLayer.BLOCK、半格碰撞可站立面（含屋顶/根沿），不把天空光或可击碎容器作为保证。最低2；焦点/桥最低7。自然摄影与另置模板剖面分别标注，不把摄影传送当作真人通关。
+
 ## C cave_altar 美术 v002 返修
 
 最终补光验证：`evidence/playtest-c-cave-gallery-light-v001/full.log`，**1670 JUnit / 1073 GameTest，0失败/错误/跳过**，5m44s正常退出。`walkable_block_light`追加起跳台三格邻域及花本体/六邻格门槛。原模板RED仅此1项失败（49个起跳周边站位全部<7）；修后定向13/7全绿。去除所有容器的真实块光：起跳最低7/平均9.612、花最低11/平均11.429，画廊平均7.179；其余厅室≥1、焦点≥7。全量与定向的15行光照统计完全一致。固定灯不占中央抓钩线；四朝向真实抓钩、寻路、钥石、多方块、含水层200tick与旧档冻结照旧全过。新版生成器--check复现，旧版两个SHA不变。

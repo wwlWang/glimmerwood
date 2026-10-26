@@ -1,5 +1,21 @@
 # 当前工作状态
 
+## C 第二座：forest_spring 重建（已审核提交；下一座 creek_ruins）
+
+基准f3cc83c。新LayoutVersion1为39×32×55露天泉庭；旧19×28×31模板/契约按预编辑哈希冻结，缺省NBT和旧构造继续0。神龛、地图石、风暴祭坛用B4多方块；挑战、指引、神龛反推按piece契约。四朝向寻路、真实猛击点灯落桥、两钥石开门、暗桥防绕行及退路均保留。
+
+返修完成：侧院残墙/开顶、自然泉岸和磨损主路、四棵大冠树下段加粗并生短枝、墙顶不规则塌落和脚边碎石。素木与石材为主，仅7颗发光根结。普通杜鹃叶persistent=true，浆果只装饰：去掉全部容器、berries=false并防止再长果后，1606个半格可站立采样最低块光1，焦点/玩法目标最低7。588格泉源经220tick雨水/含水层/流水全部保留，通路空气无新增水。
+
+完整底层DIRT占地纳入两个门柱与六个树根脚，补连续地基。新版本草坡同时拟合平台、天然地表和保存的接坡楼梯高度，按需由四格延至最多八格；仅末端真实陡坎用苔石挡土面+1.5格护沿，不封入口主路。四朝向加强夹具：相邻高差≤1（明确覆盖第4→5列）、护沿13/165列=7.88%、入口护沿0、天然地面→入口无技能步行通过。自然新档1247环带列，第4→5列最大1，无未保护的违规相邻落差；护沿20/165列=12.12%，覆盖25条实际陡坎边，入口无护沿；地基空隙/流体、接坡净空阻挡均0。
+
+真实失败与误判均保留：门柱未纳入占地造成9→6格落差；四格环带外第5列仍陡落；接坡后写造成侧边2格落差；已有花不属于canBeReplaced，WorldGenRegion延迟邻接更新使护沿写入跳过。普通ServerLevel夹具会先自动清花掩盖问题；延迟更新夹具四朝向RED（guard=azure_bluet），显式替换花后GREEN。保存ForestApproachTerrain与接坡共用45列原始高度；旧版不改。详见evidence/playtest-c-forest-v002/RIM.md。
+
+最终`build runGameTestServer compileDevtoolsJava`：1682 JUnit / 1090 GameTest，0失败/错误/跳过，BUILD SUCCESSFUL in 7m9s；日志evidence/playtest-c-forest-v002/full-02.log及XML已归档。定向50/17通过；Python12项、新旧生成器复现、旧模板/契约哈希均通过。
+
+最终五张摄影evidence/playtest-c-forest-art-v009：terrain-edge、ruined-courts-birdseye、spring、entrance-overview及terrain-retaining-edge。四张主图与v005同机位逐字段核对；seed116117，origin(534,107,−272)，CLOCKWISE_90，DISPLAY=:0/llvmpipe/FOV65/RD8。模板首次读取97.574ms；扩大环带后20片写入共223.531ms，最重18.548ms（chunk30,−17），前版12片最重17.228ms，不以不同片数宣称性能提升。客户端00:05:32正常关闭。
+
+28文件清单evidence/playtest-c-forest-v002/files-forest.txt，含build.gradle仅清理run-gametest/world的前置任务（followSymlinks=false）；不删客户端存档。美术源art/source/forest_spring/v001及v002均入白名单，无新GLB/PNG。无git写操作，等Claude核对提交；提交后进入creek_ruins，沿用节点稀疏、浆果不计光照、外沿分级、立件完整地基的门槛。
+
 ## C 第一座：cave_altar 重建（已审核提交；下一座 forest_spring）
 
 基准e623678。LayoutVersion1独立47×32×71模板/契约；旧23×19×39模板与契约的预编辑哈希仍一致，缺省NBT/旧构造继续0。新版B4多方块、钥石/秘室/挑战坐标及平面拓扑保留，未动其他遗迹、驿站或大灵树。

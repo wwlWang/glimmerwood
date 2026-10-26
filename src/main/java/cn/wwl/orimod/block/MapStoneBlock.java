@@ -37,6 +37,8 @@ public final class MapStoneBlock extends SanctuaryBlock {
                 if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof KeystonePedestalBlock && level.getBlockState(pos).getValue(KeystonePedestalBlock.FULL))keys++;}
             if(piece.layout().bossAltar()!=null){var pos=piece.placement().block(piece.layout().bossAltar());
                 if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof GloomAltarBlock)altars++;}
+            if(piece.layout().stormAltar()!=null){var pos=piece.placement().block(piece.layout().stormAltar());
+                if(level.hasChunkAt(pos) && level.getBlockState(pos).getBlock() instanceof StormAltarBlock)altars++;}
             return new Survey(cells,keys,altars);
         }
         for (var pos : BlockPos.betweenClosed(center.offset(-SURVEY_RADIUS, -12, -SURVEY_RADIUS), center.offset(SURVEY_RADIUS, 16, SURVEY_RADIUS))) {

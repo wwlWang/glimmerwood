@@ -22,6 +22,11 @@ public final class RuinSiteRules {
 
     private RuinSiteRules() {}
 
+    /** Only caves bury their roof; a newer surface layout must still sit at the terrain deck. */
+    public static int templateSurface(boolean cave,int version,int surfaceY,int sizeY,int min,int max) {
+        return cave ? min-CAVE_COVER-(version>0?sizeY-1-surfaceY:0) : max;
+    }
+
     public static boolean surfaceInRange(int y) { return y >= MIN_SURFACE && y <= MAX_SURFACE; }
 
     public static boolean footprintOk(int min, int max) {

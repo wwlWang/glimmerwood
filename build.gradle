@@ -59,6 +59,9 @@ tasks.named('processGametestResources') {
     from('src/gametest/resources/data/orimod_gametest/structure/room.nbt') {
         into 'data/orimod_cave_rebuild/structure'
     }
+    from('src/gametest/resources/data/orimod_gametest/structure/room.nbt') {
+        into 'data/orimod_forest_rebuild/structure'
+    }
     from('src/main/resources/data/orimod/structure/ruins/cave_altar.nbt') {
         into 'data/orimod_gametest/structure'
         rename { 'cave.nbt' }
@@ -122,7 +125,7 @@ neoForge {
             sourceSet = sourceSets.gametest
             loadedMods = [mods.orimod, mods.orimod_gametest]
             gameDirectory = project.file('run-gametest')
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_cave_rebuild')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_cave_rebuild,orimod_forest_rebuild')
             systemProperty 'orimod.gametest.report', file('build/test-results/gametest.xml').absolutePath
         }
         worldgenAudit {
@@ -242,6 +245,16 @@ tasks.register('prepareDevtoolsEnvironment') {
     }
 }
 tasks.named('runDevtoolsClient') { dependsOn 'prepareDevtoolsEnvironment' }
+
+// Disposable GameTest fixtures use distant sites and otherwise accumulate region
+// files between runs. Never touch a dev client save or any sibling run directory.
+def cleanGameTestWorld = tasks.register('cleanGameTestWorld', Delete) {
+    group = 'verification'
+    description = 'Remove only run-gametest/world before rebuilding the temporary test fixtures.'
+    delete layout.projectDirectory.dir('run-gametest/world')
+    followSymlinks = false
+}
+tasks.named('runGameTestServer') { dependsOn cleanGameTestWorld }
 
 idea.module {
     downloadSources = true

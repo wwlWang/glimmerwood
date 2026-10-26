@@ -18,7 +18,7 @@ public enum RuinKind {
     public final String id;
     public final int abilities;
     private final java.util.Map<Integer, Layout> layouts = new java.util.HashMap<>();
-    public int currentVersion() { return this == CAVE ? 1 : 0; }
+    public int currentVersion() { return this == CAVE || this == FOREST ? 1 : 0; }
     public ResourceLocation template(int version) { checkVersion(version); return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + id + (version == 0 ? "" : "_v" + version)); }
     private void checkVersion(int version) { if (version < 0 || version > currentVersion()) throw new IllegalArgumentException("Unsupported ruin layout " + id + ":" + version); }
     RuinKind(String id, int abilities) { this.id = id; this.abilities = abilities; }
@@ -91,7 +91,8 @@ public enum RuinKind {
                     BlockPos.containing(vector(root.getAsJsonArray("shrine"))), vector(root.getAsJsonArray("safe")),
                     vector(root.getAsJsonArray("entry")), root.get("surface_y").getAsInt(),
                     List.copyOf(checks), List.copyOf(critical), List.copyOf(clearances), List.copyOf(cells), List.copyOf(updrafts), altar, List.copyOf(keystones), vault, gloom, mapStone, sand, storm, secret, List.copyOf(bridges), root.has("beetles")?positions(root.getAsJsonArray("beetles")):List.of(),
-                    root.has("legacy_map_stone")?BlockPos.containing(vector(root.getAsJsonArray("legacy_map_stone"))):mapStone);
+                    root.has("legacy_map_stone")?BlockPos.containing(vector(root.getAsJsonArray("legacy_map_stone"))):mapStone,
+                    root.has("approach_y")?root.get("approach_y").getAsInt():(this==CAVE?root.get("surface_y").getAsInt():1));
             layouts.put(version, layout);
             return layout;
         } catch (Exception error) { throw new IllegalStateException("Invalid ruin layout " + path, error); }
@@ -102,7 +103,7 @@ public enum RuinKind {
     public record Clearance(BlockPos from, BlockPos to) {}
     public record Layout(BlockPos size, BlockPos shrine, Vec3 safe, Vec3 entry, int surfaceY,
                          List<Checkpoint> checkpoints, List<Anchor> critical, List<Clearance> clearances, List<Cell> cells, List<BlockPos> updrafts, BlockPos bossAltar,
-                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret, List<Bridge> bridges, List<BlockPos> beetles,BlockPos legacyMapStone) {}
+                         List<BlockPos> keystones, Vault vault, BlockPos[] gloomWater, BlockPos mapStone, BlockPos[] spiritSand, BlockPos stormAltar, Secret secret, List<Bridge> bridges, List<BlockPos> beetles,BlockPos legacyMapStone,int approachY) {}
     private static List<BlockPos> positions(com.google.gson.JsonArray array) {
         var out = new ArrayList<BlockPos>(); for (var p : array) out.add(BlockPos.containing(vector(p.getAsJsonArray()))); return List.copyOf(out);
     }

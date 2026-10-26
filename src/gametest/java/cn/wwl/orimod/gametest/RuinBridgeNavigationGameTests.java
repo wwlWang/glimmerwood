@@ -71,7 +71,7 @@ public final class RuinBridgeNavigationGameTests {
      * Retreat requires drops <=3 blocks or water; bypass detection allows even unsafe drops.
      * Exterior variants include a five-block terrain ring.
      */
-    private static final class WalkGraph {
+    static final class WalkGraph {
         private final Map<BlockPos,List<AABB>> boxes=new HashMap<>();
         private final Set<BlockPos> water=new HashSet<>();
         private final Map<Long,List<Vec3>> columns=new HashMap<>();

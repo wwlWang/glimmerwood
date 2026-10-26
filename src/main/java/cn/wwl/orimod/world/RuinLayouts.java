@@ -28,7 +28,7 @@ public final class RuinLayouts {
         if(piece!=null)return new Site(piece.layout(),piece.placement(),piece.layoutVersion());
         // Player-built shrines and old flat test fixtures have no structure start. State never upgrades an old shrine.
         var state=level.getBlockState(shrine);
-        int version=kind==RuinKind.CAVE && cn.wwl.orimod.block.SanctuaryAssembly.assembled(state)?1:0;
+        int version=cn.wwl.orimod.block.SanctuaryAssembly.assembled(state)?kind.currentVersion():0;
         var layout=kind.layout(version);
         var rotation=state.hasProperty(RuinShrineBlock.FACING)?RuinPlacement.fromFacing(state.getValue(RuinShrineBlock.FACING)):net.minecraft.world.level.block.Rotation.NONE;
         return new Site(layout,new RuinPlacement(shrine.subtract(layout.shrine().rotate(rotation)),rotation),version);
