@@ -52,3 +52,14 @@
 - GemRender 唯一一条 `Failed to load texture: gemrender:atlas/.../gloom_heart.glb`（FileNotFoundException，只出现一次，TextureManager WARN，gloom_heart 实体仍渲染）——**[怀疑 minor]** 图集纹理在注册前被 TextureManager 抢先请求；该警告每次加载世界可能复现。
 - `scripts/check-assets.py`：6 个 GLB 全部 passed；en_us/zh_cn 536 键完全对齐，代码里引用的静态 lang 键均存在。
 - crash-reports 目录无今日新文件。
+
+## 区域 7：全量测试
+- `cleanTest build runGameTestServer compileDevtoolsJava` 在 `436cef0`（= R116 `f3cc83c` + `0aaf077` forest_spring 重建 + 本文档提交）上：**BUILD SUCCESSFUL，1682 JUnit / 1090 GameTest，0 失败 / 0 跳过**（日志 `/workspace/oriMod/pt116/full-final.log`，1m54s 完成）。
+
+## 补充：羽毛 / 滑翔
+- 胸甲槽装鞘翅（精灵形态下的“羽毛”）：二段跳后按住跳跃进入 glide，下沉约 0.125/tick 匀速并保持前进，`feather.wearing/permitted` 正确；松键后回落 **[通过]**
+
+## 本轮未覆盖
+- 挑战垫落地检测、钥石门真实通关、灵树/金索内部真实输入攀登（由既有 GameTest/脚本覆盖，本轮未在客户端实测）
+- 原版人形闪帧（形态切换时）未捕获；Iris 真 bloom 之外的光影包未测
+- forest_spring 新版（`0aaf077`）视觉未看；仅看了旧版
