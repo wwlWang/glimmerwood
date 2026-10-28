@@ -15,5 +15,9 @@ abstract class MovementTeleportMixin {
 
     // Covers commands, items, challenge returns and vanilla position corrections, including short moves.
     @Inject(method = "teleport(DDDFFLjava/util/Set;)V", at = @At("TAIL"))
-    private void orimod$teleported(CallbackInfo ci) { SpiritMovement.teleported(player); }
+    private void orimod$teleported(CallbackInfo ci) {
+        // PlayerList.respawn sends the new-life packet before replacing connection.player.
+        // Never number a receipt from that retired player's transient MOVEMENT attachment.
+        if (cn.wwl.orimod.spirit.PlayerLifecycle.current(player)) SpiritMovement.teleported(player);
+    }
 }

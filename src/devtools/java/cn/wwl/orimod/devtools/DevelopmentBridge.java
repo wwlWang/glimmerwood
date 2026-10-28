@@ -82,6 +82,7 @@ public final class DevelopmentBridge {
         NeoForge.EVENT_BUS.addListener(ReviewCamera::tick);
         NeoForge.EVENT_BUS.addListener(LayerPreview::tick);
         NeoForge.EVENT_BUS.addListener(SanctuaryCollisionPreview::render);
+        NeoForge.EVENT_BUS.addListener(MovementPacketTrace::clonePlayer);
     }
 
     private void setup(FMLClientSetupEvent event) {
@@ -159,6 +160,10 @@ public final class DevelopmentBridge {
         var mc = Minecraft.getInstance();
         String operation = action.get("op").getAsString();
         switch (operation) {
+            case "movement_trace" -> {
+                if(action.has("enabled"))MovementPacketTrace.configure(action.get("enabled").getAsBoolean(),action.has("clear")&&action.get("clear").getAsBoolean());
+                return MovementPacketTrace.report();
+            }
             case "create_world" -> {
                 require(mc.getOverlay() == null, "Wait for initial resource loading to finish");
                 require(mc.level == null, "Leave the current world first");
@@ -1032,6 +1037,7 @@ public final class DevelopmentBridge {
                 "vertical", player.verticalCollision, "crouching", player.isCrouching(), "flying", player.getAbilities().flying,
                 "forward", player.zza, "strafe", player.xxa, "bounds", player.getBoundingBox().toString()));
         var movement = player.getData(cn.wwl.orimod.spirit.SpiritData.MOVEMENT);
+        state.put("movementIdentity",MovementPacketTrace.snapshot(player));
         var combat = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT);
         var view = player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW);
         state.put("combat", Map.ofEntries(Map.entry("view", view), Map.entry("mode", combat.mode), Map.entry("stage", combat.stage),

@@ -14,6 +14,7 @@ abstract class RestorationMoveMixin {
     // Main-thread handoff is mandatory; intercept before vanilla applies positional movement.
     @Inject(method="handleMovePlayer",at=@At(value="INVOKE",target="Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V",shift=At.Shift.AFTER),cancellable=true)
     private void orimod$hold(ServerboundMovePlayerPacket packet,CallbackInfo ci){
+        if(!cn.wwl.orimod.spirit.PlayerLifecycle.current(player))return;
         var session=Restoration.session(player);if(session==null)return;
         float yaw=packet.getYRot(player.getYRot()),pitch=packet.getXRot(player.getXRot());
         if(!Float.isFinite(yaw)||!Float.isFinite(pitch))return; // Vanilla disconnects invalid packets.

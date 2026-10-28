@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "cn.wwl.orimod.devtools.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["ReviewCameraMixin", "AnimationReviewAuraMixin", "AnimationReviewParticlesMixin"],
+  "client": ["ReviewCameraMixin", "AnimationReviewAuraMixin", "AnimationReviewParticlesMixin", "CombatPendingAccessor", "MovementReceiptTraceMixin"],
   "injectors": {"defaultRequire": 1}
 }

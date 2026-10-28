@@ -1,5 +1,19 @@
 # 回归测试
 
+## R116 重生移动回执生命周期（含登录复审）
+
+基准ab655da；证据 `evidence/playtest-r116-respawn-20261028-v001/`。真实RED平地死前/重生/重进各5跳：重生后pending1/2/3/4/4，第5跳predicted0/accepted1/rise0；新客户端Player与attachment已重建，旧连接teleport却发送旧RELOCATE15。修复只阻止旧实例回调，不改客户端预测或移动数值。
+
+7条movement_respawn：真实重生包顺序、removed传送/取消、未removed但已替换引用、迟到预测纠正、商人completion、登录初始化。前6条行为RED见gt-red-04；新增login_initializes_relocation在placeNewPlayer后任何PlayerTick前断言dimension/relocations/previousPosition/空中次数锁定，gt-login-red-01为真实失败；定向green含既有9条传送。编译/夹具错误与行为RED分开记。
+
+登录复审：原严格守卫RED仅登录初始化失败（1/16）；修正后定向16/16（7生命周期+9传送），正常保存exit0。实机重新登录后五跳，全部预测1/接受1/pending0，上升1.62328格；relocations=1、STALE_ACTION=0，保存到标题0.372秒、客户端exit0。
+
+全量JUnit/build **1754项**，全量GameTest **1226项**，失败/错误/跳过均0，BUILD SUCCESSFUL、完整保存exit0；保存228秒，world 372.78MiB、93,740区块/203个region，无残留Java。
+
+最终串行 full-junit-02（test/build/compileDevtoolsJava）→full-gametest-02（默认全部命名空间，无过滤）；--no-parallel --no-daemon，独立监督进程保存exit，启动前检查前项已退出、无Java。src全量前后SHA256零变化，XML/保存世界统计归档。默认关闭的movement_trace与两个观察mixin只在devtools；发布JAR无诊断或gametest类/配置。
+
+原GREEN平地5+5+5及重生楼梯8跳（y151→159、20HP）保留；本次不重复录制重生/楼梯。awaitingAttackUntil仅观察，没有证据因此不改。
+
 ## R116 逃生调参 / 钥石台加固（独立于已提交B1–B9）
 
 证据`evidence/playtest-r116-escape-20261027-v001/`。有效RED `red-02`：同escape-05轨迹、Normal+遮顶第260tick死亡；生存真实采矿拆除台子。参数JUnit新增2项在旧代码失败。`green-03`四项全绿并正常保存exit0；首轮光照夹具未就绪、错误packet accessor和尾批光照等待阻塞均单列，未当作行为RED或通过。

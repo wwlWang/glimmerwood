@@ -33,6 +33,7 @@ public final class MerchantTrading {
         s.busy=true;send(p,s,"searching");
         if(id.equals("ruin")){
             boolean started=RuinLocator.request(p,RuinLocator.Mode.RUINS,found->{if(SESSIONS.get(p.getUUID())==s){
+                if(!cn.wwl.orimod.spirit.PlayerLifecycle.current(p)){close(p);return;}
                 if(found.isEmpty())refresh(p,s,"not_found");
                 else if(p.getData(SpiritData.PROGRESS).rewards().getOrDefault(found.get().clearedKey(),0)>0)refresh(p,s,"stale");
                 else pay(p,s,id,new RuinGuidePayload(p.level().dimension().location().toString(),found.get().entry(),found.get().kind()));

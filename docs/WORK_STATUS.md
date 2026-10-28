@@ -1,6 +1,18 @@
 # 当前工作状态
 
-## R116 逃生调参 + 钥石台加固：全量通过，待审核提交
+## R116 重生移动不同步：含登录复审，全量通过，待审核提交
+
+基准ab655da。已证实PlayerList.respawn先发Respawn包，再通过尚未换绑的connection.teleport触发旧ServerPlayer的RELOCATE。新客户端actionId归零后接到旧回执15，新生命JUMP3/5/7/9/11全部STALE_ACTION；pending到4，第5跳预测0/服务端接受1。不是静态游标残留，不跨死亡延续actionId。
+
+修复限定发送端：PlayerLifecycle.current要求未removed，且UUID未注册或指向当前实例。placeNewPlayer第223行teleport先于230/231行注册，所以必须允许未注册登录；respawn旧实例已removed，仍拒绝。传送/复苏移动入口、两处MovementResult出口、迟到预测位置纠正、商人定位completion均使用同一守卫。客户端排序、预测和数值不变。诊断仅在devtools，默认关。
+
+登录复审：原严格守卫RED仅登录初始化失败（1/16）；修正后定向16/16（7生命周期+9传送），正常保存exit0。实机重新登录后五跳，全部预测1/接受1/pending0，上升1.62328格；relocations=1、STALE_ACTION=0，保存到标题0.372秒、客户端exit0。
+
+全量JUnit/build **1754项**，全量GameTest **1226项**，失败/错误/跳过均0，BUILD SUCCESSFUL、完整保存exit0；保存228秒，world 372.78MiB、93,740区块/203个region，无残留Java。
+
+证据 `evidence/playtest-r116-respawn-20261028-v001/`（CALLBACK_AUDIT、LOGIN_REVIEW、FINAL_VERIFICATION、files-respawn）。原真实RED与GREEN平地/楼梯证据保留，复审按要求仅补登录五跳；awaitingAttackUntil未证实bug，本轮不改。森林泉选址56→9及森林旧站立面扫描仍排在后续。无git写操作。
+
+## R116 逃生调参 + 钥石台加固：已审核提交（ab655da）
 
 基准4c11df2。前沿延迟160tick/8秒、2HP/10tick；4格/秒、减速/黑暗、胜利条件、1200tick总时限和奖励回执不变。中英文警告标题+8→1倒计时，每秒提示音、最后3秒升调。钥石台strength(-1,3600000)+noLootTable，生存不能拆、创造可拆；旧台原位生效，不改布局/绑定/再凝聚规则。
 
@@ -8,7 +20,7 @@ RED：escape-05同路线、Normal加遮顶回放第260tick死亡；真实生存�
 
 全量JUnit/build 1754项零失败/错误/跳过、exit0。全量 GameTest **1219项，0失败/错误/跳过，BUILD SUCCESSFUL，完整保存exit0**；保存205秒，world 372.81MiB、93,767区块、211个region，无残留java。证据`evidence/playtest-r116-escape-20261027-v001/`，实拍`evidence/playtest-r116-escape-capture-v001/`。完整RED/无效夹具记录、余量CSV、提交清单和最终统计保留在证据目录。
 
-**下一个独立问题**：多次死亡重生后服务端接受跳跃、本地待确认队列积至4、停止预测；重进存档后恢复。`RESPAWN_MOVEMENT.md`及双端逐tickCSV已归档，只有状态失配证据，尚未确定哪个回执门槛丢弃；本批不改移动源码。之后再做森林选址56→9与森林旧站立面扫描。无git写操作，收尾交Claude审后停下。
+**下一个独立问题**：多次死亡重生后服务端接受跳跃、本地待确认队列积至4、停止预测；重进存档后恢复。`RESPAWN_MOVEMENT.md`及双端逐tickCSV已归档，只有状态失配证据，当时尚未确定哪个回执门槛丢弃；后续已在本文顶端的独立移动修复中定位并验证。之后再做森林选址56→9与森林旧站立面扫描。无git写操作，收尾交Claude审后停下。
 
 ## R116 九项优先修复：已审核提交（4c11df2）
 

@@ -211,7 +211,7 @@ public final class SpiritMovement {
     }
 
     private static void rejectJump(ServerPlayer player, MovementState s, MovementState.JumpRequest request) {
-        if (!request.predicted() || !player.isAlive()) return;
+        if (!request.predicted() || !player.isAlive() || !cn.wwl.orimod.spirit.PlayerLifecycle.current(player)) return;
         Vec3 correction = request.position();
         if (player.level().noCollision(player, player.getBoundingBox().move(correction.subtract(player.position()))))
             player.connection.teleport(correction.x, correction.y, correction.z, player.getYRot(), player.getXRot());
@@ -448,6 +448,9 @@ public final class SpiritMovement {
         if (mode != IDLE && mode != WALL_SLIDE && mode != RELOCATE) s.lastAction = mode;
         s.activeTicks = ticks;
         s.velocity = velocity;
+        // Cleanup may still release a retired instance's owned actions. Its connection,
+        // however, can already belong to a new life: do not send or consume a receipt id.
+        if (!cn.wwl.orimod.spirit.PlayerLifecycle.current(player)) return;
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
                 ++s.actionId, jumpSequence, mode, ticks, velocity, s.airJumpSpent, s.airDashSpent,
                 s.bash == null || s.bash.target.entity() == null ? -1 : s.bash.target.entity().getId(),
