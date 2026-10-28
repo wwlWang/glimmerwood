@@ -10,7 +10,8 @@ import net.minecraft.world.entity.player.Player;
 /**
  * R36 Life and Energy Cells (Ori): permanent pickups found in ruins. Each Life Cell adds one heart, each
  * Energy Cell 10 spirit energy; counts live in {@link SpiritProgress#rewards()} (kept through death) and are
- * capped. The health bonus is a transient modifier re-applied on login, respawn and use, so it never piles up.
+ * capped. The fixed-ID health modifier is saved with attributes, before vanilla restores Health.
+ * Login, respawn and use replace that same modifier, so it never piles up.
  */
 public final class SpiritCells {
     public enum Kind { LIFE, ENERGY;
@@ -45,7 +46,7 @@ public final class SpiritCells {
         if (health == null) return;
         int cells = SpiritData.isAwakened(player) ? count(player, Kind.LIFE) : 0;
         if (cells == 0) health.removeModifier(MODIFIER);
-        else health.addOrUpdateTransientModifier(new AttributeModifier(MODIFIER, cells * HEALTH_PER_CELL, AttributeModifier.Operation.ADD_VALUE));
+        else health.addOrReplacePermanentModifier(new AttributeModifier(MODIFIER, cells * HEALTH_PER_CELL, AttributeModifier.Operation.ADD_VALUE));
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }
 

@@ -4,7 +4,7 @@ Only visual JSON changes. Geometry v003 and its archived art are left byte-for-b
 """
 import argparse,hashlib,json
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'art/source/ginso_escape/v004';PACK=ROOT/'src/main/resources/assets/orimod'
+ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'art/source/ginso_escape/v005';PACK=ROOT/'src/main/resources/assets/orimod'
 def enc(v):return (json.dumps(v,ensure_ascii=False,indent=2)+'\n').encode()
 def model(variant):
  elements=[]
@@ -30,12 +30,12 @@ def main():
  for i in range(4):
   name='ginso_root_lip'+('' if i==0 else '_'+str(i));v=enc(model(i));outputs[OUT/(name+'.json')]=v;outputs[PACK/'models/block'/(name+'.json')]=v
   for rotation in (0,90,180,270):variants.append({'model':'orimod:block/'+name,'y':rotation,'weight':1})
- state=enc({'variants':{'':variants}});item=enc({'parent':'orimod:block/ginso_root_lip'})
+ state=enc({'variants':{'':variants}});item=enc({'parent':'orimod:block/ginso_root_lip','display':{'gui':{'rotation':[30,225,0],'translation':[0,-1,0],'scale':[.46,.46,.46]}}})
  outputs[PACK/'blockstates/ginso_root_lip.json']=state;outputs[OUT/'blockstate.json']=state
  outputs[PACK/'models/item/ginso_root_lip.json']=item;outputs[OUT/'item.json']=item
- outputs[OUT/'manifest.json']=enc({'version':4,'geometry':'unchanged v003 / EscapeVersion1','generator':'scripts/art/build_ginso_root_lip.py','collision':'explicit full voxel width x 1.5 blocks high, unchanged','visual':'Four deterministic positional variants x four rotations. Continuous rounded horizontal roots reach voxel boundaries. One-texel height variation, asymmetrical bark ridges, no caps or isolated posts.','files':{str(p.relative_to(ROOT)):hashlib.sha256(v).hexdigest() for p,v in outputs.items()}})
+ outputs[OUT/'manifest.json']=enc({'version':5,'geometry':'unchanged v003 / EscapeVersion1; GUI only fit v005','generator':'scripts/art/build_ginso_root_lip.py','collision':'explicit full voxel width x 1.5 blocks high, unchanged','visual':'Four deterministic positional variants x four rotations. Continuous rounded horizontal roots reach voxel boundaries. One-texel height variation, asymmetrical bark ridges, no caps or isolated posts.','files':{str(p.relative_to(ROOT)):hashlib.sha256(v).hexdigest() for p,v in outputs.items()}})
  for p,v in outputs.items():
   if args.check:assert p.exists() and p.read_bytes()==v,f'Mismatch: {p}'
   else:p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(v)
- print('Ginso root lip v004: '+('check passed, written=0' if args.check else 'generated'))
+ print('Ginso root lip v005: '+('check passed, written=0' if args.check else 'generated'))
 if __name__=='__main__':main()

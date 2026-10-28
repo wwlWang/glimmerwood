@@ -1,5 +1,22 @@
 # 回归测试
 
+## R116 优先修复验证（B1–B9）
+
+证据：`evidence/playtest-r116-priority-20261027-v001/`；逐条 RED→GREEN 在 `RED.md`，无效运行明确标注。全量 JUnit/build `full-junit-03`：1752项、0失败/错误/跳过、exit0。最终全量 `full-gametest-02`：1215项、0失败/错误/跳过、BUILD SUCCESSFUL、完整保存exit0；保存129秒，世界366.39MiB/92,125区块/208个region。源代码前后SHA256零变化，结束后无java。详见 FINAL_VERIFICATION.md。
+
+- `R116CoreGameTests` 10项：giveall空/半满/装备/重复/清槽补发且新增掉落0；实际反馈；40/40和27/40无登出事件的NBT往返；同id不叠、clone/旧档/减少上限；能量满格和部分值。
+- `GinsoRootLipItemTest`：实际GUI投影在16px槽内留至少1px边；生成器 `--check`、check-assets通过；创造栏before-valid/after-valid同客户端对比，世界模型未改。
+- `R116KeystoneGameTests` 17项：四种环境伤害、过期年龄重载、一次退款；v0/v1×4朝向错遗迹拒收/原栈退款/旧通用钥/整门开启；23999/24000tick、开门停止；SavedData/BE重载；空主手限制。
+- `R116AltarGameTests` 10项：两版本四向闭门拒绝、他座门无效、自家两钥开门、激活保存后不倒锁；首胜/同座重胜/另一座/另一玩家/重载/重复回调。旧 `SurvivalFlowGameTests` 断言不变，模板夹具补真实起点/引用，匹配钥匙按Item而非无组件栈。
+- `R116RuntimeGameTests` 7项：玩家练习目标60tick存活+可命中、无挑战奖励；无人/发射器不耗蛋；叠三风口的起跳与25tick移动升力、全部注册子类单口/混搭形状一致；两首领实际160tick悬浮中心与保存。不是用mock速度声称真人通关。
+
+组合定向 `combined-green-02`：35/35，完整保存exit0。先前保存挂起证据和修复见README；新增fixture使用既有 `CreekFixtureChunks.release/settle`，撤票据前等待引用归零。`launch_serial.py` 要求前轮exit.json存在且系统无java，所有Gradle运行 --no-parallel --no-daemon，独立监督进程记录退出；不能仅看断言完成。
+
+逃生难度另在 `ESCAPE_FEASIBILITY.md`：真实20HP、4次冲刺、正常难度，路线377tick；实际追逐第13.05s死亡。提供前沿延迟候选，生产参数不改。`escape-04`和平难度及两次控制器卡点保留但不算逃生证据。
+
+
+B8全量首轮捕获大灵树缓冲高度由4/16误降为3/16的回归（父类直接返回SHAPE绕开子类覆写）；仅还原B8对照两项恢复通过。修为非叠放多态getShape、只对同注册方块叠放清碰撞；原两条真实长落差免伤/石头负对照不变，修复定向4/4正常退出。详见 `B8_COLLISION_REGRESSION.md`；最终全量增加一项子类回归，总数1215。
+
 ## 溪谷 LayoutVersion 1（美术与最终串行全量已通过）
 
 基准0aaf077。旧模板/契约固定哈希位于 `src/test/resources/ruins/creek_ruins_legacy.json`；缺 `LayoutVersion` 读取0，现存旧piece不迁移。新版45×44×67，源 `art/source/creek_ruins/v004`，v001–v003保留；`scripts/art/build_creek_ruins.py --check`复核产物、LAND覆盖、连续地基、无孤立根、7节点/8露出面。玩法冻结3,125格；v010只交换24格水车圆角台阶朝向，全部其他BlockState不变。最终美术为v009 C1/闸井和v010-wheel-camera02水车，已全部审核通过。

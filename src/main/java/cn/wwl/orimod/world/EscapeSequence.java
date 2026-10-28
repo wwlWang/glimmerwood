@@ -99,7 +99,9 @@ public final class EscapeSequence {
 
     /** Victory presentation and reward. @return whether this was the first clear (cells granted). */
     public static boolean victory(ServerPlayer player) {
-        stop(player);
+        var session=ACTIVE.remove(player.getUUID());
+        if(session==null)return false;
+        session.bar().removeAllPlayers();
         var level = (ServerLevel) player.level();
         title(player, "title.orimod.victory", "subtitle.orimod.victory", 10, 70, 20);
         level.playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1, 1);
@@ -110,14 +112,17 @@ public final class EscapeSequence {
             level.sendParticles(player, new SpiritParticleOptions(OriParticles.SPIRIT_MOTE.get(), 0xFFE9A0, .7f, 40), true,
                     player.getX() + Math.cos(a) * 1.5, player.getY() + .2, player.getZ() + Math.sin(a) * 1.5, 1, 0, .25, 0, .05);
         }
-        cn.wwl.orimod.progression.SpiritProgression.grantLight(player, REWARD_LIGHT);
+        String receipt="escape/gloom_heart/"+session.dimension()+"/"+net.minecraft.core.BlockPos.containing(session.origin()).asLong();
+        int light=player.getData(SpiritData.PROGRESS).rewards().containsKey(receipt)?10:REWARD_LIGHT;
+        cn.wwl.orimod.progression.SpiritProgression.grantLight(player, light);
         var p = player.getData(SpiritData.PROGRESS);
         boolean first = !p.rewards().containsKey(CLEARED);
         var records = new java.util.HashMap<>(p.rewards());
         records.merge(CLEARED, 1, Integer::sum);
+        records.put(receipt,1);
         player.setData(SpiritData.PROGRESS, p.withRewards(records));
         if (first) cn.wwl.orimod.progression.SpiritCells.grantFirstClear(player);
-        player.displayClientMessage(Component.translatable(first ? "message.orimod.victory.first" : "message.orimod.victory.again", REWARD_LIGHT), false);
+        player.displayClientMessage(Component.translatable(first ? "message.orimod.victory.first" : "message.orimod.victory.again", light), false);
         return first;
     }
 

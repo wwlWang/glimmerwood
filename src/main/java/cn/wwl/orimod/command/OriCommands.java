@@ -177,9 +177,14 @@ public final class OriCommands {
     }
 
     public static boolean giveAll(ServerPlayer p) {
-        for (var entry : OriItems.ITEMS.getEntries()) {
-            var stack = new ItemStack(entry.get());
-            if (!p.getInventory().add(stack)) p.drop(stack, false);
+        var missing = OriItems.ITEMS.getEntries().stream().map(java.util.function.Supplier::get)
+                .filter(item -> p.getInventory().countItem(item) == 0).toList();
+        for (int i = 0; i < missing.size(); i++) {
+            var stack = new ItemStack(missing.get(i));
+            if (!p.getInventory().add(stack)) {
+                p.sendSystemMessage(Component.translatable("commands.orimod.giveall.full", missing.size() - i));
+                break;
+            }
         }
         return true;
     }
@@ -233,7 +238,9 @@ public final class OriCommands {
         int done = 0;
         for (var p : targets) if (action.run(p)) done++;
         int count = done;
-        c.getSource().sendSuccess(() -> Component.translatable("commands.orimod.done", name, count), true);
+        String command = c.getInput().strip();
+        String displayed = command.startsWith("/") ? command : "/" + command;
+        c.getSource().sendSuccess(() -> Component.translatable("commands.orimod.done", displayed, count), true);
         return done;
     }
 

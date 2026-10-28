@@ -19,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** R57: a keystone resting in the ruin; taking it empties the pedestal for everyone (keystones open shared doors). */
+/** Shared ruin keys; empty pedestals reform after one game day until their own door opens. */
 public final class KeystonePedestalBlock extends Block {
     public static final BooleanProperty FULL = BooleanProperty.create("full");
     private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
@@ -30,14 +30,40 @@ public final class KeystonePedestalBlock extends Block {
 
     /** @return whether a keystone was taken. */
     public static boolean take(ServerPlayer player, BlockPos pos) {
-        var level = player.level(); var state = level.getBlockState(pos);
-        if (!(state.getBlock() instanceof KeystonePedestalBlock) || !state.getValue(FULL)) return false;
+        var level = player.serverLevel(); var state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof KeystonePedestalBlock)) return false;
+        var site=cn.wwl.orimod.world.RuinKeystones.atPedestal(level,pos);
+        if(site==null){player.displayClientMessage(Component.translatable("message.orimod.keystone.unavailable"),true);return false;}
+        var timers=cn.wwl.orimod.world.KeystoneTimers.get(level);
+        if(site.state(level)==cn.wwl.orimod.world.RuinKeystones.DoorState.OPEN){
+            timers.open(site.id());player.displayClientMessage(Component.translatable("message.orimod.keystone.finished"),true);return false;
+        }
+        if(!state.getValue(FULL)){
+            if(timers.entry(pos)==null)timers.taken(pos,site,level.getGameTime());
+            level.scheduleTick(pos,state.getBlock(),1);
+            player.displayClientMessage(Component.translatable("message.orimod.keystone.reform"),true);return false;
+        }
+        timers.taken(pos,site,level.getGameTime());
+        level.scheduleTick(pos,state.getBlock(),cn.wwl.orimod.world.KeystoneTimers.COOLDOWN);
         level.setBlock(pos, state.setValue(FULL, false), 3);
         var stack = new ItemStack(cn.wwl.orimod.item.OriItems.KEYSTONE.get());
+        stack.set(cn.wwl.orimod.item.OriComponents.KEYSTONE_RUIN.get(),site.id());
         if (!player.getInventory().add(stack)) player.drop(stack, false);
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1, 1.4f);
-        player.displayClientMessage(Component.translatable("message.orimod.keystone.found"), true);
+        player.displayClientMessage(Component.translatable("message.orimod.keystone.found_bound"), true);
         return true;
+    }
+
+    @Override protected void tick(BlockState state,net.minecraft.server.level.ServerLevel level,BlockPos pos,RandomSource random){
+        if(state.getValue(FULL))return;
+        var timers=cn.wwl.orimod.world.KeystoneTimers.get(level);var entry=timers.entry(pos);
+        if(entry==null)return;
+        var door=entry.site().state(level);
+        if(door==cn.wwl.orimod.world.RuinKeystones.DoorState.OPEN){timers.open(entry.site().id());return;}
+        long remaining=entry.readyAt()-level.getGameTime();
+        if(remaining>0){level.scheduleTick(pos,this,(int)Math.min(Integer.MAX_VALUE,remaining));return;}
+        if(door==cn.wwl.orimod.world.RuinKeystones.DoorState.UNLOADED){level.scheduleTick(pos,this,200);return;}
+        level.setBlock(pos,state.setValue(FULL,true),UPDATE_ALL);timers.remove(pos);
     }
 
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

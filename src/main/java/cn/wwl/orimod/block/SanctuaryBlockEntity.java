@@ -13,6 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class SanctuaryBlockEntity extends BlockEntity {
     public enum Phase { DORMANT, ACTIVE, DEFEATED }
     private boolean activated, defeated;
+    private net.minecraft.world.item.ItemStack insertedKey=net.minecraft.world.item.ItemStack.EMPTY;
+    public net.minecraft.world.item.ItemStack insertedKey(){return insertedKey.copy();}
+    public void insertedKey(net.minecraft.world.item.ItemStack stack){insertedKey=stack.copy();setChanged();}
     private Phase phase = Phase.DORMANT;
     public SanctuaryBlockEntity(BlockPos pos, BlockState state) { super(OriBlockEntities.SANCTUARY.get(), pos, state); }
     public Phase phase() { return phase; }
@@ -41,10 +44,12 @@ public final class SanctuaryBlockEntity extends BlockEntity {
     }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        if(!insertedKey.isEmpty())tag.put("insertedKey",insertedKey.save(registries));
         tag.putBoolean("activated", activated); tag.putBoolean("defeated", defeated); tag.putString("phase", phase.name());
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        insertedKey=net.minecraft.world.item.ItemStack.parseOptional(registries,tag.getCompound("insertedKey"));
         activated = tag.getBoolean("activated"); defeated = tag.getBoolean("defeated");
         try { phase = Phase.valueOf(tag.getString("phase")); } catch (IllegalArgumentException e) { phase = Phase.DORMANT; }
     }

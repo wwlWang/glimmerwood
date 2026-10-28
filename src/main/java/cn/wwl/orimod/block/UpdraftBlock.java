@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -19,9 +20,15 @@ public class UpdraftBlock extends Block {
     public static final int HEIGHT = 12;
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 3, 16);
 
-    public UpdraftBlock(Properties properties) { super(properties); }
+    public UpdraftBlock(Properties properties) { super(properties.dynamicShape()); }
 
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return SHAPE; }
+
+    @Override protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        // Only identical vents form a pass-through stack. Mixed vents/cushions keep their shape.
+        // Use the virtual shape: the great-tree cushion is taller so fallOn hits it, not its floor.
+        return level.getBlockState(pos.below()).is(this) ? Shapes.empty() : getShape(state, level, pos, context);
+    }
 
     @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         for (int i = 0; i < 2; i++) {

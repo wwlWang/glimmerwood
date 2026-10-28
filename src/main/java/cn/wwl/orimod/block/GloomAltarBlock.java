@@ -32,6 +32,18 @@ public final class GloomAltarBlock extends SanctuaryBlock {
         var level = (ServerLevel) player.level();
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.altar_dormant"), true); return null; }
         if (awake(level, pos) != null) { player.displayClientMessage(Component.translatable("message.orimod.altar_awake"), true); return null; }
+        var be=level.getBlockEntity(pos);
+        boolean progressed=be instanceof SanctuaryBlockEntity sanctuary && (sanctuary.activated()||sanctuary.phase()==SanctuaryBlockEntity.Phase.DEFEATED);
+        if(!progressed){
+            var site=cn.wwl.orimod.world.RuinKeystones.atCaveAltar(level,pos);
+            var door=site==null?null:site.state(level);
+            if(door!=null&&door!=cn.wwl.orimod.world.RuinKeystones.DoorState.OPEN
+                    ||site==null&&cn.wwl.orimod.world.RuinKeystones.unresolvedCaveReference(level,pos)){
+                boolean unloaded=door==null||door==cn.wwl.orimod.world.RuinKeystones.DoorState.UNLOADED;
+                player.displayClientMessage(Component.translatable(unloaded?"message.orimod.altar_gate_unloaded":"message.orimod.altar_gate_sealed"),true);
+                return null;
+            }
+        }
         var heart = OriMobs.GLOOM_HEART.get().create(level);
         if (heart == null) return null;
         heart.setHome(pos);

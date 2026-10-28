@@ -47,6 +47,7 @@ import java.util.function.Consumer;
 public final class SurvivalFlowGameTests {
     /** Kills needed on Easy/Normal/Hard with the R17 light economy; guards against an accidental grind. */
     static final int MAX_KILLS = 40;
+    private static final java.util.Map<RuinPlacement,Runnable> METADATA=new java.util.HashMap<>();
     /** Peaceful replaces kills with the Spirit Light recipe (4 per craft). */
     static final int MAX_LIGHT_CRAFTS = 20;
 
@@ -74,7 +75,7 @@ public final class SurvivalFlowGameTests {
                 h.assertValueEqual(cn.wwl.orimod.block.KeystoneDoorBlock.door(h.getLevel(), door).size(), 4, "Door size");
                 var cell = placement.block(layout.cells().getLast().position());
                 h.assertTrue(h.getLevel().getBlockState(cell).getBlock() instanceof cn.wwl.orimod.block.CellPedestalBlock, "Vault cell missing");
-                int slot = player.getInventory().findSlotMatchingItem(new ItemStack(keystone));
+                int slot = java.util.stream.IntStream.range(0,36).filter(i->player.getInventory().getItem(i).is(keystone)).findFirst().orElseThrow();
                 var stack = player.getInventory().getItem(slot);
                 h.assertValueEqual(cn.wwl.orimod.block.KeystoneDoorBlock.insert(player, door, stack), 1, "First keystone");
                 for (var local : layout.vault().door())
@@ -415,10 +416,13 @@ public final class SurvivalFlowGameTests {
         var piece = new RuinPiece(level.getStructureManager(), kind, placement);
         piece.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), RandomSource.create(17),
                 piece.getBoundingBox(), new ChunkPos(placement.origin()), BlockPos.ZERO);
+        METADATA.put(placement,RuinMetadataFixture.attach(level,piece));
         return placement;
     }
 
     private static void clear(GameTestHelper h, RuinPlacement placement, RuinKind kind) {
+        var restore=METADATA.remove(placement);if(restore!=null)restore.run();
+        CreekFixtureChunks.settle(h.getLevel(),"r116-legacy-fixture-close");
         var level = h.getLevel();
         var box = new RuinPiece(level.getStructureManager(), kind, placement).getBoundingBox();
         for (var target : level.getEntitiesOfClass(PracticeTarget.class, AABB.of(box).inflate(2))) target.discard();

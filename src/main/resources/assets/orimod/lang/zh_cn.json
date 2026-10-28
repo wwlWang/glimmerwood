@@ -307,7 +307,8 @@
   "item.orimod.gloom_matriarch_spawn_egg": "腐光翼母刷怪蛋",
   "item.orimod.practice_target_spawn_egg": "练习靶刷怪蛋",
   "commands.orimod.unknown": "未知的值：%s",
-  "commands.orimod.done": "/orimod %s：已应用到 %s 名玩家",
+  "commands.orimod.giveall.full": "背包已满，还有 %s 件未发放，清出空位后再执行一次",
+  "commands.orimod.done": "%s：已应用到 %s 名玩家",
   "commands.orimod.god.on": "OriMod 无敌模式：开",
   "commands.orimod.god.off": "OriMod 无敌模式：关",
   "commands.orimod.spawned": "已生成 %s",
@@ -534,5 +535,14 @@
   "hud.orimod.ginso.submerged": "浮出水面！剩余 %s 秒",
   "message.orimod.feather.controls": "精灵形态装备羽毛即可滑翔，无需技能：起跳后松开%s，下落时再按住。",
   "tooltip.orimod.feather.spirit": "精灵：装备即可滑翔，不耗耐久，破损也可用。",
-  "tooltip.orimod.feather.human": "人形：原版鞘翅飞行，照常损耗耐久。"
+  "tooltip.orimod.feather.human": "人形：原版鞘翅飞行，照常损耗耐久。",
+  "message.orimod.keystone.returned": "已取回钥石。",
+  "message.orimod.keystone.inventory_full": "请先清出背包空位再取回钥石。",
+  "message.orimod.keystone.foreign": "这把钥石属于另一座遗迹。",
+  "message.orimod.keystone.unavailable": "所属遗迹记录尚未加载，请靠近遗迹后重试。",
+  "message.orimod.keystone.finished": "这座遗迹的钥石门已经打开。",
+  "message.orimod.keystone.reform": "门未开启时，钥石会在取走一天后重新凝聚。",
+  "message.orimod.keystone.found_bound": "获得本座遗迹的钥石。若遗失，门未开启时会在一天后于此重新凝聚。",
+  "message.orimod.altar_gate_sealed": "祭坛被封印，先开启这座遗迹中的钥石门。",
+  "message.orimod.altar_gate_unloaded": "钥石门所在区域尚未加载，请先前往门边再来唤醒祭坛。"
 }

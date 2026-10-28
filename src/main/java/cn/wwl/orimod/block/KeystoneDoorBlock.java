@@ -118,9 +118,16 @@ public final class KeystoneDoorBlock extends SanctuaryBlock {
             player.displayClientMessage(Component.translatable("message.orimod.keystone.need", filled, REQUIRED), true);
             return -1;
         }
+        var site=cn.wwl.orimod.world.RuinKeystones.atDoor(level,pos);
+        String binding=stack.get(cn.wwl.orimod.item.OriComponents.KEYSTONE_RUIN.get());
+        if(binding!=null&&(site==null||!binding.equals(site.id())||site.state(level)==cn.wwl.orimod.world.RuinKeystones.DoorState.OPEN)){
+            player.displayClientMessage(Component.translatable("message.orimod.keystone.foreign"),true);return -1;
+        }
+        var deposited=stack.copyWithCount(1);
         if (!player.getAbilities().instabuild) stack.shrink(1);
         var blocks = door(level, pos);
         if (filled + 1 >= REQUIRED) {
+            if(site!=null)cn.wwl.orimod.world.KeystoneTimers.get(level).open(site.id());
             for (var b : blocks) {
                 level.setBlock(b, Blocks.AIR.defaultBlockState(), 3);
                 cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.CHECKPOINT_REACHED, b.getX() + .5, b.getY(), b.getZ() + .5, null);
@@ -130,15 +137,40 @@ public final class KeystoneDoorBlock extends SanctuaryBlock {
             player.displayClientMessage(Component.translatable("message.orimod.keystone.opened"), true);
             return 0;
         }
-        for (var b : blocks) level.setBlock(b, level.getBlockState(b).setValue(FILLED, filled + 1), 3);
+        for (var b : blocks) {
+            level.setBlock(b, level.getBlockState(b).setValue(FILLED, filled + 1), 3);
+            if(level.getBlockEntity(b) instanceof SanctuaryBlockEntity be)be.insertedKey(deposited);
+        }
         level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.BLOCKS, 1, 1.2f);
         player.displayClientMessage(Component.translatable("message.orimod.keystone.inserted", filled + 1, REQUIRED), true);
         return REQUIRED - filled - 1;
     }
 
     @Override protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (stack.isEmpty() && player.isShiftKeyDown()) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if (level.isClientSide) return ItemInteractionResult.SUCCESS;
         if (player instanceof ServerPlayer server) insert(server, pos, stack);
         return ItemInteractionResult.CONSUME;
+    }
+
+    @Override protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!player.isShiftKeyDown() || !player.getMainHandItem().isEmpty()) return net.minecraft.world.InteractionResult.PASS;
+        if (level.isClientSide) return net.minecraft.world.InteractionResult.SUCCESS;
+        var cells = door(level, pos);
+        if (cells.isEmpty() || state.getValue(FILLED) == 0) return net.minecraft.world.InteractionResult.PASS;
+        var key=level.getBlockEntity(pos) instanceof SanctuaryBlockEntity be?be.insertedKey():ItemStack.EMPTY;
+        // A pre-upgrade partial door had no saved item, hence its refund is a legacy unbound key.
+        if(key.isEmpty())key=new ItemStack(cn.wwl.orimod.item.OriItems.KEYSTONE.get(),state.getValue(FILLED));
+        if (!player.getInventory().add(key)) {
+            player.displayClientMessage(Component.translatable("message.orimod.keystone.inventory_full"), true);
+            return net.minecraft.world.InteractionResult.CONSUME;
+        }
+        for (var cell : cells) {
+            level.setBlock(cell, level.getBlockState(cell).setValue(FILLED, 0), UPDATE_ALL);
+            if(level.getBlockEntity(cell) instanceof SanctuaryBlockEntity be)be.insertedKey(ItemStack.EMPTY);
+        }
+        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.BLOCKS, 1, 1.2f);
+        player.displayClientMessage(Component.translatable("message.orimod.keystone.returned"), true);
+        return net.minecraft.world.InteractionResult.CONSUME;
     }
 }

@@ -20,7 +20,7 @@ public final class OriItems {
             new SpiritHammerItem(new Item.Properties().stacksTo(1)));
     /** R57: keystones open keystone doors in ruins. */
     public static final DeferredItem<MapFragmentItem> MAP_FRAGMENT = ITEMS.register("map_fragment", () -> new MapFragmentItem(new Item.Properties().stacksTo(16)));
-    public static final DeferredItem<Item> KEYSTONE = ITEMS.register("keystone", () -> new Item(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> KEYSTONE = ITEMS.register("keystone", () -> new KeystoneItem(new Item.Properties().stacksTo(16)));
     /** R60: Spirit Spear. */
     public static final DeferredItem<SpiritSpearItem> SPIRIT_SPEAR = ITEMS.register("spirit_spear", () -> new SpiritSpearItem(new Item.Properties().stacksTo(1)));
     /** R83: spawn eggs for the original enemies and bosses (vanilla template egg, our colours). */
@@ -29,7 +29,7 @@ public final class OriItems {
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HAWK_SPAWN_EGG = egg("gloom_hawk", cn.wwl.orimod.entity.OriMobs.GLOOM_HAWK, 0x1C1430, 0x8A3AD8);
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_HEART_SPAWN_EGG = egg("gloom_heart", cn.wwl.orimod.entity.OriMobs.GLOOM_HEART, 0x3A0A2C, 0xFF3A8A);
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> GLOOM_MATRIARCH_SPAWN_EGG = egg("gloom_matriarch", cn.wwl.orimod.entity.OriMobs.GLOOM_MATRIARCH, 0x141A3A, 0x5A7BD8);
-    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> PRACTICE_TARGET_SPAWN_EGG = egg("practice_target", cn.wwl.orimod.world.OriEntities.PRACTICE_TARGET, 0xAAB8C4, 0x9FE8FF);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> PRACTICE_TARGET_SPAWN_EGG = ITEMS.register("practice_target_spawn_egg",()->new PracticeTargetEggItem(new Item.Properties()));
 
     private static <T extends net.minecraft.world.entity.Mob> DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> egg(String name,
             java.util.function.Supplier<net.minecraft.world.entity.EntityType<T>> type, int base, int spots) {

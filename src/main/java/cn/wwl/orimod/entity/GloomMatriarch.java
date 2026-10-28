@@ -238,6 +238,8 @@ public final class GloomMatriarch extends Monster {
     }
 
     @Override public void tick() {
+        // Eggs and pre-home legacy entities keep a fixed center; altar summons already supply one.
+        if(!level().isClientSide&&home==null)setHome(blockPosition());
         super.tick();
         if (!level().isClientSide) entityData.set(ENRAGE_LEFT, Math.max(0, enragedUntil - tickCount));
         if (level().isClientSide) return;

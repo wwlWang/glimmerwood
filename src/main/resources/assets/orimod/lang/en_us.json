@@ -307,7 +307,8 @@
   "item.orimod.gloom_matriarch_spawn_egg": "Gloom Matriarch Spawn Egg",
   "item.orimod.practice_target_spawn_egg": "Practice Target Spawn Egg",
   "commands.orimod.unknown": "Unknown value: %s",
-  "commands.orimod.done": "/orimod %s: applied to %s player(s)",
+  "commands.orimod.giveall.full": "Inventory full: %s items remain. Make room and run the command again.",
+  "commands.orimod.done": "%s: applied to %s player(s)",
   "commands.orimod.god.on": "OriMod god mode on",
   "commands.orimod.god.off": "OriMod god mode off",
   "commands.orimod.spawned": "Spawned %s",
@@ -534,5 +535,14 @@
   "hud.orimod.ginso.submerged": "Surface now! %s s left",
   "message.orimod.feather.controls": "In spirit form, equip the feather, jump, release %s, then hold it again while falling to glide. No Glide skill needed.",
   "tooltip.orimod.feather.spirit": "Spirit: equip to glide without a skill; no durability wear, even when damaged.",
-  "tooltip.orimod.feather.human": "Human: vanilla elytra flight and durability wear."
+  "tooltip.orimod.feather.human": "Human: vanilla elytra flight and durability wear.",
+  "message.orimod.keystone.returned": "Keystone retrieved.",
+  "message.orimod.keystone.inventory_full": "Make room before retrieving the keystone.",
+  "message.orimod.keystone.foreign": "This keystone belongs to another ruin.",
+  "message.orimod.keystone.unavailable": "The ruin record is not loaded. Approach the ruin and try again.",
+  "message.orimod.keystone.finished": "This ruin's keystone door is already open.",
+  "message.orimod.keystone.reform": "The keystone reforms one day after it was taken, while this ruin's door remains sealed.",
+  "message.orimod.keystone.found_bound": "Keystone acquired for this ruin. If lost, it reforms here after one day while the door is sealed.",
+  "message.orimod.altar_gate_sealed": "The altar is sealed. Open this ruin's keystone door first.",
+  "message.orimod.altar_gate_unloaded": "The keystone door area is not loaded. Visit the door before awakening this altar."
 }

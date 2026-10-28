@@ -14,6 +14,9 @@ import java.util.UUID;
 /** A non-hostile, session-owned crystal. It cannot produce loot, XP, or saved stray entities. */
 public final class PracticeTarget extends PathfinderMob {
     public UUID owner, session;
+    private boolean freePractice;
+    public void practiceOwner(UUID player){owner=player;session=null;freePractice=true;}
+    private boolean ownedBy(ServerPlayer player){return player.getUUID().equals(owner)&&(freePractice||SpiritChallenge.ownsTarget(player,this));}
     public PracticeTarget(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
         setNoAi(true); setNoGravity(true); setPersistenceRequired();
@@ -24,14 +27,14 @@ public final class PracticeTarget extends PathfinderMob {
     @Override public boolean isPushable() { return false; }
     @Override public boolean hurt(DamageSource source, float amount) {
         if (source.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL)) { discard(); return true; }
-        if (!(source.getDirectEntity() instanceof ServerPlayer player) || !player.getUUID().equals(owner)
-                || !player.getMainHandItem().is(OriItems.SPIRIT_BLADE) || !SpiritChallenge.ownsTarget(player, this)) return false;
+        if (!(source.getDirectEntity() instanceof ServerPlayer player) || !ownedBy(player)
+                || !player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) return false;
         boolean hit = super.hurt(source, amount);
-        if (hit && !isAlive()) SpiritChallenge.targetDefeated(player, this);
+        if (hit && !isAlive() && !freePractice) SpiritChallenge.targetDefeated(player, this);
         return hit;
     }
     @Override public void tick() {
         super.tick();
-        if (!level().isClientSide && (owner == null || !(level().getPlayerByUUID(owner) instanceof ServerPlayer player) || !SpiritChallenge.ownsTarget(player, this))) discard();
+        if (!level().isClientSide && (owner == null || !(level().getPlayerByUUID(owner) instanceof ServerPlayer player) || !ownedBy(player))) discard();
     }
 }
