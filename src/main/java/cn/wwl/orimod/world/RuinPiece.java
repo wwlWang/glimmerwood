@@ -25,6 +25,9 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this(manager,kind,placement,layoutVersion,new int[0]);
     }
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement, int layoutVersion, int[] approachTerrain) {
+        this(manager,kind,placement,layoutVersion,approachTerrain,new int[0]);
+    }
+    public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement, int layoutVersion, int[] approachTerrain,int[] naturalTerrain) {
         super(OriWorldgen.PIECE.get(), 0, manager, kind.template(layoutVersion), kind.template(layoutVersion).toString(), settings(kind, placement.rotation(), layoutVersion), placement.origin());
         this.kind = kind;
         this.layoutVersion = layoutVersion;
@@ -32,7 +35,11 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this.beetles = layout().beetles(); this.mapStone = layout().mapStone();
         this.forestApproach=approachTerrain.clone();
         this.forestTerrain = forestTerrain();
+        this.creekTerrain = creekTerrain();
+        if(creekTerrain!=null)creekTerrain.restoreSamples(naturalTerrain);
+        if(creekTerrain!=null)CreekSliceSettings.prepare(template);
         if(forestTerrain!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
+        if(creekTerrain!=null)boundingBox=CreekRuinTerrain.bounds(boundingBox);
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot")), tag.getInt("LayoutVersion")));
@@ -50,11 +57,17 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this.bridges=java.util.List.copyOf(list); // Never infer bridges from updated templates for older pieces.
         this.beetles=java.util.Arrays.stream(tag.getLongArray("OriBeetles")).mapToObj(BlockPos::of).toList();
         for(long point:tag.getLongArray("OriBeetlesSpawned"))if(beetles.contains(BlockPos.of(point)))spawnedBeetles.add(point);
-        this.forestApproach=tag.getIntArray("ForestApproachTerrain");
+        this.forestApproach=tag.getIntArray(kind==RuinKind.CREEK?"CreekApproachTerrain":"ForestApproachTerrain");
         this.forestTerrain = forestTerrain();
+        this.creekTerrain = creekTerrain();
+        if(creekTerrain!=null){creekTerrain.restoreSamples(tag.getIntArray("CreekNaturalTerrain"));creekTerrain.restoreGuards(tag.getLongArray("CreekGuardCells"));}
+        if(creekTerrain!=null)CreekSliceSettings.prepare(template);
         if(forestTerrain!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
+        if(creekTerrain!=null)boundingBox=CreekRuinTerrain.bounds(boundingBox);
     }
     private final ForestRuinTerrain forestTerrain;
+    private final CreekRuinTerrain creekTerrain;
+    private CreekRuinTerrain creekTerrain(){return kind==RuinKind.CREEK&&layoutVersion>0?new CreekRuinTerrain(template,templatePosition,placeSettings,forestApproach):null;}
     private final int[] forestApproach;
     private ForestRuinTerrain forestTerrain(){return kind==RuinKind.FOREST&&layoutVersion>0?new ForestRuinTerrain(template,templatePosition,placeSettings,forestApproach):null;}
     private final java.util.List<BlockPos> beetles;
@@ -72,11 +85,12 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     public RuinKind kind() { return kind; }
     public RuinKind.Secret secret() { return secret; }
     private static StructurePlaceSettings settings(RuinKind kind, Rotation rotation, int version) {
-        var settings = new StructurePlaceSettings().setIgnoreEntities(true).setRotation(rotation);
+        StructurePlaceSettings settings = new StructurePlaceSettings();
+        settings.setIgnoreEntities(true).setRotation(rotation);
         if (version > 0) settings.setLiquidSettings(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING);
         return kind == RuinKind.CAVE && version == 0 ? settings.addProcessor(CaveEntranceProcessor.INSTANCE) : settings;
     }
-    @Override public BoundingBox getBeardifierBox() { return forestTerrain==null?boundingBox:template.getBoundingBox(placeSettings,templatePosition); }
+    @Override public BoundingBox getBeardifierBox() { return forestTerrain==null&&creekTerrain==null?boundingBox:template.getBoundingBox(placeSettings,templatePosition); }
     @Override public net.minecraft.world.level.levelgen.structure.TerrainAdjustment getTerrainAdjustment() {
         return kind == null || kind == RuinKind.CAVE ? net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE
                 : net.minecraft.world.level.levelgen.structure.TerrainAdjustment.BEARD_THIN;
@@ -88,12 +102,16 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         return null;
     }
     public BlockPos origin() { return templatePosition; }
+    public boolean ownsCreekSupport(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return creekTerrain!=null&&creekTerrain.ownSupport(pos,state);}
+    public boolean ownsCreekGuard(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return creekTerrain!=null&&creekTerrain.ownGuard(pos,state);}
     public RuinPlacement placement() { return new RuinPlacement(templatePosition, getRotation()); }
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
         tag.putInt("LayoutVersion", layoutVersion);
         if(forestTerrain!=null&&forestApproach.length!=0)tag.putIntArray("ForestApproachTerrain",forestApproach);
+        if(creekTerrain!=null&&forestApproach.length!=0)tag.putIntArray("CreekApproachTerrain",forestApproach);
+        if(creekTerrain!=null){tag.putIntArray("CreekNaturalTerrain",creekTerrain.savedSamples());tag.putLongArray("CreekGuardCells",creekTerrain.savedGuards());}
         if(mapStone!=null)tag.putLong("OriMapStone",mapStone.asLong());
         if(!beetles.isEmpty()){
             tag.putLongArray("OriBeetles",beetles.stream().mapToLong(BlockPos::asLong).toArray());
@@ -110,7 +128,31 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     @Override public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator,
                                       RandomSource random, BoundingBox chunkBounds, ChunkPos chunk, BlockPos pivot) {
         long profileStart = Boolean.getBoolean("orimod.profileRuins") ? System.nanoTime() : 0;
-        super.postProcess(level, manager, generator, random, chunkBounds, chunk, pivot);
+        var cpuClock=profileStart==0?null:java.lang.management.ManagementFactory.getThreadMXBean();
+        long cpuStart=cpuClock==null||!cpuClock.isCurrentThreadCpuTimeSupported()?0:cpuClock.getCurrentThreadCpuTime();
+        if(creekTerrain!=null)creekTerrain.ensureSamples(level,generator);
+        long captureDone=profileStart==0?0:System.nanoTime();
+        // Expanded terrain skirts include chunks containing no authored template.
+        // Avoid transforming every template cell in those chunks. Legacy and the
+        // other ruins retain their original placement path.
+        if(creekTerrain==null)super.postProcess(level, manager, generator, random, chunkBounds, chunk, pivot);
+        else {
+            // TemplateStructurePiece.postProcess mutates its shared settings AND
+            // boundingBox. Adjacent worldgen workers must not enter that path.
+            // These options are read-only after construction; clip and RNG belong
+            // to this invocation, and the expanded piece box remains unchanged.
+            var local=new CreekSliceSettings();
+            local.setRotation(placeSettings.getRotation()).setMirror(placeSettings.getMirror())
+                    .setRotationPivot(placeSettings.getRotationPivot()).setIgnoreEntities(true)
+                    .setKnownShape(placeSettings.getKnownShape()).setFinalizeEntities(placeSettings.shouldFinalizeEntities())
+                    .setLiquidSettings(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING)
+                    .setBoundingBox(chunkBounds);
+            placeSettings.getProcessors().forEach(local::addProcessor);
+            local.addProcessor(CreekRimDecorationProcessor.INSTANCE);
+            if(template.getBoundingBox(local,templatePosition).intersects(chunkBounds))
+                placeCreekTemplate(level,random,chunkBounds,pivot,local);
+        }
+        long templateDone=profileStart==0?0:System.nanoTime();
         if (forestTerrain != null) {
             supportForestFoundation(level, chunkBounds);
             forestTerrain.place(level,chunkBounds);
@@ -118,6 +160,8 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
             // skirt envelope so subsequent chunk slices and saved starts include it.
             boundingBox=ForestRuinTerrain.bounds(template.getBoundingBox(placeSettings,templatePosition));
         }
+        CreekRuinTerrain.Stats terrainStats=creekTerrain==null?null:creekTerrain.place(level,chunkBounds);
+        long terrainDone=profileStart==0?0:System.nanoTime();
         // The template clears its interior. Remove the crowns of trunks cut at
         // its top edge too, so the entrance does not leave floating log columns.
         if (layoutVersion == 0) for (int x = Math.max(boundingBox.minX(), chunkBounds.minX()); x <= Math.min(boundingBox.maxX(), chunkBounds.maxX()); x++)
@@ -125,7 +169,42 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
                 RuinApproachPiece.clearCanopy(level, chunkBounds, x, z, boundingBox.maxY() + 1, boundingBox.maxY() + 48);
         if (kind != null && layoutVersion == 0) placeCells(level, kind, placement(), chunkBounds,mapStone);
         spawnBeetles(level,chunkBounds);
-        if (profileStart != 0) cn.wwl.orimod.OriMod.LOGGER.info("RUIN_WRITE kind={} version={} chunk={} ms={}",kind.id,layoutVersion,chunk,(System.nanoTime()-profileStart)/1e6);
+        if (profileStart != 0) {
+            long end=System.nanoTime();
+            long cpuEnd=cpuStart==0?0:cpuClock.getCurrentThreadCpuTime();
+            if(terrainStats!=null){
+                var t=terrainStats;
+                cn.wwl.orimod.OriMod.LOGGER.info("CREEK_PHASE chunk={} samplePlanMs={} foundationMs={} bankWriteMs={} samples={} writes={} filled={} cut={} deepExceptions={} treeExceptions={} unsupported={} caveExceptions={} buildingExceptions={} maxDesignFill={}",chunk,t.planNanos()/1e6,t.foundationNanos()/1e6,t.bankNanos()/1e6,t.naturalSamples(),t.writtenBlocks(),t.filledColumns(),t.cutColumns(),t.deepExceptions(),t.treeExceptions(),t.unsupportedColumns(),t.caveExceptions(),t.buildingExceptions(),t.maximumFill());
+                cn.wwl.orimod.OriMod.LOGGER.info("CREEK_TERRAIN chunk={} stats={}",chunk,t);
+            }
+            cn.wwl.orimod.OriMod.LOGGER.info("RUIN_WRITE kind={} version={} chunk={} ms={} captureMs={} templateMs={} terrainMs={} postMs={} cpuMs={}",kind.id,layoutVersion,chunk,(end-profileStart)/1e6,(captureDone-profileStart)/1e6,(templateDone-captureDone)/1e6,(terrainDone-templateDone)/1e6,(end-terrainDone)/1e6,(cpuEnd-cpuStart)/1e6);
+            cn.wwl.orimod.OriMod.LOGGER.info("RUIN_PROFILE_OVERHEAD kind={} chunk={} logMs={}",kind.id,chunk,(System.nanoTime()-end)/1e6);
+        }
+    }
+
+    /** Vanilla template placement and marker handling with invocation-local settings.
+     * Only the pre-existing, synchronized beetle receipt is mutable per piece. */
+    private void placeCreekTemplate(WorldGenLevel level,RandomSource random,BoundingBox clip,BlockPos pivot,StructurePlaceSettings local){
+        var trace=CreekPlacementTrace.begin(clip.minX()>>4,clip.minZ()>>4);
+        boolean placed;
+        try{placed=template.placeInWorld(level,templatePosition,pivot,local,random,net.minecraft.world.level.block.Block.UPDATE_CLIENTS);}
+        finally{CreekPlacementTrace.finish(trace);}
+        if(!placed)return;
+        for(var info:template.filterBlocks(templatePosition,local,net.minecraft.world.level.block.Blocks.STRUCTURE_BLOCK)){
+            if(info.nbt()!=null&&"DATA".equals(info.nbt().getString("mode")))
+                handleDataMarker(info.nbt().getString("metadata"),info.pos(),level,random,clip);
+        }
+        for(var info:template.filterBlocks(templatePosition,local,net.minecraft.world.level.block.Blocks.JIGSAW)){
+            if(info.nbt()==null)continue;
+            var state=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+            try{
+                state=net.minecraft.commands.arguments.blocks.BlockStateParser.parseForBlock(
+                        level.holderLookup(net.minecraft.core.registries.Registries.BLOCK),info.nbt().getString("final_state"),true).blockState();
+            }catch(com.mojang.brigadier.exceptions.CommandSyntaxException e){
+                cn.wwl.orimod.OriMod.LOGGER.error("Error while parsing jigsaw blockstate {} at {}",info.nbt().getString("final_state"),info.pos());
+            }
+            level.setBlock(info.pos(),state,3);
+        }
     }
 
     /** Noise preflight cannot see carver pockets. Extend only authored bottom dirt into

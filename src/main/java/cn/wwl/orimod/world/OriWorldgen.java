@@ -33,6 +33,8 @@ public final class OriWorldgen {
             DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, OriMod.MOD_ID);
     public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<CaveEntranceProcessor>> CAVE_ENTRANCE =
             PROCESSORS.register("cave_entrance", () -> () -> CaveEntranceProcessor.CODEC);
+    public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<CreekRimDecorationProcessor>> CREEK_RIM_DECORATION =
+            PROCESSORS.register("creek_rim_decoration", () -> () -> CreekRimDecorationProcessor.CODEC);
     public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); PROCESSORS.register(bus); PLACEMENTS.register(bus); }
     private OriWorldgen() {}
 }

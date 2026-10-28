@@ -18,7 +18,7 @@ public enum RuinKind {
     public final String id;
     public final int abilities;
     private final java.util.Map<Integer, Layout> layouts = new java.util.HashMap<>();
-    public int currentVersion() { return this == CAVE || this == FOREST ? 1 : 0; }
+    public int currentVersion() { return 1; }
     public ResourceLocation template(int version) { checkVersion(version); return ResourceLocation.fromNamespaceAndPath("orimod", "ruins/" + id + (version == 0 ? "" : "_v" + version)); }
     private void checkVersion(int version) { if (version < 0 || version > currentVersion()) throw new IllegalArgumentException("Unsupported ruin layout " + id + ":" + version); }
     RuinKind(String id, int abilities) { this.id = id; this.abilities = abilities; }

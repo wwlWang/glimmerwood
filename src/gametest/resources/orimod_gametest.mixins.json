@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "cn.wwl.orimod.gametest.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["LocateCandidateMixin", "RuinOuterTimerMixin", "CreekWaterWritesMixin", "CreekWaterSourceTraceMixin", "CreekApproachTraceMixin"],
+  "injectors": {"defaultRequire": 1}
+}

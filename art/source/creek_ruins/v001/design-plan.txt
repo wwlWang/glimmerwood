@@ -1,0 +1,131 @@
+CREEK RUINS / LayoutVersion 1 / DESIGN ONLY
+45 x 44 x 67. Local coordinates; +Z points upstream, rotations apply to everything.
+Not an exported block map. Foot positions and block coordinates are distinguished below.
+
+TOP VIEW — front at bottom, upstream at top (not 1 character = 1 block)
+
+           X=0         10          20          30          44
+ Z=66      . . . . graded grass / grounded rock bank . . . .
+   61      .  sparse old trees        [source crack H]      .
+   57      .        +---- C2 / E ----+  ~~~~~              .
+   54      .        | feet 19       |   ~~~      R ↓       .
+   51      .        +---------------+    V13→11    ↓16     .
+   48      . Q dry sealed chamber        ~~~ g     ↓13     .
+   45      . Q (under floor 10) UUU      ~~~       ↓10     .
+   42      . R dry bank         UUU      ~~~     +--------+.
+   40      . |                  /        V11→9  |high L  |.
+   38      . |  +----C1-----+   /          ~~~   |vessel  |.
+   35      . |  |feet 15   |== broken arch ==   |5 steps |.
+   33      . |  +----------+     6–8 gap   ~~~  |mouth L |.
+   30      . |       B                      ~~~ +--------+.
+   28      . |       ^                       ~~~          .
+   25      . |   S   A                       V9→7   (W)   .
+   22      . | [shrine]                      ~~~   mill   .
+   19      . |   open court                 ~~~   ruin   .
+   16      . +------ public low arch bridge ======== R    .
+   13      .    M                          V7→6     |      .
+   10      .  map pavilion             ~~~~        |      .
+    7      .           ground path    ~~~~          |      .
+    6      .                         [GRID]                .
+    3      .                 [sealed sump]                  .
+    0      . . . . . . . . . E / gate . . . . . . . . . . .
+                           x=22.5,y=10
+
+H source, ~ source-filled creek, V localized falling-water mouth,
+GRID physical player barrier (not the watertight seal), g isolated gloom side槽,
+M map, S shrine, B Bash anchor, A launch/return safe point,
+C1/C2 challenge landings, U updraft (DRY), E at C2 energy cell,
+Q cracked-floor secret, L optional dark-platform shaft, W static broken waterwheel,
+R dry return bank. Outer dotted boundary is irregular authored ground, not a wall.
+
+COORDINATE CONTRACT — all coordinates local before rotation
+  entry feet:       (22.5,10,0.5), 5-wide approach x20..24
+  map core:         (8,10,11), part y11,12
+  shrine core:      (11,10,22), owned box x10..12 / y10..12 / z21..23
+  safe/Bash start:  (12.5,10,25.5)
+  Bash anchor:      block (12,13,29); centre + four inset corners eye range <=5.5
+  C1 feet:          (12.5,15,35.5), deck x10..15 / z33..38, floor y14
+  DRY updrafts:     block x16..18 / y10 / z42..45 (12 vents)
+  lift clearance:   x16..18 / y11..22 / z42..45; no beam, leaf, water or rail
+  C2 feet:          (18.5,19,54.5), deck x16..22 / z52..57, floor y18
+  energy cell:      block (20,19,55)
+  upper return:     C2 → (13.5,16,55.5) → (10.5,13,55.5) → (7.5,10,54.5)
+  C1 return:        C1 → (8.5,12,36.5) → (5.5,10,36.5)
+  public west R:    (7.5,10,54.5) → (12.5,10,50.5) → (12.5,10,40.5)
+                   → (5.5,10,38.5) → (5.5,10,29.5) → (6.5,10,17.5)
+                   → (16.5,10,10.5) → entry
+                   Detours east of the secret,below the C1 deck with clear headroom.
+  public east R:    x40..42,feet y10,outside the shaft wall x39; connects low bridge
+                   to the mill exterior and upper dry bank. No path through L.
+  shaft entrance:   (33,10,34); high exit (34,15,40); shell x30..39/z32..44
+  shaft platforms:  five steps (exact stagger to be checked during functional build)
+  shaft return:     bottom water + shallow walk-out, near mouth ONLY
+  secret mouth:     (7,10,44); room x4..10 / y4..10 / z41..48; vessel (7,5,45)
+
+LONGITUDINAL SECTION — projected route + creek, X differs for each feature
+
+ y=43        occasional canopy budget only; no broad roof
+   28                    tapered trees / broken roots on grounded banks
+   22                              ↑ wind upper limit
+   19                                           [C2___E]  →16→13→10
+   15                    [C1___]     / glide →  /
+   13            B ↗              ↑           source13~~~~
+   11                             ↑  ~~~~11 ← V
+   10   E___M___S_A      ___R______U_______R________________
+    9                            ~~~~9 ← V
+    7                    ~~~~7 ← V
+    6      [sump] ← ~~~~6 ← V
+    5          sealed bed                [Q dry room]
+    0   __continuous stone/clay/soil foundation and supported root feet__
+        z0    7   16  25   35      42 45     52 57 60     66
+
+CROSS SECTION — through glide reach (~z43)
+
+ y=22                 [full air lift envelope]
+   19                 ↑                       shaft back wall / roof
+   15                 ↑                          [L high blind alcove]
+   13                 ↑             rock|      |rock
+   11                 ↑                 |~~~~~~|  |        |
+   10  ___Q_cap______ U U U _________rock|______|__|___R____|
+    9                                              dry bank
+    5      [Q]     solid stone / clay separators and bed
+            x7       16..18        23    24..28 29  34   41
+
+Q and U never intersect the water masks. Gloom side槽 sits farther upstream,
+x30..32/z46..49,y9,separated from clear water (eastmost x28) by full wall x29.
+
+WATER TERMINUS DETAIL — protected under low bridge, no world outlet
+
+       entry/low bridge walking surface y10
+       =============================  open bridge downstream section
+       end wall | sealed channel | GRID | open water with bank exit shelves
+       ######## | source y6      |  #   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       ######## |_______________|______| continuous bed
+       z2         z3..5             z6    z7..16
+
+  No opening at template z0. Solid floor, sides and end seal the water.
+  The grate prevents entering the blind portion. Outside grate, headroom >=2
+  and shallow shelves let a full-height player climb out; test physical reachability.
+  Four drops only: 13→11,11→9,9→7,7→6; each mouth width1, flow run1–2 cells.
+  Four orientations,220tick: NO additional water outside template/allowed wet mask.
+
+ABILITY / RETREAT DECISIONS
+  Challenge start: existing BASH+GLIDE requirement,90s,unchanged rewards.
+  Neither skill: walk E/M/S/public banks/shaft mouth; no challenge start.
+  BASH but no GLIDE and no feather: C1 is the last ability landing; use marked
+  y12→10 dry return. No leap into a blind pit is needed to discover that route.
+  Feather without GLIDE: free exploration can glide under existing feather rule;
+  challenge qualification stays the existing skill-bit rule this round.
+  Light shaft: no stairs/vines/decorative bridge from public bank to high reward.
+  Platforms dark: test template-only and outside-grass variants; every fall exits.
+
+FOUNDATIONS / LIGHT / CAPTURE CONSTRAINTS
+  Local exterior floor y9, feet y10. Upper internal terraces do not raise outer rim.
+  Include ALL piers/roots/arch feet in authored ground mask before grading.
+  Fit actual natural ground over4..8 columns, including4→5 and outermost→natural.
+  Steep-only moss guard; no guard across 5-wide approach. Record guard boundary %.
+  <=8 luminous root nodes,planned7. Permanent light>=1 every standable surface;
+  focus/anchor/launch/landing>=7. Berries=false,containers removed,platforms dark.
+  Roots continuous,leaves persistent. Source-filled stepped stream,not square pools.
+  First art review: entry,stream,low bridge/grate,shrine,map,mill,broken bridge,
+  wind/landing,light shaft,return,birdseye,section,graded edge + per-zone light table.

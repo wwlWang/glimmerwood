@@ -1,5 +1,54 @@
 # 回归测试
 
+## 溪谷 LayoutVersion 1（美术与最终串行全量已通过）
+
+基准0aaf077。旧模板/契约固定哈希位于 `src/test/resources/ruins/creek_ruins_legacy.json`；缺 `LayoutVersion` 读取0，现存旧piece不迁移。新版45×44×67，源 `art/source/creek_ruins/v004`，v001–v003保留；`scripts/art/build_creek_ruins.py --check`复核产物、LAND覆盖、连续地基、无孤立根、7节点/8露出面。玩法冻结3,125格；v010只交换24格水车圆角台阶朝向，全部其他BlockState不变。最终美术为v009 C1/闸井和v010-wheel-camera02水车，已全部审核通过。
+
+### 最终运行和串行约束
+
+最终执行两条独立命令，前一条退出后才运行后一条；禁止组合运行使现有 `org.gradle.parallel=true` 让测试JVM重叠：
+
+```sh
+./gradlew --no-parallel test --rerun build --console=plain
+./gradlew --stop
+./gradlew --no-parallel runGameTestServer --console=plain
+./gradlew --stop
+```
+
+不传 `--tests` 或 `gameTestNamespaces`，默认四个命名空间全跑。独立会话监督器记录退出码；必须等待 `All N required tests passed`、`All dimensions are saved`、`BUILD SUCCESSFUL` 和exit0，才算完整通过。`cleanGameTestWorld` 只清 `run-gametest/world`，新一轮前不得残留测试服务器。每轮退出后读MCA头统计保存区块和world大小；保存超过400秒或持续线性增长单独排查。最终 `creek-full03-*`：**1751 JUnit / 1171 GameTest，失败/错误/跳过均0**；日志 `All 1171 required tests passed`、`All dimensions are saved`、`BUILD SUCCESSFUL`，各命令及监督队列exit 0。全量前单独运行 `./gradlew --no-parallel cleanGameTestWorld --console=plain`；未加命名空间过滤或临时init。保存178秒，临时世界368.47MiB/92,646已保存区块/204个region；120秒看门狗为正常IO flush、实时holder=0。源码前后SHA相同，结束后daemon停止。证据 `evidence/playtest-c-creek-art-v003-engineering/FINAL_VERIFICATION.md`、`creek-full03-counts.json`、`creek-full03-gametest-world-size.json`。full-01组合命令短暂并行、full-02 GT重启中断缺exit，原记录保留，均不作为最终串行验收。
+
+本次兼容性补审把新增的4处Redirect（生产2处、GameTest观察器2处）全部改成WrapOperation；未拦截路径调用original.call，新增Overwrite为0。forest_rock的范围内/范围外/Legacy/跨边界/其他blob共5条原回归独立通过并完整保存exit0；最终全量也覆盖这些断言。原有食物/玩家渲染mixin不在本轮修改范围。
+
+### 布局、玩法与流水
+
+四朝向验证多方块核心/部件所属和碰撞、存档版本、检查点/地图/指引/神龛消费者、入口/公开空间/秘室退路、光桥暗态不可绕行、钥石开门及真实技能抵达。Bash从A直接释放（不先跳），55组俯仰/偏航每朝向，−85°至−50°覆盖35°、偏航±10°；Glide参数不变且无羽毛，落台余量2.5466格。四向220tick含水层/雨水/外来水，源水溪流在砌石水槽内终止，只有7个登记跌水格可流动，模板外新增水0。水车轮槽湿区登记、两排轮缘浸水。
+
+光照用实际 `LightLayer.BLOCK`、半格碰撞站位；先移除可破坏容器、所有浆果设berries=false/AGE25。最终定向2,725站位最低1；入口/地图最低2，神龛/水车1，断桥/风井1，后岸2；焦点最低10、风口12。新叶persistent=true。节点稀疏和光照分别验证，不能用可采浆果或容器替代基线光。
+
+### 切片、并发与地形
+
+56组等价涵盖实际模板四旋转×正反序、NBT/流体微型夹具四旋转×三mirror×两顺序、随机破损处理器；逐格比BlockState、完整BE（含LootTableSeed）、流体tick位置/类型/到期/优先级/相对顺序。只归一化引擎全局subTickOrder数值，不丢次序。模板外预放栅栏、墙、玻璃板、水、藤，验证反向邻接更新保持。未知处理器仍保留原版完整palette语义。
+
+每次postProcess独立settings；模板本地列索引不可变、安全发布；模板管理器创建/资源重载预热。12轮同piece并发使用线程安全内存WorldGenLevel，四worker实际同时执行；状态/BE/tick与串行逐格相等，不冒称可跨线程直接写ServerLevel。另在真实引擎夹具比较四朝向正反切片、NBT重载、连续三次写入。
+
+地面分类由共享tag驱动：天然、忽略·软、忽略·保护、建筑；扫描/填削/护沿共用，BE和不可破坏块独立硬保护。站立顶面统一取collision形状，落差向上取半格，≤1允许，>1必须隔离。外来建筑、树干、深洞不填平；护沿和苔石顶帽按本piece坐标+类型认定。天然快照在STRUCTURE_STARTS取纯噪声，环带规划不读邻片已改高度；实际填削只读自有列，例外列不写。窄凹陷/凸起、半砖、原木、蘑菇、三写归属、门柱/引道肩部、每条洞口边界护沿均有回归。
+
+### 选址和性能口径
+
+正式方案 **c避让 + R2单层让行**：村庄/哨站/glades候选先过滤群系；glades用角点起点和四旋转真实占地；溪谷只向邻区完整选址的一层结果让行，不递归、不偏移、不改spacing/separation。邻区只做决策/旋转/轻量占地框，不做builder或环带快照；有界线程安全缓存可被起点自身复用。94可行点×四旋转共376组轻量框与完整builder零差异。
+
+验收按真实网格加权抽选+回退后的 **同集总密度 + 实际三维碰撞**：v0森林/溪谷/洞穴56/30/18=104，最终9/41/33=83（−20.19%，在±25%内），溪谷相交0。不再以溪谷单项数量强压。相同2025点A/B/A/B/A/B六个独立固定2G/AlwaysPreTouch进程，完整STRUCTURE_STARTS worker CPU中位235.304→241.860s（+2.79%），单起点最大1466.040ms；22份owner命中独立重算零差异。见C_YIELD_DECISION、SYSTEM_CPU_REPEATED。
+
+三种子116118/116119/116120、每类2暖机+3热态、关闭JFR/分段日志/客户端，三座最重片中位（溪谷/森林，ms）8.417/7.710、9.931/6.901、5.259/7.442。最终轮廓版另复扫116118五座均0违规，溪谷/森林热态中位7.092/7.779ms。全部≤25ms；冷首座另报，不当热态指标。最初超时、低值与中途失败保留，不删离群值。诊断默认关闭，源码/发布JAR隔离核对见RELEASE_SOURCESET_AUDIT。
+
+### 例外、残余风险与后续
+
+15座自然扫描全部0未保护违规，原始落差保留并逐条分类：12条未改动水下天然河床（CARVERS基线）、1条外来结构内部落差（两侧本座零写入、整列快照不变）、34条洞口内部天然落差（N/P/H条件、零写入、整列不变，并逐格检查完整洞口/环带护沿）。地下新增源水观察确认为原版SpringFeature；引道入水造成的水格变化有坐标表和河对岸实拍。任何一侧被本座改过或缺证明，均不能套用例外。
+
+已知风险：树木及forest_rock在登记溪谷v1范围受保护，其他 FEATURES 仍可能在结构之后改天然地形；不能宣称任意后装饰均安全。最低几级rim平行纹、水潭远岸石/土/苔石支撑拼补感已审接受、记录保留。详见INVARIANTS、NATURAL_FINAL及逐边例外CSV。
+
+下一项在溪谷提交之后处理：**森林泉v1实际选中56→9的选址回归（大占地沿用起伏门槛），以及森林环带仍使用旧站立面扫描**。本轮不改森林规则；glades重建排在这两项之后。
+
 ## 森林泉最终美术/地形返修（v009 已审）
 
 全量 `evidence/playtest-c-forest-v002/full-02.log`：**1682 JUnit / 1090 GameTest，失败/错误/跳过均0**。XML分别归档在`junit-full-02/`和`gametest-full-02.xml`。森林定向50/17通过，namespace `orimod_forest_rebuild`。

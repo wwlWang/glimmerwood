@@ -34,6 +34,25 @@ public final class RuinVegetationGuard {
         return false;
     }
 
+    /** Exact written cell, not a widened feature-origin exclusion radius. */
+    public static boolean blocksCreekRock(WorldGenLevel level,BlockPos cell){
+        // A registered v1 start is the authority, including manually placed starts.
+        // No global generation flag is needed when the saved start is present.
+        if(!(level instanceof WorldGenRegion region))return false;
+        var center=new ChunkPos(cell);
+        // FEATURES guarantees STRUCTURE_STARTS within eight chunks; a rotated
+        // 67-block creek plus its skirt can extend beyond the tree guard's four.
+        for(int x=center.x-8;x<=center.x+8;x++)for(int z=center.z-8;z<=center.z+8;z++){
+            if(!region.hasChunk(x,z))continue;
+            for(var start:region.getChunk(x,z,ChunkStatus.STRUCTURE_STARTS).getAllStarts().values()){
+                if(!start.isValid()||!(start.getStructure() instanceof RuinStructure))continue;
+                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&ruin.kind()==RuinKind.CREEK&&ruin.layoutVersion()==1
+                        &&protects(ruin.getBoundingBox(),cell,0))return true;
+            }
+        }
+        return false;
+    }
+
     static boolean protects(BoundingBox bounds, BlockPos tree) {
         return protects(bounds, tree, TREE_MARGIN);
     }

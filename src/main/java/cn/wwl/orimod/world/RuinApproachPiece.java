@@ -65,7 +65,7 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
     }
     @Override public int getGroundLevelDelta() { return 0; }
 
-    private static BoundingBox bounds(RuinPlacement doorway, boolean carvedEntrance) {
+    static BoundingBox bounds(RuinPlacement doorway, boolean carvedEntrance) {
         int radius=carvedEntrance?4:2;
         return doorway.blocks(new BlockPos(-radius, -24, -9), new BlockPos(radius, 64, -1));
     }

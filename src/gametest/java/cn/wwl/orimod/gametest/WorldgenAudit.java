@@ -23,9 +23,18 @@ final class WorldgenAudit {
     private WorldgenAudit() {}
 
     static void started(ServerStartedEvent event) {
+        if ("creek_water_baseline".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekWaterBaselineAudit.started(event); return; }
+        if ("creek_system_siting".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekSitingSystemAudit.started(event); return; }
+        if ("creek_light_neighbours".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekLightNeighbourAudit.started(event); return; }
+        if ("creek_acceptance".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekAcceptanceAudit.started(event); return; }
+        if ("creek_neighbours".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekActualNeighbourAudit.started(event); return; }
+        if ("creek_offsets".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekOffsetAudit.started(event); return; }
+        if ("creek_candidates".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekSitingAudit.started(event); return; }
+        if ("creek_locate".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekLocateAudit.started(event); return; }
         if (System.getProperty("orimod.worldgen.audit.mode", "").startsWith("ginso_")) { GinsoUpgradeAudit.started(event); return; }
         if (System.getProperty("orimod.worldgen.audit.mode", "").startsWith("outpost")) { outposts(event); return; }
         if ("site".equals(System.getProperty("orimod.worldgen.audit.mode"))) { sites(event); return; }
+        if (java.util.Set.of("creek_profile","creek_seams").contains(System.getProperty("orimod.worldgen.audit.mode",""))) { CreekProfileAudit.started(event); return; }
         var server = event.getServer();
         var level = server.overworld();
         var spawn = level.getSharedSpawnPos();

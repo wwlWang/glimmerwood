@@ -1,0 +1,422 @@
+{
+  "schema": 1,
+  "status": "DESIGN_ONLY_AWAITING_REVIEW",
+  "baselineCommit": "0aaf077a39c771203114d40a617d6191d0842379",
+  "layoutVersion": 1,
+  "legacyVersion": 0,
+  "size": [
+    45,
+    44,
+    67
+  ],
+  "surfaceY": 10,
+  "approachY": 10,
+  "sourceFiles": [
+    "DESIGN.md",
+    "plan.txt",
+    "manifest.json"
+  ],
+  "plannedGenerator": "scripts/art/build_creek_ruins.py",
+  "plannedOutputs": [
+    "src/main/resources/data/orimod/structure/ruins/creek_ruins_v1.nbt",
+    "src/main/resources/orimod/ruin_layout/creek_ruins_v1.json"
+  ],
+  "outputsGenerated": false,
+  "legacyFreeze": {
+    "fixture": "src/test/resources/ruins/creek_ruins_legacy.json",
+    "sha256": {
+      "src/main/resources/data/orimod/structure/ruins/creek_ruins.nbt": "979b949c78593798129ea67dbbeb92a39f27f6bca3c201ed170f0ef23dcddd5b",
+      "src/main/resources/orimod/ruin_layout/creek_ruins.json": "03391bc19e502e4abb66ff1485594de5eb81180dffd56c2cc4d9adfcb6f46a9c"
+    },
+    "nbtSummary": {
+      "size": [
+        21,
+        30,
+        35
+      ],
+      "blockRecordsIncludingAir": 16077,
+      "airRecords": 9267,
+      "paletteStates": 45,
+      "waterBlocksBeforeLegacyPostProcess": 336
+    },
+    "postProcessOnly": [
+      "map_stone",
+      "updrafts",
+      "energy_cell",
+      "gloom_water_conversion"
+    ]
+  },
+  "draftPoints": {
+    "entryFeet": [
+      22.5,
+      10,
+      0.5
+    ],
+    "safeFeet": [
+      12.5,
+      10,
+      25.5
+    ],
+    "mapCore": [
+      8,
+      10,
+      11
+    ],
+    "shrineCore": [
+      11,
+      10,
+      22
+    ],
+    "bashAnchor": [
+      12,
+      13,
+      29
+    ],
+    "checkpoints": [
+      {
+        "feet": [
+          12.5,
+          15,
+          35.5
+        ],
+        "action": "bash",
+        "count": 1
+      },
+      {
+        "feet": [
+          18.5,
+          19,
+          54.5
+        ],
+        "action": "glide",
+        "count": 1
+      }
+    ],
+    "updraftBlocks": {
+      "from": [
+        16,
+        10,
+        42
+      ],
+      "to": [
+        18,
+        10,
+        45
+      ]
+    },
+    "updraftClearance": {
+      "from": [
+        16,
+        11,
+        42
+      ],
+      "to": [
+        18,
+        22,
+        45
+      ]
+    },
+    "upperLanding": {
+      "from": [
+        16,
+        19,
+        52
+      ],
+      "to": [
+        22,
+        19,
+        57
+      ]
+    },
+    "energyCell": [
+      20,
+      19,
+      55
+    ],
+    "returnLandingFeetY": {
+      "fromCheckpoint1": [
+        15,
+        12,
+        10
+      ],
+      "fromCheckpoint2": [
+        19,
+        16,
+        13,
+        10
+      ]
+    },
+    "lightBridge": {
+      "entryFeet": [
+        33,
+        10,
+        34
+      ],
+      "exitFeet": [
+        34,
+        15,
+        40
+      ],
+      "platformCount": 5,
+      "fixedLanternCount": 0,
+      "platformStagger": "pending_collision_build",
+      "rewardVessel": [
+        34,
+        15,
+        41
+      ],
+      "isolatedRewardEnd": true
+    },
+    "secretEntrance": [
+      7,
+      10,
+      44
+    ],
+    "secretVessel": [
+      7,
+      5,
+      45
+    ],
+    "ordinaryVessels": [
+      [
+        6,
+        10,
+        13
+      ],
+      [
+        36,
+        10,
+        52
+      ]
+    ],
+    "beetles": [
+      [
+        15,
+        10,
+        11
+      ],
+      [
+        35,
+        10,
+        49
+      ]
+    ],
+    "returnLandings": {
+      "fromCheckpoint1": [
+        [
+          8.5,
+          12,
+          36.5
+        ],
+        [
+          5.5,
+          10,
+          36.5
+        ]
+      ],
+      "fromCheckpoint2": [
+        [
+          13.5,
+          16,
+          55.5
+        ],
+        [
+          10.5,
+          13,
+          55.5
+        ],
+        [
+          7.5,
+          10,
+          54.5
+        ]
+      ]
+    },
+    "westReturnWaypoints": [
+      [
+        7.5,
+        10,
+        54.5
+      ],
+      [
+        12.5,
+        10,
+        50.5
+      ],
+      [
+        12.5,
+        10,
+        40.5
+      ],
+      [
+        5.5,
+        10,
+        38.5
+      ],
+      [
+        5.5,
+        10,
+        29.5
+      ],
+      [
+        6.5,
+        10,
+        17.5
+      ],
+      [
+        16.5,
+        10,
+        10.5
+      ],
+      [
+        22.5,
+        10,
+        0.5
+      ]
+    ],
+    "eastReturnX": [
+      40,
+      42
+    ]
+  },
+  "gameplay": {
+    "requiredAbilityBits": 6,
+    "challengeTicks": 1800,
+    "preserveImprovisedCompletion": true,
+    "addBoss": false,
+    "addKeystoneVault": false,
+    "skillBudget": {
+      "bashRange": 6,
+      "targetMargin": 0.5,
+      "bashLaunchSpeed": 1.25,
+      "updraftHeight": 12,
+      "glideFall": -0.12,
+      "normalGlideHorizontalCap": 0.5
+    },
+    "publicRoute": "entry to map/shrine/banks/shaft mouth without abilities",
+    "missingGlide": "existing challenge refusal; C1 dry descending return; equipment-granted free exploration remains permitted"
+  },
+  "waterDesign": {
+    "mode": "bounded_source_filled_stepped_creek",
+    "sourceYByReach": [
+      13,
+      11,
+      9,
+      7,
+      6
+    ],
+    "flowMouthCount": 4,
+    "flowMouthWidth": 1,
+    "maxPlannedFlowCellsPerMouth": 2,
+    "closedTerminus": {
+      "from": [
+        19,
+        5,
+        3
+      ],
+      "to": [
+        23,
+        9,
+        6
+      ],
+      "waterY": 6,
+      "playerGrateZ": 6,
+      "outletToWorld": false
+    },
+    "gloomSideChannel": {
+      "from": [
+        30,
+        9,
+        46
+      ],
+      "to": [
+        32,
+        9,
+        49
+      ],
+      "separatorX": 29,
+      "adjacentClearWaterMaxX": 28
+    },
+    "waterBedSolidLayers": 2,
+    "completeWetMaskExportedAtBuild": true,
+    "acceptance": {
+      "rotations": 4,
+      "ticks": 220,
+      "newWaterOutsideTemplate": 0,
+      "newWaterOnEntryOrDryRoute": 0,
+      "wetUpdraftCells": 0,
+      "cases": [
+        "flat",
+        "aquifer",
+        "slope_inflow_with_control",
+        "rain"
+      ],
+      "grateBlocksPlayer": true,
+      "openUnderBridgeHeadroomMin": 2
+    }
+  },
+  "artBudget": {
+    "rootNodePlanned": 7,
+    "rootNodeMaximum": 8,
+    "nodeFoci": [
+      "entrance",
+      "map",
+      "shrine",
+      "bash",
+      "updraft",
+      "light_shaft",
+      "upper_landing"
+    ],
+    "persistentLeaves": true,
+    "allRootComponentsSupported": true
+  },
+  "lightingTargets": {
+    "standableBlockLightMin": 1,
+    "focusBlockLightMin": 7,
+    "removeVessels": true,
+    "berries": false,
+    "temporaryPlatformsDark": true,
+    "report": [
+      "zone",
+      "minimum",
+      "mean",
+      "samples"
+    ]
+  },
+  "terrainTargets": {
+    "exteriorFloorY": 9,
+    "minimumGradingColumns": 4,
+    "maximumGradingColumns": 8,
+    "includeFourthToFifthStep": true,
+    "includeOutermostToNaturalStep": true,
+    "unguardedAdjacentStepMax": 1,
+    "entryWidth": 5,
+    "entryGuardColumns": 0,
+    "steepOnlyGuard": true,
+    "reportGuardCountAndBoundaryShare": true,
+    "allUprightFeetInFoundationMask": true,
+    "preserveVersion0": true,
+    "preserveForestOutput": true
+  },
+  "performanceTargetsMs": {
+    "heaviestChunkPreferred": 18.55,
+    "heaviestChunkHardMaximum": 25,
+    "coldLoadReportedSeparately": true
+  },
+  "siting": {
+    "keepCurrentStructureSet": true,
+    "keepCurrentBiomeScope": true,
+    "keepCurrentSlopeRuleInitially": true,
+    "compareOldNewCandidatePassRateBeforeTuning": true,
+    "includeSkirtInReservationAndGeneratedGuard": true
+  },
+  "verificationStatus": {
+    "headVsWorkingLegacyBytes": "PASS",
+    "legacyHashesSavedBeforeProductionChanges": "PASS",
+    "templateGeneration": "NOT_STARTED",
+    "plainJavaLayoutScan": "NOT_STARTED",
+    "junit": "NOT_RUN",
+    "gametest": "NOT_RUN",
+    "client": "NOT_STARTED"
+  }
+}

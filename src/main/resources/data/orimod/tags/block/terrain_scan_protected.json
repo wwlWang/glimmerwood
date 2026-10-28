@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:logs",
+    "minecraft:mushroom_stem",
+    "minecraft:brown_mushroom_block",
+    "minecraft:red_mushroom_block",
+    "minecraft:mangrove_roots",
+    "minecraft:muddy_mangrove_roots",
+    "minecraft:bee_nest",
+    "minecraft:bamboo",
+    "minecraft:bamboo_sapling",
+    "minecraft:cactus",
+    "minecraft:pumpkin",
+    "minecraft:melon",
+    "orimod:ginso_wood",
+    "orimod:great_spirit_root",
+    "orimod:great_spirit_wood",
+    "orimod:spirit_log",
+    "orimod:withered_spirit_log"
+  ]
+}
