@@ -248,6 +248,8 @@
   "ability.orimod.smash.description": "Wake the Spirit Hammer: hold use to wind up, release to smash the ground ahead for heavy damage and knock flying enemies down (8 energy).",
   "message.orimod.hammer_locked": "Learn Spirit Smash in the ability panel first",
   "bossbar.orimod.escape": "Escape the corruption!",
+  "title.orimod.escape_warning": "The gloom is coming—run!",
+  "subtitle.orimod.escape_countdown": "%s seconds until the surge—reach open sky!",
   "title.orimod.escape": "Escape!",
   "subtitle.orimod.escape": "The corruption is breaking loose - get out under the open sky",
   "title.orimod.victory": "Gloom Purified",

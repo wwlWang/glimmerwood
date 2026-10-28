@@ -248,6 +248,8 @@
   "ability.orimod.smash.description": "唤醒灵锤：按住使用键蓄力，松开重砸前方地面，造成高额伤害并把空中敌人砸落（8 灵能）。",
   "message.orimod.hammer_locked": "先在能力面板学会灵锤重砸",
   "bossbar.orimod.escape": "逃离腐光！",
+  "title.orimod.escape_warning": "腐光即将涌出——快逃！",
+  "subtitle.orimod.escape_countdown": "%s 秒后涌出——立即逃往露天！",
   "title.orimod.escape": "快逃！",
   "subtitle.orimod.escape": "腐光正在决堤——逃到露天的地方",
   "title.orimod.victory": "腐光已净化",

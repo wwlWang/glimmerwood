@@ -991,6 +991,11 @@ public final class DevelopmentBridge {
             state.put("guide",guide==null?Map.of("active",false):Map.of("active",true,"kind",guide.kind(),"dimension",guide.dimension(),"entry",new int[]{guide.entry().getX(),guide.entry().getY(),guide.entry().getZ()}));
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            var gloomEscape=cn.wwl.orimod.world.EscapeSequence.session(serverPlayer);
+            state.put("gloomEscape",gloomEscape==null?Map.of("active",false):Map.of(
+                    "active",true,"start",gloomEscape.start(),"elapsed",serverPlayer.level().getGameTime()-gloomEscape.start(),
+                    "origin",new double[]{gloomEscape.origin().x,gloomEscape.origin().y,gloomEscape.origin().z},
+                    "radius",cn.wwl.orimod.world.EscapeSequence.frontRadius(serverPlayer.level().getGameTime()-gloomEscape.start())));
             state.put("tide", cn.wwl.orimod.world.GloomTide.status(serverPlayer));
             state.put("ginso",Map.of("escape",cn.wwl.orimod.world.GinsoEscape.diagnostics(serverPlayer)));
             var restoration=cn.wwl.orimod.world.RestorationData.get(serverPlayer.server);

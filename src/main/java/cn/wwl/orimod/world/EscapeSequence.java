@@ -31,17 +31,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * hurt and slowed. Escaping plays the victory presentation and grants the reward; no blocks are changed.
  */
 public final class EscapeSequence {
-    public static final int LIMIT_TICKS = 1200, HURT_INTERVAL = 10, REWARD_LIGHT = 100;
+    public static final int LIMIT_TICKS = 1200, HURT_INTERVAL = 10, REWARD_LIGHT = 100, FRONT_DELAY_TICKS = 160;
     public static final double START_RADIUS = 3, FRONT_SPEED = .2, ESCAPE_DISTANCE = 12;
-    public static final float FRONT_DAMAGE = 3;
+    public static final float FRONT_DAMAGE = 2;
     public static final String CLEARED = "boss/gloom_heart";
 
     public record Session(String dimension, Vec3 origin, long start, ServerBossEvent bar) {}
     private static final Map<UUID, Session> ACTIVE = new ConcurrentHashMap<>();
 
-    public static double frontRadius(long ticks) { return START_RADIUS + FRONT_SPEED * Math.max(0, ticks); }
+    public static double frontRadius(long ticks) { return START_RADIUS + FRONT_SPEED * Math.max(0, ticks - FRONT_DELAY_TICKS); }
     public static boolean escaped(double horizontalDistance, boolean openSky) { return openSky && horizontalDistance >= ESCAPE_DISTANCE; }
-    public static boolean caught(double horizontalDistance, long ticks) { return horizontalDistance < frontRadius(ticks); }
+    public static boolean caught(double horizontalDistance, long ticks) { return ticks >= FRONT_DELAY_TICKS && horizontalDistance < frontRadius(ticks); }
 
     public static Session session(ServerPlayer player) { return ACTIVE.get(player.getUUID()); }
 
@@ -51,7 +51,7 @@ public final class EscapeSequence {
         var bar = new ServerBossEvent(Component.translatable("bossbar.orimod.escape"), BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
         bar.addPlayer(player);
         ACTIVE.put(player.getUUID(), new Session(player.level().dimension().location().toString(), origin, player.level().getGameTime(), bar));
-        title(player, "title.orimod.escape", "subtitle.orimod.escape", 5, 40, 10);
+        warning(player, FRONT_DELAY_TICKS / 20);
         player.level().playSound(null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_EMERGE, SoundSource.HOSTILE, 1.5f, .7f);
     }
 
@@ -73,6 +73,8 @@ public final class EscapeSequence {
         s.bar().setProgress(EscapeSupport.remaining(t,LIMIT_TICKS));
         if (escaped(dist, level.canSeeSky(player.blockPosition().above()))) { victory(player); return; }
         if (t >= LIMIT_TICKS) { fail(player); return; }
+        if (t > 0 && t < FRONT_DELAY_TICKS && t % 20 == 0) warning(player, (int)((FRONT_DELAY_TICKS - t) / 20));
+        if (t == FRONT_DELAY_TICKS) title(player, "title.orimod.escape", "subtitle.orimod.escape", 5, 40, 10);
         double radius = frontRadius(t);
         if (caught(dist, t)) {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 1, true, false));
@@ -133,6 +135,14 @@ public final class EscapeSequence {
 
     private static void title(ServerPlayer player, String title, String subtitle, int in, int stay, int out) {
         EscapeSupport.title(player,title,subtitle,in,stay,out);
+    }
+
+    private static void warning(ServerPlayer player, int seconds) {
+        player.connection.send(new ClientboundSetTitlesAnimationPacket(0, 25, 0));
+        player.connection.send(new ClientboundSetSubtitleTextPacket(Component.translatable("subtitle.orimod.escape_countdown", seconds)));
+        player.connection.send(new ClientboundSetTitleTextPacket(Component.translatable("title.orimod.escape_warning")));
+        float pitch = seconds > 3 ? .9f : 1.2f + (3 - seconds) * .2f;
+        player.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, .7f, pitch);
     }
 
     private EscapeSequence() {}

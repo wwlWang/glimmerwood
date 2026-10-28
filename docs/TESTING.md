@@ -1,5 +1,15 @@
 # 回归测试
 
+## R116 逃生调参 / 钥石台加固（独立于已提交B1–B9）
+
+证据`evidence/playtest-r116-escape-20261027-v001/`。有效RED `red-02`：同escape-05轨迹、Normal+遮顶第260tick死亡；生存真实采矿拆除台子。参数JUnit新增2项在旧代码失败。`green-03`四项全绿并正常保存exit0；首轮光照夹具未就绪、错误packet accessor和尾批光照等待阻塞均单列，未当作行为RED或通过。
+
+新增`R116EscapeTuningGameTests`四项：`recorded_escape05_route_survives_normal_cover`、`pedestal_survival_fixed`、`pedestal_creative_removal`、`warning_packets_and_damage_cadence`。后者验证实际字幕8→1、8次提示音及后三秒音高，等待期不扣血/不施加debuff，160/170/180tick生命18/16/14。CSV是同路线的固定追逐规则回放，不能声称模拟移动；真实输入补验v1 18.40s/v0 12.05s，最小余量3.349s/3.572s，两版全程20HP。相关视频无音轨，声效用网络包测试验证。
+
+全量`full-junit-01`1754项，零失败/错误/跳过，test/build/compileDevtoolsJava exit0；`full-gametest-01`在客户端正常退出后独立运行，无过滤，--no-parallel --no-daemon。全量 GameTest **1219项，0失败/错误/跳过，BUILD SUCCESSFUL，完整保存exit0**；保存205秒，world 372.81MiB、93,767区块、211个region，无残留java。cleanGameTestWorld在启动前自动清理临时世界，结束必须有保存完成/BUILD SUCCESSFUL/exit0。
+
+实机重生后的跳跃异常另见`RESPAWN_MOVEMENT.md`（只分析、下一批）；保留失败尝试与重进前后同tick客户端/服务器样本，不以调参成功替代该问题的回归。
+
 ## R116 优先修复验证（B1–B9）
 
 证据：`evidence/playtest-r116-priority-20261027-v001/`；逐条 RED→GREEN 在 `RED.md`，无效运行明确标注。全量 JUnit/build `full-junit-03`：1752项、0失败/错误/跳过、exit0。最终全量 `full-gametest-02`：1215项、0失败/错误/跳过、BUILD SUCCESSFUL、完整保存exit0；保存129秒，世界366.39MiB/92,125区块/208个region。源代码前后SHA256零变化，结束后无java。详见 FINAL_VERIFICATION.md。
