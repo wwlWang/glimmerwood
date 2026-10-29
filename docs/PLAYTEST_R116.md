@@ -266,3 +266,17 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 
 ## P3-11 双客户端局域网
 - **[未测，工具限制]** devtools 一次只驱动一个客户端（`run-devtools` 单实例、单连接文件），box 上没有第二个客户端的 run 目录与输入通道；没做局域网双客户端同步。
+
+## P3-12 全量测试（客户端已正常 leave_world/quit 后串行跑）
+- `cleanGameTestWorld` → `cleanTest build runGameTestServer compileDevtoolsJava --no-parallel`，HEAD `e2aeeed`（源码同 `cd1670b`，之后只有文档提交）：**BUILD SUCCESSFUL（4m54s），JUnit 1754 / 0 失败 / 0 错误 / 0 跳过；GameTest「All 1226 required tests passed」**，`All dimensions are saved`，exit 0，无 flaky。日志 `/workspace/oriMod/pt116/p3-full.log`。
+
+## P3 第 7–12 段小结（严重度从高到低）
+1. **major（装 Iris 时）** Bash 默认键 R 与 Iris「重新加载光影包」R 冲突；一次性迁移已标记完成后不会再处理（P3-7a）。
+2. **minor** 遗迹里的 Bash 锚 / 上升气流 / 根块可被生存玩家挖走或被活塞推走，挑战可能被玩家自己弄坏（P3-9）。
+3. **minor** forest_spring 暗室无顶，可从上方跳进去绕开裂墙（P3-7b）。
+4. **minor** 挑战开始不检查所需能力；forest_spring「要求」只写冲刺（P3-7a/b）。
+5. **minor** 制图师连买多条指引会全部扣费，但只保留最后一条（P3-7c）。
+6. **minor** 精灵形态一人称不显示火把（主手/副手）（P3-8）。
+7. **minor** creek 起步 Bash：锚下的根块挡住直接发射，需要两次 Bash（P3-7a）。
+8. **minor** 自家 Spirit Glow 光影包加载时的 shader in/out 缺失与未初始化警告（P3-10）。
+9. **cosmetic** 640×480 时技能徽标压住快捷栏；盾牌第三人称把精灵整个挡住；碎片商 reset 后同日缓存；商人说明截断（P3-7c/8/10）。
