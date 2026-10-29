@@ -177,3 +177,14 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 站着不动期间（宽限内）每 ~2 s 掉 3 HP：来自竞技场里的 3 只 `gloom_spitter`（Heart 战/召唤时附带，非前沿；宽限提示期间 20 HP 玩家站着 8 s 就掉到 ~9 HP），是怪的伤害不是前沿 **[信息]**。前沿起 20→0 约 2.5 s。
 - **[复现，minor] Peaceful 难度下召唤 Gloom Heart：** 提示「腐光之心苏醒了！」，祭坛转 `ACTIVE`，但心脏作为怪物立刻被 Peaceful 清理（无实体），玩家得到误导的提示；改回 Normal 后再点才正常召唤。建议 Peaceful 时提示「需要非和平难度」或禁止消耗祭坛状态。
 - **[信息]** 死亡后（无 keepInventory）首次胜利发的生命格/能量格在背包里，随死亡掉落——符合原版规则；但 boss/逃生奖励是「首次限定」，丢了就不再发（`CLEARED` 已记）。**[怀疑 minor]** 建议首次奖励改成不会丢的形式或二次补发。
+
+## P3-5 意志之光（Will Wisps）/ 复苏仪式（Restoration）端到端（世界 p3，HEAD `0f0512d`）
+- **为什么上一轮「净化后复苏仍 false」：设计，不是 bug。** 复苏需要 3 枚意志之光（`WillWisp` 位 7）：`HEART`（击杀腐光之心逃生时在场）、`WING`（击杀腐光母翼 `storm_altar`）、`EARTH`（**累计 3 处不同腐化地面**净化后才出）；且仅在**大灵树心**（`great_tree_heart`，不是小灵树 `spirit_tree_heart`）使用，且需觉醒+精灵形态。上轮只净化了 1 处、没有另外两枚，状态就是 `restored:false`。
+- 真实走完整条链 **[通过]**：已有 HEART+WING（mask 3）→ 三处腐化地面（`locate` → `ori blight nearest` → 灵击之锤 4–5 下，600 tick 净化后各 +60 灵光、`purify/…` 奖励键 ×3）→ 第 3 处净化后 `EARTH` 意志之光在核处生成（`pending=[earth]`，位置 `(-321.5,69.35,627.5)`，截图 `earth-wisp`），走过去 3 格即拾取 `mask 3→7`、`wisps.purifications=3`。
+- 大灵树（origin `(136,70,344)`，heart `(138,95,345)`）：入口 `(136,70,320)` 前有 1 格高 `great_spirit_root`（需跳上，纯 W 的 `walk_route` 会 `blocked`；用「走+疾跑+卡住跳」脚本，约 20 s 走完 22 格上升到心室 `(135.5,93.9,343.8)`）。对准 heart 真实 `use`：`restoration.active=true`，300 tick（15 s）倒计时，镜头光环/光柱/树冠开花（截图 `restore-sheet`），结束 `completed:true / restored:true`、`bloomChunks 171 / writes 256`、+500 灵光（532→1032）、成就 toast；再次使用 → 拒绝（`complete`），不会重复发奖 **[通过]**。
+- 截图序列：`restore-before / restore-3s / restore-8s / restore-13s / restore-sheet`、`restore-outside`。
+- **[信息]** `spirit_core` 在手上右键（空气或被拒绝的方块上）会切换精灵形态——我测复苏后“莫名变回人形”就是这个（设计，但手持核时点已完成的 heart 会顺带切形态）。
+- **[复现，minor] `locate structure orimod:blighted_grounds` 指向的点不一定有腐化地面：** 5 个定位点中 4 个在 34–43 格内有核，`(432,-144)`（该世界）站到中心、512 格内 `ori blight nearest` 无核、地面是正常桦木林（preflight 拒绝了摆放，但结构起点仍被 locate 记录）。玩家按地图石/导引去会扑空。
+- **[信息]** 手动 `setblock orimod:gloom_core` 的核可被锤破，但没有区域登记 → 不触发净化、不给灵光（只掉一个物品）。每次命中有约 48 tick 冷却（连点相隔 24 tick 只有一半命中）。
+- **[复现，minor] 精灵形态忽略「缓降」药水的自由落体减速：** 人形 slow_falling 下降速每 tick +0.01（15 tick −0.14），精灵形态 −0.37（15 tick）→ −0.57（25 tick），与未加药水时一致；仅滑翔时才受影响。（可能是有意：精灵坠落曲线自定义；但药水/属性类玩法应有说明。）
+- 日志：期间出现 3 次客户端 `Received synced attachments from unknown entity`（客户端先于实体收到附件同步，复活/传送时），4 次 `Can't keep up`（llvmpipe 高负载），无模组异常 **[信息]**。
