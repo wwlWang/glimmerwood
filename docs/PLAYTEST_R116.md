@@ -140,3 +140,22 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 梯子/藤蔓：前进即爬（约 20 tick 后），连续按跳可爬，爬行中切形态不丢状态 **[通过]**。
 - 载具（船/矿车/猪/马/炽足兽）：骑乘中 `form` 键被忽略（`toggle_form` 不生效，无任何提示），能力键不触发、无异常，下车后恢复 **[信息]**。
 - 药水/属性：`jump_boost 6` 跳高 6.8 格（受影响）；`jump_strength=0` 跳高 0；**速度/缓慢/`movement_speed` 属性对精灵形态走路速度完全无效**（走和疾跑都 0.31 格/tick；人形 slowness 3 → 0.08、speed 6 → 0.45）**[复现，minor/设计问题]**：意味着逃生前沿的「缓慢 II」对精灵形态没有减速效果，也无法被药水/属性调节（见 P3-D）。缩放 4 倍、`step_height`、`gravity`、`safe_fall_distance` 未见异常；gravity 0.01/0.5 与 scale 0.1 的跳跃数据因文件名错误未保存，补测见下。
+
+## P3-2 玩家会做的怪事（续）
+- 游戏模式：创造/冒险/旁观/生存切换（含脚本中途连续切换）无异常；**创造模式下精灵的跳跃用原版（1.25 格，无二段跳/滑翔）**，冲刺仍可用（`MovementRules.ownsJump(..., mayfly)` 的设计；创造飞行双击跳照常）**[信息]**。旁观模式无能力，飞行正常。
+- 药水：jump_boost 生效；levitation / slow_falling / darkness / blindness / nausea / weakness 全部无异常；slow_falling 下滑翔下沉 0.01/tick。
+- 属性：`scale` 4 / 0.1、`step_height` 2、`gravity` 0.5/0.01、`safe_fall_distance` -50、`jump_strength` 0 均无崩溃、无卡死（0 → 跳高 0，符合预期）。
+- 载具：见 P3-1。维度切换（滑翔中 `execute in the_nether/the_end/overworld run tp`）：能力状态清空为 idle、`predictionRejections=0`、无异常；在下界/末地落地正常 **[通过]**。
+- 1 格高缝隙：精灵形态 1.2 格高，与人形一样进不去 1 格高通道，2 格高通道可走；`pose` 保持 STANDING，无爬行姿态（与原版玩家一致）**[通过/信息]**。
+- tp 进实心石块：能力键（跳/冲刺/猛击）无异常，窒息伤害照常（20→9，约每 10 tick 1 点）；不会被推出（块心）。**[信息]**
+- 天花板 2 格高下跳/二段跳/冲刺：无穿模、无卡顶；虚空/`/kill` 中途技能：重生后保留觉醒/形态，状态 `idle` **[通过]**。
+- 变量跳高语义（**非 bug，澄清**）：按住跳键 2–3 tick = 小跳（0.94 格），按住满 = 1.62 格；二段跳窗口 = 空中（约 13 tick）；在落地前 1 tick 按二段不触发。乱按脚本里“二段跳不出现”是因为第一下是短按小跳后落地 **[设计]**。
+- 重进世界：10 生命格存档→重进 HP 40→40（**[已修复]**，之前 40→20）；滑翔中途退出再进，位置恢复到地面、`mode=idle`、能力键正常 3/3 次 **[通过]**。
+
+## P3-3 钥石 / 练习靶 / 首领 / 逃生
+- 洞穴祭坛（seed 116333，origin [-288,37,-226] CCW90，第二座 [-242,36,-106] CW180）：钥石台 (-253,46,-236) 生存模式连按 80 tick 不掉；`use` 取到钥石，物品组件 `orimod:keystone_ruin` = `overworld/cave_altar/1/<origin>/COUNTERCLOCKWISE_90`（绑定）；再次使用提示「重新凝聚」；`/tick sprint 24500` 过 1 天后台子 `full=true` 自动补回 **[已修复：钥石软锁]**。
+- `practice_target` 刷怪蛋：对着地面 use → 生成 `practice_target`（12 HP，存活 >65 s、可被打）**[已修复]**。
+- Gloom Matriarch（`storm_altar`，需 `use_block` 近距，≥4.5 格外放置/使用静默失败）：召唤后悬浮 ≈6 格巡场，重复使用不会重复召唤；会话中退出世界→重进，首领和祭坛 `ACTIVE` 保持；`/damage` 每次最多扣 2 点（伤害封顶）；`/kill` 首领→祭坛 `DEFEATED`、掉 will_wisp + 2 只 gloom_hawk + 物品；再次使用不会重召 **[通过]**。**[信息]** 用 `setblock` 直接摆的 `storm_altar` 是 `assembled=false`，使用无反应（只能用物品放置）。
+- Ginso Tree（seed 116333，origin (72,71,904)，高 108）：水心 (72,165,904) 真实 use → `PREPARE`→`RUNNING`；`walk_route` 走 63 点、19.4 s 内到出口，outcome `SUCCESS`、+100 灵光 +1 能量格、HP 40/40；再次触发同路线不再给奖励（`rewardLight 0`）；逃生中关形态 → 继续 RUNNING，不影响；逃生中 `/tp` 走 → 立刻回到安全点、outcome `OUTSIDE`；站着不动 → 水涨至淹没、outcome `SUBMERGED`、HP 40→37、回安全点，不死亡 **[通过]**。
+- 精灵沙（`spirit_sand` 6×6×7 块）：直接走进去就穿过并被推出（出口 +0.85 速度）；冲刺穿过；从 30 格高落上去；tp 到沙块中心 → 约 30 tick 内被推出到 +z 面；人形形态落在沙块顶 **[通过]**。
+- 腐光水：2 点魔法伤害 / ~10 tick + 缓慢 I（精灵形态不减速，见 P3-1）；`setblock` 移除池边后会向外扩散 1 格即停（短距离扩散，设计）**[通过]**；在池内停下不动会持续掉血致死（40 HP 约 20 s），池里没有出水提示 **[信息]**。
