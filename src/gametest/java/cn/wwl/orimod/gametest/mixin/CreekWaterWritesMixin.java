@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 
-@Mixin(targets="cn.wwl.orimod.world.CreekRuinTerrain")
+@Mixin(targets="cn.wwl.orimod.world.RuinTerrainKernel")
 abstract class CreekWaterWritesMixin {
     @Shadow @Final private BlockPos origin;
     @WrapOperation(method={"place","writeGuard","supportFoundations"},at=@At(value="INVOKE",target="Lnet/minecraft/world/level/WorldGenLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))

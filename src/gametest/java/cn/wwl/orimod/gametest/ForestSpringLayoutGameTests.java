@@ -35,16 +35,20 @@ public final class ForestSpringLayoutGameTests {
         }));return out;
     }
     static final class Site implements AutoCloseable {
-        final GameTestHelper h;final RuinPlacement p;final RuinPiece piece;final List<ChunkPos> forced=new ArrayList<>();final List<Runnable> undo=new ArrayList<>();
+        final GameTestHelper h;final RuinPlacement p;final RuinPiece piece;final int[] approachSamples;final List<ChunkPos> forced=new ArrayList<>();final List<Runnable> undo=new ArrayList<>();
         Site(GameTestHelper h,Rotation r,int dx,int dz){this(h,r,dx,dz,false);}
-        Site(GameTestHelper h,Rotation r,int dx,int dz,boolean approach){this.h=h;
+        Site(GameTestHelper h,Rotation r,int dx,int dz,boolean approach){this(h,r,dx,dz,approach,0);}
+        Site(GameTestHelper h,Rotation r,int dx,int dz,boolean approach,int terrainVersion){this.h=h;
             p=RuinPlacement.atMinimum(RuinKind.FOREST.layout(1),h.absolutePos(new BlockPos(dx,35,dz)),r);
-            int[] samples=approach?new int[RuinApproachPiece.WIDTH*RuinApproachPiece.DEPTH]:new int[0];Arrays.fill(samples,p.origin().getY()+4);
-            piece=new RuinPiece(h.getLevel().getStructureManager(),RuinKind.FOREST,p,1,samples);
-            var b=piece.getBoundingBox();var l=h.getLevel();
+            int[] samples=approach?new int[RuinApproachPiece.WIDTH*RuinApproachPiece.DEPTH]:new int[0];Arrays.fill(samples,p.origin().getY()+4);approachSamples=samples.clone();
+            int[] natural=new int[terrainVersion==1?(39+40)*(55+40):0];Arrays.fill(natural,1);
+            piece=new RuinPiece(h.getLevel().getStructureManager(),RuinKind.FOREST,p,1,samples,natural,terrainVersion);
+            var b=piece.getBoundingBox();var l=h.getLevel();int prepared=0;
+            GameTestDiskBackpressure.drain(l,"forest-prepare-begin");
             try{for(int x=(b.minX()>>4)-1;x<=(b.maxX()>>4)+1;x++)for(int z=(b.minZ()>>4)-1;z<=(b.maxZ()>>4)+1;z++){
                 var cp=new ChunkPos(x,z);if(!l.getForcedChunks().contains(cp.toLong())){l.setChunkForced(x,z,true);forced.add(cp);}l.getChunk(x,z);
-            }}catch(RuntimeException e){close();throw e;}
+                GameTestDiskBackpressure.preparedChunk(l,++prepared,"forest-prepare");
+            }GameTestDiskBackpressure.drain(l,"forest-prepare-ready");}catch(RuntimeException e){close();throw e;}
         }
         void place(){place(false);}
         void place(boolean deferredShapes){var l=h.getLevel();var b=piece.getBoundingBox();long total=0,max=0;
@@ -55,10 +59,17 @@ public final class ForestSpringLayoutGameTests {
                 if(method.getName().equals("setBlock")&&args.length>=3)args[2]=(int)args[2]|Block.UPDATE_KNOWN_SHAPE;
                 try{return method.invoke(l,args);}catch(java.lang.reflect.InvocationTargetException e){throw e.getCause();}
             }):l;
+            try(var timing=GameTestDiskBackpressure.measured(l,"layout-slices")){
             for(int x=b.maxX()>>4;x>=b.minX()>>4;x--)for(int z=b.maxZ()>>4;z>=b.minZ()>>4;z--){long start=System.nanoTime();
                 piece.postProcess(accessor,l.structureManager(),l.getChunkSource().getGenerator(),RandomSource.create(116),new BoundingBox(x*16,l.getMinBuildHeight(),z*16,x*16+15,l.getMaxBuildHeight()-1,z*16+15),new ChunkPos(x,z),BlockPos.ZERO);
                 long took=System.nanoTime()-start;total+=took;max=Math.max(max,took);
-            }System.out.println("FOREST_V1_PERF rotation="+p.rotation()+" totalMs="+total/1e6+" maxSliceMs="+max/1e6);
+            }}
+            if(piece.forestTerrainVersion()==1&&approachSamples.length!=0){
+                var approach=new RuinApproachPiece(RuinApproachPiece.doorway(RuinKind.FOREST,piece.layout(),p),approachSamples,false,true,piece.forestApproachSideProfile());
+                var a=approach.getBoundingBox();for(int x=a.minX()>>4;x<=a.maxX()>>4;x++)for(int z=a.minZ()>>4;z<=a.maxZ()>>4;z++)
+                    approach.postProcess(accessor,l.structureManager(),l.getChunkSource().getGenerator(),RandomSource.create(116),new BoundingBox(x*16,l.getMinBuildHeight(),z*16,x*16+15,l.getMaxBuildHeight()-1,z*16+15),new ChunkPos(x,z),BlockPos.ZERO);
+            }
+            System.out.println("FOREST_V1_PERF rotation="+p.rotation()+" totalMs="+total/1e6+" maxSliceMs="+max/1e6);
         }
         void publish(){
             var l=h.getLevel();var structure=l.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE).get(RuinKind.FOREST.location());
@@ -67,7 +78,7 @@ public final class ForestSpringLayoutGameTests {
             var chunks=new HashSet<ChunkPos>();for(var local:List.of(piece.layout().shrine(),piece.layout().mapStone()))chunks.add(new ChunkPos(p.block(local)));
             for(var cp:chunks){var chunk=l.getChunk(cp.x,cp.z);var refs=new HashMap<net.minecraft.world.level.levelgen.structure.Structure,it.unimi.dsi.fastutil.longs.LongSet>();chunk.getAllReferences().forEach((k,v)->refs.put(k,new it.unimi.dsi.fastutil.longs.LongOpenHashSet(v)));undo.add(()->chunk.setAllReferences(refs));chunk.addReferenceForStructure(structure,origin.getPos().toLong());}
         }
-        @Override public void close(){for(int i=undo.size()-1;i>=0;i--)undo.get(i).run();undo.clear();for(var cp:forced)h.getLevel().setChunkForced(cp.x,cp.z,false);forced.clear();}
+        @Override public void close(){for(int i=undo.size()-1;i>=0;i--)undo.get(i).run();undo.clear();CreekFixtureChunks.release(h.getLevel(),forced);forced.clear();}
     }
     private static void foundation(GameTestHelper h,Rotation r){
         try(var s=new Site(h,r,2700+r.ordinal()*160,500)){
@@ -84,8 +95,10 @@ public final class ForestSpringLayoutGameTests {
             h.assertTrue(l.isEmptyBlock(outside.below()),"Unwritten terrain acquired a pillar");
             var oldPos=s.p.block(new BlockPos(0,0,0));var old=new RuinPiece(l.getStructureManager(),RuinKind.FOREST,new RuinPlacement(oldPos,r));
             var check=old.placement().block(new BlockPos(9,0,0));l.setBlock(check.below(4),Blocks.STONE.defaultBlockState(),2);for(int d=1;d<=3;d++)l.setBlock(check.below(d),Blocks.AIR.defaultBlockState(),2);
+            try(var timing=GameTestDiskBackpressure.measured(l,"forest-legacy-reference")){
             long start=System.nanoTime();old.postProcess(l,l.structureManager(),l.getChunkSource().getGenerator(),RandomSource.create(116),s.piece.getBoundingBox(),new ChunkPos(oldPos),BlockPos.ZERO);
             System.out.println("FOREST_LEGACY_REFERENCE fullBoundsMs="+(System.nanoTime()-start)/1e6+" rotation="+r);
+            }
             h.assertTrue(l.isEmptyBlock(check.below()),"Legacy placement changed its foundation");h.succeed();
         }
     }
@@ -217,8 +230,11 @@ public final class ForestSpringLayoutGameTests {
             h.succeed();
         }
     }
-    private static void lighting(GameTestHelper h){
-        var s=new Site(h,Rotation.NONE,1400,500);var l=h.getLevel();try{
+    private static void lighting(GameTestHelper h){lighting(h,false);}
+    static void slopeLighting(GameTestHelper h){lighting(h,true);}
+    private static void lighting(GameTestHelper h,boolean slope){
+        var s=new Site(h,Rotation.NONE,1400,500,false,slope?1:0);var l=h.getLevel();try{
+            if(slope)ForestPolicyRedGameTests.slope(s);
             s.place();for(var pos:BlockPos.betweenClosed(s.piece.getBoundingBox().minX(),s.piece.getBoundingBox().minY(),s.piece.getBoundingBox().minZ(),s.piece.getBoundingBox().maxX(),s.piece.getBoundingBox().maxY(),s.piece.getBoundingBox().maxZ())){
                 var state=l.getBlockState(pos);
                 if(state.is(OriBlocks.SPIRIT_LIGHT_VESSEL))l.setBlock(pos,Blocks.AIR.defaultBlockState(),2);

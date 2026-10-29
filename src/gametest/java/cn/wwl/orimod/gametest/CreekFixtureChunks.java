@@ -33,6 +33,7 @@ final class CreekFixtureChunks {
         // thread continuations before another neighbouring fixture can reuse a
         // holder which still has an unload callback queued for its former lease.
         settle(level, "after-release");
+        GameTestDiskBackpressure.unloadAndDrain(level, "fixture-release");
     }
 
     static void settle(ServerLevel level, String phase) {

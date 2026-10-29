@@ -1,6 +1,8 @@
 package cn.wwl.orimod.gametest;
 
 import cn.wwl.orimod.world.RuinKind;
+import cn.wwl.orimod.world.RuinApproachPiece;
+import cn.wwl.orimod.world.RuinSiteRules;
 import cn.wwl.orimod.world.RuinPiece;
 import cn.wwl.orimod.world.RuinPlacement;
 import net.minecraft.core.*;
@@ -43,10 +45,16 @@ public final class CreekConcurrentSliceGameTests {
                 "orimod_creek_rebuild:room",Rotation.NONE,900,0,true,h->concurrent(h,r)));
         return out;
     }
-    private static RuinPiece piece(GameTestHelper h,Rotation rotation){
-        var placement=RuinPlacement.atMinimum(RuinKind.CREEK.layout(1),new BlockPos(135,120,-181),rotation);
-        var natural=new int[85*107];Arrays.fill(natural,8); // Memory.naturalY = origin + 8.
-        var initial=new RuinPiece(h.getLevel().getStructureManager(),RuinKind.CREEK,placement,1,new int[0],natural);
+    @GameTestGenerator public static Collection<TestFunction> forestCases(){
+        var out=new ArrayList<TestFunction>();for(var r:Rotation.values())out.add(new TestFunction("forest_kernel","forest_kernel.concurrent_"+r.name().toLowerCase(),
+                "orimod_forest_red:room",Rotation.NONE,900,0,true,h->concurrent(h,r,RuinKind.FOREST)));return out;
+    }
+    private static RuinPiece piece(GameTestHelper h,Rotation rotation,RuinKind kind){return piece(h,rotation,kind,false);}
+    private static RuinPiece piece(GameTestHelper h,Rotation rotation,RuinKind kind,boolean approach){
+        var placement=RuinPlacement.atMinimum(kind.layout(1),new BlockPos(135,120,-181),rotation);
+        var natural=new int[kind==RuinKind.CREEK?85*107:79*95];Arrays.fill(natural,8); // Memory.naturalY = origin + 8.
+        int[] route=new int[approach?45:0];Arrays.fill(route,placement.origin().getY()+9);
+        var initial=new RuinPiece(h.getLevel().getStructureManager(),kind,placement,1,route,natural,kind==RuinKind.FOREST?1:0);
         var tag=initial.createTag(StructurePieceSerializationContext.fromLevel(h.getLevel()));
         // No real mobs may be constructed on a worker. Pre-existing receipts are
         // the normal production path for a piece whose guards already spawned.
@@ -56,12 +64,13 @@ public final class CreekConcurrentSliceGameTests {
         piece.placeSettings().setBoundingBox(new BoundingBox(-13,-12,-11,-10,-9,-8));
         return piece;
     }
-    private static void concurrent(GameTestHelper h,Rotation rotation){
-        var shared=piece(h,rotation);var guard=new Guard(shared);var chunks=chunks(shared);
+    private static void concurrent(GameTestHelper h,Rotation rotation){concurrent(h,rotation,RuinKind.CREEK);}
+    private static void concurrent(GameTestHelper h,Rotation rotation,RuinKind kind){
+        var shared=piece(h,rotation,kind);var guard=new Guard(shared);var chunks=chunks(shared);
         // Template-local index is prepared in the constructor, before slice writes.
         // First selection still runs concurrently on the same untouched piece.
         var cold=new Memory(h.getLevel(),shared,guard);run(h,shared,cold,chunks,true,0);cold.converge();
-        var reference=piece(h,rotation);var serial=new Memory(h.getLevel(),reference,new Guard(reference));
+        var reference=piece(h,rotation,kind);var serial=new Memory(h.getLevel(),reference,new Guard(reference));
         run(h,reference,serial,chunks,false,0);serial.converge();var expected=serial.snapshot();
         compare(h,expected,cold.snapshot(),rotation,0,cold);
         for(int round=1;round<3;round++){
@@ -70,6 +79,89 @@ public final class CreekConcurrentSliceGameTests {
         }
         guard.check();h.succeed();
     }
+    static void forestApproach(GameTestHelper h,Rotation rotation){
+        Snapshot expected=null;
+        for(int variant=0;variant<4;variant++){
+            var piece=piece(h,rotation,RuinKind.FOREST,true);var memory=new Memory(h.getLevel(),piece,new Guard(piece));memory.approachCaves=true;
+            int[] samples=new int[45];Arrays.fill(samples,piece.origin().getY()+9);
+            var approach=new RuinApproachPiece(RuinApproachPiece.doorway(RuinKind.FOREST,piece.layout(),piece.placement()),samples,false,true,piece.forestApproachSideProfile());
+            var order=chunks(piece);var ab=approach.getBoundingBox();
+            for(int cx=ab.minX()>>4;cx<=ab.maxX()>>4;cx++)for(int cz=ab.minZ()>>4;cz<=ab.maxZ()>>4;cz++){var cp=new ChunkPos(cx,cz);if(!order.contains(cp))order.add(cp);}
+            if(variant%2==1)Collections.reverse(order);
+            for(int repeat=0;repeat<3;repeat++){
+                runPair(h,piece,approach,memory,order,variant>=2,variant%2==1);
+                memory.converge();var actual=memory.snapshot();
+                if(expected==null)expected=actual;else compare(h,expected,actual,rotation,variant*3+repeat,memory);
+                // Check both deep sides and the three-column approach axis.
+                for(int x:new int[]{17,21})for(int z=-5;z<=-1;z++){
+                    int floor=RuinSiteRules.stepFloor(piece.origin().getY()+9,piece.origin().getY()+piece.layout().approachY(),z+8);
+                    var at=piece.placement().block(new BlockPos(x,0,z)).atY(floor+1);
+                    h.assertTrue(approach.ownsGuard(at,memory.state(at)),"Missing combined cave edge "+at+" variant="+variant);
+                    for(int xx=18;xx<=20;xx++)for(int dy=1;dy<=2;dy++){
+                        var axis=piece.placement().block(new BlockPos(xx,0,z)).atY(floor+dy);
+                        h.assertTrue(memory.state(axis).getCollisionShape(memory.level,axis).isEmpty(),"Combined central axis blocked "+axis);
+                    }
+                }
+                for(int x:new int[]{17,21})for(int z=-8;z<=-6;z++){
+                    int floor=RuinSiteRules.stepFloor(piece.origin().getY()+9,piece.origin().getY()+piece.layout().approachY(),z+8);
+                    var at=piece.placement().block(new BlockPos(x,0,z)).atY(floor+1);
+                    h.assertFalse(approach.ownsGuard(at,memory.state(at)),"Ordinary pre-fill flank gained unnecessary wall "+at);
+                }
+                var context=StructurePieceSerializationContext.fromLevel(h.getLevel());
+                piece=new RuinPiece(h.getLevel().getStructureManager(),piece.createTag(context));
+                piece.placeSettings().setKnownShape(true);
+                piece.placeSettings().setBoundingBox(new BoundingBox(-13,-12,-11,-10,-9,-8));
+                approach=new RuinApproachPiece(approach.createTag(context));
+            }
+        }
+        h.succeed();
+    }
+    static void forestFluids(GameTestHelper h,Rotation rotation,boolean lava){
+        Snapshot expected=null;
+        for(int variant=0;variant<4;variant++){
+            var piece=piece(h,rotation,RuinKind.FOREST,true);
+            var context=StructurePieceSerializationContext.fromLevel(h.getLevel());
+            var tag=piece.createTag(context);var noise=new int[79*95];Arrays.fill(noise,1);tag.putIntArray("ForestNaturalTerrain",noise);
+            piece=new RuinPiece(h.getLevel().getStructureManager(),tag);piece.placeSettings().setKnownShape(true);
+            var memory=new Memory(h.getLevel(),piece,new Guard(piece));memory.fluidCase=true;memory.fluidLava=lava;
+            int[] samples=new int[45];Arrays.fill(samples,piece.origin().getY()+9);
+            var approach=new RuinApproachPiece(RuinApproachPiece.doorway(RuinKind.FOREST,piece.layout(),piece.placement()),samples,false,true,piece.forestApproachSideProfile());
+            var order=chunks(piece);if(variant%2==1)Collections.reverse(order);
+            for(int repeat=0;repeat<3;repeat++){
+                runPair(h,piece,approach,memory,order,variant>=2,variant%2==1);
+                memory.converge();var actual=memory.snapshot();
+                if(expected==null)expected=actual;else compare(h,expected,actual,rotation,variant*3+repeat,memory);
+                for(var q:ForestFluidBoundaryGameTests.LAKE){
+                    var at=piece.placement().block(q);h.assertTrue(memory.state(at).is(lava?Blocks.LAVA:Blocks.WATER),"Replay filled lake "+at);
+                    for(var d:List.of(Direction.NORTH,Direction.SOUTH,Direction.EAST,Direction.WEST,Direction.DOWN))if(!ForestFluidBoundaryGameTests.LAKE.contains(q.relative(d)))
+                        h.assertTrue(memory.state(piece.placement().block(q.relative(d))).isCollisionShapeFullBlock(memory.level,piece.placement().block(q.relative(d))),"Replay opened lake wall "+q.relative(d));
+                }
+                ForestFluidBoundaryGameTests.checkEdges(h,piece,memory.level);
+                piece=new RuinPiece(h.getLevel().getStructureManager(),piece.createTag(context));piece.placeSettings().setKnownShape(true);
+                approach=new RuinApproachPiece(approach.createTag(context));
+            }
+        }
+        h.succeed();
+    }
+    private static void runPair(GameTestHelper h,RuinPiece piece,RuinApproachPiece approach,Memory memory,List<ChunkPos> order,boolean parallel,boolean approachFirst){
+        var executor=parallel?Executors.newFixedThreadPool(4):null;var tasks=new ArrayList<Future<?>>();
+        try{
+            for(var chunk:order){Runnable action=()->{
+                var clip=new BoundingBox(chunk.getMinBlockX(),-64,chunk.getMinBlockZ(),chunk.getMaxBlockX(),319,chunk.getMaxBlockZ());
+                memory.currentClip.set(clip);int active=memory.active.incrementAndGet();memory.maxActive.accumulateAndGet(active,Math::max);
+                try{
+                    if(approachFirst)approach.postProcess(memory.level,memory.structures,memory.generator,RandomSource.create(SEED^chunk.toLong()),clip,chunk,BlockPos.ZERO);
+                    piece.postProcess(memory.level,memory.structures,memory.generator,RandomSource.create(SEED^chunk.toLong()),clip,chunk,BlockPos.ZERO);
+                    if(!approachFirst)approach.postProcess(memory.level,memory.structures,memory.generator,RandomSource.create(SEED^chunk.toLong()),clip,chunk,BlockPos.ZERO);
+                    memory.completed.add(chunk.toLong());
+                }finally{memory.active.decrementAndGet();memory.currentClip.remove();}
+            };if(parallel)tasks.add(executor.submit(action));else action.run();}
+            for(var task:tasks)task.get(60,TimeUnit.SECONDS);
+        }catch(Exception e){throw new AssertionError("Combined forest slice failed "+piece.getRotation(),e);}
+        finally{if(executor!=null){executor.shutdownNow();try{if(!executor.awaitTermination(10,TimeUnit.SECONDS))throw new AssertionError("Combined workers did not finish");}catch(InterruptedException e){Thread.currentThread().interrupt();throw new AssertionError(e);}}}
+        if(parallel)h.assertTrue(memory.maxActive.get()>=2,"Combined fixture not concurrent");
+    }
+
     private static List<ChunkPos> chunks(RuinPiece piece){
         var bounds=piece.getBoundingBox();var template=piece.template().getBoundingBox(piece.placeSettings(),piece.origin());
         var chunks=new ArrayList<ChunkPos>();
@@ -146,7 +238,7 @@ public final class CreekConcurrentSliceGameTests {
         final AtomicLong subticks=new AtomicLong();final ThreadLocal<BoundingBox> currentClip=new ThreadLocal<>();
         final Set<Long> touchedColumns=ConcurrentHashMap.newKeySet();
         final AtomicInteger active=new AtomicInteger(),maxActive=new AtomicInteger();
-        int convergencePasses;
+        int convergencePasses;boolean approachCaves,fluidCase,fluidLava;
         Memory(ServerLevel real,RuinPiece piece,Guard guard){
             this.piece=piece;this.guard=guard;structures=real.structureManager();generator=real.getChunkSource().getGenerator();registries=real.registryAccess();dimension=real.dimensionType();features=real.enabledFeatures();gameTime=real.getGameTime();naturalY=piece.origin().getY()+8;
             level=(WorldGenLevel)Proxy.newProxyInstance(WorldGenLevel.class.getClassLoader(),new Class<?>[]{WorldGenLevel.class},this);
@@ -156,6 +248,15 @@ public final class CreekConcurrentSliceGameTests {
             int x=switch(piece.getRotation()){case NONE->dx;case CLOCKWISE_90->dz;case CLOCKWISE_180->-dx;case COUNTERCLOCKWISE_90->-dz;};
             int z=switch(piece.getRotation()){case NONE->dz;case CLOCKWISE_90->-dx;case CLOCKWISE_180->-dz;case COUNTERCLOCKWISE_90->dx;};
             int y=pos.getY()-piece.origin().getY();
+            if(fluidCase){
+                var q=new BlockPos(x,y,z);
+                if(ForestFluidBoundaryGameTests.LAKE.contains(q)){var fluid=(fluidLava?Blocks.LAVA:Blocks.WATER).defaultBlockState();return q.equals(ForestFluidBoundaryGameTests.LAKE.getLast())?fluid.setValue(LiquidBlock.LEVEL,fluidLava?2:1):fluid;}
+                for(var d:Direction.values())if(d!=Direction.UP&&ForestFluidBoundaryGameTests.LAKE.contains(q.relative(d.getOpposite())))return Blocks.STONE.defaultBlockState();
+                int top=x>=14&&x<=23&&z>=49&&z<=60?5:1;
+                return (y<top?Blocks.DIRT:y==top?Blocks.GRASS_BLOCK:Blocks.AIR).defaultBlockState();
+            }
+            // Continuous flank caves plus ordinary low soil that the skirt fills.
+            if(approachCaves&&(x==16||x==22)&&z>=-9&&z<=-1)return (y<=(z>=-5?-8:4)?Blocks.STONE:Blocks.AIR).defaultBlockState();
             if(x>=-4&&x<=-2&&z>=25&&z<=28)return (y<=-8?Blocks.STONE:Blocks.AIR).defaultBlockState();
             if(x>=-4&&x<=-2&&z>=35&&z<=38&&y>=3&&y<=10)return Blocks.BIRCH_PLANKS.defaultBlockState();
             if(x>=-4&&x<=-2&&z>=35&&z<=38&&y>=11&&y<=12)return (y==12?Blocks.GRASS_BLOCK:Blocks.DIRT).defaultBlockState();
@@ -194,11 +295,11 @@ public final class CreekConcurrentSliceGameTests {
                     if(a.length==3){
                         var at=new BlockPos((int)a[1],naturalY,(int)a[2]);var clip=currentClip.get();
                         if(touchedColumns.contains(at.atY(0).asLong())&&(clip==null||!clip.isInside(at)))throw new AssertionError("Seam reads a column another slice already wrote");
-                        if(touchedColumns.contains(at.atY(0).asLong())){
-                            for(int y=319;y>=-64;y--)if(!state(at.atY(y)).isAir())return y+1;
-                            return -64;
-                        }
-                        return naturalY+1;
+                        // The synthetic natural() includes +4 outcrops and deep
+                        // cave columns. Its pre-write heightmap must describe those,
+                        // not claim a flat naturalY until the first write.
+                        for(int y=319;y>=-64;y--)if(!state(at.atY(y)).isAir())return y+1;
+                        return -64;
                     }
                     break;
                 }
@@ -267,7 +368,7 @@ public final class CreekConcurrentSliceGameTests {
         System.out.println("CREEK_CONCURRENT rotation="+rotation+" round="+round+" cache="+(round==0?"prepared_index_first_selection":"reused_index")+" backend=memory_deferred_neighbours"+
                 " chunks="+actual.completed.size()+" stateCells="+positions.size()+" BEs="+actual.entities.size()+" fluidTicks="+memory.fluids.count()+
                 " maxActive="+memory.maxActive.get()+" convergencePasses="+memory.convergencePasses+" sharedClipUnchanged=true sharedBoundsUnchanged=true differences="+count+" detail="+differences);
-        h.assertTrue(count==0,"Concurrent memory slice mismatch "+rotation+" round="+round+": "+differences);
+        h.assertTrue(count==0,"Concurrent memory slice mismatch "+rotation+" round="+round+" count="+count+": "+differences.stream().limit(3).toList());
         h.assertTrue(memory.fluids.count()>0,"Deferred convergence did not exercise fluid scheduling");
     }
     private static int tickDifferences(String label,Map<Long,List<TickImage>> expected,Map<Long,List<TickImage>> actual,List<String> differences){

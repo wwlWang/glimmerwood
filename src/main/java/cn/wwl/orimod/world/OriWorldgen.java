@@ -35,6 +35,8 @@ public final class OriWorldgen {
             PROCESSORS.register("cave_entrance", () -> () -> CaveEntranceProcessor.CODEC);
     public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<CreekRimDecorationProcessor>> CREEK_RIM_DECORATION =
             PROCESSORS.register("creek_rim_decoration", () -> () -> CreekRimDecorationProcessor.CODEC);
+    public static final Supplier<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<ForestTerrainProcessor>> FOREST_TERRAIN_PROTECTION =
+            PROCESSORS.register("forest_terrain_protection", () -> () -> ForestTerrainProcessor.CODEC);
     public static void register(IEventBus bus) { TYPES.register(bus); PIECES.register(bus); FEATURES.register(bus); PROCESSORS.register(bus); PLACEMENTS.register(bus); }
     private OriWorldgen() {}
 }

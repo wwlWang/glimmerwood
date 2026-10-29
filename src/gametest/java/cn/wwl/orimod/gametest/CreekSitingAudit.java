@@ -70,8 +70,8 @@ public final class CreekSitingAudit {
                                 var piece=pieces.stream().filter(RuinPiece.class::isInstance).map(RuinPiece.class::cast).findFirst().orElseThrow();
                                 row.put("builderMs",(System.nanoTime()-before)/1e6);row.put("origin",List.of(piece.origin().getX(),piece.origin().getY(),piece.origin().getZ()));row.put("rotation",piece.getRotation().name());
                                 var terrain=field(piece,"creekTerrain");var contract=field(terrain,"contract");var rules=invoke(contract,"rules",new Class<?>[0]);
-                                var height=terrain.getClass().getDeclaredMethod("natural",int.class,int.class);height.setAccessible(true);
-                                var approach=terrain.getClass().getDeclaredMethod("approachFloor",int.class,int.class);approach.setAccessible(true);
+                                var height=terrain.getClass().getSuperclass().getDeclaredMethod("natural",int.class,int.class);height.setAccessible(true);
+                                var approach=terrain.getClass().getSuperclass().getDeclaredMethod("approachFloor",int.class,int.class);approach.setAccessible(true);
                                 java.util.function.IntBinaryOperator source=(x,z)->(int)reflect(height,terrain,x,z),entry=(x,z)->(int)reflect(approach,terrain,x,z);
                                 var plan=(List<?>)invoke(rules,"plan",new Class<?>[]{int.class,int.class,int.class,int.class,java.util.function.IntBinaryOperator.class,java.util.function.IntBinaryOperator.class},-8,-8,52,74,source,entry);
                                 long boundary=0,guards=0,noiseGuards=0;var exactHeights=new HashMap<Long,Integer>();
@@ -132,8 +132,10 @@ public final class CreekSitingAudit {
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{executor.shutdown();write(report);server.halt(false);}
     }
-    private static Object field(Object o,String name)throws Exception{var f=o.getClass().getDeclaredField(name);f.setAccessible(true);return f.get(o);}
-    private static Object invoke(Object o,String name,Class<?>[] types,Object...args)throws Exception{var m=o.getClass().getDeclaredMethod(name,types);m.setAccessible(true);return m.invoke(o,args);}
+    private static java.lang.reflect.Field lookupField(Class<?> type,String name)throws NoSuchFieldException{try{return type.getDeclaredField(name);}catch(NoSuchFieldException e){if(type.getSuperclass()==null)throw e;return lookupField(type.getSuperclass(),name);}}
+    private static java.lang.reflect.Method lookupMethod(Class<?> type,String name,Class<?>[] types)throws NoSuchMethodException{try{return type.getDeclaredMethod(name,types);}catch(NoSuchMethodException e){if(type.getSuperclass()==null)throw e;return lookupMethod(type.getSuperclass(),name,types);}}
+    private static Object field(Object o,String name)throws Exception{var f=lookupField(o.getClass(),name);f.setAccessible(true);return f.get(o);}
+    private static Object invoke(Object o,String name,Class<?>[] types,Object...args)throws Exception{var m=lookupMethod(o.getClass(),name,types);m.setAccessible(true);return m.invoke(o,args);}
     private static Object reflect(java.lang.reflect.Method m,Object o,Object...args){try{return m.invoke(o,args);}catch(Exception e){throw new RuntimeException(e);}}
     private static void write(Map<String,Object> report){try{Files.writeString(Path.of("candidates.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new RuntimeException(e);}}
 }

@@ -1,0 +1,54 @@
+{
+  "inputs": [
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/approved-grid-reference.json",
+      "bytes": 280885,
+      "sha256": "2244aadd1f06e2a5e3ae3d693822c2dec1048fb5343edd2652358579c6579a7f"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cave-order-optimization-v001/after-input-grid/cave-input-grid.json",
+      "bytes": 24530706,
+      "sha256": "fc7bc415aa18fb6c9a08ccf0311f1ea0660cc9b39495d0c032921440828bf4c3"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-all-diagnostic-v001/annotated-rounds.json",
+      "bytes": 6953060,
+      "sha256": "b14393064d842a4f7fdacf9d4262654a76e3e9a70744638e0f06c67841236fcb"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-simulation-v001/run-02/simulation-inputs.json",
+      "bytes": 18409486,
+      "sha256": "4c41bc4a81e9bf8e7457a4c7fb414a8a4fd8be51c096304b922f6f415e9b9299"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-simulation-v001/workload-verification.json",
+      "bytes": 89753,
+      "sha256": "993645d4fcbf59fbdd7c16b77da6a021b9d3884106e42def7929ce655dfde04a"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-simulation-v001/input-queue-02.exit.json",
+      "bytes": 112,
+      "sha256": "12bb0c9c2fe626854920062afecd6193ae4085136d570d0e33dcd69006d59143"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-simulation-v001/record-inputs-02.exit.json",
+      "bytes": 48,
+      "sha256": "00456abbf4a1161efc8a0cf3b1d6b794652fe241909c94ee0da1de516df20158"
+    },
+    {
+      "path": "evidence/forest-r116-stage4-approach-fix-20261028-v001/forest-external-implementation-v001/cold-simulation-v001/production-unchanged.json",
+      "bytes": 36,
+      "sha256": "678f04e2c49c0c8df652b2678862d3c4cea184901fcea52900a88ad6ef02e0db"
+    }
+  ],
+  "recording": {
+    "code": 0,
+    "started": 1793253504.8796275,
+    "ended": 1793253727.0082185,
+    "seconds": 222.12859201431274
+  },
+  "productionUnchanged": {
+    "files": 958,
+    "allUnchanged": true
+  }
+}

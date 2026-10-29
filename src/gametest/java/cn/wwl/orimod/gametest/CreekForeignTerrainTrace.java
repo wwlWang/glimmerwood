@@ -24,7 +24,7 @@ public final class CreekForeignTerrainTrace {
     }
     static void register(RuinPiece creek,Collection<ChunkAccess> chunks){
         var b=creek.getBoundingBox();
-        for(var plan:CreekAuditPlan.columns(creek)){
+        for(var plan:CreekAuditPlan.observationColumns(creek)){
             var pos=creek.placement().block(new BlockPos(plan.x(),0,plan.z()));
             var columns=CHUNKS.computeIfAbsent(ChunkPos.asLong(pos.getX()>>4,pos.getZ()>>4),k->new Column[256]);
             var c=new Column(pos.getX(),pos.getZ(),null);c.plan=plan;c.originY=creek.origin().getY();
@@ -74,7 +74,7 @@ public final class CreekForeignTerrainTrace {
         if(!caveEvidence(c,h,cn.wwl.orimod.world.CreekTerrainSurface.natural(level.getBlockState(p))))return false;
         for(int y=level.getMinBuildHeight();y<level.getMaxBuildHeight();y++){
             var at=p.atY(y);var state=level.getBlockState(at);
-            if(piece.ownsCreekGuard(at,state)||piece.ownsCreekSupport(at,state))return false;
+            if(CreekAuditPlan.ownsGuard(piece,at,state)||CreekAuditPlan.ownsSupport(piece,at,state))return false;
         }
         return true;
     }
@@ -115,8 +115,8 @@ public final class CreekForeignTerrainTrace {
     static boolean unchanged(net.minecraft.server.level.ServerLevel level,RuinPiece piece,BlockPos from,BlockPos to){
         var a=column(from);var b=column(to);
         if(a==null||b==null||a.portal==null||!a.portal.equals(b.portal)||!a.portal.isInside(from)||!b.portal.isInside(to))return false;
-        return unchanged(level,a,(p,s)->piece.ownsCreekGuard(p,s)||piece.ownsCreekSupport(p,s))
-                &&unchanged(level,b,(p,s)->piece.ownsCreekGuard(p,s)||piece.ownsCreekSupport(p,s));
+        return unchanged(level,a,(p,s)->CreekAuditPlan.ownsGuard(piece,p,s)||CreekAuditPlan.ownsSupport(piece,p,s))
+                &&unchanged(level,b,(p,s)->CreekAuditPlan.ownsGuard(piece,p,s)||CreekAuditPlan.ownsSupport(piece,p,s));
     }
     private static boolean unchanged(net.minecraft.server.level.ServerLevel l,Column c,java.util.function.BiPredicate<BlockPos,BlockState> owned){
         if(c.before==null||c.writes!=0)return false;

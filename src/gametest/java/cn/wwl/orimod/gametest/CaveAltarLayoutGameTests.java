@@ -118,6 +118,7 @@ public final class CaveAltarLayoutGameTests {
             for(int x=(box.minX()>>4)-1;x<=(box.maxX()>>4)+1;x++)for(int z=(box.minZ()>>4)-1;z<=(box.maxZ()>>4)+1;z++){
                 var cp=new ChunkPos(x,z);if(!level.getForcedChunks().contains(cp.toLong())){level.setChunkForced(x,z,true);forced.add(cp);}level.getChunk(x,z);
             }
+            try(var timing=GameTestDiskBackpressure.measured(level,"cave-construct-and-slices")){
             long cold=System.nanoTime();
             var tag=piece.createTag(StructurePieceSerializationContext.fromLevel(level));piece=new RuinPiece(level.getStructureManager(),tag);
             h.assertValueEqual(piece.layoutVersion(),1,"Saved version lost");
@@ -129,6 +130,7 @@ public final class CaveAltarLayoutGameTests {
                 long elapsed=System.nanoTime()-start;max=Math.max(max,elapsed);writes+=elapsed;
             }
             System.out.println("CAVE_V1_PERF rotation="+r+" totalMs="+writes/1e6+" maxSliceMs="+max/1e6+" constructAndWriteMs="+(System.nanoTime()-cold)/1e6);
+            }
             for(var local:List.of(layout.shrine(),layout.mapStone(),layout.bossAltar())){
                 var pos=p.block(local);var s=level.getBlockState(pos);h.assertTrue(SanctuaryAssembly.assembled(s),"Core remains legacy at "+local);
                 var owner=SanctuaryAssembly.owner(pos,s);h.assertTrue(level.getBlockEntity(pos)!=null,"Core BE missing "+local);
@@ -190,6 +192,7 @@ public final class CaveAltarLayoutGameTests {
                 for(int x=oldPlacement.origin().getX()>>4;x<=(oldPlacement.origin().getX()+22)>>4;x++)for(int z=oldPlacement.origin().getZ()>>4;z<=(oldPlacement.origin().getZ()+38)>>4;z++){
                     var cp=new ChunkPos(x,z);if(!level.getForcedChunks().contains(cp.toLong())){level.setChunkForced(x,z,true);forced.add(cp);}level.getChunk(x,z);
                 }
+                try(var timing=GameTestDiskBackpressure.measured(level,"cave-legacy-slices")){
                 long start=System.nanoTime();var old=new RuinPiece(level.getStructureManager(),RuinKind.CAVE,oldPlacement);double loadMs=(System.nanoTime()-start)/1e6;
                 long total=0,peak=0;var bounds=old.getBoundingBox();
                 for(int x=bounds.minX()>>4;x<=bounds.maxX()>>4;x++)for(int z=bounds.minZ()>>4;z<=bounds.maxZ()>>4;z++){
@@ -198,6 +201,7 @@ public final class CaveAltarLayoutGameTests {
                     long elapsed=System.nanoTime()-start;peak=Math.max(peak,elapsed);total+=elapsed;
                 }
                 System.out.println("CAVE_V0_PERF cachedConstructMs="+loadMs+" totalMs="+total/1e6+" maxSliceMs="+peak/1e6);
+                }
             }
         }catch(RuntimeException e){failure=e;}
         finally{SpiritChallenge.finish(c.player(),"exit",false);c.close();for(int i=metadata.size()-1;i>=0;i--)metadata.get(i).run();for(var cp:forced)level.setChunkForced(cp.x,cp.z,false);}

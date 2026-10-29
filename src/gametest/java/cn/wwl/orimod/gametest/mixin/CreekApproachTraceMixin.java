@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class CreekApproachTraceMixin {
     @Inject(method="postProcess",at=@At("HEAD"))
     private void before(WorldGenLevel level,StructureManager manager,ChunkGenerator generator,RandomSource random,
-            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){CreekForeignTerrainTrace.begin(level,chunk);}
+            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){cn.wwl.orimod.gametest.ForestWaterEvidence.beginOwn((RuinApproachPiece)(Object)this,chunk);CreekForeignTerrainTrace.begin(level,chunk);cn.wwl.orimod.gametest.ForestLavaEvidence.piece(level,(RuinApproachPiece)(Object)this,chunk,true);}
     @Inject(method="postProcess",at=@At("RETURN"))
     private void after(WorldGenLevel level,StructureManager manager,ChunkGenerator generator,RandomSource random,
-            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){CreekForeignTerrainTrace.end(level);}
+            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){CreekForeignTerrainTrace.end(level);cn.wwl.orimod.gametest.ForestWaterEvidence.endOwn();cn.wwl.orimod.gametest.ForestLavaEvidence.piece(level,(RuinApproachPiece)(Object)this,chunk,false);}
 }

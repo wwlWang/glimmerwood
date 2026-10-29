@@ -19,11 +19,14 @@ abstract class RuinOuterTimerMixin {
     @Inject(method="postProcess",at=@At("HEAD"))
     private void orimod$start(WorldGenLevel level,StructureManager manager,ChunkGenerator generator,RandomSource random,
             BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){
+        cn.wwl.orimod.gametest.ForestWaterEvidence.beginOwn((RuinPiece)(Object)this,chunk);
+        cn.wwl.orimod.gametest.ForestLavaEvidence.piece(level,(RuinPiece)(Object)this,chunk,true);
         cn.wwl.orimod.gametest.CreekWaterSourceTrace.before((RuinPiece)(Object)this,level,clip);
         cn.wwl.orimod.gametest.CreekForeignTerrainTrace.begin(level,chunk);
+        cn.wwl.orimod.gametest.CreekGuardEvidence.piece(level,(RuinPiece)(Object)this,chunk,true);
         RuinOuterTimer.begin();
     }
     @Inject(method="postProcess",at=@At("RETURN"))
     private void orimod$end(WorldGenLevel level,StructureManager manager,ChunkGenerator generator,RandomSource random,
-            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){RuinOuterTimer.end((RuinPiece)(Object)this,chunk);cn.wwl.orimod.gametest.CreekForeignTerrainTrace.end(level);}
+            BoundingBox clip,ChunkPos chunk,BlockPos pivot,CallbackInfo ci){RuinOuterTimer.end((RuinPiece)(Object)this,chunk);cn.wwl.orimod.gametest.CreekGuardEvidence.piece(level,(RuinPiece)(Object)this,chunk,false);cn.wwl.orimod.gametest.CreekForeignTerrainTrace.end(level);cn.wwl.orimod.gametest.ForestWaterEvidence.endOwn();cn.wwl.orimod.gametest.ForestLavaEvidence.piece(level,(RuinPiece)(Object)this,chunk,false);}
 }

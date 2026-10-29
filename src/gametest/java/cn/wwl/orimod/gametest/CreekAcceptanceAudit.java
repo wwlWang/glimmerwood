@@ -17,6 +17,7 @@ final class CreekAcceptanceAudit {
         var server=event.getServer();var level=server.overworld();var report=new LinkedHashMap<String,Object>();
         var sites=new ArrayList<Map<String,Object>>();report.put("seed",level.getSeed());report.put("sites",sites);
         try{
+            if(Boolean.getBoolean("orimod.forestPerformanceIsolation"))report.put("measurementConfiguration",ForestPerformanceConfig.verify("warm"));
             report.put("caveProofNegativeControls",CreekForeignTerrainTrace.verifyCaveProofContract());
             if(Boolean.getBoolean("orimod.profileRuins")||Boolean.getBoolean("orimod.profileRuinSiting"))throw new IllegalStateException("Acceptance forbids phase diagnostics");
             assertNoRecording();report.put("jfr",false);report.put("phaseLogging",false);
@@ -41,7 +42,14 @@ final class CreekAcceptanceAudit {
                 // the measured write calls. Unknown/already-decorated columns
                 // cannot be used to waive any natural-floor witness.
                 var baseline=kind==RuinKind.CREEK?CreekNaturalBaseline.capture(level,piece):null;
-                for(var p:chunks)level.getChunk(p.x,p.z,ChunkStatus.FULL,true);
+                CreekGuardEvidence.checkpoint(level,piece,"CARVERS");
+                int prepared=0;
+                for(var p:chunks){
+                    level.getChunk(p.x,p.z,ChunkStatus.FULL,true);
+                    // OuterTimer stops when postProcess returns; this wait is outside it.
+                    GameTestDiskBackpressure.preparedChunk(level,++prepared,"acceptance-prepare");
+                }
+                CreekGuardEvidence.checkpoint(level,piece,"AFTER_FULL");
                 var origin=piece.origin();var slices=RuinOuterTimer.snapshot().stream().filter(s->s.kind().equals(kind.id)&&s.originX()==origin.getX()&&s.originY()==origin.getY()&&s.originZ()==origin.getZ()).toList();
                 if(slices.isEmpty())throw new IllegalStateException("No outer timing for "+kind.id);
                 var row=new LinkedHashMap<String,Object>();sites.add(row);row.put("round",round);row.put("warmup",round<2);row.put("kind",kind.id);row.put("origin",List.of(origin.getX(),origin.getY(),origin.getZ()));row.put("rotation",piece.getRotation().name());row.put("locateMs",locate);
@@ -51,20 +59,23 @@ final class CreekAcceptanceAudit {
                 row.put("gcLifetimeAfter",java.lang.management.ManagementFactory.getGarbageCollectorMXBeans().stream()
                         .map(gc->Map.of("name",gc.getName(),"count",gc.getCollectionCount(),"millis",gc.getCollectionTime())).toList());
                 if(kind==RuinKind.CREEK){row.put("naturalTerrain",CreekTerrainGameTests.naturalScan(level,piece,baseline));row.put("beforeFeaturesWater",baseline.report(level));}
+                if(kind==RuinKind.CREEK&&RuinFreezeSnapshot.enabled())row.put("freeze",RuinFreezeSnapshot.save(level,b,"natural-"+level.getSeed()+"-"+round));
                 // Save partial evidence and drain normal generation continuations
                 // outside every measured interval. A 2G heap must not retain all
                 // fifteen remote fixture regions until shutdown.
                 Files.writeString(Path.of("creek-acceptance.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));
                 System.out.println("CREEK_ACCEPTANCE_SITE round="+round+" warmup="+(round<2)+" kind="+kind.id+" max="+row.get("heaviest"));
                 CreekFixtureChunks.settle(level,"acceptance-site");
+                CreekGuardEvidence.checkpoint(level,piece,"AFTER_SCAN_AND_SETTLE");
                 for(int tick=0;tick<4;tick++){level.getChunkSource().tick(()->true,false);CreekFixtureChunks.settle(level,"acceptance-unload");}
+                GameTestDiskBackpressure.drain(level,"acceptance-site-complete");
             }
             assertNoRecording();report.put("status","complete");
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{
             try{Files.writeString(Path.of("creek-acceptance.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}
             catch(Exception e){throw new IllegalStateException(e);}
-            finally{server.halt(false);}
+            finally{try{CreekGuardEvidence.finishFull();}finally{server.halt(false);}}
         }
     }
     private static void assertNoRecording(){

@@ -148,19 +148,28 @@ public final class RestorationGameTests {
     }));}
     public static final class BloomTickMeter {
         boolean measuring;long start,max;
-        @net.neoforged.bus.api.SubscribeEvent public void pre(net.neoforged.neoforge.event.tick.ServerTickEvent.Pre e){start=System.nanoTime();}
-        @net.neoforged.bus.api.SubscribeEvent public void post(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){if(measuring && RestorationBloom.lastWrites()>0)max=Math.max(max,System.nanoTime()-start);}
+        final net.minecraft.server.level.ServerLevel level;
+        GameTestDiskBackpressure.Scope timing;
+        BloomTickMeter(net.minecraft.server.level.ServerLevel level){this.level=level;}
+        @net.neoforged.bus.api.SubscribeEvent public void pre(net.neoforged.neoforge.event.tick.ServerTickEvent.Pre e){
+            timing=GameTestDiskBackpressure.measured(level,"restoration-server-tick");start=System.nanoTime();
+        }
+        @net.neoforged.bus.api.SubscribeEvent public void post(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){
+            try{if(measuring && RestorationBloom.lastWrites()>0)max=Math.max(max,System.nanoTime()-start);}
+            finally{finish();}
+        }
+        void finish(){if(timing!=null){timing.close();timing=null;}}
     }
     private static void bloom(List<TestFunction> tests){tests.add(new TestFunction("restoration_bloom","restoration.full_tree_bloom_budget_timing_and_reversible_reset","orimod_gametest:room",400,0,true,h->{
         var level=h.getLevel();var server=level.getServer();Restoration.reset(server);var base=h.absolutePos(new BlockPos(12,60,12));var shape=SpiritTreeShape.plan(base);var old=new HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();var leaves=new ArrayList<BlockPos>();
         shape.blocks().forEach((relative,part)->{var pos=base.offset(relative);old.put(pos,level.getBlockState(pos));var block=switch(part){case LEAVES->OriBlocks.SPIRIT_LEAVES.get().defaultBlockState();case HEART->OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState();case AIR->Blocks.AIR.defaultBlockState();case VINE,VINE_TIP->OriBlocks.SPIRIT_VINE.get().defaultBlockState();default->OriBlocks.SPIRIT_LOG.get().defaultBlockState();};level.setBlock(pos,block,2);if(part==SpiritTreeShape.Part.LEAVES)leaves.add(pos);});
-        int[] finishedTick={-1};var meter=new BloomTickMeter();net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(meter);
+        int[] finishedTick={-1};var meter=new BloomTickMeter(level);net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(meter);
         h.runAfterDelay(30,()->{meter.measuring=true;RestorationData.get(server).complete();RestorationBloom.resetMetrics();RestorationBloom.refresh(server);});
         for(int i=31;i<180;i++){int elapsed=i-30;h.runAfterDelay(i,()->{h.assertTrue(RestorationBloom.lastWrites()<=256,"Exceeded shared write budget");if(finishedTick[0]<0 && leaves.stream().allMatch(pos->level.getBlockState(pos).getValue(SpiritLeavesBlock.BLOOMED)))finishedTick[0]=elapsed;});}
         h.runAfterDelay(180,()->{
             h.assertTrue(leaves.size()>1000,"Benchmark is not an entire tree");for(var pos:leaves)h.assertTrue(level.getBlockState(pos).getValue(SpiritLeavesBlock.BLOOMED),"Leaf did not bloom");
             cn.wwl.orimod.OriMod.LOGGER.info("R108_BLOOM_PERF leaves={} ticks={} budget={} maxBatchMs={} maxServerTickMs={} light={}",leaves.size(),finishedTick[0],RestorationBloom.WRITE_BUDGET,RestorationBloom.maxMillis(),meter.max/1e6,level.getBlockState(leaves.getFirst()).getLightEmission());
-            meter.measuring=false;net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(meter);
+            meter.measuring=false;meter.finish();net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(meter);
             h.assertTrue(level.getBlockState(base.offset(SpiritTreeShape.HEART)).getValue(SpiritTreeHeartBlock.BLOOMED),"Heart not bloomed");Restoration.reset(server);
         });
         h.runAfterDelay(330,()->{try{for(var pos:leaves){h.assertFalse(level.getBlockState(pos).getValue(SpiritLeavesBlock.BLOOMED),"Reset did not revert leaf");h.assertValueEqual(level.getBlockState(pos).getLightEmission(),9,"Reset left increased light");}h.succeed();}finally{old.forEach((p,s)->level.setBlock(p,s,2));Restoration.reset(server);}});

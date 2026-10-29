@@ -46,8 +46,27 @@ public final class RuinVegetationGuard {
             if(!region.hasChunk(x,z))continue;
             for(var start:region.getChunk(x,z,ChunkStatus.STRUCTURE_STARTS).getAllStarts().values()){
                 if(!start.isValid()||!(start.getStructure() instanceof RuinStructure))continue;
-                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&ruin.kind()==RuinKind.CREEK&&ruin.layoutVersion()==1
+                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&(ruin.kind()==RuinKind.CREEK&&ruin.layoutVersion()==1||ruin.kind()==RuinKind.FOREST&&ruin.forestTerrainVersion()==1)
                         &&protects(ruin.getBoundingBox(),cell,0))return true;
+            }
+        }
+        return false;
+    }
+
+    /** A later neighbour's LAKES step can precede/overwrite our TOP_LAYER step.
+     * Reject the whole 16x8x16 lake envelope, without reading terrain or loading
+     * chunks. Only new forest's registered main/skirt/approach boxes opt in. */
+    public static boolean blocksForestLake(WorldGenLevel level,BlockPos origin){
+        if(!(level instanceof WorldGenRegion region))return false;
+        var lake=new BoundingBox(origin.getX(),origin.getY()-4,origin.getZ(),origin.getX()+15,origin.getY()+3,origin.getZ()+15);
+        var center=new ChunkPos(origin);
+        for(int x=center.x-8;x<=center.x+8;x++)for(int z=center.z-8;z<=center.z+8;z++){
+            if(!region.hasChunk(x,z))continue;
+            for(var start:region.getChunk(x,z,ChunkStatus.STRUCTURE_STARTS).getAllStarts().values()){
+                if(!start.isValid()||!(start.getStructure() instanceof RuinStructure))continue;
+                boolean forest=false;
+                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&ruin.kind()==RuinKind.FOREST&&ruin.forestTerrainVersion()==1){forest=true;break;}
+                if(forest)for(var piece:start.getPieces())if(piece.getBoundingBox().inflatedBy(1).intersects(lake))return true;
             }
         }
         return false;

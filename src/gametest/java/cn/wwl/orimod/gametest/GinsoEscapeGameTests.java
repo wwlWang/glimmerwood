@@ -174,8 +174,10 @@ public final class GinsoEscapeGameTests {
                         var local=new BlockPos(q.x(),(int)Math.floor(q.feet()),q.z());var at=Vec3.atBottomCenterOf(s.piece.point(local)).add(0,q.feet()-Math.floor(q.feet()),0);p.setPos(at);p.setOnGround(false);
                         // Benchmark repeated live ticks, excluding input positioning and preparation.
                     }
-                    long start=System.nanoTime();for(var p:players)GinsoEscape.tick(p);double ms=(System.nanoTime()-start)/1e6;
-                    if(tick>=400)times[tick-400]=ms;
+                    try(var timing=GameTestDiskBackpressure.measured(h.getLevel(),"ginso-hot-tick")){
+                        long start=System.nanoTime();for(var p:players)GinsoEscape.tick(p);double ms=(System.nanoTime()-start)/1e6;
+                        if(tick>=400)times[tick-400]=ms;
+                    }
                     for(var p:players)h.assertTrue(GinsoEscape.active(p),"Benchmark left route");
                 }
                 Arrays.sort(times);cn.wwl.orimod.OriMod.LOGGER.info("Ginso escape hot path participants={} samples=600 p50_ms={} p95_ms={} max_ms={}",participants,times[300],times[570],times[599]);

@@ -16,9 +16,9 @@ import java.util.*;
 /** One-layer neighbour reservations. Predictions never call yield or build pieces. */
 public final class RuinSitingSites {
     static final ResourceLocation SET=ResourceLocation.fromNamespaceAndPath("orimod","spirit_ruins");
-    private record KindKey(ResourceLocation structure,int version,long chunk){}
-    private record SelectionKey(ResourceLocation set,long chunk,GreatTreeSite.Site tree){}
-    private record PlanKey(ResourceLocation set,long chunk){}
+    private record KindKey(ResourceLocation structure,int version,int policy,long chunk){}
+    private record SelectionKey(ResourceLocation set,long chunk,GreatTreeSite.Site tree,int policy){}
+    private record PlanKey(ResourceLocation set,long chunk,int policy){}
     private record Candidate(ResourceLocation structure,RuinKind kind,int version,List<RuinDecision.Box> boxes){}
     private static final class World {
         final RuinDecisionCache<KindKey,RuinStructure.SiteResult> terrain=new RuinDecisionCache<>(4096);
@@ -29,13 +29,32 @@ public final class RuinSitingSites {
     private static final Map<RandomState,World> WORLDS=Collections.synchronizedMap(new WeakHashMap<>());
     private static World world(RandomState state){synchronized(WORLDS){return WORLDS.computeIfAbsent(state,key->new World());}}
     static RuinStructure.SiteResult base(RuinStructure structure,Structure.GenerationContext c,int version){
+        return base(structure,c,version,false);
+    }
+    static RuinStructure.SiteResult owner(RuinStructure structure,Structure.GenerationContext c,int version){
+        return base(structure,c,version,true);
+    }
+    private static RuinStructure.SiteResult base(RuinStructure structure,Structure.GenerationContext c,int version,boolean owner){
         var layout=structure.kind.layout(version);
         int margin=version==0?56:(int)Math.ceil(Math.hypot(layout.size().getX()-8,layout.size().getZ()-8));
         if(version>0&&structure.kind!=RuinKind.CAVE)margin+=12;
         if(GreatTreeSites.reserved(c.randomState(),c.chunkPos().getMiddleBlockX(),c.chunkPos().getMiddleBlockZ(),margin))return new RuinStructure.SiteResult(null,"GREAT_TREE");
         var id=c.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey(structure);
-        var result=version==0||id==null?structure.evaluate(c,version):world(c.randomState()).terrain.get(
-                new KindKey(id,version,c.chunkPos().toLong()),()->structure.evaluate(c,version));
+        RuinStructure.SiteResult result;
+        if(version==0||id==null)result=structure.evaluate(c,version);
+        else{
+            var cache=world(c.randomState()).terrain;
+            var key=new KindKey(id,version,ForestSiteRules.POLICY_VERSION,c.chunkPos().toLong());
+            if(owner&&structure.kind==RuinKind.FOREST){
+                result=cache.completed(key);
+                if(result==null){
+                    // Do not publish an owner-only yield into a base future:
+                    // neighbour predictions must remain non-recursive and independent.
+                    result=structure.evaluateOwner(c,version);
+                    if(!result.reason().equals("R2_YIELD"))cache.remember(key,result);
+                }
+            }else result=cache.get(key,()->structure.evaluate(c,version));
+        }
         // Loaded/generated terrain is dynamic. Never cache permission to overwrite
         // it; the actual owner rechecks this guard even when reusing its decision.
         if(result.site()!=null&&version>0&&!GinsoGenerationGuard.checkBounds(c.randomState(),result.site().boxes().getFirst().mutable()).allowed())
@@ -43,7 +62,7 @@ public final class RuinSitingSites {
         return result;
     }
     public static Optional<RuinDecision> prediction(Structure.GenerationContext c,ChunkPos pos){
-        return world(c.randomState()).selections.get(new SelectionKey(SET,pos.toLong(),GreatTreeSites.site(c.randomState())),()->select(c,pos));
+        return world(c.randomState()).selections.get(new SelectionKey(SET,pos.toLong(),GreatTreeSites.site(c.randomState()),ForestSiteRules.POLICY_VERSION),()->select(c,pos));
     }
     private static Optional<RuinDecision> select(Structure.GenerationContext c,ChunkPos pos){
         var set=c.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(SET);
@@ -67,6 +86,11 @@ public final class RuinSitingSites {
     }
     public record Yield(boolean denied,ChunkPos neighbour,String kind,int queried){}
     public static Yield yield(Structure.GenerationContext c,RuinDecision own){
+        return yieldBounds(c,own.boxes());
+    }
+    // Horizontal only: no provisional Y/decision can escape to a builder or
+    // the three-dimensional foreign-structure qualification.
+    static Yield yieldBounds(Structure.GenerationContext c,List<RuinDecision.Box> own){
         var set=c.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(SET);
         if(set==null||!(set.placement() instanceof RandomSpreadStructurePlacement placement)
                 ||set.structures().stream().anyMatch(e->!(e.structure().value() instanceof RuinStructure)))
@@ -77,12 +101,12 @@ public final class RuinSitingSites {
             var cp=placement.getPotentialStructureChunk(c.seed(),(gx+dx)*placement.spacing(),(gz+dz)*placement.spacing());
             if(!possible(c,own,cp))continue;
             queried++;var neighbour=collisionSelection(c,cp,own);
-            if(neighbour.isPresent()&&intersects(own,neighbour.get(),true))return new Yield(true,cp,neighbour.get().kind().id,queried);
+            if(neighbour.isPresent()&&intersects(own,neighbour.get().boxes()))return new Yield(true,cp,neighbour.get().kind().id,queried);
         }
         return new Yield(false,null,"NONE",queried);
     }
     private static List<Candidate> plan(Structure.GenerationContext c,ChunkPos pos){
-        return world(c.randomState()).plans.get(new PlanKey(SET,pos.toLong()),()->{
+        return world(c.randomState()).plans.get(new PlanKey(SET,pos.toLong(),ForestSiteRules.POLICY_VERSION),()->{
             var set=c.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(SET);
             var entries=new ArrayList<>(set.structures());var out=new ArrayList<Candidate>();
             var random=new WorldgenRandom(new LegacyRandomSource(0));random.setLargeFeatureSeed(c.seed(),pos.x,pos.z);
@@ -100,10 +124,10 @@ public final class RuinSitingSites {
             return List.copyOf(out);
         });
     }
-    private static Optional<RuinDecision> collisionSelection(Structure.GenerationContext c,ChunkPos pos,RuinDecision own){
-        var cache=world(c.randomState());var key=new SelectionKey(SET,pos.toLong(),GreatTreeSites.site(c.randomState()));
+    private static Optional<RuinDecision> collisionSelection(Structure.GenerationContext c,ChunkPos pos,List<RuinDecision.Box> own){
+        var cache=world(c.randomState());var key=new SelectionKey(SET,pos.toLong(),GreatTreeSites.site(c.randomState()),ForestSiteRules.POLICY_VERSION);
         var known=cache.selections.completed(key);if(known!=null)return known;
-        var order=plan(c,pos);var relevant=new boolean[order.size()];var ownBoxes=own.boxes();
+        var order=plan(c,pos);var relevant=new boolean[order.size()];var ownBoxes=own;
         for(int i=0;i<order.size();i++)for(var a:ownBoxes)for(var b:order.get(i).boxes())relevant[i]|=a.intersects(b,true);
         var results=new ArrayList<Optional<RuinDecision>>(Collections.nCopies(order.size(),null));
         int winner=RuinCandidateOrder.relevantWinner(relevant,i->{
@@ -117,8 +141,8 @@ public final class RuinSitingSites {
         // kind may still be viable, so do not publish a false empty selection.
         return Optional.empty();
     }
-    private static boolean possible(Structure.GenerationContext c,RuinDecision own,ChunkPos pos){
-        var ownBoxes=own.boxes();
+    private static boolean possible(Structure.GenerationContext c,List<RuinDecision.Box> own,ChunkPos pos){
+        var ownBoxes=own;
         // Each kind receives a fresh vanilla GenerationContext at this chunk;
         // its first random draw is the same rotation, independent of viability.
         var random=new WorldgenRandom(new LegacyRandomSource(0));random.setLargeFeatureSeed(c.seed(),pos.x,pos.z);
@@ -131,6 +155,9 @@ public final class RuinSitingSites {
     }
     public static boolean intersects(RuinDecision a,RuinDecision b,boolean horizontal){
         for(var x:a.boxes())for(var y:b.boxes())if(x.intersects(y,horizontal))return true;return false;
+    }
+    private static boolean intersects(List<RuinDecision.Box> a,List<RuinDecision.Box> b){
+        for(var x:a)for(var y:b)if(x.intersects(y,true))return true;return false;
     }
     private RuinSitingSites(){}
 }

@@ -20,6 +20,7 @@ public final class RuinStructure extends Structure {
     ).apply(instance, (settings, kind) -> new RuinStructure(settings, RuinKind.byId(kind))));
     public final RuinKind kind;
     private final CreekStructureReservations creekReservations=new CreekStructureReservations();
+    private final ForestStructureReservations forestReservations=new ForestStructureReservations();
     public RuinStructure(StructureSettings settings, RuinKind kind) { super(settings); this.kind = kind; }
 
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
@@ -28,14 +29,20 @@ public final class RuinStructure extends Structure {
 
     // Explicit version remains available to the frozen-layout audit.
     Optional<GenerationStub> findGenerationPoint(GenerationContext context,int version) {
-        var result=decision(context,version);
+        var result=kind==RuinKind.FOREST&&version>0?RuinSitingSites.owner(this,context,version):decision(context,version);
         if(result.site()==null)return Optional.empty();
-        if(kind==RuinKind.CREEK&&version>0&&RuinSitingSites.yield(context,result.site()).denied())return Optional.empty();
+        if((kind==RuinKind.CREEK||kind==RuinKind.FOREST)&&version>0&&RuinSitingSites.yield(context,result.site()).denied())return Optional.empty();
         return Optional.of(result.site().stub(context));
     }
     public record SiteResult(RuinDecision site,String reason) {}
     public SiteResult decision(GenerationContext context,int version){return RuinSitingSites.base(this,context,version);}
     SiteResult evaluate(GenerationContext context,int version) {
+        return evaluateStages(context,version,false);
+    }
+    SiteResult evaluateOwner(GenerationContext context,int version){
+        return evaluateStages(context,version,true);
+    }
+    private SiteResult evaluateStages(GenerationContext context,int version,boolean owner) {
         var trace=RuinSitingTrace.begin(kind,version,context.chunkPos().x,context.chunkPos().z);
         var layout = kind.layout(version);
         int reservation = version == 0 ? 56 : (int)Math.ceil(Math.hypot(layout.size().getX()-8,layout.size().getZ()-8));
@@ -58,7 +65,8 @@ public final class RuinStructure extends Structure {
             String reason=creekReservations.rejection(context,footprint,layout);
             if(reason!=null)return rejected(trace,reason);
         }
-        var samples = new TerrainSamples(context,kind==RuinKind.CREEK&&version>0,version>0,trace);
+        var samples = new TerrainSamples(context,(kind==RuinKind.CREEK||kind==RuinKind.FOREST)&&version>0,version>0,trace);
+        int caveEntryLow=Integer.MAX_VALUE,caveApproachHigh=Integer.MIN_VALUE;
         // A new cave's five doorway columns have their own slope constraint.
         // Check that independent condition before its much larger roof footprint.
         // The old loop still merges these exact cached heights into the final min.
@@ -71,6 +79,7 @@ public final class RuinStructure extends Structure {
                 if(!RuinSiteRules.footprintOk(low,high))return rejected(trace,"ENTRY_RELIEF");
             }
             if(!samples.dry())return rejected(trace,"WATER");
+            caveEntryLow=low;
             // Any remaining footprint sample can only lower this doorway.
             // An approach already too high relative to this upper bound can
             // never pass the original MAX_APPROACH_DELTA test later.
@@ -78,13 +87,23 @@ public final class RuinStructure extends Structure {
                     -layout.surfaceY()+layout.approachY();
             for(int dx=-2;dx<=2;dx++)for(int dz=-9;dz<=-1;dz++){
                 int y=samples.height(door.block(new BlockPos(dx,0,dz)));
+                caveApproachHigh=Math.max(caveApproachHigh,y);
                 if(!RuinSiteRules.surfaceInRange(y)||y>highestDoor+RuinSiteRules.MAX_APPROACH_DELTA)return rejected(trace,"APPROACH");
             }
             if(!samples.dry())return rejected(trace,"WATER");
         }
         int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
         boolean creekV1=kind==RuinKind.CREEK&&version>0;
-        if(creekV1){
+        boolean forestV1=kind==RuinKind.FOREST&&version>0;
+        int forestAnchor=0;
+        if(forestV1){
+            var forestDoor=RuinApproachPiece.doorway(kind,layout,footprint);
+            var result=ForestSiteRules.checkWithEntry((dx,dz)->samples.height(footprint.block(new BlockPos(dx,0,dz))),
+                    dx->samples.height(forestDoor.block(new BlockPos(dx,0,-1))),
+                    owner?()->RuinSitingSites.yieldBounds(context,RuinDecision.boxes(kind,version,footprint)).denied():null);
+            if(!result.allowed())return rejected(trace,result.firstReason());
+            min=result.coreMin();max=result.coreMax();forestAnchor=result.anchor();
+        }else if(creekV1){
             var result=CreekSiteRules.check((dx,dz)->samples.height(footprint.block(new BlockPos(dx,0,dz))));
             if(!result.allowed())return rejected(trace,result.reason());
             // Anchor the deck to the playable core, not the highest outer hillside.
@@ -97,10 +116,26 @@ public final class RuinStructure extends Structure {
         for (int sampleX = 0; sampleX <= (layout.size().getX() + 2) / 4; sampleX++)
             for (int sampleZ = 0; sampleZ <= (layout.size().getZ() + 2) / 4; sampleZ++)
                 footprintPoints.add(footprint.block(new BlockPos(Math.min(sampleX * 4, farX), 0, Math.min(sampleZ * 4, farZ))));
+        if(kind==RuinKind.CAVE&&version>0){
+            // Keep the original point set and stable order within each group.
+            // Boundary lows can prove a too-high approach before sampling the interior.
+            var bounds=footprint.blocks(BlockPos.ZERO,new BlockPos(farX,0,farZ));
+            var ordered=new java.util.ArrayList<>(footprintPoints);
+            ordered.sort(java.util.Comparator.comparingInt((BlockPos p)->
+                    p.getX()==bounds.minX()||p.getX()==bounds.maxX()||p.getZ()==bounds.minZ()||p.getZ()==bounds.maxZ()?0:1));
+            footprintPoints=new LinkedHashSet<>(ordered);
+        }
         for (var sample : footprintPoints) {
             int y = samples.height(sample);
             min = Math.min(min, y); max = Math.max(max, y);
             if (version == 0 || kind != RuinKind.CAVE ? !RuinSiteRules.footprintOk(min, max) : !RuinSiteRules.surfaceInRange(y)) return rejected(trace,"FOOTPRINT_RELIEF");
+            if(kind==RuinKind.CAVE&&version>0){
+                // Further roof samples can only lower the minimum and doorway.
+                // Only the too-high direction is irreversible; a low approach may recover.
+                int highestDoor=RuinSiteRules.templateSurface(true,version,layout.surfaceY(),layout.size().getY(),
+                        Math.min(min,caveEntryLow),max)-layout.surfaceY()+layout.approachY();
+                if(caveApproachHigh>highestDoor+RuinSiteRules.MAX_APPROACH_DELTA)return rejected(trace,"APPROACH");
+            }
         }
         }
         // Include the ground immediately outside the doorway. Surface stairs cover
@@ -118,6 +153,7 @@ public final class RuinStructure extends Structure {
         // deepslate plate shows; the approach stairs descend at most MAX_SLOPE + CAVE_COVER (< MAX_APPROACH_DELTA).
         int surface = RuinSiteRules.templateSurface(kind==RuinKind.CAVE,version,layout.surfaceY(),layout.size().getY(),min,max);
         if(creekV1)surface=(min+max+1)/2;
+        if(forestV1)surface=forestAnchor;
         // A buried vault may sit below a hill: only the doorway needs a gentle slope.
         // Keep the highest template roof at least CAVE_COVER below the lowest terrain sample.
         var origin = footprint.origin().atY(surface - layout.surfaceY());
@@ -136,8 +172,13 @@ public final class RuinStructure extends Structure {
         if (!samples.dry()) return rejected(trace,"WATER");
         if (!RuinSiteRules.fitsWorld(origin.getY(), layout.size().getY(),
                 context.heightAccessor().getMinBuildHeight(), context.heightAccessor().getMaxBuildHeight())) return rejected(trace,"BUILD_HEIGHT");
+        var site=new RuinDecision(kind,version,placement,java.util.Arrays.stream(terrain).boxed().toList(),samples.surfaces);
+        if(forestV1){
+            String reason=forestReservations.rejection(context,site);
+            if(reason!=null)return rejected(trace,reason);
+        }
         RuinSitingTrace.end(trace,"PASS");
-        return new SiteResult(new RuinDecision(kind,version,placement,java.util.Arrays.stream(terrain).boxed().toList(),samples.surfaces),"PASS");
+        return new SiteResult(site,"PASS");
     }
     private static SiteResult rejected(RuinSitingTrace.Sample trace,String reason){
         RuinSitingTrace.end(trace,reason);return new SiteResult(null,reason);

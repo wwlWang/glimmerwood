@@ -28,23 +28,30 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this(manager,kind,placement,layoutVersion,approachTerrain,new int[0]);
     }
     public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement, int layoutVersion, int[] approachTerrain,int[] naturalTerrain) {
+        this(manager,kind,placement,layoutVersion,approachTerrain,naturalTerrain,0);
+    }
+    public RuinPiece(StructureTemplateManager manager, RuinKind kind, RuinPlacement placement, int layoutVersion, int[] approachTerrain,int[] naturalTerrain,int forestTerrainVersion) {
         super(OriWorldgen.PIECE.get(), 0, manager, kind.template(layoutVersion), kind.template(layoutVersion).toString(), settings(kind, placement.rotation(), layoutVersion), placement.origin());
         this.kind = kind;
         this.layoutVersion = layoutVersion;
+        this.forestTerrainVersion=checkedForestVersion(kind,layoutVersion,forestTerrainVersion);
         this.secret = layout().secret(); this.bridges = layout().bridges();
         this.beetles = layout().beetles(); this.mapStone = layout().mapStone();
         this.forestApproach=approachTerrain.clone();
         this.forestTerrain = forestTerrain();
         this.creekTerrain = creekTerrain();
+        this.gradedForest=forestTerrainVersion==1?new ForestGradedTerrain(template,templatePosition,placeSettings,forestApproach):null;
         if(creekTerrain!=null)creekTerrain.restoreSamples(naturalTerrain);
-        if(creekTerrain!=null)CreekSliceSettings.prepare(template);
-        if(forestTerrain!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
+        if(gradedForest!=null)gradedForest.restoreSamples(naturalTerrain);
+        if(creekTerrain!=null||gradedForest!=null)CreekSliceSettings.prepare(template);
+        if(forestTerrain!=null||gradedForest!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
         if(creekTerrain!=null)boundingBox=CreekRuinTerrain.bounds(boundingBox);
     }
     public RuinPiece(StructureTemplateManager manager, CompoundTag tag) {
         super(OriWorldgen.PIECE.get(), tag, manager, name -> settings(kindOf(name.toString()), RuinPlacement.readRotation(tag.getString("Rot")), tag.getInt("LayoutVersion")));
         this.kind = kindOf(templateName);
         this.layoutVersion = tag.getInt("LayoutVersion");
+        this.forestTerrainVersion=checkedForestVersion(kind,layoutVersion,tag.getInt("ForestTerrainVersion"));
         if (kind == null || !kind.template(layoutVersion).toString().equals(templateName)) throw new IllegalArgumentException("Ruin version/template mismatch: " + templateName);
         this.mapStone=tag.contains("OriMapStone",net.minecraft.nbt.Tag.TAG_LONG)?BlockPos.of(tag.getLong("OriMapStone"))
                 :kind==null?null:layout().legacyMapStone();
@@ -60,16 +67,25 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         this.forestApproach=tag.getIntArray(kind==RuinKind.CREEK?"CreekApproachTerrain":"ForestApproachTerrain");
         this.forestTerrain = forestTerrain();
         this.creekTerrain = creekTerrain();
+        this.gradedForest=forestTerrainVersion==1?new ForestGradedTerrain(template,templatePosition,placeSettings,forestApproach):null;
         if(creekTerrain!=null){creekTerrain.restoreSamples(tag.getIntArray("CreekNaturalTerrain"));creekTerrain.restoreGuards(tag.getLongArray("CreekGuardCells"));}
-        if(creekTerrain!=null)CreekSliceSettings.prepare(template);
-        if(forestTerrain!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
+        if(gradedForest!=null){gradedForest.restoreSamples(tag.getIntArray("ForestNaturalTerrain"));gradedForest.restoreGuards(tag.getLongArray("ForestGuardCells"));}
+        if(creekTerrain!=null||gradedForest!=null)CreekSliceSettings.prepare(template);
+        if(forestTerrain!=null||gradedForest!=null)boundingBox=ForestRuinTerrain.bounds(boundingBox);
         if(creekTerrain!=null)boundingBox=CreekRuinTerrain.bounds(boundingBox);
+    }
+    private final int forestTerrainVersion;
+    private final ForestGradedTerrain gradedForest;
+    public int forestTerrainVersion(){return forestTerrainVersion;}
+    private static int checkedForestVersion(RuinKind kind,int layout,int version){
+        if(version<0||version>1||version!=0&&(kind!=RuinKind.FOREST||layout!=1))throw new IllegalArgumentException("Invalid forest terrain version "+version);
+        return version;
     }
     private final ForestRuinTerrain forestTerrain;
     private final CreekRuinTerrain creekTerrain;
     private CreekRuinTerrain creekTerrain(){return kind==RuinKind.CREEK&&layoutVersion>0?new CreekRuinTerrain(template,templatePosition,placeSettings,forestApproach):null;}
     private final int[] forestApproach;
-    private ForestRuinTerrain forestTerrain(){return kind==RuinKind.FOREST&&layoutVersion>0?new ForestRuinTerrain(template,templatePosition,placeSettings,forestApproach):null;}
+    private ForestRuinTerrain forestTerrain(){return kind==RuinKind.FOREST&&layoutVersion>0&&forestTerrainVersion==0?new ForestRuinTerrain(template,templatePosition,placeSettings,forestApproach):null;}
     private final java.util.List<BlockPos> beetles;
     private final java.util.Set<Long> spawnedBeetles=new java.util.HashSet<>();
     public java.util.List<BlockPos> beetles(){return beetles;}
@@ -90,7 +106,7 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         if (version > 0) settings.setLiquidSettings(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING);
         return kind == RuinKind.CAVE && version == 0 ? settings.addProcessor(CaveEntranceProcessor.INSTANCE) : settings;
     }
-    @Override public BoundingBox getBeardifierBox() { return forestTerrain==null&&creekTerrain==null?boundingBox:template.getBoundingBox(placeSettings,templatePosition); }
+    @Override public BoundingBox getBeardifierBox() { return forestTerrain==null&&creekTerrain==null&&gradedForest==null?boundingBox:template.getBoundingBox(placeSettings,templatePosition); }
     @Override public net.minecraft.world.level.levelgen.structure.TerrainAdjustment getTerrainAdjustment() {
         return kind == null || kind == RuinKind.CAVE ? net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE
                 : net.minecraft.world.level.levelgen.structure.TerrainAdjustment.BEARD_THIN;
@@ -104,14 +120,18 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     public BlockPos origin() { return templatePosition; }
     public boolean ownsCreekSupport(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return creekTerrain!=null&&creekTerrain.ownSupport(pos,state);}
     public boolean ownsCreekGuard(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return creekTerrain!=null&&creekTerrain.ownGuard(pos,state);}
+    public boolean ownsTerrainSupport(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return ownsCreekSupport(pos,state)||gradedForest!=null&&gradedForest.ownSupport(pos,state);}
+    public boolean ownsTerrainGuard(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){return ownsCreekGuard(pos,state)||gradedForest!=null&&gradedForest.ownGuard(pos,state);}
+    public int[] forestApproachSideProfile(){return gradedForest==null?new int[0]:gradedForest.approachSideProfile();}
     public RuinPlacement placement() { return new RuinPlacement(templatePosition, getRotation()); }
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
         tag.putString("Rot", getRotation().name());
         tag.putInt("LayoutVersion", layoutVersion);
-        if(forestTerrain!=null&&forestApproach.length!=0)tag.putIntArray("ForestApproachTerrain",forestApproach);
+        if((forestTerrain!=null||gradedForest!=null)&&forestApproach.length!=0)tag.putIntArray("ForestApproachTerrain",forestApproach);
         if(creekTerrain!=null&&forestApproach.length!=0)tag.putIntArray("CreekApproachTerrain",forestApproach);
         if(creekTerrain!=null){tag.putIntArray("CreekNaturalTerrain",creekTerrain.savedSamples());tag.putLongArray("CreekGuardCells",creekTerrain.savedGuards());}
+        if(gradedForest!=null){tag.putInt("ForestTerrainVersion",forestTerrainVersion);tag.putIntArray("ForestNaturalTerrain",gradedForest.savedSamples());tag.putLongArray("ForestGuardCells",gradedForest.savedGuards());}
         if(mapStone!=null)tag.putLong("OriMapStone",mapStone.asLong());
         if(!beetles.isEmpty()){
             tag.putLongArray("OriBeetles",beetles.stream().mapToLong(BlockPos::asLong).toArray());
@@ -131,11 +151,12 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         var cpuClock=profileStart==0?null:java.lang.management.ManagementFactory.getThreadMXBean();
         long cpuStart=cpuClock==null||!cpuClock.isCurrentThreadCpuTimeSupported()?0:cpuClock.getCurrentThreadCpuTime();
         if(creekTerrain!=null)creekTerrain.ensureSamples(level,generator);
+        if(gradedForest!=null)gradedForest.ensureSamples(level,generator);
         long captureDone=profileStart==0?0:System.nanoTime();
         // Expanded terrain skirts include chunks containing no authored template.
         // Avoid transforming every template cell in those chunks. Legacy and the
         // other ruins retain their original placement path.
-        if(creekTerrain==null)super.postProcess(level, manager, generator, random, chunkBounds, chunk, pivot);
+        if(creekTerrain==null&&gradedForest==null)super.postProcess(level, manager, generator, random, chunkBounds, chunk, pivot);
         else {
             // TemplateStructurePiece.postProcess mutates its shared settings AND
             // boundingBox. Adjacent worldgen workers must not enter that path.
@@ -144,11 +165,15 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
             var local=new CreekSliceSettings();
             local.setRotation(placeSettings.getRotation()).setMirror(placeSettings.getMirror())
                     .setRotationPivot(placeSettings.getRotationPivot()).setIgnoreEntities(true)
-                    .setKnownShape(placeSettings.getKnownShape()).setFinalizeEntities(placeSettings.shouldFinalizeEntities())
+                    // New forest consumes the authored connections/attachments.
+                    // Neighbour slices may not yet exist: recomputing a lichen or
+                    // wall here would make first placement differ from a reload.
+                    .setKnownShape(gradedForest!=null||placeSettings.getKnownShape()).setFinalizeEntities(placeSettings.shouldFinalizeEntities())
                     .setLiquidSettings(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING)
                     .setBoundingBox(chunkBounds);
             placeSettings.getProcessors().forEach(local::addProcessor);
-            local.addProcessor(CreekRimDecorationProcessor.INSTANCE);
+            if(creekTerrain!=null)local.addProcessor(CreekRimDecorationProcessor.INSTANCE);
+            else local.addProcessor(new ForestTerrainProcessor(ForestTerrainContract.of(template),gradedForest.fluids));
             if(template.getBoundingBox(local,templatePosition).intersects(chunkBounds))
                 placeCreekTemplate(level,random,chunkBounds,pivot,local);
         }
@@ -160,7 +185,8 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
             // skirt envelope so subsequent chunk slices and saved starts include it.
             boundingBox=ForestRuinTerrain.bounds(template.getBoundingBox(placeSettings,templatePosition));
         }
-        CreekRuinTerrain.Stats terrainStats=creekTerrain==null?null:creekTerrain.place(level,chunkBounds);
+        if(gradedForest!=null)clearForestSupplements(level,chunkBounds);
+        CreekRuinTerrain.Stats terrainStats=creekTerrain!=null?creekTerrain.place(level,chunkBounds):gradedForest!=null?gradedForest.place(level,chunkBounds):null;
         long terrainDone=profileStart==0?0:System.nanoTime();
         // The template clears its interior. Remove the crowns of trunks cut at
         // its top edge too, so the entrance does not leave floating log columns.
@@ -182,12 +208,24 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
         }
     }
 
+    /** Only missing cells in the eight registered late foot columns; template stays byte-identical. */
+    private void clearForestSupplements(WorldGenLevel level,BoundingBox clip){
+        for(var raw:ForestTerrainContract.of(template).clearance){var at=placement().block(raw);
+            if(clip.isInside(at)&&CreekTerrainSurface.mutable(level.getBlockState(at),level,at)&&level.getBlockEntity(at)==null
+                    &&gradedForest.fluids.allows(level,at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()))
+                level.setBlock(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+        }
+    }
+
     /** Vanilla template placement and marker handling with invocation-local settings.
      * Only the pre-existing, synchronized beetle receipt is mutable per piece. */
     private void placeCreekTemplate(WorldGenLevel level,RandomSource random,BoundingBox clip,BlockPos pivot,StructurePlaceSettings local){
         var trace=CreekPlacementTrace.begin(clip.minX()>>4,clip.minZ()>>4);
         boolean placed;
-        try{placed=template.placeInWorld(level,templatePosition,pivot,local,random,net.minecraft.world.level.block.Block.UPDATE_CLIENTS);}
+        try{
+            placed=template.placeInWorld(level,templatePosition,pivot,local,random,
+                    net.minecraft.world.level.block.Block.UPDATE_CLIENTS|(gradedForest==null?0:net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE));
+        }
         finally{CreekPlacementTrace.finish(trace);}
         if(!placed)return;
         for(var info:template.filterBlocks(templatePosition,local,net.minecraft.world.level.block.Blocks.STRUCTURE_BLOCK)){
@@ -203,7 +241,8 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
             }catch(com.mojang.brigadier.exceptions.CommandSyntaxException e){
                 cn.wwl.orimod.OriMod.LOGGER.error("Error while parsing jigsaw blockstate {} at {}",info.nbt().getString("final_state"),info.pos());
             }
-            level.setBlock(info.pos(),state,3);
+            if(gradedForest==null||CreekTerrainSurface.mutable(level.getBlockState(info.pos()),level,info.pos())
+                    &&level.getBlockEntity(info.pos())==null&&gradedForest.fluids.allows(level,info.pos(),state))level.setBlock(info.pos(),state,3);
         }
     }
 

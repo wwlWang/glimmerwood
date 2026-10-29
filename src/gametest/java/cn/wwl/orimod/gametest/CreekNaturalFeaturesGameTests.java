@@ -37,7 +37,7 @@ public final class CreekNaturalFeaturesGameTests {
         return c.newInstance(l.getStructureManager().getOrCreate(RuinKind.CREEK.template(1)),BlockPos.ZERO,new StructurePlaceSettings(),new int[0]);
     }
     private static boolean fillable(Object terrain,BlockState state,ServerLevel l,BlockPos p) throws ReflectiveOperationException {
-        var m=terrain.getClass().getDeclaredMethod("gradeable",BlockState.class,WorldGenLevel.class,BlockPos.class);m.setAccessible(true);
+        var m=terrain.getClass().getSuperclass().getDeclaredMethod("gradeable",BlockState.class,WorldGenLevel.class,BlockPos.class);m.setAccessible(true);
         return (boolean)m.invoke(terrain,state,l,p);
     }
     private static void ignored(GameTestHelper h){
@@ -50,7 +50,7 @@ public final class CreekNaturalFeaturesGameTests {
                 boolean mutable=CreekTerrainSurface.mutable(state,l,at),allowed=fillable(terrain,state,l,at);
                 if(!mutable||state.is(CreekTerrainSurface.PROTECTED)){
                     protectedCount++;h.assertFalse(allowed,"Protected block fill/cut allowed: "+state);
-                    var guard=terrain.getClass().getDeclaredMethod("guardSpace",BlockState.class,WorldGenLevel.class,BlockPos.class);guard.setAccessible(true);
+                    var guard=terrain.getClass().getSuperclass().getDeclaredMethod("guardSpace",BlockState.class,WorldGenLevel.class,BlockPos.class);guard.setAccessible(true);
                     h.assertFalse((boolean)guard.invoke(null,state,l,at),"Protected block replaced by guard: "+state);
                     continue;
                 }
@@ -109,7 +109,7 @@ public final class CreekNaturalFeaturesGameTests {
     private static void standingHeights(GameTestHelper h){
         try{
             var l=h.getLevel();var at=h.absolutePos(new BlockPos(1,3,1));var terrain=terrain(l);
-            var scan=terrain.getClass().getDeclaredMethod("surface",WorldGenLevel.class,BlockPos.class,int.class,boolean.class);scan.setAccessible(true);
+            var scan=terrain.getClass().getSuperclass().getDeclaredMethod("surface",WorldGenLevel.class,BlockPos.class,int.class,boolean.class);scan.setAccessible(true);
             BlockState[] current={Blocks.AIR.defaultBlockState()};
             var view=(WorldGenLevel)java.lang.reflect.Proxy.newProxyInstance(WorldGenLevel.class.getClassLoader(),new Class<?>[]{WorldGenLevel.class},(proxy,m,args)->{
                 if(m.getName().equals("getBlockState"))return at.equals(args[0])?current[0]:Blocks.AIR.defaultBlockState();
@@ -170,7 +170,7 @@ public final class CreekNaturalFeaturesGameTests {
     private static int count(ServerLevel l,BlockPos p){int n=0;for(var q:BlockPos.betweenClosed(p.offset(-5,-3,-5),p.offset(4,4,4)))if(l.getBlockState(q).is(Blocks.MOSSY_COBBLESTONE))n++;return n;}
     private static void set(ServerLevel l,BlockPos p,BlockState s){l.setBlock(p,s,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
     /** Only preloaded leased chunks, no synthetic tickets/futures or generation. */
-    private static final class ReadyRegion extends WorldGenRegion {
+    static final class ReadyRegion extends WorldGenRegion {
         private final ServerLevel level;private final ChunkPos center;
         ReadyRegion(ServerLevel l,ChunkPos p){super(l,null,ChunkPyramid.GENERATION_PYRAMID.getStepTo(ChunkStatus.FEATURES),l.getChunk(p.x,p.z));level=l;center=p;}
         @Override public boolean hasChunk(int x,int z){return center.getChessboardDistance(x,z)<=8&&level.getChunkSource().getChunkNow(x,z)!=null;}

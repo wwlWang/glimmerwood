@@ -1,0 +1,2489 @@
+{
+  "base": "cd1670b",
+  "scope": "Gate 2 pre-shared-kernel baseline; no production placement changes",
+  "fixtureEvidence": "evidence/forest-r116-stage2-20261028-v001/fixtures",
+  "naturalEvidence": "evidence/forest-r116-stage2-20261028-v001/natural-saved",
+  "fixtures": {
+    "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/FRONT_BACK/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "ad228233bd937cf06243d6eb0b0b81b353980a014487c83f5be1dea9f94fabaf",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "dacd75ada549f14cf65ab4158bd50d09cda0224cf38a0ad4c925d307f0cafc6a",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "2211421f3f821dcf0a724c5428d5fc0a6b4b0920bbea3577324af2e5c95c68ec",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/FRONT_BACK/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "b2683e1d026dcd8e932e7f5d9c34693afee69ac468ebb08e0f7a02b5d0bfb6f8",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "a7698f7fb44e1e799062c54725116ec9d2fa9bc9c0f15d72b4768f5fdfd12937",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "f9097815235d510028723b20df927ea51d3d36138ea2e59db16a1628ab3c2267",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/FRONT_BACK/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "ad228233bd937cf06243d6eb0b0b81b353980a014487c83f5be1dea9f94fabaf",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "dacd75ada549f14cf65ab4158bd50d09cda0224cf38a0ad4c925d307f0cafc6a",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "2211421f3f821dcf0a724c5428d5fc0a6b4b0920bbea3577324af2e5c95c68ec",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/FRONT_BACK/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "b2683e1d026dcd8e932e7f5d9c34693afee69ac468ebb08e0f7a02b5d0bfb6f8",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "a7698f7fb44e1e799062c54725116ec9d2fa9bc9c0f15d72b4768f5fdfd12937",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "f9097815235d510028723b20df927ea51d3d36138ea2e59db16a1628ab3c2267",
+        "file": "creek-56-miniature_CLOCKWISE_180_FRONT_BACK_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/LEFT_RIGHT/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "18ac6bd8ac39bf6538b17d42a312cec39a2612b287ddeceedb1884a149aaaff5",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "1611e1f62fa7006ca1dc777e3447553e7e41b34f3d7569e5dd7d5bb6984485d3",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "8141c89c097444be77eb02c28abd08ad1a882d75aec888ce63e14b02a6b49b2f",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/LEFT_RIGHT/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "454be045f17487f12de1a18ada09d7270b40eeda40ea1b0a964f1986422cafec",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 4,
+        "sha256": "67d9e3e4649605dc2cae7901ef9e7682c35757e880b4cd8695f5de1a160b42a8",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "37e8f9b5f0ac7cdca33ec3a454161416f7c8f5af830b528ad1ddaef335947743",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/LEFT_RIGHT/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "18ac6bd8ac39bf6538b17d42a312cec39a2612b287ddeceedb1884a149aaaff5",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "1611e1f62fa7006ca1dc777e3447553e7e41b34f3d7569e5dd7d5bb6984485d3",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "8141c89c097444be77eb02c28abd08ad1a882d75aec888ce63e14b02a6b49b2f",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/LEFT_RIGHT/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "454be045f17487f12de1a18ada09d7270b40eeda40ea1b0a964f1986422cafec",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 4,
+        "sha256": "67d9e3e4649605dc2cae7901ef9e7682c35757e880b4cd8695f5de1a160b42a8",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "37e8f9b5f0ac7cdca33ec3a454161416f7c8f5af830b528ad1ddaef335947743",
+        "file": "creek-56-miniature_CLOCKWISE_180_LEFT_RIGHT_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/NONE/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "d2306ccf3a46b58989cb13f6268ae84e3e4c501514a15a6edd0b93e57b204feb",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "1c596e78e93286038f9f6c1abc9e0a3e619ac415f02d9093591da6050105e347",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "0bcb17e9cbd6ea7b520dd2288e73e1ff97f8166a7079105df948483bbc3ffbcf",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/NONE/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "70806ea3632bc423e27f17408445d0709c716bbcab2ced1d6f22401d3f621336",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "5249e9605ba33c4c3bc6dccc31be5d4160d470f3c5520bc4a15d9223eb859cbc",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "2ef1939f19a8d26a6e21d9f9c2e8e3dc5e1ff9bfba4694239196c765699b9d48",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_180/NONE/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "d2306ccf3a46b58989cb13f6268ae84e3e4c501514a15a6edd0b93e57b204feb",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "1c596e78e93286038f9f6c1abc9e0a3e619ac415f02d9093591da6050105e347",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "0bcb17e9cbd6ea7b520dd2288e73e1ff97f8166a7079105df948483bbc3ffbcf",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_180/NONE/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "70806ea3632bc423e27f17408445d0709c716bbcab2ced1d6f22401d3f621336",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "5249e9605ba33c4c3bc6dccc31be5d4160d470f3c5520bc4a15d9223eb859cbc",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "2ef1939f19a8d26a6e21d9f9c2e8e3dc5e1ff9bfba4694239196c765699b9d48",
+        "file": "creek-56-miniature_CLOCKWISE_180_NONE_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/FRONT_BACK/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "9b28279f68a6c384d03da8e5cb14db27db1a16b0876a7be2fab0b9f366dcdae1",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "e72299800071252e8f59610c48b3ded71e1eed56665c7738f5d918ee3900562b",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "13e39e7783ce33ae9d9496a7099f784bb9c3730a158c506a8c96f023358a1aad",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/FRONT_BACK/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "e75c81219a9347b719e8f8bb2ae73c8ac0a2502cccf8cc3e9a41c9c841431da0",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "991de53009af958b4fe868c51b946fa104e9caec60924cb0696d84d4aec282a1",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "e76d8926be7118ff1d207d3e33397a89a40513e6ae850f13374ef395aa61055c",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/FRONT_BACK/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "9b28279f68a6c384d03da8e5cb14db27db1a16b0876a7be2fab0b9f366dcdae1",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "b911a8fa6201364ed4eb8b2ee5df9a7e692a573632d4bf168964901dc2e703a8",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "13e39e7783ce33ae9d9496a7099f784bb9c3730a158c506a8c96f023358a1aad",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/FRONT_BACK/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "e75c81219a9347b719e8f8bb2ae73c8ac0a2502cccf8cc3e9a41c9c841431da0",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "10855fe7c5120cf1d59fe354f3c71fc476f79b27adf322280867ce8bc18f8533",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "e76d8926be7118ff1d207d3e33397a89a40513e6ae850f13374ef395aa61055c",
+        "file": "creek-56-miniature_CLOCKWISE_90_FRONT_BACK_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/LEFT_RIGHT/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "f90400d620a7847341887f977f31c5be48d6b3a0ea49eda97f6dd2a6193065b3",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "9963cf552fcdb06a2b35e99b257198f4ed120f6346f970006a7a100e445078e4",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "544ab0cb6a9f4a406f118a86fedf92d2a2ab8766dc873ea6561e6ac52bf883f0",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/LEFT_RIGHT/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "7fb83c3f5014e9960066234c6a4df21eb0a7bf0e92c292f553e9093633f92e52",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "e6e8ea81006f237a2575405c400eac4143516a79b2d2a761cef05bb5296cd87a",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "5dab1d1ed5216d1bb04c17f6507e0940c204cb80cd4186baf5013685dab9b3f2",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/LEFT_RIGHT/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "f90400d620a7847341887f977f31c5be48d6b3a0ea49eda97f6dd2a6193065b3",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "9963cf552fcdb06a2b35e99b257198f4ed120f6346f970006a7a100e445078e4",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "544ab0cb6a9f4a406f118a86fedf92d2a2ab8766dc873ea6561e6ac52bf883f0",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/LEFT_RIGHT/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "7fb83c3f5014e9960066234c6a4df21eb0a7bf0e92c292f553e9093633f92e52",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "e6e8ea81006f237a2575405c400eac4143516a79b2d2a761cef05bb5296cd87a",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "5dab1d1ed5216d1bb04c17f6507e0940c204cb80cd4186baf5013685dab9b3f2",
+        "file": "creek-56-miniature_CLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/NONE/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c3472f1f5a4ab78874b14dfef9a46d59aa7697d7114c6642b4cc791ebeccc767",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "31b490ead2fd536f8e2c05a9a8af1e61c82136f80d8223097610e44f7bc4a761",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "5680ea7dd0beac0fdfb2a6a2be741f30cd4073ab60ebd00154272e1699e0ce19",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/NONE/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "58d34ccefa313fa0d29ca082c54d37ac0a554ec393221a14bbb44a01b2ab417f",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "293bcc22ffe9388052f400f5a4f3799161e0088fada1e1d95ab570f786415f30",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "9eab5fec92cbccad96641cbbdcfefc91add6cf0251198346f942c7f4cc20455e",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_false": {
+      "label": "creek-56-miniature/CLOCKWISE_90/NONE/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c3472f1f5a4ab78874b14dfef9a46d59aa7697d7114c6642b4cc791ebeccc767",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "31b490ead2fd536f8e2c05a9a8af1e61c82136f80d8223097610e44f7bc4a761",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "5680ea7dd0beac0fdfb2a6a2be741f30cd4073ab60ebd00154272e1699e0ce19",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_true": {
+      "label": "creek-56-miniature/CLOCKWISE_90/NONE/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "58d34ccefa313fa0d29ca082c54d37ac0a554ec393221a14bbb44a01b2ab417f",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "293bcc22ffe9388052f400f5a4f3799161e0088fada1e1d95ab570f786415f30",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "9eab5fec92cbccad96641cbbdcfefc91add6cf0251198346f942c7f4cc20455e",
+        "file": "creek-56-miniature_CLOCKWISE_90_NONE_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/FRONT_BACK/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "1755408c341ddb5b9ade996ca0f1b751445fd9921a1b583b55a731b5de285d9f",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "0fc50bbe592873e6d49467c085a4c70622fcfc2dae8391f01449761e1bd129ba",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "bea14c88ead5b3b9d2cf64e8fdcb3e25f5d42eae383ef3b36f5ae557bfc214e2",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/FRONT_BACK/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "6e12e3c07267dfaa3f407a99762fd966abf0cf074fe35d4c11ba5d8a543b5df1",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "defb770fd9e6cc3cabf3829d0fcfe96175a44e3d1c0a9f9e3c8ceb28fe72d795",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "84d76a0428fd06a61e0d25dd73a8812f27741bb04876c4d69e765bf4b042078d",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/FRONT_BACK/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "1755408c341ddb5b9ade996ca0f1b751445fd9921a1b583b55a731b5de285d9f",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "e9dab4069daf71ae5f049927913a6e4b21cd50e8beefddf636f2c446df19fe4e",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "bea14c88ead5b3b9d2cf64e8fdcb3e25f5d42eae383ef3b36f5ae557bfc214e2",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/FRONT_BACK/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "6e12e3c07267dfaa3f407a99762fd966abf0cf074fe35d4c11ba5d8a543b5df1",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "edc3ca44cf22071edfaf98bf4b1ff57a7637ee1e7d82d61a6e72e37997199378",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "84d76a0428fd06a61e0d25dd73a8812f27741bb04876c4d69e765bf4b042078d",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_FRONT_BACK_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/LEFT_RIGHT/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "863bc00cc7dadad55cb7bf0d9963abcb780c4eb6cbbe793ba083aaf5c19dfc1b",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "3d3f04676db984df1a5d71373dcde1c009536f0b6f6a2000f06a7857422d32c6",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "e8056c96d1291acf48a19433a475360d93ebed4d428ed9ef2cf42232f0ba6257",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/LEFT_RIGHT/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "38ac0220070afd4359e655f4028c4c3cd3ba81b4f496b38160af7a1b3c548a83",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "0edb61286466b24d37106bdea685506ffb006daf095a424a50ead5d593681f9e",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "e4aa57f4d2e54e0b5ec59c459635f61c70dde592a154c702ec914f0e3ee06543",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/LEFT_RIGHT/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "863bc00cc7dadad55cb7bf0d9963abcb780c4eb6cbbe793ba083aaf5c19dfc1b",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "326ec274aab940276f45b75e8954288b5012f15672584983e428b758968ea354",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "e8056c96d1291acf48a19433a475360d93ebed4d428ed9ef2cf42232f0ba6257",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/LEFT_RIGHT/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "38ac0220070afd4359e655f4028c4c3cd3ba81b4f496b38160af7a1b3c548a83",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "0edb61286466b24d37106bdea685506ffb006daf095a424a50ead5d593681f9e",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 4,
+        "sha256": "e4aa57f4d2e54e0b5ec59c459635f61c70dde592a154c702ec914f0e3ee06543",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_LEFT_RIGHT_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/NONE/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "9ae077ad30bcd264b34e45a4479c9b4014971a3ca5c2d1fc7c5fb9df4f381804",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "79ec383ea073a9f0a8a1da219f9314b218c6c0cab7a644da1126fed267de68e5",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "54195c28d2202d2116d1b5c9d68ba651fe45edf048863dd603075ca4bb56ac37",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/NONE/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c0e353346a4b9bb74bb18509cede34db58cec04afcd9491adf6048096a1aceac",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "e0f17d5a5b61f374319763eb46c624a32997f0ed3ecc1dfb12d37713646d7ac4",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "faa0cf48ed389be6c930c268f43b4923ec1b02b48432dfddac451301030aed7a",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_false": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/NONE/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "9ae077ad30bcd264b34e45a4479c9b4014971a3ca5c2d1fc7c5fb9df4f381804",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "7ce7efe5254ef5cdf6332fb67acef7d8a43e9a38d58d7e688099cbc18764d2e2",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "54195c28d2202d2116d1b5c9d68ba651fe45edf048863dd603075ca4bb56ac37",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_true": {
+      "label": "creek-56-miniature/COUNTERCLOCKWISE_90/NONE/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c0e353346a4b9bb74bb18509cede34db58cec04afcd9491adf6048096a1aceac",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "289cb1828ffb8f315a8d40178d8ef2286591975861c17c6df293fb1562a3dac3",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 1,
+        "sha256": "faa0cf48ed389be6c930c268f43b4923ec1b02b48432dfddac451301030aed7a",
+        "file": "creek-56-miniature_COUNTERCLOCKWISE_90_NONE_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_FRONT_BACK_forward_processor_false": {
+      "label": "creek-56-miniature/NONE/FRONT_BACK/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "55531e1f4ab76f1ed9e35321c042bd2c86385579c8268335c08efac470206e1e",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "7a551b2be885b4f939b33096b70836590b955be58f8fbf28ccd8358b47e5a75a",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "2cc81d24a257024dc8cb4ba669633db85e966a75ff277361daa8854eff396044",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_FRONT_BACK_forward_processor_true": {
+      "label": "creek-56-miniature/NONE/FRONT_BACK/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "85534b12d55625833818eca1362d8d314a2699698ec1a36938bbcf13730b263f",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "a38032db2c4eafd5f9883154372c99d45d04111734e6ab31017cd3137b55032f",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "aaa0ab15475636121de09dbc8cd57be236526405870948809a203b5a6929674e",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_false": {
+      "label": "creek-56-miniature/NONE/FRONT_BACK/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "55531e1f4ab76f1ed9e35321c042bd2c86385579c8268335c08efac470206e1e",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "7a551b2be885b4f939b33096b70836590b955be58f8fbf28ccd8358b47e5a75a",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "2cc81d24a257024dc8cb4ba669633db85e966a75ff277361daa8854eff396044",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_true": {
+      "label": "creek-56-miniature/NONE/FRONT_BACK/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "85534b12d55625833818eca1362d8d314a2699698ec1a36938bbcf13730b263f",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 2,
+        "sha256": "a38032db2c4eafd5f9883154372c99d45d04111734e6ab31017cd3137b55032f",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "aaa0ab15475636121de09dbc8cd57be236526405870948809a203b5a6929674e",
+        "file": "creek-56-miniature_NONE_FRONT_BACK_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_false": {
+      "label": "creek-56-miniature/NONE/LEFT_RIGHT/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "52c6ff26a74ad4ba0a54a1666424289416c74f4f6729648ad2ecc419349394e7",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "c021cb37ffee9c9cf2a0f88e7aac62e7b50946f4f8e57582e5fef8c6015c93cd",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "b78a2a0a8e76dfe02fa1eebd17e171a8ce3fa387ca2189d740ca616977e5f355",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_true": {
+      "label": "creek-56-miniature/NONE/LEFT_RIGHT/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c7427101d856b465d2634e8511e34455c737ea3d3ddc994a095d5db482ec1142",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "ce85d64fa929978b9e2501fcb1ce0614e959725438a5e88f335eae822c39de4f",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "480c8bacbaab930f70989a48991f9376fefdf21849c1f52657aabc1e812b1ea7",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_false": {
+      "label": "creek-56-miniature/NONE/LEFT_RIGHT/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "52c6ff26a74ad4ba0a54a1666424289416c74f4f6729648ad2ecc419349394e7",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "c021cb37ffee9c9cf2a0f88e7aac62e7b50946f4f8e57582e5fef8c6015c93cd",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "b78a2a0a8e76dfe02fa1eebd17e171a8ce3fa387ca2189d740ca616977e5f355",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_true": {
+      "label": "creek-56-miniature/NONE/LEFT_RIGHT/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "c7427101d856b465d2634e8511e34455c737ea3d3ddc994a095d5db482ec1142",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "91887593a767fe892a524efb1e6c2ca3dcdf211ea59324d9e01e94e99a6299f1",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "480c8bacbaab930f70989a48991f9376fefdf21849c1f52657aabc1e812b1ea7",
+        "file": "creek-56-miniature_NONE_LEFT_RIGHT_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_NONE_forward_processor_false": {
+      "label": "creek-56-miniature/NONE/NONE/forward/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "f2ef760513e589778ee29b81ef427fe632275e3e936c9caa91184aa77d37e899",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "6967f085a3bdff5ea247fab9ed088fb5c878f8ec17b051aa707a5f18c313f8a1",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "5af3931459795677b8bfdb71cac647cb97af2ec6f8b04ca79168f4f28ee52b63",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_NONE_forward_processor_true": {
+      "label": "creek-56-miniature/NONE/NONE/forward/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "66e6bcf5b8ab76fd21caa57b4c258a2ba6e81cac6ebfdd1848aa6b77df1a74c8",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "fc6b5d0b6b6d4f3cc45cd622534a87464e93c247c9d6cc567841dd4a59a97eb6",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "4b3c659624c7bfd21764e6d58bd93369b6e756d94efa5781eb270bbbb2078d65",
+        "file": "creek-56-miniature_NONE_NONE_forward_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_NONE_reverse_processor_false": {
+      "label": "creek-56-miniature/NONE/NONE/reverse/processor=false",
+      "bounds": [
+        6164131,
+        -17,
+        -2557907,
+        6164217,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "f2ef760513e589778ee29b81ef427fe632275e3e936c9caa91184aa77d37e899",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 5,
+        "sha256": "6967f085a3bdff5ea247fab9ed088fb5c878f8ec17b051aa707a5f18c313f8a1",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 5,
+        "sha256": "5af3931459795677b8bfdb71cac647cb97af2ec6f8b04ca79168f4f28ee52b63",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-miniature_NONE_NONE_reverse_processor_true": {
+      "label": "creek-56-miniature/NONE/NONE/reverse/processor=true",
+      "bounds": [
+        6164348,
+        -17,
+        -2557907,
+        6164434,
+        -10,
+        -2557821
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 60552,
+        "sha256": "66e6bcf5b8ab76fd21caa57b4c258a2ba6e81cac6ebfdd1848aa6b77df1a74c8",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_true.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 3,
+        "sha256": "1e918ea9167cf5d549af5a6fd9e69cc66a18446f835af99f8c4d26242a4bc921",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_true.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "4b3c659624c7bfd21764e6d58bd93369b6e756d94efa5781eb270bbbb2078d65",
+        "file": "creek-56-miniature_NONE_NONE_reverse_processor_true.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_CLOCKWISE_180_NONE_forward_processor_false": {
+      "label": "creek-56-template/CLOCKWISE_180/NONE/forward/processor=false",
+      "bounds": [
+        6163169,
+        -17,
+        -2557955,
+        6163217,
+        30,
+        -2557885
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "36abb7f6462f9abae444d06619530dc2b33b106a0de572bc37504cdb60125114",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "4f361c6e4aa0814132ec5ee34fab72b40ef9c576610bd59b39f9006f1b1eafcf",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "b59205bdd4f75442dd0aa61dc6415b1f02fdfe7c3121eeeeea06d1929ebb5ba4",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_CLOCKWISE_180_NONE_reverse_processor_false": {
+      "label": "creek-56-template/CLOCKWISE_180/NONE/reverse/processor=false",
+      "bounds": [
+        6163306,
+        -17,
+        -2557955,
+        6163354,
+        30,
+        -2557885
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "36abb7f6462f9abae444d06619530dc2b33b106a0de572bc37504cdb60125114",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "024165e735ba4a9fe3ccc6663b781c12fc8597c42deea6aca93e55436ac6a8a1",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "5df372540a245a0bbeafb7d4f099df59b989795486b0b037332e59a4dc5d04e3",
+        "file": "creek-56-template_CLOCKWISE_180_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_CLOCKWISE_90_NONE_forward_processor_false": {
+      "label": "creek-56-template/CLOCKWISE_90/NONE/forward/processor=false",
+      "bounds": [
+        6162873,
+        -17,
+        -2557889,
+        6162943,
+        30,
+        -2557841
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "3dd7357c2de0ce736ea384baee2de73de6a16894f619a9ab3556a06685969035",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "6191b45a3ca012510bd8eb480005129143c5d35aa5b483a88e6ad4d7701ad0a3",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "6bd34a67ede326c3923351692ab21a80cf5ac6a3434681db4f4af1bcbde423d4",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_CLOCKWISE_90_NONE_reverse_processor_false": {
+      "label": "creek-56-template/CLOCKWISE_90/NONE/reverse/processor=false",
+      "bounds": [
+        6163010,
+        -17,
+        -2557889,
+        6163080,
+        30,
+        -2557841
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "6879d77a76c2d180e51a76a4a45ff5e2787c163ef77e87ca626c7d4945abe7f9",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "579ad2c0aa6a2734239d9b453136a27f58caf5a9d60733909de839be26f6db62",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "4a5c5d9a32f5c0b612a330ac1ef5ed0e09d6598d7a31cf7c92de7732547ab21c",
+        "file": "creek-56-template_CLOCKWISE_90_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_COUNTERCLOCKWISE_90_NONE_forward_processor_false": {
+      "label": "creek-56-template/COUNTERCLOCKWISE_90/NONE/forward/processor=false",
+      "bounds": [
+        6163487,
+        -17,
+        -2557933,
+        6163557,
+        30,
+        -2557885
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "b59e540e3626e8317a8a7afb7adf506601ef1f281f2e044d04397477915878bb",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "10f945f4104fbed5c4e20add25e4e24b3659594c3f419b8f4e400addb6cd1318",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "15ba4badc1cac95cfd84187ae68ab56a49b103bfec596b8ffd87db54c65f579e",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_COUNTERCLOCKWISE_90_NONE_reverse_processor_false": {
+      "label": "creek-56-template/COUNTERCLOCKWISE_90/NONE/reverse/processor=false",
+      "bounds": [
+        6163624,
+        -17,
+        -2557933,
+        6163694,
+        30,
+        -2557885
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "cea0190e1ad9076eadeaeea827f639ec0565460c662861e84cf33785e170702e",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "80e960badadbc298aafb32c01ccbb5d15dfc52f7e946174185cd2146f6a56eb4",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "98965e94f0c88b5279eef0d51cdb7120cb5dc9bc17a5ec12e521637609ee1961",
+        "file": "creek-56-template_COUNTERCLOCKWISE_90_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_NONE_NONE_forward_processor_false": {
+      "label": "creek-56-template/NONE/NONE/forward/processor=false",
+      "bounds": [
+        6162665,
+        -17,
+        -2557889,
+        6162713,
+        30,
+        -2557819
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "d586554253856af04615d8cc5e3361f7c7a0b20cfb00f9b9e0ac2f674ca2ba72",
+        "file": "creek-56-template_NONE_NONE_forward_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "169fc22fa5f861e4e9dc5defcbc222d14b865d06c21ba70483af7fd68fa676f1",
+        "file": "creek-56-template_NONE_NONE_forward_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "22b30743748da17091f7780b6887d4c7f0406d4ab20db41bc031b4b7447f09dd",
+        "file": "creek-56-template_NONE_NONE_forward_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "creek-56-template_NONE_NONE_reverse_processor_false": {
+      "label": "creek-56-template/NONE/NONE/reverse/processor=false",
+      "bounds": [
+        6162802,
+        -17,
+        -2557889,
+        6162850,
+        30,
+        -2557819
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 166992,
+        "sha256": "d586554253856af04615d8cc5e3361f7c7a0b20cfb00f9b9e0ac2f674ca2ba72",
+        "file": "creek-56-template_NONE_NONE_reverse_processor_false.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 363,
+        "sha256": "8d2ba8b33d6359dec26dedcc46aee419eda3b876e1fcfad3762953d38db75d6e",
+        "file": "creek-56-template_NONE_NONE_reverse_processor_false.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 2,
+        "sha256": "dfc91b23b7949d310b534431599b58efec0cf5f2882c1e4d951fa0eb5d98e1ab",
+        "file": "creek-56-template_NONE_NONE_reverse_processor_false.blockEntities.txt.gz"
+      }
+    },
+    "forest-v0-CLOCKWISE_180": {
+      "label": "forest-v0-CLOCKWISE_180",
+      "bounds": [
+        35499,
+        47,
+        7987,
+        35543,
+        100,
+        8043
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 138510,
+        "sha256": "05c45fc179c7550dd15fc3205e1110f80c52f3a1cb45e81a728bed0d0a8f0f7e",
+        "file": "forest-v0-CLOCKWISE_180.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 227,
+        "sha256": "458247f6282e3502ba521864f498d509eca31990fd15972cb8fe58326e878247",
+        "file": "forest-v0-CLOCKWISE_180.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "545672fae1f63844e4e6634237235f10d90fded263df032b5593695f9f46791d",
+        "file": "forest-v0-CLOCKWISE_180.blockEntities.txt.gz"
+      }
+    },
+    "forest-v0-CLOCKWISE_90": {
+      "label": "forest-v0-CLOCKWISE_90",
+      "bounds": [
+        35243,
+        47,
+        7987,
+        35299,
+        100,
+        8031
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 138510,
+        "sha256": "d0f4dfbaac1264cc4bbcc3885ce689f25ba30f38cc92735e1284ae9e5e638e94",
+        "file": "forest-v0-CLOCKWISE_90.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 227,
+        "sha256": "cb1b7584b3d959a2b1c303638565f85f294d6749a430ec55c2177ccfdc32899d",
+        "file": "forest-v0-CLOCKWISE_90.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "48b936a2353568b5b52676fca1d2382a93b0f18e9bd1635ed84ee6548d28b0f1",
+        "file": "forest-v0-CLOCKWISE_90.blockEntities.txt.gz"
+      }
+    },
+    "forest-v0-COUNTERCLOCKWISE_90": {
+      "label": "forest-v0-COUNTERCLOCKWISE_90",
+      "bounds": [
+        35755,
+        47,
+        7987,
+        35811,
+        100,
+        8031
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 138510,
+        "sha256": "9a289497df5a9ac3268a4877f78e25fac091a25f8483ce5626e861bebf391203",
+        "file": "forest-v0-COUNTERCLOCKWISE_90.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 227,
+        "sha256": "106be02584387ea467b5299137fde142f8c5a42a4c856acbbb2201030f6a8bd8",
+        "file": "forest-v0-COUNTERCLOCKWISE_90.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "23509b4f7c3c17bf88ee825077c1a7e465e365bbf23651fa2a29f7db846eca16",
+        "file": "forest-v0-COUNTERCLOCKWISE_90.blockEntities.txt.gz"
+      }
+    },
+    "forest-v0-NONE": {
+      "label": "forest-v0-NONE",
+      "bounds": [
+        34987,
+        47,
+        7987,
+        35031,
+        100,
+        8043
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 138510,
+        "sha256": "20afe8825efb96736772d611e755a81e41f974f62bb7a387c80724bbe1503fd5",
+        "file": "forest-v0-NONE.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 227,
+        "sha256": "c5ad830924b27f2ca93955bdd1afe93eaf12f951309c467f1ee846ef5d0adbd6",
+        "file": "forest-v0-NONE.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 3,
+        "sha256": "c311d47e717277855ad6c034c252b2b2061aeeee1a2d37efa7bf856b08a5a72e",
+        "file": "forest-v0-NONE.blockEntities.txt.gz"
+      }
+    },
+    "forest-v1-CLOCKWISE_180": {
+      "label": "forest-v1-CLOCKWISE_180",
+      "bounds": [
+        35491,
+        31,
+        8235,
+        35571,
+        104,
+        8331
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 581418,
+        "sha256": "bb7e0843293b19252e89bdfffc0f7e802fe9f44e40afa3be5db9a23995aa9b8e",
+        "file": "forest-v1-CLOCKWISE_180.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 588,
+        "sha256": "340a738ba39ed026dac8fb07718be7e09642931df162b5788d956a1e949c9cd1",
+        "file": "forest-v1-CLOCKWISE_180.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 12,
+        "sha256": "7933499776f7104d201d40d07aa86d81d7d03c7ae5b847a3b1daaa64a21bcf49",
+        "file": "forest-v1-CLOCKWISE_180.blockEntities.txt.gz"
+      }
+    },
+    "forest-v1-CLOCKWISE_90": {
+      "label": "forest-v1-CLOCKWISE_90",
+      "bounds": [
+        35235,
+        31,
+        8235,
+        35331,
+        104,
+        8315
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 581418,
+        "sha256": "86ede80cbcc9860dede11a36e47a13e5e3a28dc0d1d23763ff6f13fb9f9821da",
+        "file": "forest-v1-CLOCKWISE_90.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 588,
+        "sha256": "fb6ee3d2fa7808ed4c6be8f98850937c3bbc710ee579d71101b1b530cd50dd1a",
+        "file": "forest-v1-CLOCKWISE_90.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 12,
+        "sha256": "b06bbe59a095ad7912b0120c7fcedf4f7ee6954e2a95822c8aa2ceba881f2bea",
+        "file": "forest-v1-CLOCKWISE_90.blockEntities.txt.gz"
+      }
+    },
+    "forest-v1-COUNTERCLOCKWISE_90": {
+      "label": "forest-v1-COUNTERCLOCKWISE_90",
+      "bounds": [
+        35747,
+        31,
+        8235,
+        35843,
+        104,
+        8315
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 581418,
+        "sha256": "f73815e4dc1445c71c6297dab35e476ef73d78f0365c5ed44a8e79f43ac2fb56",
+        "file": "forest-v1-COUNTERCLOCKWISE_90.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 588,
+        "sha256": "62054af2293fcb8659e394ecd365b997a0aa7bca6f9666f6351466065f37b610",
+        "file": "forest-v1-COUNTERCLOCKWISE_90.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 12,
+        "sha256": "c83e7c41dd56431a27e75c54e66478f7353fc28c621b6f2c6fe27841b44fe279",
+        "file": "forest-v1-COUNTERCLOCKWISE_90.blockEntities.txt.gz"
+      }
+    },
+    "forest-v1-NONE": {
+      "label": "forest-v1-NONE",
+      "bounds": [
+        34979,
+        31,
+        8235,
+        35059,
+        104,
+        8331
+      ],
+      "order": "x fastest, then y, then z; absolute BE/tick coordinates; fluid relative schedule order/delay",
+      "states": {
+        "count": 581418,
+        "sha256": "b256f73691dda822373c7c25610062d41290d058d225f5b3fe7c6446e3cd85a5",
+        "file": "forest-v1-NONE.states.txt.gz"
+      },
+      "fluidTicks": {
+        "count": 588,
+        "sha256": "bf9af7487b36292e4f9484272af6d5bc17eb30b4f7a8cb2e2e8222228d26cc90",
+        "file": "forest-v1-NONE.fluidTicks.txt.gz"
+      },
+      "blockEntities": {
+        "count": 12,
+        "sha256": "1c0783eca7d95db12dfa1cbc0225da2a931a6fc71bc669d3ad8e6cf6b835270b",
+        "file": "forest-v1-NONE.blockEntities.txt.gz"
+      }
+    }
+  },
+  "natural": [
+    {
+      "label": "natural-saved-116118-0",
+      "seed": 116118,
+      "round": 0,
+      "origin": [
+        98,
+        63,
+        384
+      ],
+      "rotation": "CLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          24,
+          39,
+          376,
+          106,
+          106,
+          436
+        ],
+        [
+          99,
+          49,
+          404,
+          107,
+          137,
+          408
+        ]
+      ],
+      "bounds": [
+        24,
+        39,
+        376,
+        107,
+        137,
+        436
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116118-0.states.txt.gz",
+        "count": 507276,
+        "sha256": "c4fa8ac963fc07d9a96c0bd578170ef9fea70c603eeea18dc6c9cd776bcacb54"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116118/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 239.43736124038696
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116118-1",
+      "seed": 116118,
+      "round": 1,
+      "origin": [
+        4786,
+        59,
+        2528
+      ],
+      "rotation": "CLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          4712,
+          35,
+          2520,
+          4794,
+          102,
+          2580
+        ],
+        [
+          4787,
+          45,
+          2548,
+          4795,
+          133,
+          2552
+        ]
+      ],
+      "bounds": [
+        4712,
+        35,
+        2520,
+        4795,
+        133,
+        2580
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116118-1.states.txt.gz",
+        "count": 507276,
+        "sha256": "17fcf438f113bfb9a39ec994fc7fb75d4f4dc421ffa3f7803714787de7e49595"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116118/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 239.43736124038696
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116118-2",
+      "seed": 116118,
+      "round": 2,
+      "origin": [
+        8220,
+        59,
+        6882
+      ],
+      "rotation": "CLOCKWISE_180",
+      "pieceBoxes": [
+        [
+          8168,
+          35,
+          6808,
+          8228,
+          102,
+          6890
+        ],
+        [
+          8196,
+          45,
+          6883,
+          8200,
+          133,
+          6891
+        ]
+      ],
+      "bounds": [
+        8168,
+        35,
+        6808,
+        8228,
+        133,
+        6891
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116118-2.states.txt.gz",
+        "count": 507276,
+        "sha256": "830692ded37e961b81c933ba0bca974731df89e4621c0e7ca70f30dcfa39206a"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116118/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 239.43736124038696
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116118-3",
+      "seed": 116118,
+      "round": 3,
+      "origin": [
+        12960,
+        78,
+        9068
+      ],
+      "rotation": "COUNTERCLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          12952,
+          54,
+          9016,
+          13034,
+          121,
+          9076
+        ],
+        [
+          12951,
+          64,
+          9044,
+          12959,
+          152,
+          9048
+        ]
+      ],
+      "bounds": [
+        12951,
+        54,
+        9016,
+        13034,
+        152,
+        9076
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116118-3.states.txt.gz",
+        "count": 507276,
+        "sha256": "739d2040a82c4ed21b1cbe5fcc5cb944c2f83030e5e71454a4169553d4c99ffc"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116118/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 239.43736124038696
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116118-4",
+      "seed": 116118,
+      "round": 4,
+      "origin": [
+        16300,
+        56,
+        12274
+      ],
+      "rotation": "CLOCKWISE_180",
+      "pieceBoxes": [
+        [
+          16248,
+          32,
+          12200,
+          16308,
+          99,
+          12282
+        ],
+        [
+          16276,
+          42,
+          12275,
+          16280,
+          130,
+          12283
+        ]
+      ],
+      "bounds": [
+        16248,
+        32,
+        12200,
+        16308,
+        130,
+        12283
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116118-4.states.txt.gz",
+        "count": 507276,
+        "sha256": "6725ebbb71d100d66479f48ed9db2459719c0e585729afa552d6ea61b32e250c"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116118/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 239.43736124038696
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116119-0",
+      "seed": 116119,
+      "round": 0,
+      "origin": [
+        172,
+        57,
+        -1070
+      ],
+      "rotation": "CLOCKWISE_180",
+      "pieceBoxes": [
+        [
+          120,
+          33,
+          -1144,
+          180,
+          100,
+          -1062
+        ],
+        [
+          148,
+          43,
+          -1069,
+          152,
+          131,
+          -1061
+        ]
+      ],
+      "bounds": [
+        120,
+        33,
+        -1144,
+        180,
+        131,
+        -1061
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116119-0.states.txt.gz",
+        "count": 507276,
+        "sha256": "128e545924e1bb9a7257172bc8a6d644253e623c6604fa5baf1610ef063212a8"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116119/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 194.58883833885193
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116119-1",
+      "seed": 116119,
+      "round": 1,
+      "origin": [
+        4224,
+        60,
+        3200
+      ],
+      "rotation": "NONE",
+      "pieceBoxes": [
+        [
+          4216,
+          36,
+          3192,
+          4276,
+          103,
+          3274
+        ],
+        [
+          4244,
+          46,
+          3191,
+          4248,
+          134,
+          3199
+        ]
+      ],
+      "bounds": [
+        4216,
+        36,
+        3191,
+        4276,
+        134,
+        3274
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116119-1.states.txt.gz",
+        "count": 507276,
+        "sha256": "e4dbfd307b3407128bdac764f9e45c9f9ccf16cbc1ef3a30d18b67cfb0f1594c"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116119/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 194.58883833885193
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116119-2",
+      "seed": 116119,
+      "round": 2,
+      "origin": [
+        7650,
+        55,
+        6944
+      ],
+      "rotation": "CLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          7576,
+          31,
+          6936,
+          7658,
+          98,
+          6996
+        ],
+        [
+          7651,
+          41,
+          6964,
+          7659,
+          129,
+          6968
+        ]
+      ],
+      "bounds": [
+        7576,
+        31,
+        6936,
+        7659,
+        129,
+        6996
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116119-2.states.txt.gz",
+        "count": 507276,
+        "sha256": "b81d184c1e35c7fde1bc67a957f1e9d051e5d22ca99ae3ff38ff65f418472ff2"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116119/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 194.58883833885193
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116119-3",
+      "seed": 116119,
+      "round": 3,
+      "origin": [
+        13442,
+        64,
+        8080
+      ],
+      "rotation": "CLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          13368,
+          40,
+          8072,
+          13450,
+          107,
+          8132
+        ],
+        [
+          13443,
+          50,
+          8100,
+          13451,
+          138,
+          8104
+        ]
+      ],
+      "bounds": [
+        13368,
+        40,
+        8072,
+        13451,
+        138,
+        8132
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116119-3.states.txt.gz",
+        "count": 507276,
+        "sha256": "bfcd0a72a3a07742e05949384bf823c13ddf71b74a4e89923a8cff21f8a22cdf"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116119/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 194.58883833885193
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116119-4",
+      "seed": 116119,
+      "round": 4,
+      "origin": [
+        17058,
+        58,
+        11648
+      ],
+      "rotation": "CLOCKWISE_90",
+      "pieceBoxes": [
+        [
+          16984,
+          34,
+          11640,
+          17066,
+          101,
+          11700
+        ],
+        [
+          17059,
+          44,
+          11668,
+          17067,
+          132,
+          11672
+        ]
+      ],
+      "bounds": [
+        16984,
+        34,
+        11640,
+        17067,
+        132,
+        11700
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116119-4.states.txt.gz",
+        "count": 507276,
+        "sha256": "e25c4f2bb2dbfc2bdfbc7f25e8cc5b76dfa2af41b5a2768cc05d192277e0b1f4"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116119/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 194.58883833885193
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116120-0",
+      "seed": 116120,
+      "round": 0,
+      "origin": [
+        -340,
+        57,
+        -1166
+      ],
+      "rotation": "CLOCKWISE_180",
+      "pieceBoxes": [
+        [
+          -392,
+          33,
+          -1240,
+          -332,
+          100,
+          -1158
+        ],
+        [
+          -364,
+          43,
+          -1165,
+          -360,
+          131,
+          -1157
+        ]
+      ],
+      "bounds": [
+        -392,
+        33,
+        -1240,
+        -332,
+        131,
+        -1157
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116120-0.states.txt.gz",
+        "count": 507276,
+        "sha256": "91f441eb7a0ce5736edb3fb4d7d6e0fc60aa1f950fb405d653f99823d2e2ef1a"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116120/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 205.91816020011902
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116120-1",
+      "seed": 116120,
+      "round": 1,
+      "origin": [
+        3568,
+        63,
+        2688
+      ],
+      "rotation": "NONE",
+      "pieceBoxes": [
+        [
+          3560,
+          39,
+          2680,
+          3620,
+          106,
+          2762
+        ],
+        [
+          3588,
+          49,
+          2679,
+          3592,
+          137,
+          2687
+        ]
+      ],
+      "bounds": [
+        3560,
+        39,
+        2679,
+        3620,
+        137,
+        2762
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116120-1.states.txt.gz",
+        "count": 507276,
+        "sha256": "1214216dd117fa230b33e13b2a5a0d264ce591dd6ab123420fd3833297b4452f"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116120/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 205.91816020011902
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116120-2",
+      "seed": 116120,
+      "round": 2,
+      "origin": [
+        7756,
+        59,
+        5730
+      ],
+      "rotation": "CLOCKWISE_180",
+      "pieceBoxes": [
+        [
+          7704,
+          35,
+          5656,
+          7764,
+          102,
+          5738
+        ],
+        [
+          7732,
+          45,
+          5731,
+          7736,
+          133,
+          5739
+        ]
+      ],
+      "bounds": [
+        7704,
+        35,
+        5656,
+        7764,
+        133,
+        5739
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116120-2.states.txt.gz",
+        "count": 507276,
+        "sha256": "872b43b45d90786a8ba4dd647a4c670e2db7fc7ac340c28658b935bcd92882a0"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116120/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 205.91816020011902
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116120-3",
+      "seed": 116120,
+      "round": 3,
+      "origin": [
+        11728,
+        55,
+        9216
+      ],
+      "rotation": "NONE",
+      "pieceBoxes": [
+        [
+          11720,
+          31,
+          9208,
+          11780,
+          98,
+          9290
+        ],
+        [
+          11748,
+          41,
+          9207,
+          11752,
+          129,
+          9215
+        ]
+      ],
+      "bounds": [
+        11720,
+        31,
+        9207,
+        11780,
+        129,
+        9290
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116120-3.states.txt.gz",
+        "count": 507276,
+        "sha256": "9366cbaa9d12ba784f5c48ada99095c2ab00ab1f560c120150b55836bb9dc6ab"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116120/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 205.91816020011902
+      },
+      "violations": 0
+    },
+    {
+      "label": "natural-saved-116120-4",
+      "seed": 116120,
+      "round": 4,
+      "origin": [
+        16352,
+        55,
+        11712
+      ],
+      "rotation": "NONE",
+      "pieceBoxes": [
+        [
+          16344,
+          31,
+          11704,
+          16404,
+          98,
+          11786
+        ],
+        [
+          16372,
+          41,
+          11703,
+          16376,
+          129,
+          11711
+        ]
+      ],
+      "bounds": [
+        16344,
+        31,
+        11703,
+        16404,
+        129,
+        11786
+      ],
+      "order": "x fastest, then y, then z; all piece envelopes, saved after normal shutdown",
+      "states": {
+        "file": "natural-saved-116120-4.states.txt.gz",
+        "count": 507276,
+        "sha256": "8f7c2dbd3bb51984ad53c01c23454c307900879908dbd2b89594014ada2e6cbc"
+      },
+      "sourceWorld": "/home/developer/Projects/oriMod/evidence/forest-r116-stage2-20261028-v001/natural-116120/world",
+      "sourceExit": {
+        "code": 0,
+        "seconds": 205.91816020011902
+      },
+      "violations": 0
+    }
+  ],
+  "sourceHashes": {
+    "src/main/java/cn/wwl/orimod/world/RuinPiece.java": "4e9a81d90e9ee512b0a69af1cf35ffafd0dd6ec66be1a202281ed40055ccdf0b",
+    "src/main/java/cn/wwl/orimod/world/RuinStructure.java": "e3afbb850b6a19f9e22e4fd4d9f350ad0b93443dae7f94c008553365bbe9e6e5",
+    "src/main/java/cn/wwl/orimod/world/CreekRuinTerrain.java": "8be4f4306a5bdf5bfe25946171b4cf42224e66aa79096f602a21bb950300a2d0",
+    "src/main/java/cn/wwl/orimod/world/CreekTerrainRules.java": "a2b1ba843ed783654bf180796d80ebfee1ebd0f59513de2d7af96d56f902e310",
+    "src/main/java/cn/wwl/orimod/world/ForestRuinTerrain.java": "cb043394458baa507605f9f23e99c94fdcefa7aa8ae5355de249e3923549c0cc",
+    "src/main/java/cn/wwl/orimod/world/CreekTerrainSurface.java": "8c8768ca613cbe3766f7605ce6a33910b854632668620813bdd00dc1dcc04243",
+    "/home/developer/Projects/oriMod/src/main/resources/data/orimod/structure/ruins/forest_spring.nbt": "535cb3531fa46b0780df169f53ca2c571e2280bbc1394625513d1d8d8bb29234",
+    "/home/developer/Projects/oriMod/src/main/resources/data/orimod/structure/ruins/forest_spring_v1.nbt": "e9d218a10e740663dafebba96b411320311374a6e577cdf6dffce419d7b3d5d8"
+  },
+  "templateHashes": {
+    "src/main/resources/data/orimod/structure/ruins/forest_spring.nbt": "535cb3531fa46b0780df169f53ca2c571e2280bbc1394625513d1d8d8bb29234",
+    "src/main/resources/data/orimod/structure/ruins/forest_spring_v1.nbt": "e9d218a10e740663dafebba96b411320311374a6e577cdf6dffce419d7b3d5d8",
+    "src/main/resources/data/orimod/structure/ruins/creek_ruins.nbt": "979b949c78593798129ea67dbbeb92a39f27f6bca3c201ed170f0ef23dcddd5b",
+    "src/main/resources/data/orimod/structure/ruins/creek_ruins_v1.nbt": "4fc365bbfe3168c24a3276531124b5d5f4750b380ff52c13d2c578a88a5f4de3"
+  }
+}

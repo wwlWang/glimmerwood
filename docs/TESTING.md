@@ -1,4 +1,77 @@
+# R116 森林泉关 4 最终验证（2026-10-29）
+
+JUnit **1769/1769**，GameTest **1312/1312**，失败/错误/跳过0；`All 1312 required tests passed`、`BUILD SUCCESSFUL`，完整保存exit0。保存 **10秒**（chunks子阶段3秒），world **576,862,177 bytes / 138,565区块 / 309个region**。
+
+内存验收：**达到原存活集 ≤1389 MiB 门槛**。Full/Remark/Cleanup峰1112MiB、FullGC0、evacuation0；同堆基线1880/4/41。pendingWrites峰507，总等待3155.572秒（88.63%）。不增加1984MiB堆、不启dump、不主动GC。完整数据见`evidence/forest-r116-backpressure-20261029-v007/README.md`，最终清单见`evidence/forest-r116-final-20261029-v001/`。
+
+## 测试专用背压与卸载协议
+
+OOM根因是IOWorker.pendingWrites的NBT积压（约1.1GB），不是噪声缓存；生产代码不因内存问题修改。ChunkMap成功提交NBT后，pending>512或自上次屏障已提交512项即synchronize(true)，同时限制尚未由I/O线程消费的mailbox。边界和fixture-release另推进正常chunk source卸载路径（tickChunks=false），分5ms片推进，未就绪holder先pollTask；排空完成须toDrop/pendingUnloads/unloadQueue清空、visibleChunkMap发布，60秒超时仅记录并返回；不推进实体/游戏tick、不强制卸载活跃chunk、不加载新chunk。forest_fluid24项按旋转拆4批×6，断言和220tick不变。准备每16块、玩家登录/清理等辅助屏障保留。
+
+每次等待记录timestamp/batch/test/计时状态/队列峰/耗时。显式计时域内仅登记延后请求，elapsed收集后才执行等待和日志；真实计时内等待0。卸载elapsed含嵌套IO，合计时只加nonIoMs，避免重复。关闭观察器的事件/栈集合每批只读核查为0。性能隔离源集不加载背压mixin，CPU A/B共有计数配置SHA一致，生产JAR无gametest/devtools类或配置。
+
+严格串行命令：先build/compile；全部GameTest使用`./gradlew --no-parallel --no-daemon runGameTestServer --console=plain`，无--tests或命名空间过滤，自动cleanGameTestWorld，所有保存结束exit0才开下一JVM。本轮JUnit使用`--no-build-cache cleanTest test build compileGametestJava compileDevtoolsJava`实际执行1769项，再串行全量GameTest；fresh XML、各轮exit和源代码SHA均存档，不用旧XML或缓存冒充实跑。
+
+v001/v002/v003功能均通过但原1389线未达的记录保留。最终按审核的新裁定先判断1389；未达时仅在≤A峰1880、FullGC≤4、evacuation≤41、pending有界且全量通过时接受基线对等，并向用户明确说明。此次结论如上，不永久放宽其他性能或生成断言。
+
+## 森林首次全量OOM（2026-10-29，历史失败保留）
+
+full-junit-01：1769项零失败/错误/跳过，BUILD SUCCESSFUL、exit0。full-gametest-01：默认8命名空间全量，cleanGameTestWorld后执行；约879项进度时发生Java heap space，首个栈为SkyLightSectionStorage地图复制，随后区块保存/加载OOM，exit1。没有完整保存，最终XML没有更新；旧104项XML不能作本轮统计。残留world 270,266,195字节/65,108区块只是未完整保存快照。暂停提交，按审核做同堆dump/GC与cd1670b基线对照，生产不改。证据evidence/forest-r116-oom-20261029-v001。
+
+## 森林外来资格生产回归与性能隔离（阶段过程记录）
+
+已批准接入新森林的外来资格检查，核心4/外圈8、creek现行预留均不改。RED-02为真实村庄覆盖返回PASS的行为失败；GREEN-01为35项全过、完整保存exit0。新增资格回归逐项对照5份FULL区块的真实StructureStart（1有效村庄、1全部回退失败的村庄、3个地形拒绝glades）；纯JUnit核对原版权重抽选、失败移除和每次GenerationContext重新播种，含首项失败后回退。
+
+CPU验收与拆分剖析必须分轮：A/B均只加载ForestNoiseThreadMixin、ForestNoiseCellThreadMixin，配置和字节码SHA一致；整start≤2s和系统CPU中位增幅≤10%只取该轮。仅B的独立剖析另启orimod.forestStartBreakdown，加载3个测试计时mixin，记录最慢5个start的森林自身地形、外来资格和R2预测（内含邻区外来资格，避免重复相加）。剖析结果不参与A/B判定。两轮都不加载流体、写入、FEATURES观察器，生产无计时改动。ForestPerformanceConfig启动即检查精确mixin集合及所有观察标志。
+
+洞穴采样顺序优化另设前置验收，不能只复测曾超线的(78,79)。用优化前同一2025网格的R2最慢20个不同起点，以及洞穴/森林基础选址最慢10个不同起点，取并集；每点清空全部选址、邻区预测和外来资格缓存后测3轮。JIT先预热12次，固定2G堆及AlwaysPreTouch，只加载共同两个计数mixin；每轮包含真实加权抽选、回退、R2和builder，任一整start>2000ms立即停止并保留失败，不以中位数代替单点最大值。该轮通过之后才继续builder网格和自然扫描。
+
+采样顺序等价性先比较优化前后2025×3条基础决策：接受与否、旋转、Y、框、引道及保留噪声表逐项相等；所有接受点读取完整原点集，逐点高度和最终min/max不变。再用生产抽选/R2比较2025行及回退、相交，必须仍为20/38/33。SiteResult.reason无生产分支读取；允许因提前证明拒绝而改变首个诊断原因，但逐条列出。JUnit分别证明高侧单调拒绝，以及低侧可能恢复、不能早退。洞穴既有布局/冻结、creek56组与旧forest8组固定基线仍须全过。证据在forest-external-implementation-v001/cave-order-optimization-v001，执行中结果不得写成已通过。
+
+本轮洞穴顺序优化结果：195定向JUnit/101GameTest全过，64组冻结零差异；冷态正式验收只完成46/87轮，(60,24)第1轮2747.624ms超线后立即停，不能写成29点通过。随后经授权用隔离classes和5个计时mixin跑满87轮诊断，另加采样记录，只用于成因/方案；诊断exit0不代表2秒验收通过。该轮生产源码和正常build输出不改，不参与CPU A/B。证据forest-external-implementation-v001/{cave-order-optimization-v001,cold-all-diagnostic-v001}。
+
 # 回归测试
+
+## R116 森林地形版本 1（关 3 定向历史记录）
+
+证据 `evidence/forest-r116-stage3-20261028-v001/`。新默认命名空间增加 `orimod_forest_freeze` 和 `orimod_forest_red`，后者保留关2测试名称，当前断言运行新地形版本；最终全量不得漏掉它们。
+
+关3命令严格串行：定向JUnit（Forest/Creek/Ruin）退出后，使用 `-PgameTestNamespaces=orimod_forest_freeze,orimod_forest_red` 跑冻结和新地形测试，`--no-parallel --no-daemon`，启动前 cleanGameTestWorld。正式关4全量不能传这个过滤参数。
+
+- creek 56组同坐标切片原版/优化、处理器/旋转/镜像，状态、BE、流体计划tick逐项比较；固定资源只读，不更新摘要。
+- forest v0/旧v1四朝向8份旧起点，缺ForestTerrainVersion，部分切片→NBT重载→邻片逐格冻结。
+- 新森林20条关2用例：+6坡通路/光桥/永久光照；内部木根按新规则清除、BE/基岩保留；8后补列；半砖/楼梯/雪碰撞顶；四向窄凹/窄凸。
+- 新增4向全部写入路径保护与三次复写/两次NBT重载；4向×3轮并发切片；相邻树木先装饰及forest_rock内外正反对照。引道夹具实际放置保存的独立piece，不能只存高度而遗漏路面。
+- 新坡地选址见证：seed116118/chunk(-90,-118)，core2/outer8/median66；旧生产FOOTPRINT_RELIEF拒绝，新生产PASS。
+
+自然 creek 重构复验使用固定旧选址的隔离运行副本，只替换三份选址类，写入内核用最终同版；三种子15座完整保存后读取全部pieces联合框7,609,140格原始状态，逐格对比关2基线。该隔离不修改工作区源码/编译输出，也不用于新森林数量或性能验收。
+
+最终 `final-junit-03` **163定向JUnit**、`final-gt-02` **51定向GameTest**，失败/错误/跳过均0，BUILD SUCCESSFUL/完整保存exit0。GT保存89秒，104.98MiB、26,538区块；最终64组固定状态/BE/流体比较零差异，15座自然溪谷7,609,140格零差异，所有独立监督队列exit0。详细失败尝试、夹具修正及knownShape次序修复见README；原断言不放宽。本次不是全量，关4审核后另跑。
+
+## 自然冻结的 A/B 裁决规则（森林本批已审核）
+
+1. **56组确定性溪谷切片是硬门槛**：方块状态、BE、流体计划tick均须逐格零差异，不更新固定摘要、不放宽断言。
+2. 自然样本照常要求零差异。出现差异时，用同一完整生成/扫描/保存协议串行运行隔离基线classes A和当前classes B，保留原始失败、坐标、即时与关服快照及分叉证据。A复现相同格，或A/B在运行间漂移，按证据裁定既有生成期不确定性；若A稳定符合基线而B稳定不符，则属于回归，必须修复。
+3. 裁定仅对当前批次有效，**不是坐标或方块类型的永久豁免**。下一批再次出现差异，重新走A/B裁决；本座主体、环带、护沿、地衣等不因材质名称自动排除。
+4. 本批116118原5格与A额外出现的(4712,65,2535)，已凭`evidence/forest-r116-stage4-approach-fix-20261028-v001/creek-full-observation-v003/`裁定为既有光照态不确定性。A旧代码复现原5格、共6格；B当前代码0格；相同蘑菇patch目标读到rawBrightness 0/15。116119/116120原回放零差异。因此本批creek自然冻结通过，原失败exit1和全部差异记录保留。
+5. 不搭建额外固定输入记录/回放基础设施。单线程worldgen或固定加载顺序验证只记为后续可选项，本批不实施。
+
+恢复森林关4时，修复版自然扫描重新串行跑116118→116119→116120。116118 trail_ruins三格流水必须用本轮快照、来源栈和支撑链零Ori写入重新取证，不能仅凭旧坐标放行。模板air中的硬保护按raw / 精确登记护沿正上方LIGHT level7 / foreign三列报告，以foreign=0验收；不得全局豁免LIGHT。硬门槛超线则正常保存退出、停止后续队列并报告。
+
+历史扫描 `natural-refresh-queue-02` 在116118 site3停止，原始 `newWaterAfter220` 收集全部非空流体，六格实为流动熔岩。后续同完整协议观察已证明是环带削开 lake_lava 石壁，属于产品缺陷，原失败保留。扫描输出已拆成 water/lava/other，同时保留全部流体统计，不能按流体种类排除失败。
+
+仅ForestTerrainVersion=1修复后的定向证据：`evidence/forest-r116-stage4-approach-fix-20261028-v001/site3-lava-observation-v001/`。RED-04为16项预期行为失败+8框外正向通过；最终regression-queue-02为163 JUnit/91 GameTest全绿，正常保存388秒、exit0。56组creek与8组旧森林状态/BE/流体tick固定基线零差异。此处仍非关4全量通过。
+
+新增命名空间`orimod_forest_liquid`包含32项：四向源/流动水及熔岩容器、真实LakeFeature晚到及框外对照、模板AIR/补清空/引道封闭、连续高侧护沿；正反切片、三写重载与4worker并发逐格等价。全量不得漏掉。保存过程观察与最终world大小、区块数必须一并留档，进程退出后才能启动下一轮。自然冻结和森林三种子须在修复版重新执行，不能用定向夹具替代。
+
+CPU验收使用测试源集`forest_system`入口，同一字节码分别调用隔离cd1670b与当前生产findGenerationPoint及实际builder。按原2025格完整抽选/回退逐点核对，六个独立固定堆JVM交替A/B；计时内不输出日志，禁用JFR/生产分段日志。线程采样观察只在该审计开启，生产JAR不含这些类或mixin。
+
+逐次流体例外核验仅在gametest源集中：从每格新增流体的实际tick父节点回溯源头，要求源头写入栈、首次排程的全触发链无Ori、扩散链零Ori、源头六邻格在排程前零Ori；砂砾另核对首次block tick、递归的前一砂砾/原版chunk后处理触发、砂砾六邻格、外来模板支撑清空和整条下落列。unchanged的Ori尝试也拒绝；记录缺失/观察范围外失败；seed/坐标不构成豁免。`fluid-proof-validation-v001/replay-03`两份录制正向通过，trail六类与泉水四类适用负向变异全部拒绝；不启动服务器。原证据与无效夹具记录保留。
+
+新增加严项：每个链格首次进水seq之前，水平±4、y−1..0范围内，任何Ori完整实心→非实心变化均拒绝；填实、实心换材只记录。全邻域必须在观察范围内，缺碰撞证据失败。新观察记录直接按完整碰撞箱判断（动态/半砖/楼梯/墙/栅栏/含流体状态保守记非实心），不按模型或地形标签推断；旧录制离线回放只补本轮已审的air/dirt/stone/andesite/grass五类形状事实，其他缺项不猜。116119 site2例外理由为“天然泉，Ori只做填方约束”，不是零影响。
+
+三种子自然扫描均开启ForestLavaEvidence且STOP_AFTER=0，逐次重新取证。热态/CPU测量则使用隔离的gametest资源副本：热态只配置RuinOuterTimerMixin；CPU只配置ForestNoiseThreadMixin、ForestNoiseCellThreadMixin，不配置流体/写入/FEATURES/调用栈观察mixin。启动时校验实际资源配置和诊断开关，记录SHA。CPU A/B注入同一份gametest配置及同一份计数字节码，只有A的main类/资源替换为cd1670b；逐轮校验配置和class SHA一致，不一致结果作废。测量期间不编译、不启动客户端、不启JFR/分段日志。
+
 
 ## R116 重生移动回执生命周期（含登录复审）
 
@@ -1569,3 +1642,38 @@ docs/ORI_PARITY.md
 - 按 `forceload remove all` → `leave_world` → `quit` 关闭客户端。remove all 原版实现固定返回0，不能据此误判失败；关闭后读取新世界 `data/chunks.dat`，Forced 列表确认为空。关闭记录 `evidence/r100-final-close-v001/results.json`。客户端/图形操作统一 llvmpipe + `DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority`；最后只跑差异格式与纹理复现检查，代码未改，不重跑全量。
 
 最终交付文件清单见 `evidence/r100-preflight-v001/changed-files.txt`（74个Codex累计R100文件；排除AgentBridge/AGENTS/CLAUDE和Claude维护的验收脚本）。Claude另将 `scripts/verify-r100-rework.py` 纳入提交，提交操作由Claude完成。
+
+
+森林自然审计另有逐次取证类别 `natural_submerged_untouched_step`：不修改原水深≥2/材质不变路径。完整观察两列-64..319，任何Ori写入尝试（含unchanged）拒绝；床高与本轮CARVERS一致，水面同高且高侧水深≥1；所有变化有非Ori栈/feature，并能逐格重建当前整列。观察未启用、缺覆盖、缺事件均失败。见 `evidence/forest-r116-stage4-approach-fix-20261028-v001/submerged-proof-validation-v001/README.md`。section层观察只在gametest；计时运行的资源白名单不含它。
+
+
+### 森林 v1：外来结构实际写入冲突（逐次取证）
+
+自然扫描必须遍历own框覆盖的全部chunk的STRUCTURE_REFERENCES，解析每个引用start并逐piece检查；不能仅扫FULL或当前已知start。缺chunk引用覆盖/缺start/缺写入观察一律失败。仅本座明确的RuinPiece/RuinApproachPiece身份排除，其余Ori结构也属于外来。
+
+本座全部写入尝试（含unchanged、模板air、main/rim/approach/护沿/照明/额外列）中任一格落在外来piece三维框内即失败；任一外来结构写入落在本座尝试格也失败，不分先后。纯盒交无写入冲突只记录，交集内考古方块逐格记状态。天然feature流体仍单独走已有因果核验器，不能用“无结构冲突”替代流体证据。
+
+实现位于gametest的ForestStructureConflictProof/ForestStructureEvidence，forest_natural默认启用，其他mode不记录。性能mixin白名单不得包含新增结构观察器。离线负向包括116120村庄(-1407,67,-773)见证、trail框内Ori unchanged、外来写入到Ori格、缺chunk引用、缺引用start。旧局部流体观察缺全域反向覆盖，不算新门槛全域通过。证据site0-building-observation-116120-v001/GATE.md。
+
+
+### 森林 A+B+C 的模型与正式冷态（2026-10-28）
+
+实现前全2025离线模拟和87次校准存于 `docs/benchmarks/forest-cold-simulation-v001/`。模型1826.085ms超过原1800ms投入线，已报告后获明确实施批准；这不修改正式2000ms每轮门槛，也不把73.531ms经验残差当保证误差或验收抵扣。
+
+正式名单固定为原29点∪模型A+B+C前30名，去重52点，每点3轮，共156轮。JIT先热，**每轮**清空 RuinSitingSites、外来资格、以及 CreekSurfaceSample.WORLDS 共享精确单元缓存。计数配置仍只用共同两个mixin；不加载流体/写入/拆分计时观察器。任一轮>2000ms立即停止，单列(108,43)三轮。正式CPU A/B使用相同计数配置/字节码SHA，拆分解释另跑。
+
+A的接受集合和中位锚定用属性测试核对；B补并发对象同一性、RandomState和高度范围隔离、清空后重算；C补owner让行不污染base，以及四旋转临时XZ与实际builder相等。全网格仍须20/38/33、0/0/1且逐点等价；固定冻结和15座creek自然冻结仍按既定规则。
+
+
+### 森林自然审计：洞口接缝观察必须覆盖环带外一列
+
+洞口逐次证明的注册窗口是可写环带 1–8 列及生产 `readOnlySeam` 定义的第 9 列。扫描第 8→9 列时，两端均须通过既有证明：`H < min(N,P)-6`、天然地面、零 Ori 写入尝试（含 unchanged）、整列写片前后逐格一致、无本座护沿/支撑。只读列不整形，目标 P=N 使用起点保存的天然高度，不取当前实物来反填计划。缺快照仍失败，不能根据只读坐标自动豁免。
+
+116120 site0 原扫描失败已保留：两列零结构尝试，但第 9 列没有洞口快照。仅扩展 gametest 覆盖，补录后两列384格一致、H=-1/-3、N=P=6，原证明条件全部满足；9项正负控制通过。补录正常退出后必须另开同协议新档重跑五座。此前已通过的116118/116119十座按审核保留，不将覆盖修正当作生产修复或阈值变更。证据 `abc-optimization-v001/NATURAL_SEAM_116120.md`。
+
+
+### Forest FeatureSite 已让行的逐次核验
+
+仅自然扫描测试源集新增 `foreign_feature_site_yielded`。须同时具备真实 FeatureSiteStructure 身份、原点 chunk 的全部既有尝试 RUIN/RUIN_GUARD、实际返回 true 的守卫框包含本座所有 piece、整框结构写入观察完整且写入尝试0（含 unchanged）、无其他外来结构写入落在框内本座格。观察缺失或有覆盖错误失败，反向外来写入冲突仍总是执行。spirit_tree 的 RUIN_GUARD 与 blight 的 RUIN 都需上述证据，不是类型豁免。
+
+真实补录正向及5负向见 `feature-site-diagnosis-v001/yield-mutation-results.json`：piece写入、PASS、缺覆盖、无关守卫框、其他外来覆盖均拒绝。生产避让和优先级不改；性能隔离配置不加载这两个观察mixin。

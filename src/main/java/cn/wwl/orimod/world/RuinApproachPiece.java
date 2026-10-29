@@ -24,16 +24,26 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
     private final RuinPlacement placement;
     private final int[] terrain;
     private final boolean carvedEntrance;
+    private final boolean forestProtection;
+    private final ForestApproachGuards forestGuards;
 
     public RuinApproachPiece(RuinPlacement doorway, int[] terrain) {
         this(doorway,terrain,false);
     }
     public RuinApproachPiece(RuinPlacement doorway, int[] terrain, boolean carvedEntrance) {
+        this(doorway,terrain,carvedEntrance,false);
+    }
+    public RuinApproachPiece(RuinPlacement doorway,int[] terrain,boolean carvedEntrance,boolean forestProtection) {
+        this(doorway,terrain,carvedEntrance,forestProtection,new int[0]);
+    }
+    public RuinApproachPiece(RuinPlacement doorway,int[] terrain,boolean carvedEntrance,boolean forestProtection,int[] sideProfile) {
         super(OriWorldgen.APPROACH.get(), 0, bounds(doorway,carvedEntrance));
         if (terrain.length != WIDTH * DEPTH) throw new IllegalArgumentException("Approach needs 45 terrain samples");
         this.placement = doorway;
         this.terrain = terrain.clone();
         this.carvedEntrance = carvedEntrance;
+        this.forestProtection=forestProtection;
+        this.forestGuards=forestProtection?new ForestApproachGuards(doorway,terrain,sideProfile):null;
     }
 
     public RuinApproachPiece(CompoundTag tag) {
@@ -47,6 +57,9 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
         int[] saved = tag.getIntArray("Terrain");
         // Old starts are completed using the same seed's base terrain, never mutable neighbor blocks.
         terrain = saved.length == WIDTH * DEPTH ? saved : new int[0];
+        forestProtection=tag.getInt("ForestTerrainVersion")==1;
+        forestGuards=forestProtection?new ForestApproachGuards(placement,terrain,tag.getIntArray("ForestApproachSides")):null;
+        if(forestGuards!=null)forestGuards.restore(tag.getLongArray("ForestApproachGuardCells"));
         carvedEntrance=tag.getBoolean("CarvedEntrance"); // Missing = unchanged legacy approach.
     }
 
@@ -73,6 +86,7 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putInt("DoorX", placement.origin().getX()); tag.putInt("DoorY", placement.origin().getY()); tag.putInt("DoorZ", placement.origin().getZ());
         tag.putString("Rot", placement.rotation().name()); tag.putIntArray("Terrain", terrain);
+        if(forestProtection){tag.putInt("ForestTerrainVersion",1);tag.putIntArray("ForestApproachSides",forestGuards.profile());tag.putLongArray("ForestApproachGuardCells",forestGuards.saved());}
         if(carvedEntrance)tag.putBoolean("CarvedEntrance",true);
     }
 
@@ -85,7 +99,7 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
             // Carvers cut caves and ravines after the noise samples; bridge a hole under the landing
             // so the first step never towers over the real ground (R16 site audit: landing:step).
             support(level, chunkBounds, landing.atY(ground - 1), true);
-            clearCanopy(level, chunkBounds, landing.getX(), landing.getZ(), ground + 3, boundingBox.maxY());
+            clearApproachCanopy(level, chunkBounds, landing.getX(), landing.getZ(), ground + 3, boundingBox.maxY());
             for (int i = 0; i < 8; i++) {
                 int floor = floor(ground, i);
                 var column = placement.block(new BlockPos(dx, 0, -8 + i));
@@ -99,14 +113,15 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
                         .setValue(StairBlock.FACING, placement.rotation().rotate(Direction.SOUTH));
                 else if (floor > next) surface = Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState()
                         .setValue(StairBlock.FACING, placement.rotation().rotate(Direction.NORTH));
-                level.setBlock(pos, surface, 2);
+                put(level,pos,surface);
                 int top = Math.max(floor + 3, oldGround + 2);
                 clearAbove(level, chunkBounds, pos.getX(), pos.getZ(), floor, top);
-                clearCanopy(level, chunkBounds, pos.getX(), pos.getZ(), top + 1, boundingBox.maxY());
+                clearApproachCanopy(level, chunkBounds, pos.getX(), pos.getZ(), top + 1, boundingBox.maxY());
                 support(level, chunkBounds, pos, false);
             }
         }
         if(carvedEntrance)dressPortal(level,generator,chunkBounds);
+        if(forestGuards!=null)forestGuards.place(level,generator,chunkBounds);
     }
 
     /** Only the new cave's saved entrance gets a stone frontage. The adapted stair geometry is unchanged. */
@@ -139,12 +154,13 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
     private int floor(int ground, int step) { return RuinSiteRules.stepFloor(ground, placement.origin().getY(), step); }
 
     /** Fills a column under {@code top} (and {@code top} itself when asked) down to the first full block. */
-    private static void support(WorldGenLevel level, BoundingBox chunkBounds, BlockPos top, boolean includeTop) {
+    private void support(WorldGenLevel level, BoundingBox chunkBounds, BlockPos top, boolean includeTop) {
         for (int dy = includeTop ? 0 : 1; dy <= RuinSiteRules.MAX_FILL; dy++) {
             var below = top.below(dy);
             if (!chunkBounds.isInside(below) || below.getY() < level.getMinBuildHeight()) break;
             if (level.getBlockState(below).isCollisionShapeFullBlock(level, below)) break;
-            level.setBlock(below, Blocks.MOSSY_STONE_BRICKS.defaultBlockState(), 2);
+            if(forestProtection&&!CreekTerrainSurface.replaceable(level.getBlockState(below),level,below))break;
+            put(level,below,Blocks.MOSSY_STONE_BRICKS.defaultBlockState());
         }
     }
 
@@ -155,13 +171,33 @@ public final class RuinApproachPiece extends StructurePiece implements net.neofo
                 level, level.getLevel().getChunkSource().randomState());
     }
 
-    private static void clearAbove(WorldGenLevel level, BoundingBox chunkBounds, int x, int z, int floor, int top) {
+    private void clearAbove(WorldGenLevel level, BoundingBox chunkBounds, int x, int z, int floor, int top) {
         for (int y = floor + 1; y <= Math.min(top, level.getMaxBuildHeight() - 1); y++) {
             var pos = new BlockPos(x, y, z);
-            if (chunkBounds.isInside(pos)) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+            if (chunkBounds.isInside(pos)) put(level,pos,Blocks.AIR.defaultBlockState());
         }
     }
 
+    public boolean ownsGuard(BlockPos p,BlockState state){return forestGuards!=null&&forestGuards.ownsGuard(p,state);}
+    public boolean ownsSupport(BlockPos p,BlockState state){return forestGuards!=null&&forestGuards.ownsSupport(p,state);}
+    public boolean ownsLight(BlockPos p,BlockState state){return forestGuards!=null&&forestGuards.ownsLight(p,state);}
+    private void put(WorldGenLevel level,BlockPos at,BlockState state){
+        if(forestProtection&&!ForestFluidProtection.FOREIGN_ONLY.allows(level,at,state))return;
+        if(forestGuards!=null&&forestGuards.ownsAssembly(at,level.getBlockState(at)))return;
+        // The approach is outside template LAND: preserve protected vegetation
+        // here just as in the graded rim. Explicit interior AIR is the exception.
+        if(!forestProtection||CreekTerrainSurface.mutable(level.getBlockState(at),level,at)&&level.getBlockEntity(at)==null
+                &&CreekTerrainSurface.category(level.getBlockState(at),level,at)!=CreekTerrainSurface.Category.IGNORE_PROTECTED)
+            level.setBlock(at,state,forestProtection?2|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE:2);
+    }
+    private void clearApproachCanopy(WorldGenLevel level,BoundingBox bounds,int x,int z,int from,int top){
+        if(!forestProtection){clearCanopy(level,bounds,x,z,from,top);return;}
+        // New forest approach has the same hard protection as its main piece.
+        for(int y=from;y<=Math.min(top,level.getMaxBuildHeight()-1);y++){
+            var p=new BlockPos(x,y,z);var state=level.getBlockState(p);
+            if(bounds.isInside(p)&&(state.is(BlockTags.LOGS)||state.is(BlockTags.LEAVES)))put(level,p,Blocks.AIR.defaultBlockState());
+        }
+    }
     static void clearCanopy(WorldGenLevel level, BoundingBox chunkBounds, int x, int z, int from, int top) {
         for (int y = from; y <= Math.min(top, level.getMaxBuildHeight() - 1); y++) {
             var pos = new BlockPos(x, y, z);

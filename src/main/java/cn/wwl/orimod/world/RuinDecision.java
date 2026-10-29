@@ -40,14 +40,19 @@ public record RuinDecision(RuinKind kind, int version, RuinPlacement placement,
         return new Structure.GenerationStub(entry(),builder->{
             // Only the start actually being built pays for its terrain snapshot.
             long start=Boolean.getBoolean("orimod.profileRuins")?System.nanoTime():0;
-            int[] natural=kind==RuinKind.CREEK&&version>0?CreekRuinTerrain.sample(context,placement,surfaceHeights):new int[0];
+            int[] natural=kind==RuinKind.CREEK&&version>0?CreekRuinTerrain.sample(context,placement,surfaceHeights):
+                    kind==RuinKind.FOREST&&version>0?ForestGradedTerrain.sample(context,placement,surfaceHeights):new int[0];
             long sampled=start==0?0:System.nanoTime();
             int[] terrain=approach();
-            builder.addPiece(new RuinPiece(context.structureTemplateManager(),kind,placement,version,
-                    (kind==RuinKind.FOREST||kind==RuinKind.CREEK)&&version>0?terrain:new int[0],natural));
-            builder.addPiece(new RuinApproachPiece(RuinApproachPiece.doorway(kind,kind.layout(version),placement),terrain,kind==RuinKind.CAVE&&version>0));
+            var main=new RuinPiece(context.structureTemplateManager(),kind,placement,version,
+                    (kind==RuinKind.FOREST||kind==RuinKind.CREEK)&&version>0?terrain:new int[0],natural,kind==RuinKind.FOREST&&version>0?ForestGradedTerrain.VERSION:0);
+            builder.addPiece(main);
+            builder.addPiece(new RuinApproachPiece(RuinApproachPiece.doorway(kind,kind.layout(version),placement),terrain,kind==RuinKind.CAVE&&version>0,kind==RuinKind.FOREST&&version>0,main.forestApproachSideProfile()));
             long prepared=start==0?0:System.nanoTime();
-            if(start!=0&&natural.length!=0)cn.wwl.orimod.OriMod.LOGGER.info("CREEK_NOISE_SNAPSHOT phase=STRUCTURE_STARTS api=WORLD_SURFACE_WG grid=8 snapshotEntries={} ms={}",natural.length,(sampled-start)/1e6);
+            if(start!=0&&natural.length!=0){
+                if(kind==RuinKind.FOREST)cn.wwl.orimod.OriMod.LOGGER.info("FOREST_NOISE_SNAPSHOT phase=STRUCTURE_STARTS api=WORLD_SURFACE_WG grid=8 snapshotEntries={} ms={}",natural.length,(sampled-start)/1e6);
+                else cn.wwl.orimod.OriMod.LOGGER.info("CREEK_NOISE_SNAPSHOT phase=STRUCTURE_STARTS api=WORLD_SURFACE_WG grid=8 snapshotEntries={} ms={}",natural.length,(sampled-start)/1e6);
+            }
             if(start!=0)cn.wwl.orimod.OriMod.LOGGER.info("RUIN_TEMPLATE kind={} version={} ms={}",kind.id,version,(prepared-sampled)/1e6);
         });
     }

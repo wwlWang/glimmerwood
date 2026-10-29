@@ -1,0 +1,423 @@
+{
+  "scope": "Original29 union ABC predicted top30; all rounds must <=2000ms",
+  "candidates": [
+    {
+      "chunk": [
+        78,
+        79
+      ],
+      "source": "original29",
+      "predictedMs": 1468.0848872957697
+    },
+    {
+      "chunk": [
+        115,
+        56
+      ],
+      "source": "original29",
+      "predictedMs": 321.5951332878298
+    },
+    {
+      "chunk": [
+        108,
+        43
+      ],
+      "source": "original29",
+      "predictedMs": 1826.085446077418
+    },
+    {
+      "chunk": [
+        36,
+        134
+      ],
+      "source": "original29",
+      "predictedMs": 530.6118968177395
+    },
+    {
+      "chunk": [
+        7,
+        37
+      ],
+      "source": "original29",
+      "predictedMs": 733.9562057507575
+    },
+    {
+      "chunk": [
+        2,
+        24
+      ],
+      "source": "original29",
+      "predictedMs": 501.77276507173315
+    },
+    {
+      "chunk": [
+        104,
+        72
+      ],
+      "source": "original29",
+      "predictedMs": 1043.3204167941642
+    },
+    {
+      "chunk": [
+        -125,
+        -29
+      ],
+      "source": "original29",
+      "predictedMs": 653.3234211775984
+    },
+    {
+      "chunk": [
+        120,
+        86
+      ],
+      "source": "original29",
+      "predictedMs": 557.2016413302795
+    },
+    {
+      "chunk": [
+        -48,
+        -106
+      ],
+      "source": "original29",
+      "predictedMs": 486.76747707864854
+    },
+    {
+      "chunk": [
+        -126,
+        -130
+      ],
+      "source": "original29",
+      "predictedMs": 441.0609567567935
+    },
+    {
+      "chunk": [
+        -132,
+        -53
+      ],
+      "source": "original29",
+      "predictedMs": 976.9584326315726
+    },
+    {
+      "chunk": [
+        18,
+        122
+      ],
+      "source": "original29",
+      "predictedMs": 441.0817294621157
+    },
+    {
+      "chunk": [
+        32,
+        -102
+      ],
+      "source": "original29",
+      "predictedMs": 1208.903059022373
+    },
+    {
+      "chunk": [
+        31,
+        103
+      ],
+      "source": "original29",
+      "predictedMs": 435.5732651765094
+    },
+    {
+      "chunk": [
+        60,
+        24
+      ],
+      "source": "original29",
+      "predictedMs": 1578.818103348839
+    },
+    {
+      "chunk": [
+        -52,
+        -36
+      ],
+      "source": "original29",
+      "predictedMs": 508.32356199866217
+    },
+    {
+      "chunk": [
+        -120,
+        -126
+      ],
+      "source": "original29",
+      "predictedMs": 1232.7597090203715
+    },
+    {
+      "chunk": [
+        80,
+        -18
+      ],
+      "source": "original29",
+      "predictedMs": 1408.409428417671
+    },
+    {
+      "chunk": [
+        -90,
+        -118
+      ],
+      "source": "original29",
+      "predictedMs": 1057.581584770858
+    },
+    {
+      "chunk": [
+        103,
+        -30
+      ],
+      "source": "original29",
+      "predictedMs": 93.41858705254631
+    },
+    {
+      "chunk": [
+        97,
+        -30
+      ],
+      "source": "original29",
+      "predictedMs": 93.09215882605382
+    },
+    {
+      "chunk": [
+        120,
+        37
+      ],
+      "source": "original29",
+      "predictedMs": 1249.0847713680455
+    },
+    {
+      "chunk": [
+        43,
+        -36
+      ],
+      "source": "original29",
+      "predictedMs": 91.16919981907985
+    },
+    {
+      "chunk": [
+        -52,
+        -83
+      ],
+      "source": "original29",
+      "predictedMs": 93.01797059276007
+    },
+    {
+      "chunk": [
+        110,
+        38
+      ],
+      "source": "original29",
+      "predictedMs": 991.6254222808376
+    },
+    {
+      "chunk": [
+        -58,
+        -125
+      ],
+      "source": "original29",
+      "predictedMs": 113.91823153045694
+    },
+    {
+      "chunk": [
+        109,
+        -23
+      ],
+      "source": "original29",
+      "predictedMs": 921.3055333793005
+    },
+    {
+      "chunk": [
+        96,
+        79
+      ],
+      "source": "original29",
+      "predictedMs": 740.9514022315706
+    },
+    {
+      "chunk": [
+        120,
+        54
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1345.0589045946554
+    },
+    {
+      "chunk": [
+        61,
+        31
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1331.1130709251663
+    },
+    {
+      "chunk": [
+        109,
+        55
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1276.484551620243
+    },
+    {
+      "chunk": [
+        56,
+        26
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1250.7858955210168
+    },
+    {
+      "chunk": [
+        18,
+        -114
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1245.088239204057
+    },
+    {
+      "chunk": [
+        114,
+        25
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1239.2400168828742
+    },
+    {
+      "chunk": [
+        26,
+        80
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1238.2236140138407
+    },
+    {
+      "chunk": [
+        54,
+        55
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1236.5410248827384
+    },
+    {
+      "chunk": [
+        -106,
+        -126
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1236.4624094283563
+    },
+    {
+      "chunk": [
+        -88,
+        -126
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1235.598858392817
+    },
+    {
+      "chunk": [
+        72,
+        26
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1234.8332358252255
+    },
+    {
+      "chunk": [
+        -106,
+        -4
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1232.4710824771525
+    },
+    {
+      "chunk": [
+        -88,
+        -10
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1231.3879342710638
+    },
+    {
+      "chunk": [
+        7,
+        -48
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1231.1282513816266
+    },
+    {
+      "chunk": [
+        -107,
+        -17
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1230.3819418276007
+    },
+    {
+      "chunk": [
+        -113,
+        -42
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1230.011000661132
+    },
+    {
+      "chunk": [
+        66,
+        32
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1227.8803146009354
+    },
+    {
+      "chunk": [
+        -10,
+        26
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1225.3593743607046
+    },
+    {
+      "chunk": [
+        -113,
+        -30
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1221.4808135241076
+    },
+    {
+      "chunk": [
+        -118,
+        18
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1217.4041580681615
+    },
+    {
+      "chunk": [
+        -77,
+        -107
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1216.643740713355
+    },
+    {
+      "chunk": [
+        -42,
+        -82
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1215.2675369493015
+    },
+    {
+      "chunk": [
+        -24,
+        -6
+      ],
+      "source": "simulation-top30",
+      "predictedMs": 1209.282030287162
+    }
+  ],
+  "points": 52,
+  "rounds": 156
+}

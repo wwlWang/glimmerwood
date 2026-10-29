@@ -46,4 +46,31 @@ class RuinSiteRulesTest {
         for (int i = 1; i <= 7; i++) tall |= Math.abs(RuinSiteRules.stepFloor(62, 70, i) - RuinSiteRules.stepFloor(62, 70, i - 1)) > 1;
         assertTrue(tall, "MAX_APPROACH_DELTA no longer guards a real limit");
     }
+
+    @Test void caveHighApproachCannotRecoverWhenRemainingRoofLowersTheDoor() {
+        var layout=RuinKind.CAVE.layout(1);
+        for(int runningMin=RuinSiteRules.MIN_SURFACE;runningMin<=RuinSiteRules.MAX_SURFACE;runningMin++){
+            int upperDoor=caveDoor(layout,runningMin);
+            for(int approach=RuinSiteRules.MIN_SURFACE;approach<=RuinSiteRules.MAX_SURFACE;approach++){
+                if(approach<=upperDoor+RuinSiteRules.MAX_APPROACH_DELTA)continue;
+                for(int finalMin=RuinSiteRules.MIN_SURFACE;finalMin<=runningMin;finalMin++)
+                    assertFalse(RuinSiteRules.approachOk(approach,caveDoor(layout,finalMin)),
+                            "Rejected high approach became valid after a lower roof sample");
+            }
+        }
+    }
+
+    @Test void caveLowApproachCanRecoverSoItMustNotTriggerTheEarlyExit() {
+        var layout=RuinKind.CAVE.layout(1);
+        int highDoor=caveDoor(layout,100),lowerDoor=caveDoor(layout,90);
+        assertFalse(RuinSiteRules.approachOk(lowerDoor,highDoor));
+        assertTrue(RuinSiteRules.approachOk(lowerDoor,lowerDoor));
+        assertTrue(RuinSiteRules.approachOk(highDoor+RuinSiteRules.MAX_APPROACH_DELTA,highDoor));
+        assertFalse(RuinSiteRules.approachOk(highDoor+RuinSiteRules.MAX_APPROACH_DELTA+1,highDoor));
+    }
+
+    private static int caveDoor(RuinKind.Layout layout,int minimum){
+        return RuinSiteRules.templateSurface(true,1,layout.surfaceY(),layout.size().getY(),minimum,minimum)
+                -layout.surfaceY()+layout.approachY();
+    }
 }

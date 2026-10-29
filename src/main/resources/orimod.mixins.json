@@ -11,6 +11,7 @@
     "MovementTeleportMixin",
     "RuinTreeFeatureMixin",
     "CreekForestRockMixin",
+    "ForestLakeMixin",
     "GreatTreeLocateMixin",
     "ServerFloatingAccessor",
     "StructurePaletteInvoker",

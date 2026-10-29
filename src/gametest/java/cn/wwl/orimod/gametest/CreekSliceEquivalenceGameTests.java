@@ -58,7 +58,7 @@ public final class CreekSliceEquivalenceGameTests {
         h.succeed();
     }
     private static TestFunction test(String name,Consumer<GameTestHelper> body){
-        return new TestFunction("creek_equivalence","creek_equivalence."+name,"orimod_creek_rebuild:room",Rotation.NONE,900,0,true,body);
+        return new TestFunction("creek_equivalence","creek_equivalence."+name,(RuinFreezeSnapshot.enabled()?"orimod_forest_freeze:room":"orimod_creek_rebuild:room"),Rotation.NONE,900,0,true,body);
     }
 
     private static void actual(GameTestHelper h,Rotation rotation,boolean reverse){
@@ -67,6 +67,10 @@ public final class CreekSliceEquivalenceGameTests {
         var origin=h.absolutePos(new BlockPos(31000+rotation.ordinal()*240+(reverse?120:0),45,5600));
         var settings=settings(false,rotation,Mirror.NONE,BlockPos.ZERO,false);
         var bounds=template.getBoundingBox(settings,origin).inflatedBy(2);
+        if(RuinFreezeSnapshot.enabled()){
+            var saved=RuinFreezeSnapshot.pinnedBounds("creek-56-template_"+rotation+"_NONE_"+(reverse?"reverse":"forward")+"_processor_false");
+            origin=origin.offset(saved.minX()-bounds.minX(),saved.minY()-bounds.minY(),saved.minZ()-bounds.minZ());bounds=saved;
+        }
         try(var area=new Area(level,bounds)){
             compare(h,template,origin,rotation,Mirror.NONE,BlockPos.ZERO,reverse,false,"template",bounds);
         }
@@ -80,6 +84,10 @@ public final class CreekSliceEquivalenceGameTests {
         for(var rotation:Rotation.values())for(var mirror:Mirror.values()){
             var b=template.getBoundingBox(settings(false,rotation,mirror,pivot,processor),origin).inflatedBy(2);
             if(areaBounds==null)areaBounds=b;else areaBounds.encapsulate(b);
+        }
+        if(RuinFreezeSnapshot.enabled()){
+            var saved=RuinFreezeSnapshot.pinnedBounds("creek-56-miniature_NONE_NONE_forward_processor_"+processor);
+            origin=origin.offset(saved.minX()-areaBounds.minX(),saved.minY()-areaBounds.minY(),saved.minZ()-areaBounds.minZ());areaBounds=saved;
         }
         try(var area=new Area(level,Objects.requireNonNull(areaBounds))){
             for(var rotation:Rotation.values())for(var mirror:Mirror.values())for(boolean reverse:new boolean[]{false,true}){
@@ -115,6 +123,11 @@ public final class CreekSliceEquivalenceGameTests {
         // inside that air, so each placement must actually clear old terrain.
         reset(level,resetBounds);seedAirWitnesses(level,airWitnesses);if(fixture.equals("miniature"))seedOutside(level,origin,standard);
         place(level,template,origin,standard,chunks);var before=snapshot(level,resetBounds);
+        if(RuinFreezeSnapshot.enabled()){
+            var frozen=RuinFreezeSnapshot.capture(level,resetBounds);
+            RuinFreezeSnapshot.save(frozen,resetBounds,"creek-56-"+label);
+            RuinFreezeSnapshot.verifyPinned(frozen,resetBounds,("creek-56-"+label).replaceAll("[^a-zA-Z0-9_.-]","_"));
+        }
         if(fixture.equals("miniature")&&!processor)assertOutsideConnected(h,level,origin,standard);
         reset(level,resetBounds);seedAirWitnesses(level,airWitnesses);if(fixture.equals("miniature"))seedOutside(level,origin,optimized);
         place(level,template,origin,optimized,chunks);var after=snapshot(level,resetBounds);

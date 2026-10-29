@@ -57,7 +57,7 @@ public final class CreekSliceSettings extends StructurePlaceSettings {
         var selected=super.getRandomPalette(palettes,origin);var clip=getBoundingBox();
         // A processor can move blocks or inspect the complete input in finalizeProcessing.
         // Keep its original whole-palette semantics and positional random sequence.
-        if(origin==null||clip==null||getProcessors().stream().anyMatch(p->!(p instanceof CreekRimDecorationProcessor))||!isIgnoreEntities()
+        if(origin==null||clip==null||getProcessors().stream().anyMatch(p->!(p instanceof CreekRimDecorationProcessor)&&!(p instanceof ForestTerrainProcessor))||!isIgnoreEntities()
                 ||(clip.minX()>>4)!=(clip.maxX()>>4)||(clip.minZ()>>4)!=(clip.maxZ()>>4))return selected;
         var s=selection;
         if(s==null||s.source!=selected||!s.origin.equals(origin)||s.mirror!=getMirror()||s.rotation!=getRotation()

@@ -10,6 +10,15 @@ import net.minecraft.world.level.levelgen.RandomState;
 
 /** Same vanilla stopping predicate, retaining states above the first solid surface. */
 final class CreekSurfaceSample {
+    private record CellKey(NoiseBasedChunkGenerator generator,int minY,int maxY,int x,int z) {}
+    private static final int CAPACITY=4096;
+    // Same weak RandomState lifetime as RuinSitingSites. Values never retain the
+    // RandomState/level, and contain only immutable completed surface values.
+    private static final java.util.Map<RandomState,RuinDecisionCache<CellKey,java.util.List<Surface>>> WORLDS=
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static RuinDecisionCache<CellKey,java.util.List<Surface>> shared(RandomState random){
+        synchronized(WORLDS){return WORLDS.computeIfAbsent(random,key->new RuinDecisionCache<>(CAPACITY));}
+    }
     // The marker's enum is protected; its public unit codec returns the exact
     // vanilla singleton without substituting a custom density function.
     private static final net.minecraft.world.level.levelgen.DensityFunctions.BeardifierOrMarker MARKER=
@@ -22,21 +31,23 @@ final class CreekSurfaceSample {
         // not inferred from vanilla internals. Keep its original two calls.
         return generator.getClass()==NoiseBasedChunkGenerator.class;
     }
-    /** Invocation-local cache: no NoiseChunk survives a call, no shared mutable worldgen state. */
+    /** Local lookup backed by bounded single-flight results; never share a NoiseChunk. */
     static final class Cells {
         private final NoiseBasedChunkGenerator generator;
         private final LevelHeightAccessor level;
         private final RandomState random;
         private final int width;
-        private final java.util.Map<Long,Surface[]> cells=new java.util.HashMap<>();
+        private final java.util.Map<Long,java.util.List<Surface>> cells=new java.util.HashMap<>();
         Cells(ChunkGenerator generator,LevelHeightAccessor level,RandomState random){
             this.generator=(NoiseBasedChunkGenerator)generator;this.level=level;this.random=random;
             width=this.generator.generatorSettings().value().noiseSettings().getCellWidth();
         }
         Surface at(int x,int z){
             int cx=Math.floorDiv(x,width),cz=Math.floorDiv(z,width);
-            var values=cells.computeIfAbsent(((long)cx<<32)^(cz&0xffffffffL),key->cell(generator,level,random,cx*width,cz*width));
-            return values[Math.floorMod(z,width)*width+Math.floorMod(x,width)];
+            var values=cells.computeIfAbsent(((long)cx<<32)^(cz&0xffffffffL),key->shared(random).get(
+                    new CellKey(generator,level.getMinBuildHeight(),level.getMaxBuildHeight(),cx*width,cz*width),
+                    ()->java.util.List.copyOf(java.util.Arrays.asList(cell(generator,level,random,cx*width,cz*width)))));
+            return values.get(Math.floorMod(z,width)*width+Math.floorMod(x,width));
         }
         int count(){return cells.size();}
     }

@@ -23,6 +23,17 @@ final class WorldgenAudit {
     private WorldgenAudit() {}
 
     static void started(ServerStartedEvent event) {
+        if ("forest_system".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestSystemAudit.started(event); return; }
+        if ("creek_guard_evidence".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekGuardEvidence.started(event); return; }
+        if ("forest_natural".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestNaturalAudit.started(event); return; }
+        if ("forest_reservations".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestReservationAudit.started(event); return; }
+        if ("forest_external_truth".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestReservationAudit.truthStarted(event); return; }
+        if ("forest_external_cheap".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestReservationAudit.cheapStarted(event); return; }
+        if ("forest_feature_ghosts".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestFeatureSiteProbe.started(event); return; }
+        if ("forest_builder".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestBuilderAudit.started(event); return; }
+        if ("forest_policy_red".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestPolicyRedAudit.started(event); return; }
+        if ("forest_stage_one_b".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestR2Audit.started(event); return; }
+        if ("forest_stage_one".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestSitingAudit.started(event); return; }
         if ("creek_water_baseline".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekWaterBaselineAudit.started(event); return; }
         if ("creek_system_siting".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekSitingSystemAudit.started(event); return; }
         if ("creek_light_neighbours".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekLightNeighbourAudit.started(event); return; }

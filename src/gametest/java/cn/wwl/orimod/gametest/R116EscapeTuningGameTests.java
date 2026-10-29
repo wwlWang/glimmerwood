@@ -120,6 +120,7 @@ public final class R116EscapeTuningGameTests {
         return tests;
     }
     private static void awaitLight(GameTestHelper h,java.util.concurrent.CompletableFuture<?> ready) {
+        try(var timing=GameTestDiskBackpressure.measured(h.getLevel(),"escape-light-deadline")){
         long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(15);
         // The sorter may enqueue its last <1000-task batch after the first flush.
         // Keep scheduling that tail while servicing the server mailbox; never wait forever.
@@ -128,6 +129,7 @@ public final class R116EscapeTuningGameTests {
             return ready.isDone()||System.nanoTime()>=deadline;
         });
         h.assertTrue(ready.isDone(),"Fixture light queue did not drain within 15 seconds");ready.join();
+        }
     }
     private static void add(List<TestFunction> tests,String name,Consumer<GameTestHelper> run) {
         tests.add(new TestFunction("r116_escape_tuning","r116_escape_tuning."+name,"orimod_gametest:room",600,0,true,h->{run.accept(h);h.succeed();}));

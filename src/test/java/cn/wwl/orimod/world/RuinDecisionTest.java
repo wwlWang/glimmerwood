@@ -7,6 +7,20 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RuinDecisionTest {
+    @Test void provisionalForestXZDoesNotDependOnUnresolvedAnchor() {
+        for(var rotation:Rotation.values()) {
+            var zero=RuinPlacement.atMinimum(RuinKind.FOREST.layout(1),new BlockPos(-160,0,240),rotation);
+            for(int y:new int[]{54,62,136}) {
+                var actual=new RuinPlacement(zero.origin().atY(y),rotation);
+                var expected=RuinDecision.boxes(RuinKind.FOREST,1,zero);
+                var boxes=RuinDecision.boxes(RuinKind.FOREST,1,actual);
+                for(int i=0;i<boxes.size();i++) {
+                    var a=expected.get(i);var b=boxes.get(i);
+                    assertEquals(List.of(a.minX(),a.minZ(),a.maxX(),a.maxZ()),List.of(b.minX(),b.minZ(),b.maxX(),b.maxZ()));
+                }
+            }
+        }
+    }
     @Test void publishedDecisionDoesNotExposeMutableInputsOrBoxes(){
         var heights=new ArrayList<>(Collections.nCopies(45,70));var surfaces=new HashMap<BlockPos,Integer>();surfaces.put(BlockPos.ZERO,70);
         var site=new RuinDecision(RuinKind.CREEK,1,new RuinPlacement(BlockPos.ZERO,Rotation.NONE),heights,surfaces);

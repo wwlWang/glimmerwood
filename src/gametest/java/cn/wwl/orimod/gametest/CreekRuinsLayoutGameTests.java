@@ -68,10 +68,12 @@ public final class CreekRuinsLayoutGameTests {
                 for(int z=-20;z<87;z++)for(int x=-20;x<65;x++)natural[(z+20)*85+x+20]=CreekTerrainGameTests.natural(new BlockPos(x,0,z));
             }
             piece=new RuinPiece(h.getLevel().getStructureManager(),RuinKind.CREEK,p,1,samples,natural);
-            var b=piece.getBoundingBox();var l=h.getLevel();
+            var b=piece.getBoundingBox();var l=h.getLevel();int prepared=0;
+            GameTestDiskBackpressure.drain(l,"creek-prepare-begin");
             try{for(int x=(b.minX()>>4)-1;x<=(b.maxX()>>4)+1;x++)for(int z=(b.minZ()>>4)-1;z<=(b.maxZ()>>4)+1;z++){
                 var cp=new ChunkPos(x,z);if(!l.getForcedChunks().contains(cp.toLong())){l.setChunkForced(x,z,true);forced.add(cp);}l.getChunk(x,z);
-            }}catch(RuntimeException e){close();throw e;}
+                GameTestDiskBackpressure.preparedChunk(l,++prepared,"creek-prepare");
+            }GameTestDiskBackpressure.drain(l,"creek-prepare-ready");}catch(RuntimeException e){close();throw e;}
         }
         void place(){place(false);}
         void place(boolean deferredShapes){var l=h.getLevel();var b=piece.getBoundingBox();long total=0,max=0;
@@ -82,10 +84,11 @@ public final class CreekRuinsLayoutGameTests {
                 if(method.getName().equals("setBlock")&&args.length>=3)args[2]=(int)args[2]|Block.UPDATE_KNOWN_SHAPE;
                 try{return method.invoke(l,args);}catch(java.lang.reflect.InvocationTargetException e){throw e.getCause();}
             }):l;
+            try(var timing=GameTestDiskBackpressure.measured(l,"layout-slices")){
             for(int x=b.maxX()>>4;x>=b.minX()>>4;x--)for(int z=b.maxZ()>>4;z>=b.minZ()>>4;z--){long start=System.nanoTime();
                 piece.postProcess(accessor,l.structureManager(),l.getChunkSource().getGenerator(),RandomSource.create(116),new BoundingBox(x*16,l.getMinBuildHeight(),z*16,x*16+15,l.getMaxBuildHeight()-1,z*16+15),new ChunkPos(x,z),BlockPos.ZERO);
                 long took=System.nanoTime()-start;total+=took;max=Math.max(max,took);
-            }System.out.println("CREEK_V1_PERF rotation="+p.rotation()+" totalMs="+total/1e6+" maxSliceMs="+max/1e6);
+            }}System.out.println("CREEK_V1_PERF rotation="+p.rotation()+" totalMs="+total/1e6+" maxSliceMs="+max/1e6);
         }
         void publish(){
             var l=h.getLevel();var structure=l.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE).get(RuinKind.CREEK.location());

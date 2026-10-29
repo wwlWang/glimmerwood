@@ -36,6 +36,9 @@ final class Fixtures {
 
     /** Same embedded network transport as GameTestHelper, with a real survival player. */
     static ConnectedPlayer connectedPlayer(GameTestHelper helper) {
+        // Setup is outside the action under test. Do not carry another fixture's
+        // queued chunk NBT through a real player login's allocation burst.
+        GameTestDiskBackpressure.drain(helper.getLevel(), "player-fixture-begin");
         var profile = new GameProfile(UUID.randomUUID(), "ori" + UUID.randomUUID().toString().substring(0, 8));
         var player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(), profile, ClientInformation.createDefault());
         var connection = new Connection(PacketFlow.SERVERBOUND);
@@ -57,7 +60,10 @@ final class Fixtures {
     record ConnectedPlayer(ServerPlayer player, EmbeddedChannel channel) implements AutoCloseable {
         @Override public void close() {
             try { player.getServer().getPlayerList().remove(player); }
-            finally { channel.finishAndReleaseAll(); }
+            finally {
+                channel.finishAndReleaseAll();
+                GameTestDiskBackpressure.drain(player.serverLevel(), "player-fixture-close");
+            }
         }
     }
 }

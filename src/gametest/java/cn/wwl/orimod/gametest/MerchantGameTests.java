@@ -154,12 +154,15 @@ public final class MerchantGameTests {
         void balance(int amount){h.assertValueEqual(p.getData(SpiritData.PROGRESS).light(),amount,"Light balance");}
         void set(BlockPos pos,net.minecraft.world.level.block.state.BlockState state){blocks.putIfAbsent(pos,h.getLevel().getBlockState(pos));h.getLevel().setBlock(pos,state,18);}
         void pin(BlockPos center,int radius){
-            var level=h.getLevel();
+            var level=h.getLevel();int prepared=0;
+            GameTestDiskBackpressure.drain(level,"merchant-pin-begin");
             for(int x=(center.getX()-radius)>>4;x<=(center.getX()+radius)>>4;x++)
                 for(int z=(center.getZ()-radius)>>4;z<=(center.getZ()+radius)>>4;z++){
                     if(level.setChunkForced(x,z,true))pinned.add(new net.minecraft.world.level.ChunkPos(x,z));
                     level.getChunk(x,z);
+                    GameTestDiskBackpressure.preparedChunk(level,++prepared,"merchant-pin");
                 }
+            GameTestDiskBackpressure.drain(level,"merchant-pin-ready");
         }
         public void close(){
             if(closed)return;closed=true;

@@ -29,4 +29,19 @@ class RuinVegetationGuardTest {
                     assertTrue(new ChunkPos(new BlockPos(x, 0, z)).getChessboardDistance(0, 0) <= RuinVegetationGuard.START_RADIUS, kind + "/" + rotation);
         }
     }
+    @Test void lookupRadiusCoversNewForestRimAndNeighbouringCrownsInEveryRotation() {
+        // Natural starts use the chunk MIN corner, not an arbitrary block within
+        // the chunk. Include the saved rim and the separate approach, then the
+        // full crown exclusion margin; checking the bare template is insufficient.
+        for (var rotation : Rotation.values()) {
+            var placement=RuinPlacement.atMinimum(RuinKind.FOREST.layout(1),BlockPos.ZERO,rotation);
+            for (var box : RuinDecision.boxes(RuinKind.FOREST,1,placement)) {
+                int margin=RuinVegetationGuard.TREE_MARGIN;
+                for (int x : new int[]{box.minX()-margin,box.maxX()+margin})
+                    for (int z : new int[]{box.minZ()-margin,box.maxZ()+margin})
+                        assertTrue(new ChunkPos(new BlockPos(x,0,z)).getChessboardDistance(0,0)<=RuinVegetationGuard.START_RADIUS,
+                                rotation+" corner "+x+","+z);
+            }
+        }
+    }
 }

@@ -71,6 +71,35 @@ public final class CreekTerrainGameTests {
             return new Terrain(Map.copyOf(land),Map.copyOf(distances),Set.copyOf(rim),json.get("rear_from_z").getAsInt());
         }catch(Exception e){throw new IllegalStateException("Creek grading fixture contract",e);}
     }
+    /** Same independent exterior/adjacency scan for the new forest contract. */
+    private static Terrain forestTerrain(ServerLevel level){
+        int sx=39,sz=55;
+        var land=new HashMap<BlockPos,Integer>();
+        var template=level.getStructureManager().getOrCreate(RuinKind.FOREST.template(1));
+        for(var cell:template.filterBlocks(BlockPos.ZERO,new net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings(),Blocks.DIRT))
+            if(cell.pos().getY()==0)land.put(cell.pos(),5);
+            var exterior=new HashSet<BlockPos>();var todo=new ArrayDeque<BlockPos>();
+            var start=new BlockPos(-21,0,-21);exterior.add(start);todo.add(start);
+            while(!todo.isEmpty()){
+                var p=todo.remove();
+                for(var d:Direction.Plane.HORIZONTAL){var q=p.relative(d);
+                    if(q.getX() < -21||q.getX()>sx+20||q.getZ() < -21||q.getZ()>sz+20||land.containsKey(q)||!exterior.add(q))continue;
+                    todo.add(q);
+                }
+            }
+            var distances=new HashMap<BlockPos,Integer>();todo.addAll(land.keySet());land.keySet().forEach(p->distances.put(p,0));
+            while(!todo.isEmpty()){
+                var p=todo.remove();int n=distances.get(p)+1;if(n>21)continue;
+                for(var d:Direction.Plane.HORIZONTAL){var q=p.relative(d);if(distances.putIfAbsent(q,n)==null)todo.add(q);}
+            }
+            distances.keySet().removeIf(p->!exterior.contains(p));
+            var rim=new HashSet<BlockPos>();distances.forEach((p,d)->{if(d<=8)rim.add(p);});
+        return new Terrain(Map.copyOf(land),Map.copyOf(distances),Set.copyOf(rim),Integer.MAX_VALUE);
+    }
+    static Set<BlockPos> scanColumns(ServerLevel level,RuinPiece piece){
+        if(piece.kind()!=RuinKind.FOREST)return scanColumns();
+        var out=new HashSet<BlockPos>();forestTerrain(level).distance.forEach((p,d)->{if(d<=9)out.add(p);});return Set.copyOf(out);
+    }
     static int natural(BlockPos p){
         // A local back-left ravine needs retaining stone; the rest joins gently.
         if(p.getX()<=3&&p.getZ()>=48&&p.getZ()<=61)return 0;
@@ -121,7 +150,7 @@ public final class CreekTerrainGameTests {
             var ctor=type.getDeclaredConstructor(net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.class,BlockPos.class,
                     net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings.class,int[].class);ctor.setAccessible(true);
             var terrain=ctor.newInstance(t,BlockPos.ZERO,new net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings(),new int[0]);
-            var scan=type.getDeclaredMethod("surface",WorldGenLevel.class,BlockPos.class,int.class,boolean.class);scan.setAccessible(true);
+            var scan=CreekAuditPlan.method(type,"surface",WorldGenLevel.class,BlockPos.class,int.class,boolean.class);scan.setAccessible(true);
             var found=scan.invoke(terrain,l,p.atY(bottom+70),bottom,true);
             h.assertTrue(found!=null,"Old fixed-depth limit misses saved natural surface");
             var y=found.getClass().getDeclaredMethod("y");y.setAccessible(true);
@@ -204,7 +233,7 @@ public final class CreekTerrainGameTests {
             s.place(true);approach(s);
             h.assertTrue(l.getBlockState(bed).is(Blocks.BEDROCK),"Natural bedrock was cut");
             h.assertFalse(l.getBlockState(bed.above()).is(Blocks.MOSSY_COBBLESTONE_WALL),"Bedrock created a false guard");
-            h.assertFalse(s.piece.ownsCreekGuard(wall,l.getBlockState(wall)),"Foreign wall claimed by this piece");
+            h.assertFalse(CreekAuditPlan.ownsGuard(s.piece,wall,l.getBlockState(wall)),"Foreign wall claimed by this piece");
             before.forEach((p,state)->h.assertValueEqual(l.getBlockState(p),state,"Foreign moss-wall column filled/cut "+p));
             var restored=new RuinPiece(l.getStructureManager(),s.piece.createTag(StructurePieceSerializationContext.fromLevel(l)));
             h.assertFalse(restored.ownsCreekGuard(wall,l.getBlockState(wall)),"Reload claimed foreign wall");
@@ -242,7 +271,7 @@ public final class CreekTerrainGameTests {
     private static Map<BlockPos,Integer> tops(CreekRuinsLayoutGameTests.Site s){
         var out=new HashMap<BlockPos,Integer>();var l=s.h.getLevel();
         for(var p:Data.TERRAIN.distance.keySet())if(Data.TERRAIN.distance.get(p)<=9){
-            int y=23;for(;y>=-6;y--){var at=s.p.block(p.atY(y));if(!s.piece.ownsCreekGuard(at,l.getBlockState(at))&&CreekTerrainSurface.standingCandidate(l.getBlockState(at),l,at))break;}out.put(p,y);
+            int y=23;for(;y>=-6;y--){var at=s.p.block(p.atY(y));if(!CreekAuditPlan.ownsGuard(s.piece,at,l.getBlockState(at))&&CreekTerrainSurface.standingCandidate(l.getBlockState(at),l,at))break;}out.put(p,y);
         }
         return out;
     }
@@ -323,17 +352,22 @@ public final class CreekTerrainGameTests {
     /** Read the real generated ground, rather than judging the interpolated plan. */
     static Map<String,Object> naturalScan(ServerLevel level,RuinPiece piece){return naturalScan(level,piece,null);}
     static Map<String,Object> naturalScan(ServerLevel level,RuinPiece piece,CreekNaturalBaseline baseline){
-        var t=Data.TERRAIN;var placement=piece.placement();var tops=new HashMap<BlockPos,Integer>();var feet=new HashMap<BlockPos,Double>();
+        return naturalScan(level,piece,baseline,List.of());
+    }
+    static Map<String,Object> naturalScan(ServerLevel level,RuinPiece piece,CreekNaturalBaseline baseline,List<cn.wwl.orimod.world.RuinApproachPiece> approaches){
+        var t=piece.kind()==RuinKind.FOREST?forestTerrain(level):Data.TERRAIN;var placement=piece.placement();var tops=new HashMap<BlockPos,Integer>();var feet=new HashMap<BlockPos,Double>();
         for(var entry:t.distance.entrySet())if(entry.getValue()<=9){
             var p=entry.getKey();int y=40;
             for(;y>=-32;y--){var at=placement.block(p.atY(y));var state=level.getBlockState(at);
-                if(!piece.ownsCreekGuard(at,state)&&CreekTerrainSurface.standingCandidate(state,level,at))break;}
+                if(!(CreekAuditPlan.ownsGuard(piece,at,state)||approaches.stream().anyMatch(a->a.ownsGuard(at,state)))&&(CreekTerrainSurface.standingCandidate(state,level,at)||piece.kind()==RuinKind.FOREST&&thinSoft(level,at,state)))break;}
             tops.put(p,y);
             var at=placement.block(p.atY(y));double height=CreekTerrainSurface.standingTop(level.getBlockState(at),level,at);
             feet.put(p,Double.isFinite(height)?height-placement.origin().getY():-32.0);
         }
         var untouchedCaves=new HashSet<BlockPos>();var caveColumns=new ArrayList<Map<String,Object>>();
-        if(baseline!=null)for(var p:t.rim){var at=placement.block(p.atY(tops.get(p)));
+        // The measured edge includes its read-only ninth-column endpoint.
+        // Proof requirements are identical on both ends; absent evidence still fails.
+        if(baseline!=null)for(var p:tops.keySet()){var at=placement.block(p.atY(tops.get(p)));
             if(CreekForeignTerrainTrace.cave(level,piece,at)){untouchedCaves.add(p);
                 var proof=new LinkedHashMap<String,Object>(CreekForeignTerrainTrace.caveProof(at));
                 proof.put("local",List.of(p.getX(),tops.get(p),p.getZ()));caveColumns.add(proof);}}
@@ -349,15 +383,15 @@ public final class CreekTerrainGameTests {
             if(!protectedEdge)missingCaveGuards++;
         }
         int worst=0,step45=0,guards=0,boundary=0,rearGuards=0,rearBoundary=0,violations=0,uphill=0,treeBarriers=0,caves=0,buildings=0;
-        var saved=piece.createTag(StructurePieceSerializationContext.fromLevel(level)).getIntArray("CreekNaturalTerrain");
-        var examples=new ArrayList<String>();var underwater=new ArrayList<Map<String,Object>>();var foreign=new ArrayList<Map<String,Object>>();var caveInternal=new ArrayList<Map<String,Object>>();var exceptions=new ArrayList<Map<String,Object>>();int rawWorst=0,rawViolations=0;
+        var saved=piece.createTag(StructurePieceSerializationContext.fromLevel(level)).getIntArray(piece.kind()==RuinKind.FOREST?"ForestNaturalTerrain":"CreekNaturalTerrain");
+        var detailedEdges=new ArrayList<Map<String,Object>>();var examples=new ArrayList<String>();var underwater=new ArrayList<Map<String,Object>>();var untouchedSubmerged=new ArrayList<Map<String,Object>>();var wetEdges=new LinkedHashMap<String,Map<String,Object>>();var foreign=new ArrayList<Map<String,Object>>();var caveInternal=new ArrayList<Map<String,Object>>();var exceptions=new ArrayList<Map<String,Object>>();int rawWorst=0,rawViolations=0;
         for(var p:t.rim){
             int y=tops.get(p);var lip=placement.block(p.atY(y+1));
             // The saved approach is authored masonry, not an untouched foreign
             // building. It is owned by its separate piece and is not a grading exception.
-            boolean approach=p.getZ()>=-9&&p.getZ()<0&&Math.abs(p.getX()-22)<=2;
-            if(!approach&&saved.length==85*107&&y<saved[(p.getZ()+20)*85+p.getX()+20]-6){caves++;exceptions.add(Map.of("kind","cave_or_submerged","local",List.of(p.getX(),y,p.getZ())));}
-            if(!approach&&!CreekTerrainSurface.natural(level.getBlockState(lip.below()))&&!piece.ownsCreekSupport(lip.below(),level.getBlockState(lip.below()))){buildings++;exceptions.add(Map.of("kind","building","local",List.of(p.getX(),y,p.getZ()),"block",level.getBlockState(lip.below()).toString()));}
+            boolean approach=p.getZ()>=-9&&p.getZ()<0&&Math.abs(p.getX()-(piece.kind()==RuinKind.FOREST?19:22))<=2;
+            if(!approach&&saved.length==(piece.layout().size().getX()+40)*(piece.layout().size().getZ()+40)&&y<saved[(p.getZ()+20)*(piece.layout().size().getX()+40)+p.getX()+20]-6){caves++;exceptions.add(Map.of("kind","cave_or_submerged","local",List.of(p.getX(),y,p.getZ())));}
+            if(!approach&&!CreekTerrainSurface.natural(level.getBlockState(lip.below()))&&!CreekAuditPlan.ownsSupport(piece,lip.below(),level.getBlockState(lip.below()))){buildings++;exceptions.add(Map.of("kind","building","local",List.of(p.getX(),y,p.getZ()),"block",level.getBlockState(lip.below()).toString()));}
             boolean guard=level.getBlockState(lip).is(Blocks.MOSSY_COBBLESTONE_WALL);
             boolean trunk=level.getBlockState(lip).isFaceSturdy(level,lip,Direction.UP)
                     &&(level.getBlockState(lip.above()).isFaceSturdy(level,lip.above(),Direction.UP)||level.getBlockState(lip.above()).is(Blocks.MOSSY_COBBLESTONE_WALL));
@@ -377,10 +411,17 @@ public final class CreekTerrainGameTests {
                 if(t.distance.get(p)==4&&t.distance.getOrDefault(q,0)==5)step45=Math.max(step45,Math.max(drop,rise));
                 if(outside&&rise>2)uphill++;
                 if(drop>2&&(guard||trunk||crossingBlocked(level,placement,q,here)))continue;
+                if(drop>2){
+                    var pa=placement.block(p.atY(y+1));var qa=placement.block(q.atY(other+1));
+                    boolean pw=level.getFluidState(pa).is(net.minecraft.tags.FluidTags.WATER),qw=level.getFluidState(qa).is(net.minecraft.tags.FluidTags.WATER);
+                    if(pw||qw)wetEdges.put(p+"->"+q,Map.of("from",List.of(p.getX(),y,p.getZ()),"to",List.of(q.getX(),other,q.getZ()),"fromWet",pw,"toWet",qw,"drop",drop/2.0));
+                }
                 rawWorst=Math.max(rawWorst,drop);if(drop>2)rawViolations++;
                 if(drop>2&&baseline!=null&&baseline.unchangedSubmergedStep(level,p,y,q,other)){
                     underwater.add(baseline.exception(p,q));continue;
                 }
+                if(drop>2&&baseline!=null){var proof=baseline.untouchedSubmergedStep(level,p,y,q,other);
+                    if(proof!=null){untouchedSubmerged.add(proof);continue;}}
                 if(drop>2&&baseline!=null&&!t.land.containsKey(p)&&!t.land.containsKey(q)&&!approach
                         &&CreekForeignTerrainTrace.unchanged(level,piece,placement.block(p.atY(y)),placement.block(q.atY(other)))){
                     foreign.add(CreekForeignTerrainTrace.proof(placement.block(p.atY(y)),placement.block(q.atY(other))));continue;
@@ -389,14 +430,19 @@ public final class CreekTerrainGameTests {
                     caveInternal.add(Map.of("from",List.of(p.getX(),y,p.getZ()),"to",List.of(q.getX(),other,q.getZ()),"fromFeet",here,"toFeet",there));continue;
                 }
                 worst=Math.max(worst,drop);
-                if(drop>2){violations++;if(examples.size()<24)examples.add(p.atY(y)+" -> "+q.atY(other)+" feet="+here+"->"+there+" / "+level.getBlockState(lip.below())+" / "+level.getBlockState(placement.block(q.atY(other))));}
+                if(drop>2){violations++;if(ForestLavaEvidence.ENABLED&&baseline!=null)detailedEdges.add(Map.of("from",baseline.auditColumn(level,p,y),"to",baseline.auditColumn(level,q,other),"drop",drop/2.0));if(examples.size()<24)examples.add(p.atY(y)+" -> "+q.atY(other)+" feet="+here+"->"+there+" / "+level.getBlockState(lip.below())+" / "+level.getBlockState(placement.block(q.atY(other))));}
             }
         }
         var out=new LinkedHashMap<String,Object>();out.put("columns",t.rim.size());
         out.put("caveInternalExceptions",caveInternal);out.put("caveProofColumns",caveColumns);out.put("caveBoundary",caveBoundary);out.put("missingCaveGuards",missingCaveGuards);
         if(missingCaveGuards>0)violations+=missingCaveGuards;out.put("worstUnprotectedStep",worst/2.0);out.put("fourthToFifth",step45/2.0);
-        out.put("rawUnprotectedSteps",rawViolations);out.put("rawWorstStep",rawWorst/2.0);out.put("underwaterNaturalExceptions",underwater);out.put("foreignStructureInternalExceptions",foreign);out.put("exceptionColumns",exceptions);
-        out.put("violations",violations);out.put("examples",examples);out.put("guards",guards);out.put("boundary",boundary);out.put("rearGuards",rearGuards);out.put("rearBoundary",rearBoundary);out.put("outwardSteepUphill",uphill);out.put("treeBarriers",treeBarriers);out.put("caveExceptions",caves);out.put("buildingColumns",buildings);return out;
+        out.put("rawUnprotectedSteps",rawViolations);out.put("rawWorstStep",rawWorst/2.0);out.put("underwaterNaturalExceptions",underwater);out.put("naturalSubmergedUntouchedSteps",untouchedSubmerged);out.put("unprotectedWaterAdjacentDrops",List.copyOf(wetEdges.values()));out.put("unprotectedWaterAdjacentDropsCount",wetEdges.size());out.put("foreignStructureInternalExceptions",foreign);out.put("exceptionColumns",exceptions);
+        out.put("violations",violations);out.put("examples",examples);if(ForestLavaEvidence.ENABLED)out.put("detailedEdges",detailedEdges);out.put("guards",guards);out.put("boundary",boundary);out.put("rearGuards",rearGuards);out.put("rearBoundary",rearBoundary);out.put("outwardSteepUphill",uphill);out.put("treeBarriers",treeBarriers);out.put("caveExceptions",caves);out.put("buildingColumns",buildings);return out;
+    }
+    private static boolean thinSoft(ServerLevel level,BlockPos at,BlockState state){
+        var shape=state.getCollisionShape(level,at);
+        return CreekTerrainSurface.category(state,level,at)==CreekTerrainSurface.Category.IGNORE_SOFT
+                &&!shape.isEmpty()&&shape.max(Direction.Axis.Y)<1;
     }
     private static boolean crossingBlocked(ServerLevel level,RuinPlacement placement,BlockPos neighbour,double feet){
         // A preserved foreign roof can be higher than our safe ground. Its guard
