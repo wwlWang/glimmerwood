@@ -245,3 +245,13 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 溺水：精灵形态在 17 格深的水底静止 400 tick，`air` 一直 300、不掉血——`WaterMovement` 把精灵形态的空气补满，**精灵不会溺水**（设计，对标 WotW）**[信息]**。按住跳 + 冲刺：约 40 tick 上浮 16 格出水 **[通过]**。
 - 岩浆（3 格深池，池边与岩浆面齐平）：精灵形态按住跳+前进+每 12 tick 冲刺，和人形一样只浮起约 1.5 格、约 50 tick 死亡；**冲刺在岩浆里没有任何位移**（`lastAction=dash` 但坐标不变）**[信息]**，精灵不比人形更难，也不更容易逃出。
 - 日志：全程无模组异常。
+- 补：鞘翅（精灵形态=羽毛）滑翔中右键烟花：烟花不消耗、没有加速（`fallFlying=false`，羽毛滑翔不是原版鞘翅飞行；`FeatherGlide` 注释写明火箭只给人形）**[信息/设计]**。
+
+## P3-9 世界交互（平台 `(100,200,100)`）
+- 爆炸：用物品放的钥石门（3×3）和林间泉井（`glades_well` + 26 个 `sanctuary_part`），各在旁边引爆 1 个 TNT，再在两者中间炸 1 只**闪电苦力怕**：门 9/9、泉井 27/27 **全部完好**，脚下石头被炸出坑，多方块悬在坑上 `p3-p9-after-tnt` **[通过]**（门/祭坛/钥石台是 `strength(-1, 3600000)`）。
+- 活塞推（红石块直接供能）：钥石门不动；`cracked_ruin_wall`、`keystone_pedestal`、`map_stone` 推不动；**`bash_anchor`、`spirit_platform`、`great_spirit_root`、`updraft`、`energy_cell_pedestal` 都能被推走** **[复现，minor/设计]**。生存下用钻石镐也能挖掉 `bash_anchor`、`spirit_platform`（掉落自身物品）；`keystone_door`/`sanctuary_part`/`keystone_pedestal`/`map_stone`/`energy_cell_pedestal` 160 tick 挖不动。→ 遗迹里的 Bash 锚、上升气流、根块能被生存玩家挖走或推走（比如 creek 的锚 `(-139,119,140)`），挑战会因此打不通，只能靠玩家自己放回去（锚掉落物品，可重放，但位置要对）。
+- 发射器：灵矛 → 当普通物品吐出（不发射）；`gloom_beetle` 刷怪蛋 → 正常刷出（和原版僵尸蛋一样刷在发射器前方略低处）；`practice_target` 刷怪蛋 → 发射器不吐出，留在格子里 **[通过/信息]**；生命格/钥石/精灵核心 → 当物品吐出。
+- `/reload`：「重新加载中！」，无异常日志，重载后觉醒/形态保持 **[通过]**。
+- 错误参数（21 条，例：`ori light -5 / 2147483647 / 99999999999`、`ori cells life -1`、`cells energy 11`、`cells bogus 3`、`form maybe`、`unlock bogus`、`status @e`、`awaken @e[type=zombie]`、`blight bogus`、缺参的 `ori / spawn / locate / unlock / great_tree / blight`）全部给出原版式报错、不崩 **[通过]**。注意 `/orimod reset @a` 没有确认就清空进度（调试命令，信息）。Tab 补全：devtools 没有聊天框补全接口 **[未测]**。
+- 远距离：creek 挑战进行中 `/tp` 到 `(2200,150,2200)` → 会话立即取消、人被送回安全点 `(-134.5,116,140.5)`（近距离 `/tp` 留在路线内则不取消，见 P3-7a）**[通过]**。前哨商人：离开约 3000 格（区块卸载）后回来，两位商人位置与职业不变、可正常打开 **[通过]**。
+- 日志：本段无模组异常。
