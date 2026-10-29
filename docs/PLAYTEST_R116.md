@@ -255,3 +255,14 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 错误参数（21 条，例：`ori light -5 / 2147483647 / 99999999999`、`ori cells life -1`、`cells energy 11`、`cells bogus 3`、`form maybe`、`unlock bogus`、`status @e`、`awaken @e[type=zombie]`、`blight bogus`、缺参的 `ori / spawn / locate / unlock / great_tree / blight`）全部给出原版式报错、不崩 **[通过]**。注意 `/orimod reset @a` 没有确认就清空进度（调试命令，信息）。Tab 补全：devtools 没有聊天框补全接口 **[未测]**。
 - 远距离：creek 挑战进行中 `/tp` 到 `(2200,150,2200)` → 会话立即取消、人被送回安全点 `(-134.5,116,140.5)`（近距离 `/tp` 留在路线内则不取消，见 P3-7a）**[通过]**。前哨商人：离开约 3000 格（区块卸载）后回来，两位商人位置与职业不变、可正常打开 **[通过]**。
 - 日志：本段无模组异常。
+
+## P3-10 渲染 / 设置（平台 `(0,200,0)`）
+- 午夜 + 雷暴，第三人称正面：Spirit Glow 开（自动切到 Iris「Spirit Glow.zip」，柔光 bloom）/ 关（原版渲染，白芯+轮廓光）都正常，切换无黑屏 `p3-p10-night-sheet` **[通过]**。平台在 y200（寒冷高空），看不到雨。
+- Iris 光影开/关（`shaders` true/false）：`Spirit Glow.zip` ↔ `(off)` 切换正常。每次加载光影包，日志里有自家光影包的编译警告：`CompatibilityTransformer: The in declaration 'ViewPos' / 'material' / 'LightmapCoords' in the deferred1 / clouds / clouds_sodium FRAGMENT shader is missing a corresponding out`，以及 Sodium 地形/半透明 shader `'ViewPos' used uninitialized` **[复现，minor（自家光影包警告，画面上没看到问题）]**。Sodium 开/关：Sodium 是开发运行时依赖，没法在运行中卸载 **[未测]**。
+- 渲染距离 2 / 32：fps 59 / 18（llvmpipe），无异常 **[通过]**。GUI 缩放 1 / 6 / 自动：HUD 正常缩放。
+- 窗口 640×480 / 2560×1440 / 1920×1080 来回改：无异常。**[复现，cosmetic] 640×480（自动 GUI 缩放）时左下的技能徽标「H」压在快捷栏第 1 格和经验条上** `p3-p10-size640-hud`。
+- F1（隐藏 HUD 和手，原版）、F3 调试屏、F5 三种视角循环：正常 **[通过]**。F3+T 等效的 `reload_resources`：重载完成（`resourceReloads=1`），精灵模型/手臂/武器照常 **[通过]**。
+- 日志：除上面的光影包警告和 `Can't keep up`，无模组异常；crash-reports 无新文件。
+
+## P3-11 双客户端局域网
+- **[未测，工具限制]** devtools 一次只驱动一个客户端（`run-devtools` 单实例、单连接文件），box 上没有第二个客户端的 run 目录与输入通道；没做局域网双客户端同步。
