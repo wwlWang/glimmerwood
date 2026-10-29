@@ -120,3 +120,23 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - `ginso_state`：origin `-632,71,-1160` height 109，shapeVersion 3 / courseVersion 2 / escapeVersion 1，逃生路线 66 个洪水 box、`interactive:true`、`referenceSeconds` ≈36.5 s **[已读数据，未实跑]**。
 - 内部分区 bash(20–38)→grapple(38–56)→wind/glide(56–78) 对应能力链 DASH→BASH→GLIDE→GRAPPLE，grapple 区之前玩家必已拥有 glide（前置），无顺序卡死 **[代码确认]**。
 - **[未测]** Ginso 整条课程的真实手玩、水心逃生/涨水。
+
+---
+
+# Pass 3: exploratory/chaos（第三轮，2026-10-29，基线 `cd1670b`，世界 `orimod_dev_pt116p3` seed 116333）
+
+自上轮（`d19bc5f`）起 origin 新增 4 个提交：`6f05c02` creek_ruins 重建（v1 溪谷）、`4c11df2` 钥石绑定/祭坛门控/生命格/练习靶蛋修复、`ab655da` 逃生宽限期 + 固定钥石台、`cd1670b` 重生后跳跃卡住修复。本轮用 `./gradlew --no-daemon runDevtoolsClient`（Xvfb :99，llvmpipe）。证据：`/workspace/oriMod/shots/playtest-r116-p3-*`，运动记录 `run-devtools/devtools/pt116p3-*.json`。
+**不改代码**，只记录。**[复现]** / **[怀疑]** / **[已修复]** 标注。
+
+## P3-0 旧问题复验
+- `/ori giveall`：空包一次 36 件进背包、地面 0 件掉落；第二次 giveall 不再溢出 **[已修复]**。
+- 命令反馈文字：现在是 `/ori awaken：已应用到 1 名玩家`、`/ori form on：…`、`/ori unlock all：…` **[已修复]**。
+- 其余（钥石卡死 / 10 生命格重进 HP / practice_target 蛋 / ginso 图标）见下方各区域。
+
+## P3-1 输入乱按 / 表面 / 效果（自动化客户端，生存，精灵形态，`/ori unlock all`）
+- 随机乱按（跳/冲刺/猛击/潜行/疾跑/方向/技能1-3/切形态，每 2 tick 一次，共 3000 tick、6 段）：无异常、无 NaN、`predictionRejections=0`、`unconfirmed/pending=0`，`predictionMismatches` 只个位数 **[通过]**。
+- **[工具限制，非 bug]** devtools `input_script` 超过约 300 步会 `REQUEST_TOO_LARGE`，静默无效；`save_motion` 文件名含 `.` 会 `Invalid evidence filename`。
+- 表面（冲刺+二段+冲刺键+滑翔键）：灵魂沙/冰/蓝冰/粘液/蜂蜜/岩浆/蛛网/细雪/甜浆果丛/仙人掌/脚手架全部无卡死、无异常；岩浆块/甜浆果/仙人掌正常掉血；蛛网里冲刺仍触发 **[通过]**。
+- 梯子/藤蔓：前进即爬（约 20 tick 后），连续按跳可爬，爬行中切形态不丢状态 **[通过]**。
+- 载具（船/矿车/猪/马/炽足兽）：骑乘中 `form` 键被忽略（`toggle_form` 不生效，无任何提示），能力键不触发、无异常，下车后恢复 **[信息]**。
+- 药水/属性：`jump_boost 6` 跳高 6.8 格（受影响）；`jump_strength=0` 跳高 0；**速度/缓慢/`movement_speed` 属性对精灵形态走路速度完全无效**（走和疾跑都 0.31 格/tick；人形 slowness 3 → 0.08、speed 6 → 0.45）**[复现，minor/设计问题]**：意味着逃生前沿的「缓慢 II」对精灵形态没有减速效果，也无法被药水/属性调节（见 P3-D）。缩放 4 倍、`step_height`、`gravity`、`safe_fall_distance` 未见异常；gravity 0.01/0.5 与 scale 0.1 的跳跃数据因文件名错误未保存，补测见下。
