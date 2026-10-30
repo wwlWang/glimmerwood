@@ -63,3 +63,42 @@
 ### D2 [低][代码] 平坦、超平坦和不生成结构的世界
 - `GreatTreeSites.started` 在 `FlatLevelSource` 或 `generateStructures=false` 时直接 return，不会选址，不会报错。超平坦里 orimod 结构本来就不会生成（结构集受预设限制）。
 - 生物群系 tag 只列主世界生物群系，所以下界和末地不会生成。其他模组的自定义维度如果用了 `#minecraft:is_forest` 这类生物群系，结构也会生成进去。`GreatTreeSites.load` 只在 `Level.OVERWORLD` 发布选址，自定义维度里 `reserved()` 恒为 false，那里的灵树和遗迹不会给大灵树让位。危害很低。
+
+## E. 网络与安全（所有 C2S payload 逐个看过）
+
+总体：服务端校验做得扎实，没有找到能刷资源、越权解锁或者让服务器崩溃的点。单人用的话这一块基本可以放心。
+- `MovementInputPayload` → `SpiritMovement.accept`（`:38-51`）：会拒掉 NaN 和 Inf，摇杆值 clamp 到 [-1,1]，pitch 限制在 ±90，yaw 会 wrap，sequence 必须单调递增，客户端带来的 gameTick 最多补偿 2 tick。能力、次数、冷却都由服务端判断。**[代码]**
+- `ProgressActionPayload` → `SpiritProgression.request`（`:43-137`）：字符串长度在解码时就限制了（24/32）。价格、前置条件、已拥有状态、槽位上限（`slot >= slots(player)`）都是服务端判断。光点数 clamp 在 0 到 1,000,000（`SpiritProgress:32`），负数和溢出都进不来。`shard_slot` 的格式解析也有防护。**[代码]**
+- `MerchantBuyPayload`：构造时校验商品 ID 和 entityId。服务端用 `MerchantRules.refusal` 校验距离、报价日期和 token。**[代码]**
+- `WellSelectPayload` → `SpiritWell.travel`：要求在出发灵泉旁边（`USE_RANGE`）、区块已加载、方块类型正确、两端都已发现、不在挑战或复苏中，还有 40 tick 冷却。**[代码]**
+- `SkillBindPayload`：解码时限制 `slot < 3`，未知技能直接 DecoderException 断开。`bind()` 只接受已学会的技能。**[代码]**
+- `AnimationActionPayload`（双向）：只做外观，同一 tick 只接受一次，只转发给追踪该玩家的人。**[代码]**
+- `ChallengeActionPayload`：要求距离 ≤ 6、区块已加载、方块类型正确、满足能力条件、路线完整。**[代码]**
+
+### E1 [低][代码] 切换形态（ToggleSpiritPayload）没有频率限制
+- `SpiritForm.toggle`（`spirit/SpiritForm.java:15-36`）每次切换都会 `refreshDimensions`、发 FX（`SpiritFxLifecycle.formChanged`）、发 actionbar 消息。客户端按键本身有节流，但用改过的客户端每 tick 发一个包，就会每 tick 向周围玩家广播一次形态特效。单人无所谓，多人的话算一个小 DoS 和闪屏点。
+### E2 [低][代码] `restoration_skip`、`exit_challenge`、`regenerate_stop` 在任何状态下都接受
+- 这是设计，只能结束自己的会话，不能越权。记一下。
+### E3 [信息] 灵泉传送（`well_travel`）不检查金索逃脱是否在进行
+- `SpiritWell.canTravel`（`world/SpiritWell.java:68-75`）检查了挑战和复苏，但没检查 `GinsoEscape` 会话。逃脱中如果能走到灵泉旁边，就能传走。离开以后逃脱会被判失败并清理（P4 测过「走出去」的情况），不会卡死，只是缺一条更明确的拒绝提示。[怀疑：树里是否真有可用的灵泉没核实]
+
+## F. 存档与持久化
+
+- `SpiritProgress.CODEC`（`progression/SpiritProgress.java:13-23`）：每个字段都是 `optionalFieldOf` 带默认值，缺字段的旧存档能加载。紧凑构造器会把各个字段 clamp 或掩码（Shard.MASK、WeaponGift.MASK、capacity 0..3、wisps&7），`ShardSlots.normalize` 会修复重复或非法的槽位。**[代码，通过]**
+- copyOnDeath 规则（`spirit/SpiritData.java`）：觉醒、形态、能力、技能绑定、进度和灵魂链接死亡后保留。能量（ENERGY）死亡后回满，这是设计。挑战和金索的恢复点（`CHALLENGE_RECOVERY`/`GINSO_ESCAPE_RECOVERY`）死亡后不保留，因为死亡本身就会结束会话，所以没问题。非死亡的 clone（末地回归）会复制所有可序列化附件，这是 NeoForge 的默认行为。
+- 不序列化的附件（MOVEMENT、COMBAT、ENERGY_STATE、FEATHER_STATE、SKILL_READY 等）在重登、死亡和末地回归时都会重置，也就是 A3。服务端的 `MovementState.sequence` 重置成 0，但客户端的 `inputSequence` 是静态并且一直递增，所以不会出现「重登后输入全被当成旧包丢掉」的情况。**[代码，通过]**
+- 静态 Map 泄漏：服务端的 `SESSIONS`、`SEARCHES`、`COOLDOWNS`、`FROZEN`、`ACTIVE` 都会在 logout、`ServerStopping` 或 `ServerStopped`（`OriServerLifecycle`）里清理。`AnimationActionPayload.LAST` 是 WeakHashMap。世界生成缓存的 key 用 RandomState 弱引用，或者挂在 registry 的结构实例上，会随存档释放。客户端缓存在 logout 或换 level 时会 clear。**没发现**跨存档或跨玩家的泄漏，唯一的例外是 A1 和 A2 这两个静态计时字段。
+
+## G. 数据与资源
+
+- `en_us`/`zh_cn` 都是 574 个 key，一一对应，没有缺失，占位符 `%s` 的数量也一致。代码里写死的 key 全部存在。动态拼接的 key（`challenge.orimod.ended.*`、`message.orimod.ginso.reason.*`、`*.energy/locked/not_spirit` 等）抽查过，后缀都齐全。**[确认，脚本]**
+- 模型、方块状态和贴图的引用全部存在，所有 JSON 都能解析。没有 loot table 的 18 个方块都是 `noLootTable()` 加不可破坏或者有意不掉落。服务端加载时 0 条数据错误（见 C1）。**[确认]**
+### G1 [低][确认] 中文术语混用
+- Spirit Light：大多数地方叫「灵光」（15 处），但 `screen.orimod.shard_buy`「购买%s · %s 光点」、`screen.orimod.shard_capacity`「提升能量上限 · %s 光点」叫「光点」。也就是 P4 在碎片界面看到的混用，根源就是这两个 key。`challenge.orimod.started` 和 `route.forest_spring` 里的「光点」指路线上的亮点，含义不同，但更容易让人混淆。
+- Energy：HUD 和界面用「能量」（约 30 处），技能说明和提示用「灵能」（`message.orimod.hammer_energy`、`charge_flame.energy`、`spear.energy`、`tooltip.orimod.energy_cell`、`shard.orimod.energy_harvest` 等 9 处）。
+- Gloom：生物和水都叫「腐光」，但 `block.orimod.gloom_core`（英文 Gloom Core）叫「腐化之核」，和 `blighted_soil`「腐化之土」归成了同一个词。
+### G2 [低][确认] 有两条文本把按键写死了，改键后会对不上
+- `ability.orimod.charge_flame.description`「按住 X 聚集灵焰」、`hint.orimod.bash_anchor`「对准灵灯按R」。其他文本用的都是 `%s` 加 `Component.keybind`。这是 P4「技能键名对不上」的一部分来源。
+### G3 [低][代码] 默认按键和原版冲突
+- `SpiritControls.java:25,31`：Dash = C，Charge Flame = X，和原版「保存/加载快捷栏」（C/X，创造模式下按 C/X + 数字）冲突，控制设置里会标红。
+- Bash = R 和 Iris 重载冲突的修复（`SpiritKeyDefaults.java:36-53`）只在 `KEY_DEFAULTS_APPLIED=false` 时跑一次，跑完就把标志位设成 true。所以第一次启动后才装 Iris、F8 到 F10 都被占用（这种情况会静默放弃）、或者用户在 Controls 里点了「重置按键」，冲突都会回来，而且不会再修。这很可能就是 P3 #1「之后冲突又回来」的原因。[代码，原因有多个候选，没逐个复现]
