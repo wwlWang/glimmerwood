@@ -107,6 +107,9 @@ public final class OriModClient {
                     (stack, level, entity, seed) -> entity != null && entity.getUseItem() == stack ? entity.getTicksUsingItem() / 20f : 0);
             net.minecraft.client.renderer.item.ItemProperties.register(bow, net.minecraft.resources.ResourceLocation.withDefaultNamespace("pulling"),
                     (stack, level, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1 : 0);
+            net.minecraft.client.renderer.item.ItemProperties.register(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR.get(),
+                    net.minecraft.resources.ResourceLocation.withDefaultNamespace("throwing"),
+                    (stack, level, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1 : 0);
         });
         OriMod.LOGGER.info("OriMod client setup ready");
     }

@@ -27,80 +27,17 @@ public final class SpiritHands {
                 && (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
     }
 
-    /** Move item and palm together, in view space, preserving the handle contact under equip/use rotations. */
+    /** Keep ItemInHandRenderer's matrix unchanged. Only the replacement paw is attached below. */
     public static void beginHeld(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack pose, boolean left) {
         pose.pushPose();
-        boolean measure = DIAGNOSTICS.enabled();
-        prepared[left?1:0]=null;bladeMeasurements[left?1:0]=null;
-        secondary[left?1:0]=null;
-        weaponMeasurements[left?1:0]=null;
-        if(measure)measurements.set(left?1:0,java.util.Map.of());
-        if (!pilot(item,entity,left)) {
-            var offset=SpiritHandSpace.offset(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix(),
-                    new Vector3f(left?.10f:-.10f,.22f,-.20f));
-            pose.last().pose().translateLocal(offset.x,offset.y,offset.z);return;
-        }
-        if(item.is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE)) {
-            var offset=SpiritHandSpace.offset(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix(),new Vector3f(0,.055f,-.025f));
-            pose.last().pose().translateLocal(offset.x,offset.y,offset.z);
-        }
-        if(item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)||item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR)) {
-            boolean hammer=item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER);
-            var offset=SpiritHandSpace.offset(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix(),new Vector3f((left?-1:1)*(hammer?.05f:.22f),hammer?.16f:0,hammer?-.14f:-.10f));
-            pose.last().pose().translateLocal(offset.x,offset.y,offset.z);
-        }
-        var model=Minecraft.getInstance().getItemRenderer().getModel(item,entity.level(),entity,entity.getId()+context.ordinal());
-        var itemPose=new PoseStack();model.applyTransform(context,itemPose,left);
-        var point=SpiritFirstPersonGrip.contact(item).primary();
+        SpiritFirstPerson.slam(entity, item, context, pose);
+    }
 
-        itemPose.last().pose().transformPosition(point);
-        var view=new org.joml.Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix());
-        var input=new org.joml.Matrix4f(view).mul(pose.last().pose());
-        if(item.getItem() instanceof net.minecraft.world.item.BlockItem) {
-            var complete=new org.joml.Matrix4f(input).mul(itemPose.last().pose());
-            point=SpiritFirstPersonGrip.blockSupport(complete,left);
-            itemPose.last().pose().transformPosition(point);
-        }
-        var oldPoint=input.transformPosition(new Vector3f(point));
-        org.joml.Matrix4f corrected;
-        if (item.getItem() instanceof net.minecraft.world.item.BlockItem) {
-            var rotation=SpiritArmRig.basis(new Vector3f(left?.32f:-.32f,.40f,-.86f).normalize());
-            var frame=SpiritArmRig.surface(left,oldPoint,rotation);prepared[left?1:0]=frame;
-            corrected=new org.joml.Matrix4f(view).invert().translate(new Vector3f(frame.palm()).sub(oldPoint)).mul(input);
-            if (measure) gripErrors[left?1:0]=new org.joml.Matrix4f(view).mul(corrected).transformPosition(new Vector3f(point)).distance(frame.palm());
-            bladeMeasurements[left?1:0]=null;
-        } else if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE)) {
-            var fit=SpiritBladeFraming.fit(left,input,itemPose.last().pose(),measure);
-            prepared[left?1:0]=fit.arm();
-            corrected=new org.joml.Matrix4f(view).invert().mul(fit.item());
-            if (measure) {
-                gripErrors[left?1:0]=fit.gripError();
-                float aspect=(float)Minecraft.getInstance().getWindow().getWidth()/Minecraft.getInstance().getWindow().getHeight();
-                bladeMeasurements[left?1:0]=SpiritBladeFraming.project(new org.joml.Matrix4f(fit.item()).mul(itemPose.last().pose()),aspect);
-            }
-        } else {
-            var kind=SpiritFirstPersonGrip.contact(item).kind();
-            var bow=SpiritFirstPerson.bowShown();
-            var fit=kind==SpiritFirstPersonGrip.Kind.BOW
-                    ?SpiritWeaponRig.bow(left,bow.raise(),bow.pull(),bow.kick(),SpiritFirstPerson.equipShown(),measure)
-                    :SpiritWeaponRig.tool(kind,left,input,itemPose.last().pose(),measure);
-            prepared[left?1:0]=fit.main();
-            if(measure)measurements.set(left?0:1,java.util.Map.of());
-            if(kind==SpiritFirstPersonGrip.Kind.BOW&&bow.raise()>.05f && entity.isUsingItem()
-                    && entity.getUsedItemHand()==net.minecraft.world.InteractionHand.MAIN_HAND)secondary[left?1:0]=fit.string();
-            corrected=new org.joml.Matrix4f(view).invert().mul(fit.item()).mul(new org.joml.Matrix4f(itemPose.last().pose()).invert());
-            if(measure) {
-                gripErrors[left?1:0]=fit.mainError();
-                if(fit.string()!=null) {
-                    gripErrors[left?0:1]=fit.stringError();
-                    bladeMeasurements[left?0:1]=null;weaponMeasurements[left?0:1]=null;
-                }
-                float aspect=(float)Minecraft.getInstance().getWindow().getWidth()/Minecraft.getInstance().getWindow().getHeight();
-                weaponMeasurements[left?1:0]=SpiritWeaponProjection.measure(kind,fit.item(),kind==SpiritFirstPersonGrip.Kind.BOW?bow.pull():1,aspect);
-            }
-        }
-        pose.last().pose().set(corrected);corrected.normal(pose.last().normal());
-
+    public static final SpiritHandDiagnostics DIAGNOSTICS = new SpiritHandDiagnostics();
+    private static final java.util.List<java.util.Map<String,Object>> measurements = new java.util.ArrayList<>(
+            java.util.List.of(java.util.Map.of(), java.util.Map.of()));
+    public static java.util.Map<String,Object> diagnostics() {
+        return java.util.Map.of("right", measurements.get(0), "left", measurements.get(1));
     }
 
     public static void emptyArm(RenderArmEvent event) {
@@ -108,10 +45,14 @@ public final class SpiritHands {
         boolean left = event.getArm() == HumanoidArm.LEFT;
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
-        var requested=new Vector3f(left?-.485f:.485f,-.31f,-.65f);
-        var frame=SpiritArmRig.surface(left,requested,SpiritArmRig.basis(new Vector3f(left?.65f:-.65f,.9f,-.2f).normalize()).rotateY((float)Math.toRadians(left?-25:25)),new Vector3f(left?.0357f:-.0357f,-.09f,.0108f));
-        if (draw(left,false,pose,event.getMultiBufferSource(),event.getPackedLight(),frame)) event.setCanceled(true);
+        emptyPose(pose, left);
+        if (draw(left, false, pose, event.getMultiBufferSource(), event.getPackedLight())) event.setCanceled(true);
         pose.popPose();
+    }
+
+    static void emptyPose(PoseStack pose, boolean left) {
+        pose.translate(left ? .3125f : -.3125f, .75f, 0);
+        pose.scale(2, 2, 2);
     }
 
     public static void heldItem(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack stack, MultiBufferSource buffers, int light) {
@@ -127,35 +68,16 @@ public final class SpiritHands {
         SpiritItemGrip.local(item, point, new Vector3f());
         itemPose.last().pose().transformPosition(point);
         var palm = palm(model, itemPose, left, SpiritItemGrip.lowered(item));
+        if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR) && player.isUsingItem() && player.getUseItem() == item)
+            palm = spearOverhand(palm, itemPose.last().pose());
         stack.pushPose();
         stack.translate(point.x, point.y, point.z);
         stack.mulPose(palm);
-        // Only remaining ordinary items/vanilla tools/architecture use this legacy stack scale. The new IK frame
-        // ignores the stack and applies SpiritArmRig.PAW_SCALE (1.18) in SpiritForearm.vertex.
-        if (prepared[left?1:0] == null) stack.scale(LEGACY_PAW_SCALE, LEGACY_PAW_SCALE, LEGACY_PAW_SCALE);
-        draw(left, true, stack, buffers, light, prepared[left?1:0]);
-        if(secondary[left?1:0]!=null)draw(!left,true,stack,buffers,light,secondary[left?1:0]);
-        prepared[left?1:0]=null;
-        secondary[left?1:0]=null;
+        // SpiritForearm keeps the paw rigid even when vanilla stretches a drawn bow/trident.
+        draw(left, true, stack, buffers, light);
         stack.popPose();
     }
 
-    private static final SpiritArmRig.Frame[] prepared=new SpiritArmRig.Frame[2];
-    private static final SpiritArmRig.Frame[] secondary=new SpiritArmRig.Frame[2];
-    public static final SpiritHandDiagnostics DIAGNOSTICS = new SpiritHandDiagnostics();
-    private static final java.util.List<java.util.Map<String,Object>> measurements=new java.util.ArrayList<>(java.util.List.of(java.util.Map.of(),java.util.Map.of()));
-    private static final float[] gripErrors=new float[2];
-    private static final SpiritBladeFraming.Projection[] bladeMeasurements=new SpiritBladeFraming.Projection[2];
-    private static final SpiritWeaponProjection.Bounds[] weaponMeasurements=new SpiritWeaponProjection.Bounds[2];
-    public static java.util.Map<String,Object> diagnostics() { return java.util.Map.of("right",measurements.get(0),"left",measurements.get(1)); }
-    private static boolean pilot(ItemStack item,LivingEntity entity,boolean left) {
-        var kind = SpiritFirstPersonGrip.contact(item).kind();
-        if((kind==SpiritFirstPersonGrip.Kind.BOW||kind==SpiritFirstPersonGrip.Kind.HAMMER||kind==SpiritFirstPersonGrip.Kind.SPEAR)
-                && entity instanceof Player player && left!=(player.getMainArm()==HumanoidArm.LEFT))return false;
-        return SpiritFirstPersonGrip.newRig(kind)
-                && (kind != SpiritFirstPersonGrip.Kind.BOW || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_BOW));
-    }
-    private static final float LEGACY_PAW_SCALE = 1.25f;
 
     /**
      * The paw's orientation for an item drawn with {@code itemPose}. The paw meshes are baked in the grip bone's frame,
@@ -168,11 +90,23 @@ public final class SpiritHands {
         held.mulPose(com.mojang.math.Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(1, lowered ? 1 : 0)));
         held.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180));
         model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, held, left);
-        return SpiritItemGrip.palmFromItem(itemPose.last().pose().getNormalizedRotation(new Quaternionf()),
-                held.last().pose().getNormalizedRotation(new Quaternionf()));
+        return palmRotations(itemPose.last().pose(), held.last().pose());
     }
 
-    private static boolean draw(boolean left, boolean grip, PoseStack pose, MultiBufferSource buffers, int light, SpiritArmRig.Frame frame) {
+    static Quaternionf palmRotations(org.joml.Matrix4f itemInView, org.joml.Matrix4f itemInPalm) {
+        // Display matrices contain scale. Treating them as normalized rotation matrices
+        // changes the thumb/palm orientation when first- and third-person scales differ.
+        return SpiritItemGrip.palmFromItem(itemInView.getUnnormalizedRotation(new Quaternionf()),
+                itemInPalm.getUnnormalizedRotation(new Quaternionf()));
+    }
+
+    /** Throw with an overhand grip: turn the paw around the shaft, leaving the item matrix untouched. */
+    static Quaternionf spearOverhand(Quaternionf palm, org.joml.Matrix4f display) {
+        var shaft=display.transformDirection(new Vector3f(1,1,0)).normalize();
+        return new Quaternionf().rotationAxis((float)Math.PI,shaft).mul(palm);
+    }
+
+    private static boolean draw(boolean left, boolean grip, PoseStack pose, MultiBufferSource buffers, int light) {
         if (DIAGNOSTICS.isolateWeapon()) return true;
         var id = ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID,
                 "models/entity/paw_" + (left ? "left" : "right") + (grip ? "_grip.glb" : "_open.glb"));
@@ -189,21 +123,18 @@ public final class SpiritHands {
         var min = new Vector3f(Float.POSITIVE_INFINITY);
         var max = new Vector3f(Float.NEGATIVE_INFINITY);
         int alpha = SpiritSelfLight.handAlpha(SpiritGlow.active());
-        boolean measure = frame != null && DIAGNOSTICS.enabled();
-        var screenMin=measure?new Vector3f(Float.POSITIVE_INFINITY):null;
-        var screenMax=measure?new Vector3f(Float.NEGATIVE_INFINITY):null;
-        var measuredPoint=measure?new Vector3f():null;
-        var screenPoint=measure?new Vector3f():null;
-        int near=0,central=0,total=0;
-        var view=measure?new org.joml.Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix()):null;
-        float aspect=measure?(float)Minecraft.getInstance().getWindow().getWidth()/Minecraft.getInstance().getWindow().getHeight():1;
+        if (DIAGNOSTICS.enabled()) {
+            var inView = new org.joml.Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix()).mul(pose.last().pose());
+            var palm = inView.getTranslation(new Vector3f());
+            measurements.set(left ? 1 : 0, java.util.Map.of("source", "vanilla", "grip", grip,
+                    "palm", java.util.List.of(palm.x, palm.y, palm.z)));
+        }
         for (int pass = 0; pass < 2; pass++) for (var part : model.model().meshes()) {
             if (!(part.mesh() instanceof GltfMesh mesh)) continue;
             var vertices = buffers.getBuffer(pass == 0 ? SpiritHandRenderType.triangles(part.material().texture())
                     : SpiritHandRenderType.emission(part.material().texture()));
             var geometry = mesh.geometry();
-            var forearm=frame==null?null:new SpiritForearm(frame,geometry);
-            var legacy=frame==null&&grip?new SpiritLegacyForearm(pose.last(),geometry,left):null;
+            var forearm = grip ? new SpiritForearm(pose.last(), geometry, left) : null;
             var point = new Vector3f();
             var normal = new Vector3f();
             for (int triangle = 0; triangle < geometry.indexCount(); triangle += 3) {
@@ -213,20 +144,11 @@ public final class SpiritHands {
                     int i = geometry.index(triangle + corner);
                     normal.set(geometry.normal(i,0), geometry.normal(i,1), geometry.normal(i,2));
                     if (forearm != null) forearm.vertex(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2), point, normal);
-                    else if(legacy!=null)legacy.vertex(geometry.position(i,0),geometry.position(i,1),geometry.position(i,2),point,normal);
                     else {
                         pose.last().pose().transformPosition(point.set(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2)));
                         pose.last().normal().transform(normal).normalize();
                     }
                     if (pass == 0 && geometry.position(i,1) > -.1f) { min.min(point); max.max(point); }
-                    if(pass==0&&measure) {
-                        var v=view.transformPosition(measuredPoint.set(point));total++;
-                        if(v.z>=-.05f)near++;
-                        float sx=v.x/(-v.z*.7002075f*aspect),sy=v.y/(-v.z*.7002075f);
-                        if(Math.abs(sx)<.07f&&Math.abs(sy)<.07f)central++;
-                        screenPoint.set(sx,sy,v.z);
-                        screenMin.min(screenPoint);screenMax.max(screenPoint);
-                    }
                     vertices.addVertex(point.x, point.y, point.z)
                             .setColor(255, 255, 255, alpha)
                             .setUv(geometry.texCoord(i,0), geometry.texCoord(i,1) + (pass == 0 ? 0 : SpiritSelfLight.EMISSION_UV_OFFSET))
@@ -234,21 +156,6 @@ public final class SpiritHands {
                             .setNormal(normal.x, normal.y, normal.z);
                 }
             }
-        }
-        if(measure) {
-            var values=new java.util.LinkedHashMap<String,Object>();
-            values.put("elbowDegrees",frame.elbowDegrees());values.put("wristDegrees",frame.wristDegrees());values.put("twistDegrees",frame.twistDegrees());
-            values.put("upperLength",frame.shoulder().distance(frame.elbow()));values.put("forearmLength",frame.elbow().distance(frame.wrist()));
-            values.put("gripError",grip?gripErrors[left?1:0]:0f);values.put("nearPlaneVertices",near);values.put("crosshairVertices",central);values.put("vertices",total);
-            values.put("screenMin",java.util.List.of(screenMin.x,screenMin.y,screenMin.z));values.put("screenMax",java.util.List.of(screenMax.x,screenMax.y,screenMax.z));
-            values.put("palm",java.util.List.of(frame.palm().x,frame.palm().y,frame.palm().z));
-            var blade=grip?bladeMeasurements[left?1:0]:null;
-            if(blade!=null)values.put("blade",java.util.Map.of("area",blade.area(),"nearClearance",blade.nearClearance(),
-                    "visible",blade.visible(),"angle",blade.angle(),"tipX",blade.tipX(),"tipY",blade.tipY()));
-            var weapon=weaponMeasurements[left?1:0];
-            if(weapon!=null)values.put("weapon",java.util.Map.of("area",weapon.area(),"nearClearance",weapon.near(),"visible",weapon.visible(),
-                    "axis",weapon.axis(),"tip",java.util.List.of(weapon.tipX(),weapon.tipY()),"grip",java.util.List.of(weapon.gripX(),weapon.gripY()),"bounds",java.util.List.of(weapon.minX(),weapon.minY(),weapon.maxX(),weapon.maxY())));
-            measurements.set(left?1:0,java.util.Map.copyOf(values));
         }
         // The first-person pass has no world SpiritAura. A small view-space halo follows the posed palm.
         if (Float.isFinite(min.x)) {

@@ -28,6 +28,7 @@
     "FeatherFireworkMixin"
   ],
   "client": [
+    "SpiritSpearReleaseMixin",
     "SpiritHeldHandMixin",
     "SpiritInventoryMixin",
     "SpiritAutoJumpMixin",

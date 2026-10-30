@@ -279,7 +279,7 @@
   "block.orimod.gloom_water": "腐光水",
   "item.orimod.spirit_spear": "灵矛",
   "entity.orimod.spirit_spear": "灵矛",
-  "tooltip.orimod.spear": "使用后投出可穿透 3 名敌人的光之矛（12 灵能）",
+  "tooltip.orimod.spear": "按住举矛，松开投出；快速点按也可投掷，穿透至多 3 名敌人（12 灵能）",
   "ability.orimod.spear": "灵矛",
   "ability.orimod.spear.description": "唤醒灵矛：投出高速光矛，最多穿透 3 名敌人，各造成 7 伤害（12 灵能）。",
   "message.orimod.spear.not_spirit": "灵矛需要精灵形态",

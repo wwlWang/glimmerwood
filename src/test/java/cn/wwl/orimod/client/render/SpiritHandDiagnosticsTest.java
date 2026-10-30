@@ -59,13 +59,17 @@ class SpiritHandDiagnosticsTest {
 
     @ParameterizedTest @ValueSource(booleans = {false, true})
     void disablingDiagnosticsDoesNotChangeTheBladeOrHandFit(boolean left) {
-        var input = new Matrix4f().translation(left ? -.4f : .4f, -.3f, -.7f).rotateXYZ(.2f, -.3f, .4f);
-        var display = new Matrix4f().rotateY(-1.57f).rotateZ(.43f).scale(.48f);
-        var measured = SpiritBladeFraming.fit(left, input, display, true);
-        var unmeasured = SpiritBladeFraming.fit(left, input, display, false);
-        assertTrue(Float.isNaN(unmeasured.gripError()), "diagnostic transform was skipped");
-        assertTrue(measured.gripError() < 1e-5f);
-        assertEquals(measured.item(), unmeasured.item());
-        assertEquals(measured.arm(), unmeasured.arm());
+        var pose = new com.mojang.blaze3d.vertex.PoseStack();
+        pose.translate(left ? -.4f : .4f, -.3f, -.7f);
+        pose.mulPose(new Matrix4f().rotateXYZ(.2f,-.3f,.4f));
+        var before = new Matrix4f(pose.last().pose());
+        try {
+            for (boolean recording : new boolean[]{false,true}) {
+                SpiritHands.DIAGNOSTICS.recording(recording);
+                SpiritHands.beginHeld(null,null,null,pose,left);
+                assertEquals(before,pose.last().pose());
+                pose.popPose();
+            }
+        } finally { SpiritHands.DIAGNOSTICS.reset(); }
     }
 }

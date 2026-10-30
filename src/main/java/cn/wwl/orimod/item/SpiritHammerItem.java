@@ -33,7 +33,7 @@ public final class SpiritHammerItem extends Item {
 
     public SpiritHammerItem(Properties properties) { super(properties); }
 
-    @Override public UseAnim getUseAnimation(ItemStack stack) { return UseAnim.SPEAR; }
+    @Override public UseAnim getUseAnimation(ItemStack stack) { return UseAnim.NONE; }
     @Override public int getUseDuration(ItemStack stack, LivingEntity entity) { return 72000; }
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -57,6 +57,7 @@ public final class SpiritHammerItem extends Item {
             player.displayClientMessage(Component.translatable("message.orimod.hammer_energy"), true); return;
         }
         cn.wwl.orimod.combat.HammerSlam.release(player);
+        player.swing(player.getUsedItemHand(), true);
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
     }
 

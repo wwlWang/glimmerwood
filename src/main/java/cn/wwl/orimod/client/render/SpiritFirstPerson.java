@@ -1,163 +1,37 @@
 package cn.wwl.orimod.client.render;
 
-import cn.wwl.orimod.client.render.SpiritFirstPersonMotion.Pose;
 import cn.wwl.orimod.combat.HammerSlam;
-import cn.wwl.orimod.combat.SpiritCombat;
 import cn.wwl.orimod.item.OriItems;
-import cn.wwl.orimod.item.SpiritHammerItem;
-import cn.wwl.orimod.network.AnimationActionPayload;
 import cn.wwl.orimod.spirit.SpiritData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * R114: Spirit form's first-person weapon motion, through NeoForge's {@code applyForgeHandTransform}. Returning true
- * replaces vanilla's equip, swing and use transforms for that hand; the paw then follows the item (SpiritHands).
- * Only the main hand of a Spirit-form player is taken over; human form and off-hand items keep vanilla motion.
- */
+/** Vanilla owns equip, swing, bob and item use. Only the spirit hammer's airborne plunge adds a pose. */
 public final class SpiritFirstPerson {
     private SpiritFirstPerson() { }
+    private static LivingEntity owner;
+    private static boolean falling;
+    private static float startedAt, endedAt = -100;
 
-    private static LocalPlayer owner;
-    private static net.minecraft.world.item.Item lastItem;
-    private static Pose shown = Pose.REST, bladeFrom = Pose.REST;
-    private static int bladeAction = -1, bladeStage;
-    private static long bladeStartedAt = Long.MIN_VALUE;
-    private static boolean wasHammer, wasSlam, wasBow, releasedOnGround, landedOnGround;
-    private static float hammerCharge, releasedCharge, hammerReleasedAt = -100, slamStartedAt = -100, slamEndedAt = -100,
-            bowStartedAt, bowReleasedAt = -100;
-    private static SpiritFirstPersonMotion.BowPose bowShown = new SpiritFirstPersonMotion.BowPose(0,0,0);
-    private static float equipShown, viewTick, spearPresence=1;
-    static float spearPresence() { return spearPresence; }
-    static SpiritFirstPersonMotion.BowPose bowShown() { return bowShown; }
-    static float equipShown() { return equipShown; }
-
-    public static boolean apply(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack, float partial,
-                                float equip, float swing) {
-        // The renderer may still hold the previous stack instance while re-equipping: compare by item.
-        if (!SpiritData.isSpirit(player) || arm != player.getMainArm() || !player.getMainHandItem().is(stack.getItem())) return false;
-        if (owner != player) reset(player);
-        // Edge flags belong to the item last drawn: switching away mid-draw must not replay a release on return.
-        if (stack.getItem() != lastItem) { lastItem = stack.getItem(); wasHammer = wasSlam = wasBow = false; }
-        float now = player.tickCount + partial;
-        viewTick = now;
-        boolean left = arm == HumanoidArm.LEFT;
-        int side = left ? -1 : 1;
-        equipShown = equip; spearPresence=1;
-        // Vanilla's private applyItemArmTransform: the resting arm position, lowered while re-equipping.
-        if (stack.is(OriItems.SPIRIT_BOW)) {
-            pose.translate(side * .56f, -.52f + equip * -.6f, -.72f);
-            bowShown = bow(player, stack, now);
-            equipShown = SpiritFirstPersonMotion.equipLowering(equip,bowShown.raise()>0);
-            shown = Pose.REST;
-            return true;
-        }
-        var target = stack.is(OriItems.SPIRIT_BLADE) ? blade(player, partial, swing)
-                : stack.is(OriItems.SPIRIT_HAMMER) ? hammer(player, stack, now)
-                : stack.is(OriItems.SPIRIT_SPEAR) ? spear(player, stack, now, partial) : null;
-        if (target == null) return false;
-        if (!stack.is(OriItems.SPIRIT_BLADE)) equipShown=SpiritFirstPersonMotion.equipLowering(equip,!target.equals(Pose.REST));
-        shown = target;
-        var sided = target.side(left);
-        pose.translate(side * .56f, -.52f + equipShown * -.6f, -.72f);
-        pose.translate(sided.x(), sided.y(), sided.z());
-        pose.mulPose(Axis.YP.rotationDegrees(sided.yaw()));
-        pose.mulPose(Axis.ZP.rotationDegrees(sided.roll()));
-        pose.mulPose(Axis.XP.rotationDegrees(sided.pitch()));
-        return true;
+    static void slam(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack pose) {
+        if (!(entity instanceof net.minecraft.world.entity.player.Player player)
+                || !SpiritFirstPersonGrip.mainHandView(context, player.getMainArm())) return;
+        if (owner != player) { owner = player; falling = false; endedAt = -100; }
+        if (!item.is(OriItems.SPIRIT_HAMMER)) { falling = false; endedAt = -100; return; }
+        float now = player.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+        boolean active = HammerSlam.falling(player.getData(SpiritData.COMBAT_VIEW), player.level().getGameTime());
+        if (active && !falling) startedAt = now;
+        if (active) endedAt = now;
+        falling = active;
+        float weight = SpiritFirstPersonMotion.plungeWeight(active, now-startedAt, now-endedAt);
+        // Local to vanilla's held arm: no lateral translation or camera-space framing.
+        pose.mulPose(SpiritFirstPersonMotion.plunge(weight));
     }
 
-    private static void reset(LocalPlayer player) {
-        owner = player; shown = bladeFrom = Pose.REST; bladeAction = -1; bladeStartedAt = Long.MIN_VALUE;
-        wasHammer = wasSlam = wasBow = false; hammerReleasedAt = slamStartedAt = slamEndedAt = bowReleasedAt = -100;
-    }
-
-    private static boolean usingMain(LocalPlayer player, ItemStack stack) {
-        return player.isUsingItem() && player.getUsedItemHand() == net.minecraft.world.InteractionHand.MAIN_HAND
-                && player.getUseItem().is(stack.getItem());
-    }
-
-    private static Pose blade(LocalPlayer player, float partial, float swing) {
-        var view = player.getData(SpiritData.COMBAT_VIEW);
-        if (view.mode().equals("blade") && view.actionId() != bladeAction) {
-            // Each combo stage winds up from wherever the previous one left the blade.
-            bladeAction = view.actionId(); bladeStage = view.stage(); bladeStartedAt = view.startedAt(); bladeFrom = shown;
-        }
-        // Keep playing the stage to its end even after the combat view returns to idle.
-        float elapsed = player.level().getGameTime() + partial - bladeStartedAt;
-        if (bladeStartedAt != Long.MIN_VALUE && elapsed >= 0 && elapsed < SpiritCombat.duration(bladeStage))
-            return stage(bladeStage, elapsed, bladeFrom);
-        // A plain attack swing (no combo, e.g. not yet awakened) uses the first cut on vanilla's swing clock.
-        return swing > 0 ? stage(1, swing * SpiritCombat.duration(1), Pose.REST) : Pose.REST;
-    }
-
-    private static Pose stage(int stage, float elapsed, Pose from) {
-        int windup = SpiritCombat.windup(stage), hit = SpiritCombat.recoveryStart(stage) - windup;
-        return SpiritFirstPersonMotion.blade(stage, elapsed, windup, hit, SpiritCombat.duration(stage) - windup - hit, from);
-    }
-
-    private static Pose hammer(LocalPlayer player, ItemStack stack, float now) {
-        boolean using = usingMain(player, stack);
-        if (using) hammerCharge = Math.min(1, player.getTicksUsingItem() / (float) SpiritHammerItem.WIND_UP_TICKS);
-        if (wasHammer && !using) { hammerReleasedAt = now; releasedCharge = hammerCharge; releasedOnGround = player.onGround(); }
-        wasHammer = using;
-        boolean slam = HammerSlam.falling(player.getData(SpiritData.COMBAT_VIEW), player.level().getGameTime());
-        if (slam && !wasSlam) slamStartedAt = now;
-        if (!slam && wasSlam) { slamEndedAt = now; landedOnGround = player.onGround(); }
-        wasSlam = slam;
-        if (using) return SpiritFirstPersonMotion.hammerCharge(hammerCharge, now / 20);
-        if (slam) return SpiritFirstPersonMotion.hammerPlunge(Math.max(now - slamStartedAt, now - hammerReleasedAt));
-        float strike = SpiritFirstPersonMotion.HAMMER_STRIKE_TICKS + SpiritFirstPersonMotion.HAMMER_RECOVER_TICKS;
-        if (now - slamEndedAt < strike)
-            return landedOnGround ? SpiritFirstPersonMotion.hammerStrike(now - slamEndedAt, true)
-                    : SpiritFirstPersonMotion.hammerLower(now - slamEndedAt, 1);
-        float since = now - hammerReleasedAt;
-        if (releasedCharge >= 1 && releasedOnGround && since < strike) return SpiritFirstPersonMotion.hammerStrike(since, false);
-        // A charged release in the air waits briefly for the server's slam to begin before giving up.
-        if (releasedCharge >= 1 && !releasedOnGround && since < 6) return SpiritFirstPersonMotion.hammerPlunge(since);
-        if (since < 11) return SpiritFirstPersonMotion.hammerLower(Math.max(0, since - (releasedCharge >= 1 ? 6 : 0)), releasedCharge);
-        return Pose.REST;
-    }
-
-    private static Pose spear(LocalPlayer player, ItemStack stack, float now, float partial) {
-        var observed = SpiritAnimationEvents.of(player);
-        float cooldown = player.getCooldowns().getCooldownPercent(stack.getItem(), partial);
-        if (observed.action == AnimationActionPayload.Action.SPEAR_THROW) {
-            float elapsed = now - observed.actionAt * 20;
-            float settle = SpiritFirstPersonMotion.SPEAR_FOLLOW_TICKS + SpiritFirstPersonMotion.SPEAR_RECOVER_TICKS;
-            if (elapsed >= 0 && (elapsed < settle || cooldown > 0)) {
-                spearPresence=SpiritFirstPersonMotion.spearPresence(elapsed,cooldown);
-                return SpiritFirstPersonMotion.spearThrow(elapsed);
-            }
-        }
-        return SpiritFirstPersonMotion.spearCarry();
-    }
-
-    private static SpiritFirstPersonMotion.BowPose bow(LocalPlayer player, ItemStack stack, float now) {
-        boolean using = usingMain(player, stack);
-        if (using && !wasBow) bowStartedAt = now;
-        if (!using && wasBow) bowReleasedAt = now;
-        wasBow = using;
-        if (using) return SpiritFirstPersonMotion.bowDraw(now - bowStartedAt);
-        if (now - bowReleasedAt < SpiritFirstPersonMotion.BOW_RECOIL_TICKS) return SpiritFirstPersonMotion.bowRelease(now - bowReleasedAt);
-        return new SpiritFirstPersonMotion.BowPose(0, 0, 0);
-    }
-
-    /** Called only by the development bridge while collecting poses/state. */
     public static java.util.Map<String,Object> diagnostics() {
-        if(owner == null)return java.util.Map.of();
-        var observed=SpiritAnimationEvents.of(owner);
-        return java.util.Map.of("item",lastItem==null?"none":lastItem.toString(),"playerTick",owner.tickCount,
-                "useTicks",owner.getTicksUsingItem(),"using",owner.isUsingItem(),"bow",bowShown,"pose",shown,
-                "action",observed.action==null?"none":observed.action.name(),"actionAt",observed.actionAt*20,
-                "hammerReleasedAt",hammerReleasedAt,
-                "timing",java.util.Map.of("now",viewTick,"bowStart",bowStartedAt,"bowRelease",bowReleasedAt,"spearPresence",spearPresence,
-                        "yaw",owner.getYRot(),"pitch",owner.getXRot(),"projectiles",owner.level().getEntitiesOfClass(cn.wwl.orimod.combat.SpiritSpear.class,
-                                owner.getBoundingBox().inflate(80),s->s.getOwner()==owner).stream().map(s->java.util.Map.of(
-                                "id",s.getId(),"age",s.tickCount,"distance",s.position().distanceTo(owner.getEyePosition()),
-                                "opacity",SpiritSpearView.opacity(s,s.position(),s.tickCount))).toList()));
+        return java.util.Map.of("source", "vanilla", "hammerPlunge", falling);
     }
 }

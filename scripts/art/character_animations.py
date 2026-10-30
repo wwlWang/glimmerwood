@@ -36,7 +36,7 @@ def smooth(t):
 def pulse(t):
     return math.sin(math.pi*max(0,min(1,t)))
 
-def author(rig, mesh):
+def author(rig, mesh, only=None):
     scene=bpy.context.scene
     scene.render.fps=FPS
     bones=rig.pose.bones
@@ -148,6 +148,34 @@ def author(rig, mesh):
         rotate('spine',.12); rotate('head',-.10)
         rotate('thigh_l',.20); rotate('knee_l',.22)
         rotate('thigh_r',-.15); rotate('knee_r',.42)
+    def feather_contacts(weight):
+        """Raise the shoulders and reach to an original-size quill; never resize it to the paws.
+
+        FeatherPose uses the same two rachis points (y=.12 / 1.02 of 1.35 m).
+        Only the three glide clips use this authored contact, including their entry/exit blends.
+        """
+        if weight <= 0: return
+        bpy.context.view_layer.update()
+        root=(rig.matrix_world@bones['root'].matrix)@arm_solver.rest['root'].inverted()
+        def rachis(y):
+            s=y/1.35
+            return Vector((.0945*math.sin(math.pi*s)*s,y,.0675*s*s))
+        half_span=(rachis(1.02)-rachis(.12)).length/2
+        for side,sign in (('l',-1),('r',1)):
+            names=[n+'_'+side for n in ('upper_arm','forearm','hand')]
+            before={n:bones[n].matrix_basis.copy() for n in names}
+            # A raised shoulder while hanging, with unchanged upper/lower arm and paw lengths.
+            shift(names[0],root.to_3x3()@Vector((sign*.07,0,.13)))
+            along=Vector((sign*.7,0,math.sqrt(.51)))
+            back=Vector((0,1,0));across=along.cross(back)
+            rotation=root.to_quaternion()@Matrix((across,along,back)).transposed().to_quaternion()
+            target=root@Vector((sign*half_span,.04,1.055))
+            arm_solver.contact(side,target,rotation,root.to_3x3()@Vector((0,1,0)))
+            actual=rig.matrix_world@bones['grip_'+side].matrix.translation
+            assert (actual-target).length < .002, ('feather contact unreachable',side,tuple(actual),tuple(target))
+            for n in names:
+                bones[n].matrix_basis=before[n].lerp(bones[n].matrix_basis,weight)
+            bpy.context.view_layer.update()
     class Ctx: pass
     ctx=Ctx()
     ctx.rotate,ctx.shift,ctx.leg,ctx.elbow,ctx.gripping,ctx.ankle_rest=rotate,shift,leg,elbow,gripping,ankle_rest
@@ -155,6 +183,7 @@ def author(rig, mesh):
     metadata={}
     rig.animation_data_create()
     for name,(length,loop) in CLIPS.items():
+        if only is not None and name not in only: continue
         clip_ik_error=0
         action=bpy.data.actions.new(name)
         action.use_fake_user=True
@@ -405,6 +434,8 @@ def author(rig, mesh):
                     rotate('thigh_'+s,-.20*f); rotate('knee_'+s,.40*f)
             secondary(t, .3 if name in {'sleep','death'} else 1.8 if name=='tail_sway' else 1,
                       .8 if name in {'run','dash_start','dash_end','bash_launch'} else 0)
+            if name in {'glide','glide_open','glide_close'}:
+                feather_contacts(1 if name=='glide' else character_poses.ease_out(t) if name=='glide_open' else 1-smooth(t))
             for b in bones:
                 b.keyframe_insert('rotation_quaternion',frame=frame,group=b.name)
                 b.keyframe_insert('location',frame=frame,group=b.name)
@@ -445,6 +476,7 @@ def author(rig, mesh):
         return re.sub(r'_(l|r)(?=_|$)',lambda m:'_r' if m[1]=='l' else '_l',name)
     for name in ('hold','use_item','block','blade_1','blade_2','blade_3','bow_charge','bow_hold','bow_release',
                  'blade_air','throw_ready','spear_throw','hammer_charge','hammer_smash','mine','throw','drink','horn','brush','grapple','place','hurt_side'):
+        if only is not None and name not in only: continue
         original=next(a for a in actions if a.name==name)
         length,loop=CLIPS[name]
         rig.animation_data.action=original
@@ -487,6 +519,6 @@ def author(rig, mesh):
         actions.append(mirrored)
     rig.animation_data.action=actions[0]
     scene.frame_start=0
-    scene.frame_end=CLIPS['idle'][0]
+    scene.frame_end=metadata[actions[0].name]['frames']
     scene.frame_set(0)
     return {'fps':FPS,'clips':metadata,'max_ik_target_clamp':max_ik_error},actions

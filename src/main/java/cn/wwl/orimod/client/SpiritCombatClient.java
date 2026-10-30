@@ -39,12 +39,17 @@ public final class SpiritCombatClient {
             return;
         }
         if (event.isAttack() && mc.player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) {
-            event.setCanceled(true); event.setSwingHand(false);
+            // The server still resolves the spirit combo, but vanilla owns its visible swing,
+            // including repeated swings while the attack key is held against a block.
+            event.setCanceled(true); event.setSwingHand(true);
             if (mc.screen == null && mc.isWindowActive()) {
+                if (mc.hitResult != null && mc.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK)
+                    mc.player.resetAttackStrengthTicker();
                 awaitingAttackUntil = mc.player.tickCount + 12;
                 PacketDistributor.sendToServer(new CombatInputPayload(false));
             }
-        } else if (event.isUseItem() && blockUse && mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_BOW)) {
+        } else if (event.isUseItem() && blockUse && (mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_BOW)
+                || mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_SPEAR))) {
             event.setCanceled(true); event.setSwingHand(false);
         }
     }
@@ -60,7 +65,8 @@ public final class SpiritCombatClient {
         sentCancel = true;
         awaitingAttackUntil = 0;
         blockUse = mc.options.keyUse.isDown();
-        if (mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) mc.player.stopUsingItem();
+        if (mc.player.isUsingItem() && (mc.player.getUseItem().is(OriItems.SPIRIT_BOW)
+                || mc.player.getUseItem().is(OriItems.SPIRIT_SPEAR))) mc.player.stopUsingItem();
     }
 
     public static boolean awaitingAttack() {

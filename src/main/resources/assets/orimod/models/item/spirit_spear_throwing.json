@@ -1,0 +1,40 @@
+{
+  "parent": "orimod:item/spirit_spear",
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        70
+      ],
+      "translation": [
+        6.286,
+        5.019,
+        -6.112
+      ],
+      "scale": [
+        0.56,
+        0.56,
+        0.56
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        -70
+      ],
+      "translation": [
+        6.286,
+        5.019,
+        -6.112
+      ],
+      "scale": [
+        0.56,
+        0.56,
+        0.56
+      ]
+    }
+  },
+  "overrides": []
+}

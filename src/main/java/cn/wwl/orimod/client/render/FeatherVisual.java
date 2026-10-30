@@ -25,7 +25,8 @@ final class FeatherVisual extends GemRenderEntityVisual<Player> {
             var second=frame.transform().transformPosition(b.getTranslation(new Vector3f()));
             // Use the body's rendered facing (including its turning blend), not the raw entity yaw.
             var forward=frame.transform().transformDirection(new Vector3f(0,0,1));
-            var pose=FeatherPose.matrix(first,second,forward);
+            boolean leftMain=entity.getMainArm()==net.minecraft.world.entity.HumanoidArm.LEFT;
+            var pose=FeatherPose.matrix(leftMain?second:first,leftMain?first:second,forward);
             if(pose==null)target.scale(0);else target.mul(pose);
         }else target.scale(0); // No stale body-position fallback when a pose disappears or the form changes.
     }

@@ -1,32 +1,32 @@
 {
-  "stage": "Character candidate; visual and runtime acceptance pending",
-  "revision": 14,
+  "stage": "R117 horizontal feather grip; runtime review pending",
+  "revision": 17,
   "source": "models/ori/3/ori_rigged.glb",
   "source_sha256": "6ed54f4909344667651cf4055878fa6a05c3a667e10cc81dbe24e93ba396b918",
   "source_url": "https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402",
   "license": "CC-BY-4.0",
   "author": "Random modeler (Seea_Rooster)",
-  "blend": "art/source/character/v014/ori.blend",
-  "blend_sha256": "44337e0c10b0cce3f3adf9a8597317aacdab00e3f9a9359bcba90f8feb205e8a",
-  "export": "art/source/character/v014/ori.glb",
-  "export_sha256": "48c5e0f1c052296795c626826083cdcfb3d05a6667252e584629dd46acf3aa90",
+  "blend": "art/source/character/v017/ori.blend",
+  "blend_sha256": "b9e377b30621df1cf2861121a3ac29d06614c83a5cc4384f57e16d95af593d04",
+  "export": "art/source/character/v017/ori.glb",
+  "export_sha256": "f7edd3db7217baa3aa847b1f77f4a63448c16de0bfefd11e7778aa50dee7323e",
   "triangles": 12399,
   "bones": 60,
   "height": 1.2,
   "blender": "5.1.2",
   "textures": {
     "orimod:textures/entity/ori_emission.png": {
-      "path": "art/source/character/v014/ori_emission.png",
+      "path": "art/source/character/v017/ori_emission.png",
       "sha256": "71d0382d5fe7394e4c9208e81fe182e254dee7033b72846601e9578720daab65",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_emission.png"
     },
     "orimod:textures/entity/ori_base.png": {
-      "path": "art/source/character/v014/ori_base.png",
+      "path": "art/source/character/v017/ori_base.png",
       "sha256": "6c19f87484bf791c87c31bf0ff69f262758d7c73caac760f85901222ac1d1b00",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_base.png"
     },
     "orimod:textures/entity/ori_surface.png": {
-      "path": "art/source/character/v014/ori_surface.png",
+      "path": "art/source/character/v017/ori_surface.png",
       "sha256": "410560e4936c360331bd80214bee7e078c514c820588db28b503e490f4e9cece",
       "packaged_path": "src/main/resources/assets/orimod/textures/entity/ori_surface.png"
     }
@@ -1001,6 +1001,12 @@
     "sole_r",
     "body_center"
   ],
+  "updated_clips": [
+    "glide",
+    "glide_close",
+    "glide_open"
+  ],
+  "previous_revision": 16,
   "player_export": "src/main/resources/assets/orimod/models/entity/ori.glb",
-  "player_export_sha256": "48c5e0f1c052296795c626826083cdcfb3d05a6667252e584629dd46acf3aa90"
+  "player_export_sha256": "f7edd3db7217baa3aa847b1f77f4a63448c16de0bfefd11e7778aa50dee7323e"
 }

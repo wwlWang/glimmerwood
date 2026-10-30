@@ -279,7 +279,7 @@
   "block.orimod.gloom_water": "Gloom Water",
   "item.orimod.spirit_spear": "Spirit Spear",
   "entity.orimod.spirit_spear": "Spirit Spear",
-  "tooltip.orimod.spear": "Use to throw a spear of light that pierces up to 3 enemies (12 energy)",
+  "tooltip.orimod.spear": "Hold to raise, release to throw through up to 3 enemies; a quick tap also throws (12 energy)",
   "ability.orimod.spear": "Spirit Spear",
   "ability.orimod.spear.description": "Wake the Spirit Spear: throw a fast spear of light that pierces up to three enemies for 7 damage each (12 energy).",
   "message.orimod.spear.not_spirit": "The Spirit Spear needs Spirit Form",

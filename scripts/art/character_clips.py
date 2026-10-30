@@ -248,7 +248,8 @@ def _(t):
 
 
 # ---- abilities ------------------------------------------------------------------------------------------------
-GLIDE = pose(pitch=-.04, spine=-.06, head=-.22, out_l=.28, out_r=.28, fwd_l=2.95, fwd_r=2.95, bend_l=.15, bend_r=.15, grip_l=1, grip_r=1,
+# The authoring pass places both paws on the fixed-size feather's shaft.
+GLIDE = pose(pitch=-.04, spine=-.06, head=-.22, out_l=.55, out_r=.55, fwd_l=2.95, fwd_r=2.95, bend_l=.15, bend_r=.15, grip_l=1, grip_r=1,
              thigh_l=.28, knee_l=.45, thigh_r=.12, knee_r=.6, ears=.35, tail=-.25)
 
 

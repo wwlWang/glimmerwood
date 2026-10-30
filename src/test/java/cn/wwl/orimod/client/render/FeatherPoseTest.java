@@ -2,24 +2,26 @@ package cn.wwl.orimod.client.render;
 
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatherPoseTest {
-    @Test void lowerQuillIsCentredAbovePawsAndVaneTrailsBehindAndUp() {
-        for (int degrees = 0; degrees < 360; degrees += 45) {
-            float yaw = (float)Math.toRadians(degrees);
-            var a = new Vector3f(-.15f,1.35f,.12f).rotateY(yaw);
-            var b = new Vector3f(.15f,1.35f,.12f).rotateY(yaw);
-            var m = FeatherPose.matrix(a,b,new Vector3f(0,0,1).rotateY(yaw));
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void fixedSizeShaftContactsMatchAuthoredRaisedPawsAcrossYawAndMainHand(boolean leftMain) {
+        float halfSpan=FeatherPose.ROOT.distance(FeatherPose.TIP)/2;
+        for(int degrees=0;degrees<360;degrees+=45) {
+            float yaw=(float)Math.toRadians(degrees);
+            var right=new Vector3f(-halfSpan,1.055f,.04f).rotateY(yaw);
+            var left=new Vector3f(halfSpan,1.055f,.04f).rotateY(yaw);
+            var root=leftMain?left:right;var tip=leftMain?right:left;
+            var m=FeatherPose.matrix(root,tip,new Vector3f(0,0,1).rotateY(yaw));
             assertNotNull(m);
-            var centre = new Vector3f(a).add(b).mul(.5f);
-            assertTrue(m.transformPosition(new Vector3f(0,.08f,0)).distance(centre)<.025f, "Lower shaft misses joined grip");
-            var axis = m.transformDirection(new Vector3f(0,1,0)).normalize();
-            assertTrue(axis.dot(new Vector3f(0,0,1).rotateY(yaw)) < -.9f, "Feather should trail backwards, not sideways");
-            assertTrue(axis.y>.2f && axis.y<.45f, "Vane must rise slightly behind the head");
-            float length=m.transformDirection(new Vector3f(0,1.353f,0)).length();
-            assertTrue(length>=1.2f && length<=1.56f, "Feather should be 1–1.3 times Ori's 1.2-block height");
-            assertTrue(m.transformDirection(new Vector3f(0,0,1)).normalize().y>.85f, "Feather stays upright, not catching the wind");
+            assertEquals(0,m.transformPosition(new Vector3f(FeatherPose.ROOT)).distance(root),1e-6);
+            assertEquals(0,m.transformPosition(new Vector3f(FeatherPose.TIP)).distance(tip),1e-6);
+            var axis=m.transformDirection(new Vector3f(0,1,0)).normalize();
+            assertTrue(Math.abs(axis.dot(new Vector3f(0,0,1).rotateY(yaw)))<.1,"long axis crosses the head, not trails behind");
+            assertTrue(m.transformDirection(new Vector3f(0,0,1)).normalize().y>.95,"vane lies nearly horizontal above head");
         }
     }
     @Test void missingOrDegeneratePoseIsHiddenInsteadOfInsideBody() {
@@ -27,9 +29,19 @@ class FeatherPoseTest {
         assertNull(FeatherPose.matrix(new Vector3f(),new Vector3f(0,0,.3f),new Vector3f(0,0,1)));
         assertNull(FeatherPose.matrix(new Vector3f(),new Vector3f(),new Vector3f(0,0,1)));
     }
-    @Test void rollIsBoundedEvenDuringAChangingGlidePose() {
-        var m = FeatherPose.matrix(new Vector3f(-.15f,1.2f,0),new Vector3f(.15f,1.8f,0),new Vector3f(0,0,1));
-        assertNotNull(m);
-        assertTrue(Math.abs(m.transformDirection(new Vector3f(1,0,0)).normalize().y)<.32f);
+    @Test void entryAndBankNeverShortenOrDistortTheOriginalFeather() {
+        var root=new Vector3f(-.45f,1.055f,0);
+        for(float span:new float[]{.1f,.3f,.51f,.9f,1.2f}) {
+            var m=FeatherPose.matrix(root,new Vector3f(root).add(span,.1f,.02f),new Vector3f(0,0,1));
+            assertNotNull(m);
+            assertEquals(0,m.transformPosition(new Vector3f(FeatherPose.ROOT)).distance(root),1e-6);
+            var x=m.transformDirection(new Vector3f(1,0,0));
+            var y=m.transformDirection(new Vector3f(0,1,0));
+            var z=m.transformDirection(new Vector3f(0,0,1));
+            assertEquals(1,x.length(),1e-6);assertEquals(1,y.length(),1e-6);assertEquals(1,z.length(),1e-6);
+            assertEquals(0,x.dot(y),1e-6);assertEquals(0,y.dot(z),1e-6);assertEquals(0,x.dot(z),1e-6);
+            assertEquals(1,m.determinant3x3(),1e-6,"no reflection, shear, or anisotropic scale");
+            assertEquals(1.35,m.transformDirection(new Vector3f(0,1.35f,0)).length(),1e-6);
+        }
     }
 }

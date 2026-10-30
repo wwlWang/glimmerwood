@@ -85,7 +85,11 @@ final class FrameRecorder {
         if (slot < nextSlot || pending.get() >= 4) return;
         nextSlot = slot + 1;
         var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
-        frames.add(Map.of("slot", slot, "seconds", (now - start) / 1_000_000_000.0));
+        var mc = Minecraft.getInstance();
+        // Select comparison frames by the actual attack clock, rather than guessing a video timestamp.
+        float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
+        frames.add(Map.of("slot", slot, "seconds", (now - start) / 1_000_000_000.0,
+                "swing", mc.player == null ? 0 : mc.player.getAttackAnim(partial)));
         dropped = nextSlot - frames.size();
         pending.incrementAndGet();
         writer.execute(() -> {

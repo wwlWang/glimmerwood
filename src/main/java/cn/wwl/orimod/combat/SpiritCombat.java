@@ -143,6 +143,7 @@ public final class SpiritCombat {
     }
 
     public static void cancel(ServerPlayer player, String reason) {
+        SpearCharge.cancel(player);
         var s = player.getData(SpiritData.COMBAT);
         if (s.mode.equals("idle")) return;
         s.mode = "idle"; s.stage = 0; s.buffered = false; s.weapon = ItemStack.EMPTY; s.hitTargets.clear(); s.comboHits.clear();
@@ -158,6 +159,7 @@ public final class SpiritCombat {
 
     public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        SpearCharge.tick(player);
         var s = player.getData(SpiritData.COMBAT);
         if (s.mode.equals("idle")) { if (player.onGround()) s.airHolds = 0; return; }
         if (player.onGround()) s.airHolds = 0;

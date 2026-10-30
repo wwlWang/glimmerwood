@@ -8,26 +8,32 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.entity.LivingEntity;
+import cn.wwl.orimod.combat.SpearCharge;
+import cn.wwl.orimod.spirit.SpiritData;
+import cn.wwl.orimod.progression.Ability;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-/** R60: throws a Spirit Spear on use (needs the Spirit Spear ability and energy; the item is never consumed). */
+/** Hold to raise like a trident; release throws once, with a four-tick minimum even for a tap. */
 public final class SpiritSpearItem extends Item {
     public SpiritSpearItem(Properties properties) { super(properties); }
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if (level.isClientSide) {
-            if (SpiritWeaponUse.blocked(player, stack) || !cn.wwl.orimod.spirit.SpiritData.isSpirit(player)
-                    || !cn.wwl.orimod.progression.Ability.SPEAR.unlocked(player)) return InteractionResultHolder.fail(stack);
-            return InteractionResultHolder.success(stack);
-        }
-        cn.wwl.orimod.combat.Flash.stop((ServerPlayer) player);
-        var spear = cn.wwl.orimod.combat.SpiritSpear.thrown((ServerPlayer) player);
-        if (spear == null) return InteractionResultHolder.fail(stack);
-        player.getCooldowns().addCooldown(this, cn.wwl.orimod.combat.SpiritSpear.COOLDOWN_TICKS);
+        if (SpiritWeaponUse.blocked(player, stack) || !SpiritData.isSpirit(player) || !Ability.SPEAR.unlocked(player))
+            return InteractionResultHolder.fail(stack);
+        if (player instanceof ServerPlayer server && !SpearCharge.begin(server, hand)) return InteractionResultHolder.fail(stack);
+        player.startUsingItem(hand);
         return InteractionResultHolder.consume(stack);
+    }
+
+    @Override public UseAnim getUseAnimation(ItemStack stack) { return UseAnim.SPEAR; }
+    @Override public int getUseDuration(ItemStack stack, LivingEntity entity) { return 72000; }
+    @Override public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+        if (entity instanceof ServerPlayer player) SpearCharge.release(player, stack);
     }
 
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
