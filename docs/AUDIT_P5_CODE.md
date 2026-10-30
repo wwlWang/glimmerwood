@@ -102,3 +102,22 @@
 ### G3 [低][代码] 默认按键和原版冲突
 - `SpiritControls.java:25,31`：Dash = C，Charge Flame = X，和原版「保存/加载快捷栏」（C/X，创造模式下按 C/X + 数字）冲突，控制设置里会标红。
 - Bash = R 和 Iris 重载冲突的修复（`SpiritKeyDefaults.java:36-53`）只在 `KEY_DEFAULTS_APPLIED=false` 时跑一次，跑完就把标志位设成 true。所以第一次启动后才装 Iris、F8 到 F10 都被占用（这种情况会静默放弃）、或者用户在 Controls 里点了「重置按键」，冲突都会回来，而且不会再修。这很可能就是 P3 #1「之后冲突又回来」的原因。[代码，原因有多个候选，没逐个复现]
+
+## H. 配置与模组兼容
+
+- 服务端配置（`config/OriServerConfig.java`）：所有值都是 `defineInRange`，越界时 NeoForge 会自动改回并保存。`ginsoEscapeWaterSpeedMultiplier` 的范围 0.5..2.0 和 `GinsoEscapeRules.validMultiplier` 以及 `GinsoEscapePayload` 的校验一致。按 0.5× 估算，最坏的 `limitTicks` 约 9000，低于 payload 上限 12000，不会因为构造 payload 时抛 IllegalArgumentException 把 tick 弄崩。**[代码]**
+- 客户端配置：`configVersion` 是 1..MAX，`LEGACY=1`、`CURRENT=2`，迁移只跑一次，之后 `plan.changed()=false`，不会出现保存后再重载的死循环。枚举值非法时 NeoForge 会改回默认。**[代码]**
+- GemRender/Flywheel 在 toml 里是 `required + side=CLIENT`。客户端缺这两个时会显示 FML 的缺依赖界面，不会崩。服务端不需要。Iris 只通过 `ModList.isLoaded("iris")`（`SpiritGlow.java:17`）进入 `SpiritGlowIris`，没装 Iris 时不会加载这个类。**[代码]**
+- 没有 JEI/EMI/Jade 插件。`orimod:peaceful_shapeless`（灵光，仅和平难度）这种自定义配方类型在 JEI 里可能看不到或者显示不对。[信息，没装 JEI 测]
+- Pehkui 这类改体型的模组：`PlayerDimensionsMixin` 只按 vanilla 默认尺寸调高度，entity scale 之后会照常叠上去，理论上兼容。[代码，未实测]
+- [信息] 配方：`ruin_guide.json` 用铜锭加纸就能合成遗迹指南，制图师卖 50 灵光一份，可以合成就绕开了购买。可能是故意的，记一下。
+
+## I. 全量测试（worktree，`scripts/check.sh`）
+
+| 轮次 | JUnit | GameTest | 结果 |
+|---|---|---|---|
+| 1（22:02） | 1816 / 0 失败 | 1397 / **1 失败** | BUILD FAILED |
+| 2（22:27，`--rerun-tasks`） | 1816 / 0 失败 | 1397 / 0 失败 | BUILD SUCCESSFUL |
+
+- 第 1 轮失败的是 `great_tree.ground_knots_cast_real_light`（`src/gametest/.../GreatTreeScaleGameTests.java:76-82`），报错「Only emissive, no real ground light」，第 2 轮通过，判定为 **flaky**。原因推测：放下方块后只等 20 tick 就断言 `getBrightness(BLOCK) >= 13`，光照引擎是异步排队的，CPU 忙的时候（当时开发客户端也在跑）20 tick 内可能还没传播完。[怀疑，没单独重复跑]
+- 新 worktree 第一次跑会失败（B1），需要先把 `libs/runtime` 里被忽略的 jar 补上。
