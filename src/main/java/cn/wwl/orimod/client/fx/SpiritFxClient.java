@@ -65,7 +65,7 @@ public final class SpiritFxClient {
         }
         if (payload.kind() == SpiritFxKind.SPIRIT_FLAME && level.getEntity(payload.sourceEntity()) instanceof net.minecraft.world.entity.player.Player player)
             CompanionMotion.attack(player, new net.minecraft.world.phys.Vec3(payload.x(), payload.y(), payload.z()));
-        burst(payload.kind(), payload.x(), payload.y(), payload.z(), payload.sourceEntity());
+        burst(payload.kind(), payload.x(), payload.y(), payload.z(), payload.sourceEntity(), null, null, payload.scale());
         if (payload.kind() == SpiritFxKind.BLADE_HIT && mc.player != null && payload.sourceEntity() == mc.player.getId())
             SpiritScreenFeedback.bladeHit(cn.wwl.orimod.config.OriClientConfig.visuals(),
                     mc.player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW).stage() == 3);
@@ -168,6 +168,10 @@ public final class SpiritFxClient {
     private static void burst(SpiritFxKind kind, double px, double py, double pz, int source) { burst(kind, px, py, pz, source, null, null); }
 
     private static void burst(SpiritFxKind kind, double px, double py, double pz, int source, net.minecraft.world.phys.Vec3 lookOverride, net.minecraft.world.phys.Vec3 motionOverride) {
+        burst(kind, px, py, pz, source, lookOverride, motionOverride, 1);
+    }
+
+    private static void burst(SpiritFxKind kind, double px, double py, double pz, int source, net.minecraft.world.phys.Vec3 lookOverride, net.minecraft.world.phys.Vec3 motionOverride, float scale) {
         var mc = Minecraft.getInstance();
         var level = mc.level;
         if (level == null) return;
@@ -248,12 +252,13 @@ public final class SpiritFxClient {
             // Same distribution as ServerLevel.sendParticles: gaussian offset and speed, per definition layer.
             x += RANDOM.nextGaussian() * layer.spreadX(); y += RANDOM.nextGaussian() * layer.spreadY(); z += RANDOM.nextGaussian() * layer.spreadZ();
             vx += RANDOM.nextGaussian() * layer.speed(); vy += RANDOM.nextGaussian() * layer.speed(); vz += RANDOM.nextGaussian() * layer.speed();
+            x = px + (x - px) * scale; y = py + (y - py) * scale; z = pz + (z - pz) * scale;
             boolean essential = i < split.essential();
             try { level.addParticle(particle(layer, taper), essential, x, y, z, vx, vy, vz); }
             catch (Throwable ignored) { return; }
         }
         if (kind == SpiritFxKind.STOMP_IMPACT && mc.player != null && source == mc.player.getId()) {
-            SpiritScreenFeedback.stomp(visuals);
+            SpiritScreenFeedback.stomp(visuals, scale);
         }
     }
 

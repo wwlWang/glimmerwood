@@ -104,7 +104,7 @@ class MovementRulesTest {
         assertEquals(0, actual.x); assertEquals(speed, actual.y, .000001); assertEquals(0, actual.z);
     }
 
-    @ParameterizedTest @CsvSource({"0,-.55", "-1.2,-1.75", "-2.2,-2.4", "-2.4,-2.4", "-5,-2.4"})
+    @ParameterizedTest @CsvSource({"0,-1.42", "-1.2,-1.42", "-2.2,-2.42", "-3.3,-3.3", "-5,-3.3"})
     void stompAcceleratesToItsTerminalSpeed(double currentY, double expectedY) {
         assertEquals(expectedY, MovementRules.stompVelocity(currentY).y, .000001);
     }

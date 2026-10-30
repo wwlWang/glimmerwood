@@ -65,7 +65,14 @@ class SpiritProgressTest {
     @Test void losingOwnershipUnequipsThatShard() {
         assertEquals(1, SpiritProgress.EMPTY.withOwned(3).withEquipped(3).withOwned(1).equippedShards());
     }
-    @Test void unknownWeaponClaimsCannotConsumeOtherBits() { assertEquals(3, SpiritProgress.EMPTY.withClaims(255).claimedWeapons()); }
+    @Test void unknownWeaponClaimsCannotConsumeOtherBits() { assertEquals(15, SpiritProgress.EMPTY.withClaims(255).claimedWeapons()); }
+    @Test void oldClaimsKeepTheirMeaningAndNewReceiptsRoundTrip() {
+        for (int claims : new int[]{0, 1, 2, 3, 4, 8, 15}) {
+            var progress = SpiritProgress.EMPTY.withClaims(claims);
+            var encoded = SpiritProgress.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, progress).getOrThrow();
+            assertEquals(claims, SpiritProgress.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, encoded).getOrThrow().claimedWeapons());
+        }
+    }
     @Test void rewardMapIsAnImmutableSnapshot() {
         var source = new HashMap<>(Map.of("first", 1));
         var value = SpiritProgress.EMPTY.withRewards(source); source.put("first", 9);

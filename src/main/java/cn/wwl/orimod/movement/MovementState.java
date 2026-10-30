@@ -38,6 +38,7 @@ public final class MovementState {
     public double observedDy, grappleDistance = Double.MAX_VALUE;
     public SpiritTargets.Target grapple;
     public long grappleUntil, stompUntil;
+    public double stompStartY = Double.NaN, stompVelocity;
     public int grappleStalls, acceptedGrapples, completedGrapples, cancelledGrapples, acceptedStomps, stompImpacts, startedGlides;
     public final java.util.Map<String, Long> targetCooldowns = new java.util.HashMap<>();
     public final java.util.ArrayDeque<JumpRequest> jumps = new java.util.ArrayDeque<>();

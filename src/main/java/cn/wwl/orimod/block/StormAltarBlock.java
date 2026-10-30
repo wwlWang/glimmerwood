@@ -30,6 +30,7 @@ public final class StormAltarBlock extends SanctuaryBlock {
     public static GloomMatriarch summon(ServerPlayer player, BlockPos pos) {
         var level = (ServerLevel) player.level();
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.altar_dormant"), true); return null; }
+        if (SanctuaryBlockEntity.refuseCooldown(player, pos)) return null;
         if (awake(level, pos) != null) { player.displayClientMessage(Component.translatable("message.orimod.matriarch.awake"), true); return null; }
         var boss = OriMobs.GLOOM_MATRIARCH.get().create(level);
         if (boss == null) return null;
@@ -50,6 +51,7 @@ public final class StormAltarBlock extends SanctuaryBlock {
     }
 
     @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (SanctuaryBlockEntity.coolingDown(level, pos)) return;
         try {
             level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x5A7BD8, .4f, 24),
                     pos.getX() + random.nextDouble(), pos.getY() + 1.05, pos.getZ() + random.nextDouble(), 0, .05, 0);

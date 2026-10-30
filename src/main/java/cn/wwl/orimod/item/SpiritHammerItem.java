@@ -38,6 +38,7 @@ public final class SpiritHammerItem extends Item {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
+        if (level.isClientSide && SpiritWeaponUse.blocked(player, stack)) return InteractionResultHolder.fail(stack);
         String refusal = refusal(SpiritData.isSpirit(player), cn.wwl.orimod.progression.Ability.SMASH.unlocked(player));
         if (refusal != null) {
             if (!level.isClientSide) player.displayClientMessage(Component.translatable(refusal), true);
@@ -72,14 +73,20 @@ public final class SpiritHammerItem extends Item {
 
     /** Resolve one smash. @return the number of enemies hit. */
     public static int smash(ServerPlayer player) {
+        return smash(player, 1);
+    }
+
+    public static int smash(ServerPlayer player, float strength) {
+        strength = Math.clamp(strength, 1, (float)cn.wwl.orimod.combat.SlamRules.MAX_STRENGTH);
+        double radius = RADIUS * cn.wwl.orimod.combat.SlamRules.radiusScale(strength);
         var level = (ServerLevel) player.level();
         Vec3 at = impactPoint(player.position(), player.getYRot());
         boolean airborne = !player.onGround();
         int hits = 0;
-        for (var target : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(RADIUS, 1.5, RADIUS).expandTowards(0, 1, 0),
+        for (var target : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius, 1.5, radius).expandTowards(0, 1, 0),
                 e -> e != player && CombatTargets.canHit(player, e))) {
             boolean wasAirborne = !target.onGround();
-            if (!target.hurt(player.damageSources().playerAttack(player), DAMAGE)) continue;
+            if (!target.hurt(player.damageSources().playerAttack(player), DAMAGE * strength)) continue;
             hits++;
             Vec3 push = target.position().subtract(player.position()).multiply(1, 0, 1).normalize().scale(.9);
             if (wasAirborne) target.setDeltaMovement(push.x * .3, -1.4, push.z * .3);   // knock flyers out of the air
@@ -89,7 +96,7 @@ public final class SpiritHammerItem extends Item {
         if (airborne) { player.setDeltaMovement(player.getDeltaMovement().multiply(.3, 0, .3).add(0, -1.2, 0)); player.hurtMarked = true; }
         cn.wwl.orimod.block.CrackedRuin.smash(player);
         cn.wwl.orimod.block.BlightInteractions.smash(player);
-        cn.wwl.orimod.fx.SpiritFx.emit(level, cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, at.x, at.y, at.z, null);
+        cn.wwl.orimod.fx.SpiritFx.slam(level, at, player, cn.wwl.orimod.combat.SlamRules.radiusScale(strength));
         level.playSound(null, at.x, at.y, at.z, SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.PLAYERS, 1, .9f);
         return hits;
     }

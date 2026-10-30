@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:logs", "#minecraft:leaves", "#minecraft:climbable",
+    "minecraft:mushroom_stem", "minecraft:bamboo", "minecraft:moss_block",
+    "orimod:spirit_log", "orimod:withered_spirit_log",
+    "orimod:great_spirit_wood", "orimod:great_spirit_root",
+    "orimod:ginso_wood", "orimod:ginso_root_lip", "orimod:ginso_landing",
+    "orimod:spirit_vine", "orimod:ginso_vine",
+    "orimod:spirit_leaves", "orimod:great_tree_leaf_core",
+    "orimod:ginso_leaves", "orimod:ginso_canopy", "orimod:ginso_leaf_core"
+  ]
+}

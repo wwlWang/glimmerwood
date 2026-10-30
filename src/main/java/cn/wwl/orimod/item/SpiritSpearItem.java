@@ -18,7 +18,11 @@ public final class SpiritSpearItem extends Item {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if (level.isClientSide) return InteractionResultHolder.success(stack);
+        if (level.isClientSide) {
+            if (SpiritWeaponUse.blocked(player, stack) || !cn.wwl.orimod.spirit.SpiritData.isSpirit(player)
+                    || !cn.wwl.orimod.progression.Ability.SPEAR.unlocked(player)) return InteractionResultHolder.fail(stack);
+            return InteractionResultHolder.success(stack);
+        }
         cn.wwl.orimod.combat.Flash.stop((ServerPlayer) player);
         var spear = cn.wwl.orimod.combat.SpiritSpear.thrown((ServerPlayer) player);
         if (spear == null) return InteractionResultHolder.fail(stack);

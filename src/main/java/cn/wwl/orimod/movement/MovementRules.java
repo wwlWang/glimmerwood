@@ -9,7 +9,7 @@ public final class MovementRules {
     public static boolean ownsJump(boolean movementActive, boolean mayFly) { return movementActive && !mayFly; }
     public static final int INPUT_BUFFER_TICKS = 2, COYOTE_TICKS = 2, DASH_TICKS = 5, DASH_COOLDOWN_TICKS = 12;
     public static final double DASH_SPEED = 1.12, WALL_SLIDE_SPEED = -.12, WALL_JUMP_SPEED = .47;
-    public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = -2.4;
+    public static final double GLIDE_FALL_SPEED = -.12, GRAPPLE_SPEED = .85, STOMP_SPEED = cn.wwl.orimod.combat.SlamRules.TERMINAL_SPEED;
     // Input release, collision and invalid player states still cancel locally without waiting.
     public static final int GLIDE_LEASE_TICKS = 40;
     /** R38 Launch: charge needed on the ground (crouch held), and speeds of the charged ground and the one air Launch. */
@@ -78,6 +78,7 @@ public final class MovementRules {
     /** R55 Climb: upward speed while pushing into a wall with the ability learned. */
     public static final double CLIMB_SPEED = .14;
     public static boolean climbing(boolean unlocked, float forward) { return unlocked && forward > .1f; }
+    public static boolean climbing(boolean unlocked, float forward, boolean climbable) { return climbable && climbing(unlocked, forward); }
     public static Vec3 climbVelocity(Vec3 velocity) { return new Vec3(velocity.x, CLIMB_SPEED, velocity.z); }
 
     // ---- R94 ledge mantle (WotW: holding into a wall near its top pops Ori over the lip) -------------------
@@ -142,6 +143,6 @@ public final class MovementRules {
 
     /** A stomp lease starts at -1.2; local travel accelerates to the terminal speed. */
     public static Vec3 stompVelocity(double currentY) {
-        return new Vec3(0, Math.max(STOMP_SPEED, currentY - .55), 0);
+        return new Vec3(0, cn.wwl.orimod.combat.SlamRules.nextSpeed(currentY), 0);
     }
 }

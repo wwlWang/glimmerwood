@@ -46,7 +46,7 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
             if(!kind.basin())pose.mulPose(Axis.YP.rotationDegrees(180-state.getValue(SanctuaryBlock.FACING).toYRot()));
         }
         if(state.is(OriBlocks.GLOOM_ALTAR)||state.is(OriBlocks.STORM_ALTAR))pose.translate(0,floorLift(b),0);
-        boolean ready=assembly(state,b.phase(),b.activated(),time,pose,buffers,light);
+        boolean ready=assembly(state,b.phase(),b.activated(),time,pose,buffers,light,b.cooldownRemaining()>0);
         pose.popPose();
         if (!ready) fallback(b,pose,buffers,light,overlay);
     }
@@ -54,6 +54,10 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
     /** Shared world/item assembly; the caller owns placement, scale, legacy fitting and render context. */
     static boolean assembly(net.minecraft.world.level.block.state.BlockState state,SanctuaryBlockEntity.Phase phase,
                             boolean activated,double time,PoseStack pose,MultiBufferSource buffers,int light) {
+        return assembly(state,phase,activated,time,pose,buffers,light,false);
+    }
+    private static boolean assembly(net.minecraft.world.level.block.state.BlockState state,SanctuaryBlockEntity.Phase phase,
+                            boolean activated,double time,PoseStack pose,MultiBufferSource buffers,int light,boolean cooling) {
         boolean ready;
         if (state.is(OriBlocks.GINSO_WATER_HEART)) {
             ready=mesh("ginso_water_roots",pose,buffers,light,.7f,1);
@@ -76,14 +80,14 @@ public final class SanctuaryRenderer implements BlockEntityRenderer<SanctuaryBlo
         } else {
             boolean storm=state.is(OriBlocks.STORM_ALTAR);boolean active=phase==SanctuaryBlockEntity.Phase.ACTIVE;
             boolean won=phase==SanctuaryBlockEntity.Phase.DEFEATED;
-            float glow=active?1.1f:won?.65f:.18f;
+            float glow=cooling?.03f:active?1.1f:won?.65f:.18f;
             ready=mesh(storm?"altar_storm":"altar_gloom",pose,buffers,light,glow,1);
             pose.translate(0,1.92+Math.sin(time*.045)*.06,0);
             pose.mulPose(Axis.YP.rotation((float)time*(active?.035f:.008f)));
             if (won) pose.scale(.65f,.65f,.65f);
             if(storm)pose.mulPose(Axis.XP.rotationDegrees(62));
             mesh(storm?"storm_ring":"gloom_crystal",pose,buffers,light,glow,won?.65f:1);
-            if (won) {pose.scale(.5f,.5f,.5f);mesh("keystone_inset",pose,buffers,LightTexture.FULL_BRIGHT,1,1);}
+            if (won) {pose.scale(.5f,.5f,.5f);mesh("keystone_inset",pose,buffers,cooling?light:LightTexture.FULL_BRIGHT,cooling?.03f:1,1);}
         }
         return ready;
     }

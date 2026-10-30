@@ -68,7 +68,7 @@ public final class SpiritTreeHeartBlock extends Block {
         int abilities = player.getData(SpiritData.ABILITIES);
         var gift = SpiritTree.gift(abilities);
         if (gift != null) {
-            player.setData(SpiritData.ABILITIES, abilities | gift.bit);
+            cn.wwl.orimod.progression.SpiritProgression.unlock(player, gift);
             player.displayClientMessage(Component.translatable("message.orimod.tree.skill", gift.title()), true);
         } else {
             SpiritProgression.grantLight(player, SpiritTree.LIGHT_GIFT);

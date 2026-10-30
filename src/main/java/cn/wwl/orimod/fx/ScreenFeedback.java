@@ -27,6 +27,7 @@ public final class ScreenFeedback {
 
     /** Own stomp landing: lighter shake, no flash. */
     public void stomp(int shakePercent) { shake(0.6, shakePercent); }
+    public void stomp(int shakePercent, float scale) { shake(Math.min(1, .6 * Math.clamp(scale, 1, 1.375f)), shakePercent); }
 
     /** Own blade connecting: a small kick, stronger on the finisher, so hits read as weight rather than a click. */
     public void bladeHit(int shakePercent, boolean finisher) { shake(finisher ? 0.42 : 0.2, shakePercent); }

@@ -6,6 +6,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScreenFeedbackTest {
+    @Test void highSlamShakeGrowsButRespectsSettingsAndGlobalCap() {
+        var normal = new ScreenFeedback(); normal.stomp(100, 1);
+        var high = new ScreenFeedback(); high.stomp(100, 1.375f);
+        assertTrue(high.lastShakeAmplitude() > normal.lastShakeAmplitude());
+        assertTrue(high.lastShakeAmplitude() <= ScreenFeedback.MAX_SHAKE_DEGREES);
+        var off = new ScreenFeedback(); off.stomp(0, 1.375f);
+        assertFalse(off.active());
+    }
     private static double peakRoll(ScreenFeedback f) {
         double peak = 0;
         for (int t = 0; t < ScreenFeedback.SHAKE_TICKS + 2; t++) {

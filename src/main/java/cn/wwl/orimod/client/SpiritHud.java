@@ -31,7 +31,8 @@ public final class SpiritHud {
             g.blitSprite(ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full"),x+n*10+3,y,9,9);
             g.drawString(mc.font,"+"+Math.round(p.getAbsorptionAmount()),x+n*10+14,y,0xFFDF69,false);
         }
-        row(g,"energy",SpiritProgression.energy(p),SpiritProgression.maxEnergy(p),10,x,y+12,0xFFFFFF);
+        row(g,"energy",SpiritProgression.energy(p),SpiritProgression.maxEnergy(p),10,x,y+12,SpiritCombatClient.energyFlashing()?0xFF8870:0xFFFFFF);
+        if(SpiritCombatClient.energyFlashing())g.fill(x-1,y+11,x+SpiritHudRules.cells(SpiritProgression.maxEnergy(p),SpiritHudRules.unit(SpiritProgression.maxEnergy(p),10))*10,y+22,0x55FF8870);
         int energyCells=SpiritHudRules.cells(SpiritProgression.maxEnergy(p),SpiritHudRules.unit(SpiritProgression.maxEnergy(p),10));
         g.drawString(mc.font,""+(int)SpiritProgression.energy(p),x+energyCells*10+3,y+12,0x82D9FF,false);
         int light=p.getData(SpiritData.PROGRESS).light();

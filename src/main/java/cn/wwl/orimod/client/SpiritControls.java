@@ -217,7 +217,10 @@ public final class SpiritControls {
         h = cn.wwl.orimod.movement.FeelTuning.horizontal(h, wish, grounded, scale, control);
         feelBlade = bladeMotion.ground(h, grounded, path -> cn.wwl.orimod.movement.BladeSupport.supported(player, path));
         h = h.add(feelBlade);
-        double vy = grounded && d.y <= 0 ? d.y : cn.wwl.orimod.movement.FeelTuning.vertical(d.y, jumpHeld, prevJumpHeld && !jumpHeld);
+        // Hammer lives in COMBAT_VIEW, not a movement lease. Its fall must not be pulled back
+        // toward the ordinary terminal speed before HammerSlam applies its acceleration below.
+        boolean hammerFall = cn.wwl.orimod.combat.HammerSlam.falling(player.getData(SpiritData.COMBAT_VIEW), now);
+        double vy = grounded && d.y <= 0 || hammerFall ? d.y : cn.wwl.orimod.movement.FeelTuning.vertical(d.y, jumpHeld, prevJumpHeld && !jumpHeld);
         vy = bladeMotion.vertical(vy);
         player.setDeltaMovement(h.x, vy, h.z);
         input.forwardImpulse = input.leftImpulse = 0;   // vanilla moveRelative would add its own acceleration on top

@@ -33,7 +33,18 @@ class SpiritFxPayloadTest {
         assertEquals(SpiritFxPhase.BURST, new SpiritFxPayload(SpiritFxKind.DASH, 0, 0, 0, 1).phase());
     }
 
-    @Test void channelVersionBumpedForRegenerate() { assertEquals("10", SpiritFxPayload.VERSION); }
+    @Test void channelVersionBumpedForSlamScale() { assertEquals("11", SpiritFxPayload.VERSION); }
+    @Test void slamScaleRoundTripsAndCannotExceedItsCap() {
+        var original = new SpiritFxPayload(SpiritFxKind.STOMP_IMPACT, SpiritFxPhase.BURST, 1, 2, 3, 42, 1.375f);
+        var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        try {
+            SpiritFxPayload.CODEC.encode(buffer, original);
+            assertEquals(original, SpiritFxPayload.CODEC.decode(buffer));
+        } finally { buffer.release(); }
+        assertEquals(1.375f, new SpiritFxPayload(SpiritFxKind.STOMP_IMPACT, SpiritFxPhase.BURST, 0, 0, 0, 1, 99).scale());
+        assertEquals(1, new SpiritFxPayload(SpiritFxKind.STOMP_IMPACT, SpiritFxPhase.BURST, 0, 0, 0, 1, Float.NaN).scale());
+        assertEquals(1, new SpiritFxPayload(SpiritFxKind.DASH, SpiritFxPhase.BURST, 0, 0, 0, 1, 2).scale());
+    }
 
     @ParameterizedTest @ValueSource(ints = {-1, 25, 99})
     void unknownKindRejected(int id) {

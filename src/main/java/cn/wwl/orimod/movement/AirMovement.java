@@ -44,9 +44,11 @@ public final class AirMovement {
                 || !player.level().noCollision(player, player.getBoundingBox().deflate(.02).expandTowards(0, -2, 0))) return;
         if (!cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return;
         s.stompUntil = now + 80;
+        s.stompStartY = player.getY();
+        s.stompVelocity = cn.wwl.orimod.combat.SlamRules.START_SPEED;
         s.jumpUntil = -100;
         s.acceptedStomps++;
-        SpiritMovement.signal(player, s, STOMP, 3, new Vec3(0, -1.2, 0));
+        SpiritMovement.signal(player, s, STOMP, 3, new Vec3(0, s.stompVelocity, 0));
     }
 
     public static boolean tickOwned(ServerPlayer player, MovementState s, long now, boolean grounded) {
@@ -79,7 +81,10 @@ public final class AirMovement {
         if (s.mode == STOMP) {
             if (grounded) impact(player, s);
             else if (now >= s.stompUntil) SpiritMovement.cancel(player, s);
-            else SpiritMovement.signal(player, s, STOMP, 3, new Vec3(0, MovementRules.STOMP_SPEED, 0));
+            else {
+                s.stompVelocity = cn.wwl.orimod.combat.SlamRules.nextSpeed(s.stompVelocity);
+                SpiritMovement.signal(player, s, STOMP, 3, new Vec3(0, s.stompVelocity, 0));
+            }
             return true;
         }
         return false;
@@ -115,19 +120,22 @@ public final class AirMovement {
     private static void impact(ServerPlayer player, MovementState s) {
         if (s.mode != STOMP) return;
         s.stompImpacts++;
+        float strength = cn.wwl.orimod.combat.SlamRules.strength(s.stompStartY - player.getY());
+        float scale = cn.wwl.orimod.combat.SlamRules.radiusScale(strength);
+        double radius = 3 * scale;
         cn.wwl.orimod.block.CrackedRuin.stomp(player);
         cn.wwl.orimod.block.BlightInteractions.area(player,player.position(),3,cn.wwl.orimod.world.BlightRules.Source.STOMP);
         // Partial block landings can be observed before the final movement packet's fall check.
         player.fallDistance = 0;
-        for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(3, 1, 3),
+        for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(radius, 1, radius),
                 entity -> entity instanceof Enemy && entity.isAlive())) {
-            if (player.distanceToSqr(target) > 9 || !SpiritTargets.visible(player, target.getBoundingBox().getCenter())) continue;
+            if (player.distanceToSqr(target) > radius * radius || !SpiritTargets.visible(player, target.getBoundingBox().getCenter())) continue;
             cn.wwl.orimod.entity.GloomBeetle.flip(target);
-            target.hurt(player.damageSources().playerAttack(player), 6);
+            target.hurt(player.damageSources().playerAttack(player), 6 * strength);
             Vec3 away = target.position().subtract(player.position()).normalize();
             target.push(away.x * .35, .3, away.z * .35);
         }
-        cn.wwl.orimod.fx.SpiritFx.emit(player.serverLevel(), cn.wwl.orimod.fx.SpiritFxKind.STOMP_IMPACT, player.getX(), player.getY() + .1, player.getZ(), player);
+        cn.wwl.orimod.fx.SpiritFx.slam(player.serverLevel(), player.position().add(0, .1, 0), player, scale);
         SpiritMovement.signal(player, s, STOMP_LAND, 0, Vec3.ZERO);
     }
 }

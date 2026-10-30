@@ -231,7 +231,7 @@ public final class ShardGameTests {
         for (String action : List.of("passive", "hold", "climb", "unequipped", "crouch", "jump", "away", "away_diagonal")) {
             add(tests, "sticky_wall_" + action, h -> {
                 var p = player(h, action.equals("unequipped") ? 0 : Shard.STICKY.bit);
-                for (int y = 2; y <= 7; y++) h.setBlock(new BlockPos(7, y, 5), Blocks.STONE);
+                for (int y = 2; y <= 7; y++) h.setBlock(new BlockPos(7, y, 5), Blocks.OAK_LOG);
                 p.setPos(h.absoluteVec(new Vec3(7 - p.getBbWidth() / 2 - .02, 4, 5.5)));
                 p.setOnGround(false); p.setDeltaMovement(.01, -.5, .02);
                 var s = p.getData(SpiritData.MOVEMENT);

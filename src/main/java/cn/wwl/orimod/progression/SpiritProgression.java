@@ -76,7 +76,7 @@ public final class SpiritProgression {
                 if (ability.prerequisite != null && !ability.prerequisite.unlocked(player)) { reply(player, "progress.orimod.requires", ability.prerequisite.title()); return; }
                 if (p.light() < ability.cost) { reply(player, "progress.orimod.not_enough", ability.cost); return; }
                 player.setData(SpiritData.PROGRESS, p.withLight(p.light() - ability.cost));
-                player.setData(SpiritData.ABILITIES, player.getData(SpiritData.ABILITIES) | ability.bit);
+                unlock(player, ability);
                 reply(player, "progress.orimod.unlocked", ability.title());
             }
             case "locate_outpost" -> cn.wwl.orimod.world.RuinLocator.request(player,cn.wwl.orimod.world.RuinLocator.Mode.OUTPOST,null);
@@ -108,16 +108,19 @@ public final class SpiritProgression {
                 reply(player, "progress.orimod.capacity_increased");
             }
             case "claim" -> {
-                int bit = target.equals("blade") ? 1 : target.equals("bow") ? 2 : 0;
-                if (bit == 0 || (bit == 2 && !Ability.BOW.unlocked(player))) return;
-                if ((p.claimedWeapons() & bit) != 0) { reply(player, "progress.orimod.already_claimed"); return; }
-                var stack = new ItemStack(bit == 1 ? OriItems.SPIRIT_BLADE.get() : OriItems.SPIRIT_BOW.get());
-                if (!player.getInventory().add(stack)) { reply(player, "progress.orimod.inventory_full"); return; }
-                player.setData(SpiritData.PROGRESS, p.withClaims(p.claimedWeapons() | bit));
-                player.containerMenu.broadcastChanges();
+                var gift = WeaponGift.byId(target);
+                if (gift == null || !gift.eligible(player)) return;
+                if (!gift.grant(player)) { reply(player, "progress.orimod.already_claimed"); return; }
                 reply(player, "progress.orimod.weapon_claimed");
             }
         }
+    }
+
+    /** All production unlock paths share the same once-only weapon receipt. */
+    public static void unlock(ServerPlayer player, Ability ability) {
+        player.setData(SpiritData.ABILITIES, player.getData(SpiritData.ABILITIES) | ability.bit);
+        var gift = WeaponGift.forAbility(ability);
+        if (gift != null) gift.grant(player);
     }
 
     private static void reply(ServerPlayer player, String key, Object... values) {

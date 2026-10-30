@@ -18,12 +18,26 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class SpiritCombatClient {
     private static boolean blockUse, sentCancel;
     private static int lastAction, awaitingAttackUntil;
+    private static final cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch REFUSAL = new cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch();
+    private static int energyFlashUntil;
+    public static boolean energyFlashing() {
+        var player = Minecraft.getInstance().player;
+        return player != null && player.tickCount < energyFlashUntil;
+    }
     private SpiritCombatClient() {}
 
     public static void input(InputEvent.InteractionKeyMappingTriggered event) {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
         if(RestorationClient.active()){event.setCanceled(true);event.setSwingHand(false);return;}
+        if (event.isUseItem() && cn.wwl.orimod.item.SpiritWeaponUse.blocked(mc.player, mc.player.getItemInHand(event.getHand()))) {
+            event.setCanceled(true); event.setSwingHand(false);
+            if (REFUSAL.refuse()) {
+                energyFlashUntil = mc.player.tickCount + 8;
+                mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), .2f, .65f);
+            }
+            return;
+        }
         if (event.isAttack() && mc.player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) {
             event.setCanceled(true); event.setSwingHand(false);
             if (mc.screen == null && mc.isWindowActive()) {
@@ -56,8 +70,8 @@ public final class SpiritCombatClient {
 
     public static void tick(ClientTickEvent.Pre event) {
         var mc = Minecraft.getInstance();
-        if (mc.player == null) { lastAction = awaitingAttackUntil = 0; blockUse = sentCancel = false; return; }
-        if (!mc.options.keyUse.isDown()) blockUse = false;
+        if (mc.player == null) { lastAction = awaitingAttackUntil = energyFlashUntil = 0; blockUse = sentCancel = false; REFUSAL.release(); return; }
+        if (!mc.options.keyUse.isDown() || mc.screen != null || !mc.isWindowActive()) { blockUse = false; REFUSAL.release(); }
         if (mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player)) cancel();
         else sentCancel = false;
         var view = mc.player.getData(SpiritData.COMBAT_VIEW);
@@ -79,7 +93,7 @@ public final class SpiritCombatClient {
             if (mc.player == null || mc.screen != null || mc.options.hideGui || !SpiritData.isSpirit(mc.player)) return;
             float energy = SpiritProgression.energy(mc.player), max = SpiritProgression.maxEnergy(mc.player);
             int x = 8, y = graphics.guiHeight() - 62, width = 84;
-            boolean low = mc.player.getMainHandItem().is(OriItems.SPIRIT_BOW) && energy < SpiritCombat.BOW_COST;
+            boolean low = energyFlashing() || mc.player.getMainHandItem().is(OriItems.SPIRIT_BOW) && energy < SpiritCombat.BOW_COST;
             if (!SpiritHud.enabled()) {
             graphics.drawString(mc.font, Component.translatable("hud.orimod.energy", (int)energy, (int)max), x, y - 12, low ? 0xFFB09E : 0xC6F5FF, true);
             graphics.fill(x - 1, y - 1, x + width + 1, y + 5, 0xBB14232E);

@@ -110,7 +110,8 @@ public final class SpiritScreen extends Screen {
             var a = Ability.byId(d.id);
             prerequisite = a.prerequisite; price = a.cost;
             if (a.unlocked(player)) {
-                if (a == Ability.BOW) { claimState(2); return; }
+                var gift = cn.wwl.orimod.progression.WeaponGift.forAbility(a);
+                if (gift != null) { claimState(gift.bit); return; }
                 actionButton.setMessage(tr("screen.orimod.unlocked")); actionButton.active = false; return;
             }
         } else if (d.kind.equals("shard")) {
@@ -161,7 +162,8 @@ public final class SpiritScreen extends Screen {
         String action = d.kind, target = d.id;
         if (d.kind.equals("shard") && (minecraft.player.getData(SpiritData.PROGRESS).ownedShards() & Shard.byId(d.id).bit) != 0)
             action = (minecraft.player.getData(SpiritData.PROGRESS).equippedShards() & Shard.byId(d.id).bit) != 0 ? "unequip" : "equip";
-        if (d.kind.equals("ability") && d.id.equals("bow") && Ability.BOW.unlocked(minecraft.player)) action = "claim";
+        if (d.kind.equals("ability") && cn.wwl.orimod.progression.WeaponGift.byId(d.id) != null
+                && Ability.byId(d.id).unlocked(minecraft.player)) action = "claim";
         PacketDistributor.sendToServer(new ProgressActionPayload(action, target));
     }
 

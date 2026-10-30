@@ -27,7 +27,7 @@ public record SpiritProgress(int version, int light, int ownedShards, int equipp
         light = Math.clamp(light, 0, LIGHT_LIMIT);
         ownedShards &= 2047; // R99: eleven shards; the original six bits retain their meanings.
         equippedShards &= ownedShards;
-        claimedWeapons &= 3;
+        claimedWeapons &= WeaponGift.MASK;
         capacityLevel = Math.clamp(capacityLevel, 0, 3);
         rewards = Map.copyOf(rewards);
         wisps &= 7;

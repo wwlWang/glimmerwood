@@ -168,7 +168,7 @@ public final class OriCommands {
 
     public static boolean unlockAll(ServerPlayer p) {
         awaken(p);
-        p.setData(SpiritData.ABILITIES, allAbilities());
+        for (var ability : Ability.values()) SpiritProgression.unlock(p, ability);
         var progress = p.getData(SpiritData.PROGRESS);
         int shards = 0;
         for (var shard : Shard.values()) shards |= shard.bit;
@@ -248,7 +248,7 @@ public final class OriCommands {
         String id = StringArgumentType.getString(c, "ability");
         var ability = Ability.byId(id);
         if (ability == null) throw UNKNOWN.create(id);
-        return apply(c, "unlock " + id, targets, p -> { awaken(p); p.setData(SpiritData.ABILITIES, p.getData(SpiritData.ABILITIES) | ability.bit); return true; });
+        return apply(c, "unlock " + id, targets, p -> { awaken(p); SpiritProgression.unlock(p, ability); return true; });
     }
 
     private static int locate(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {

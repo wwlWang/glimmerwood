@@ -9,10 +9,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Only presentation is stored here. Rewards, travel and boss eligibility retain their original owners. */
+/** Sanctuary presentation and per-altar cooldown. Rewards/travel retain their original owners. */
 public final class SanctuaryBlockEntity extends BlockEntity {
     public enum Phase { DORMANT, ACTIVE, DEFEATED }
     private boolean activated, defeated;
+    private long bossReadyAt;
     private net.minecraft.world.item.ItemStack insertedKey=net.minecraft.world.item.ItemStack.EMPTY;
     public net.minecraft.world.item.ItemStack insertedKey(){return insertedKey.copy();}
     public void insertedKey(net.minecraft.world.item.ItemStack stack){insertedKey=stack.copy();setChanged();}
@@ -20,6 +21,16 @@ public final class SanctuaryBlockEntity extends BlockEntity {
     public SanctuaryBlockEntity(BlockPos pos, BlockState state) { super(OriBlockEntities.SANCTUARY.get(), pos, state); }
     public Phase phase() { return phase; }
     public boolean activated() { return activated; }
+    public long cooldownRemaining() { return level == null ? 0 : AltarRules.remaining(level.getGameTime(), bossReadyAt); }
+    public static boolean coolingDown(Level level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof SanctuaryBlockEntity b && b.cooldownRemaining() > 0;
+    }
+    public static boolean refuseCooldown(net.minecraft.server.level.ServerPlayer player, BlockPos pos) {
+        if (!(player.level().getBlockEntity(pos) instanceof SanctuaryBlockEntity b) || b.cooldownRemaining() == 0) return false;
+        long seconds = AltarRules.seconds(b.cooldownRemaining());
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.orimod.altar_cooldown", seconds / 60, seconds % 60), true);
+        return true;
+    }
 
     public static void activate(Level level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof SanctuaryBlockEntity b) {
@@ -28,6 +39,7 @@ public final class SanctuaryBlockEntity extends BlockEntity {
     }
     public static void victory(Level level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof SanctuaryBlockEntity b) {
+            b.bossReadyAt = level.getGameTime() + AltarRules.COOLDOWN_TICKS;
             b.defeated = true; b.phase = Phase.DEFEATED; b.sync();
         }
     }
@@ -46,11 +58,14 @@ public final class SanctuaryBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         if(!insertedKey.isEmpty())tag.put("insertedKey",insertedKey.save(registries));
         tag.putBoolean("activated", activated); tag.putBoolean("defeated", defeated); tag.putString("phase", phase.name());
+        // Keep unused altars byte-compatible with saved structure templates.
+        if (bossReadyAt != 0) tag.putLong("bossReadyAt", bossReadyAt);
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         insertedKey=net.minecraft.world.item.ItemStack.parseOptional(registries,tag.getCompound("insertedKey"));
         activated = tag.getBoolean("activated"); defeated = tag.getBoolean("defeated");
+        bossReadyAt = tag.getLong("bossReadyAt");
         try { phase = Phase.valueOf(tag.getString("phase")); } catch (IllegalArgumentException e) { phase = Phase.DORMANT; }
     }
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { return saveWithoutMetadata(registries); }

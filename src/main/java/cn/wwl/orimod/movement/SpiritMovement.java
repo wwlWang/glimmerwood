@@ -159,8 +159,9 @@ public final class SpiritMovement {
             if (s.activeTicks-- <= 0 || player.horizontalCollision || s.crouching) cancel(player, s);
             return;
         }
-        boolean climb = s.mode == WALL_SLIDE && climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), s.forward);
-        boolean hold = wall != null && s.mode == WALL_SLIDE && cn.wwl.orimod.progression.Shard.STICKY.equipped(player)
+        boolean climbable = wall != null && climbableWall(player, wall);
+        boolean climb = s.mode == WALL_SLIDE && climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), s.forward, climbable);
+        boolean hold = climbable && s.mode == WALL_SLIDE && cn.wwl.orimod.progression.Shard.STICKY.equipped(player)
                 && pressingWall(inputDirection(s, false), Vec3.atLowerCornerOf(wall.getNormal()));
         if (!grounded && wall != null && !s.crouching && now >= s.wallReadyAt && (player.getDeltaMovement().y < 0 || climb || hold)) {
             // A short renewable lease prevents a missed release from leaving the client attached to a wall.
@@ -302,8 +303,27 @@ public final class SpiritMovement {
         // A predicted wall jump can still carry the old wall-slide lease until the server acknowledgement.
         if (player.level().getGameTime() < player.getData(SpiritData.MOVEMENT).wallReadyAt) return player.getDeltaMovement();
         return MovementRules.wallVelocity(player.getDeltaMovement(),
-                climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), forward),
-                cn.wwl.orimod.progression.Shard.STICKY.equipped(player), pressingWall(toward, Vec3.atLowerCornerOf(wall.getNormal())));
+                climbing(cn.wwl.orimod.progression.Ability.CLIMB.unlocked(player), forward, climbableWall(player, wall)),
+                climbableWall(player, wall) && cn.wwl.orimod.progression.Shard.STICKY.equipped(player), pressingWall(toward, Vec3.atLowerCornerOf(wall.getNormal())));
+    }
+
+    public static final net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> SPIRIT_CLIMBABLE =
+            net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.ResourceLocation.parse("orimod:spirit_climbable"));
+
+    /** Sample the actual contact face at feet, body and head, including both edges of the body. */
+    public static boolean climbableWall(Player player, Direction wall) {
+        if (wall == null) return false;
+        double half = player.getBbWidth() / 2, reach = half + .12;
+        for (double y : new double[]{.08, player.getBbHeight() / 2, player.getBbHeight() - .08}) {
+            for (double edge : new double[]{-half + .01, 0, half - .01}) {
+                var pos = net.minecraft.core.BlockPos.containing(
+                        player.getX() + wall.getStepX() * reach + (wall.getAxis() == Direction.Axis.Z ? edge : 0),
+                        player.getY() + y,
+                        player.getZ() + wall.getStepZ() * reach + (wall.getAxis() == Direction.Axis.X ? edge : 0));
+                if (player.level().getBlockState(pos).is(SPIRIT_CLIMBABLE)) return true;
+            }
+        }
+        return false;
     }
 
     private static Direction touchingWall(Player player, Vec3 toward, int previous, boolean passive) {
@@ -311,9 +331,11 @@ public final class SpiritMovement {
         double bestDot = passive ? STICKY_WALL_DOT : WALL_PRESS_DOT;
         for (Direction side : WALLS) {
             double inputDot = toward.dot(Vec3.atLowerCornerOf(side.getNormal()));
+            boolean sticky = passive && climbableWall(player, side);
             // Hysteresis chooses among acceptable walls; it must not override a deliberate Sticky release.
-            if (passive && !stickyWallInput(inputDot)) continue;
+            if (sticky && !stickyWallInput(inputDot)) continue;
             double dot = inputDot + (previous == side.ordinal() ? 0.15 : 0);
+            if (dot <= (sticky ? STICKY_WALL_DOT : WALL_PRESS_DOT)) continue;
             if (dot <= bestDot) continue;
             var box = player.getBoundingBox().deflate(0.01, 0.08, 0.01).move(side.getStepX() * 0.12, 0, side.getStepZ() * 0.12);
             if (!player.level().noCollision(player, box)) { best = side; bestDot = dot; }

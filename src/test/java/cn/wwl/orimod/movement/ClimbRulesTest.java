@@ -7,6 +7,12 @@ import org.junit.jupiter.api.Test;
 
 /** R55: Climb rules. */
 class ClimbRulesTest {
+    @Test void contactWhitelistOnlyRestrictsClimb() {
+        assertFalse(MovementRules.climbing(true, 1, false));
+        assertTrue(MovementRules.climbing(true, 1, true));
+        assertFalse(MovementRules.climbing(false, 1, true));
+        assertEquals(MoveMode.WALL_JUMP, MovementRules.jumpMode(false, 20, 0, false, true, true, true, false));
+    }
     @Test void climbsOnlyWithAbilityAndForwardInput() {
         assertTrue(MovementRules.climbing(true, 1));
         assertFalse(MovementRules.climbing(false, 1));

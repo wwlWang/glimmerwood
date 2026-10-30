@@ -13,13 +13,19 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * One spirit effect lifecycle step; each client chooses how many particles to spawn from its own settings.
  * Channel version 2 (R18) added the phase; version 1 clients are refused at login rather than misreading it.
  */
-public record SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, double y, double z, int sourceEntity) implements CustomPacketPayload {
+public record SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, double y, double z, int sourceEntity, float scale) implements CustomPacketPayload {
     public static final int NO_SOURCE = -1;
-    /** Playtest A: version 10 adds Regenerate gathering, actual-heal pulse and release. */
-    public static final String VERSION = "10";
+    /** R117: version 11 carries bounded slam impact scale. */
+    public static final String VERSION = "11";
+    public SpiritFxPayload {
+        scale = kind == SpiritFxKind.STOMP_IMPACT && Float.isFinite(scale) ? Math.clamp(scale, 1, 1.375f) : 1;
+    }
+    public SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, double y, double z, int sourceEntity) {
+        this(kind, phase, x, y, z, sourceEntity, 1);
+    }
     public static final Type<SpiritFxPayload> TYPE = new Type<>(ResourceLocation.parse("orimod:spirit_fx"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SpiritFxPayload> CODEC = StreamCodec.of(
-            (buf, v) -> { buf.writeVarInt(v.kind.wireId()); buf.writeByte(v.phase.wireId()); buf.writeDouble(v.x); buf.writeDouble(v.y); buf.writeDouble(v.z); buf.writeVarInt(v.sourceEntity); },
+            (buf, v) -> { buf.writeVarInt(v.kind.wireId()); buf.writeByte(v.phase.wireId()); buf.writeDouble(v.x); buf.writeDouble(v.y); buf.writeDouble(v.z); buf.writeVarInt(v.sourceEntity); buf.writeFloat(v.scale); },
             buf -> {
                 int id = buf.readVarInt();
                 var kind = SpiritFxKind.byWireId(id);
@@ -29,7 +35,7 @@ public record SpiritFxPayload(SpiritFxKind kind, SpiritFxPhase phase, double x, 
                 if (phase == null) throw new DecoderException("Unknown spirit effect phase " + phaseId);
                 if (phase != SpiritFxPhase.BURST && phase != SpiritFxPhase.STOP_ALL && !kind.persistent())
                     throw new DecoderException("Phase " + phase + " on one-shot effect " + kind);
-                return new SpiritFxPayload(kind, phase, buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readVarInt());
+                return new SpiritFxPayload(kind, phase, buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readVarInt(), buf.readFloat());
             });
 
     /** A one-shot burst. */

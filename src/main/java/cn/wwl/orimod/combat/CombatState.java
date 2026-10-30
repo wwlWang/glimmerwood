@@ -13,6 +13,7 @@ public final class CombatState {
     /** Air slashes that held the player up since the last landing. */
     public int airHolds;
     public long startedAt, nextBowAt;
+    public double slamStartY = Double.NaN;
     public boolean buffered;
     public ItemStack weapon = ItemStack.EMPTY;
     public record ComboHit(int stage, net.minecraft.world.damagesource.DamageSource source) {}

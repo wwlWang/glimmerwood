@@ -28,8 +28,16 @@ public final class SpiritFx {
 
     /** @param pitchScale multiplies the cue pitch, e.g. for rising blade combo stages. */
     public static void emit(ServerLevel level, SpiritFxKind kind, double x, double y, double z, Entity source, float pitchScale) {
+        emit(level, kind, x, y, z, source, pitchScale, 1);
+    }
+
+    public static void slam(ServerLevel level, Vec3 at, Entity source, float scale) {
+        emit(level, SpiritFxKind.STOMP_IMPACT, at.x, at.y, at.z, source, 1, scale);
+    }
+
+    private static void emit(ServerLevel level, SpiritFxKind kind, double x, double y, double z, Entity source, float pitchScale, float scale) {
         PacketDistributor.sendToPlayersNear(level, null, x, y, z, RANGE,
-                new SpiritFxPayload(kind, x, y, z, source == null ? SpiritFxPayload.NO_SOURCE : source.getId()));
+                new SpiritFxPayload(kind, SpiritFxPhase.BURST, x, y, z, source == null ? SpiritFxPayload.NO_SOURCE : source.getId(), scale));
         var cue = SpiritSoundCue.of(kind);
         if (cue != null && !cue.loop()) {
             var sound = BuiltInRegistries.SOUND_EVENT.getHolder(ResourceLocation.parse(cue.sound()));

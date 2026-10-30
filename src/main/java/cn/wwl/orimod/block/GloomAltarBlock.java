@@ -31,6 +31,7 @@ public final class GloomAltarBlock extends SanctuaryBlock {
     public static GloomHeart summon(ServerPlayer player, BlockPos pos) {
         var level = (ServerLevel) player.level();
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.altar_dormant"), true); return null; }
+        if (SanctuaryBlockEntity.refuseCooldown(player, pos)) return null;
         if (awake(level, pos) != null) { player.displayClientMessage(Component.translatable("message.orimod.altar_awake"), true); return null; }
         var be=level.getBlockEntity(pos);
         boolean progressed=be instanceof SanctuaryBlockEntity sanctuary && (sanctuary.activated()||sanctuary.phase()==SanctuaryBlockEntity.Phase.DEFEATED);
@@ -63,6 +64,7 @@ public final class GloomAltarBlock extends SanctuaryBlock {
     }
 
     @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (SanctuaryBlockEntity.coolingDown(level, pos)) return;
         try {
             level.addParticle(new cn.wwl.orimod.fx.SpiritParticleOptions(cn.wwl.orimod.fx.OriParticles.SPIRIT_MOTE.get(), 0x8A3AB8, .4f, 20),
                     pos.getX() + random.nextDouble(), pos.getY() + 1.05, pos.getZ() + random.nextDouble(), 0, .02, 0);
