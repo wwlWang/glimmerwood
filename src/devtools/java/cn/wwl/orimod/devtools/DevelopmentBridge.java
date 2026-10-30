@@ -239,13 +239,13 @@ public final class DevelopmentBridge {
                     cn.wwl.orimod.client.GinsoEscapeClient.receive(new cn.wwl.orimod.network.GinsoEscapePayload(new UUID(0,0),cn.wwl.orimod.world.GinsoEscape.Phase.READY,net.minecraft.core.BlockPos.ZERO,0,90,0,0,0,0,List.of()));
                     return Map.of("preview",false);
                 }
-                double water=action.get("localWaterY").getAsDouble();require(Double.isFinite(water)&&water>=90&&water<=110,"Preview water height");
+                double water=action.get("localWaterY").getAsDouble();require(Double.isFinite(water)&&water>=1&&water<=110,"Preview water height");
                 var id=mc.player.getUUID();var packet=mc.getSingleplayerServer().submit(()->{
                     var p=mc.getSingleplayerServer().getPlayerList().getPlayer(id);require(!cn.wwl.orimod.world.GinsoEscape.active(p),"Cannot preview during a real session");
-                    var piece=cn.wwl.orimod.world.GinsoCourse.at(p.serverLevel(),p.blockPosition());require(piece!=null&&piece.escapeVersion()==1,"New Ginso tree required");
-                    var layout=piece.escape();var plan=cn.wwl.orimod.world.GinsoEscapeRules.plan(layout);
-                    int age=60+(int)Math.round((water-plan.startWater())*80);
-                    return new cn.wwl.orimod.network.GinsoEscapePayload(UUID.randomUUID(),cn.wwl.orimod.world.GinsoEscape.Phase.RUNNING,piece.origin(),piece.entrance(),plan.startWater(),age,plan.limitTicks(),0,0,layout.flood());
+                    var piece=cn.wwl.orimod.world.GinsoCourse.at(p.serverLevel(),p.blockPosition());require(piece!=null&&piece.escapeVersion()!=0,"Ginso escape tree required");
+                    var layout=piece.escape();var plan=cn.wwl.orimod.world.GinsoEscapeRules.plan(layout,piece.escapeVersion());
+                    int age=(int)Math.round(cn.wwl.orimod.world.GinsoEscapeRules.reach(plan,water)*20);
+                    return new cn.wwl.orimod.network.GinsoEscapePayload(UUID.randomUUID(),cn.wwl.orimod.world.GinsoEscape.Phase.RUNNING,piece.origin(),piece.entrance(),plan.startWater(),age,Math.min(12000,Math.max(plan.limitTicks(),age+1200)),0,0,cn.wwl.orimod.world.GinsoFloodVolume.forPiece(p.serverLevel(),piece).boxes(),piece.escapeVersion(),plan.speedMultiplier());
                 }).get(10,TimeUnit.SECONDS);
                 cn.wwl.orimod.client.GinsoEscapeClient.receive(packet);return Map.of("preview",true,"serverSession",false,"localWaterY",water);
             }
@@ -981,6 +981,7 @@ public final class DevelopmentBridge {
             var camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             state.put("cameraMotion", Map.of("position",java.util.List.of(camera.x,camera.y,camera.z),
                     "follow",cn.wwl.orimod.client.render.SpiritCamera.debug(),"feel",cn.wwl.orimod.client.fx.MotionFeel.debug()));
+            state.put("lumen",cn.wwl.orimod.client.LumenSight.diagnostics());
             state.put("skillWheel",cn.wwl.orimod.client.SkillControls.diagnostics());
             state.put("arms",cn.wwl.orimod.client.render.SpiritHands.diagnostics());
             state.put("bladeMotion", cn.wwl.orimod.client.SpiritControls.bladeDiagnostics());

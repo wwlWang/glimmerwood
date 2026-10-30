@@ -12,10 +12,11 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RestorationTest {
+    // Historical eleven-shard save fixture: keep its original bits to verify migration.
     @Test void oldNbtDefaultsToNoWispsWithoutChangingEquipmentOrRewards(){var tag=new CompoundTag();tag.putInt("owned_shards",2047);tag.putInt("equipped_shards",129);tag.putInt("light",123);var rewards=new CompoundTag();rewards.putInt("purify/minecraft:overworld/12",1);tag.put("rewards",rewards);
         var p=SpiritProgress.CODEC.parse(NbtOps.INSTANCE,tag).getOrThrow();assertEquals(0,p.wisps());assertEquals(2047,p.ownedShards());assertEquals(129,p.equippedShards());assertEquals(123,p.light());assertEquals(1,WillWisp.purifications(p));}
     @ParameterizedTest @ValueSource(ints={0,1,2,3,4,5,6,7}) void everyWispCombinationSurvivesNbtAndProgressUpdates(int bits){
-        var p=SpiritProgress.EMPTY.withWisps(bits);p=p.withLight(9).withOwned(2047).withEquipped(129).withClaims(3).withCapacity(2).withRewards(Map.of("tree/site",1));
+        var p=SpiritProgress.EMPTY.withWisps(bits);p=p.withLight(9).withOwned(Shard.MASK).withEquipped(129).withClaims(3).withCapacity(2).withRewards(Map.of("tree/site",1));
         assertEquals(bits,p.wisps());assertEquals(p,SpiritProgress.CODEC.parse(NbtOps.INSTANCE,SpiritProgress.CODEC.encodeStart(NbtOps.INSTANCE,p).getOrThrow()).getOrThrow());}
     @Test void futureBitsDoNotPolluteCurrentWispMask(){assertEquals(7,SpiritProgress.EMPTY.withWisps(255).wisps());}
     @Test void purificationsCountOnlyDistinctPositivePersonalReceiptsAndCapAtThree(){var r=new HashMap<String,Integer>();r.put("tree/1",1);r.put("purify/1",0);assertEquals(0,WillWisp.purifications(SpiritProgress.EMPTY.withRewards(r)));for(int i=0;i<6;i++){r.put("purify/"+i,1);assertEquals(Math.min(i+1,3),WillWisp.purifications(SpiritProgress.EMPTY.withRewards(r)));}}

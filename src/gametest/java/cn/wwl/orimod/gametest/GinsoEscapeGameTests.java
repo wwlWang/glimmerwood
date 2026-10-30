@@ -193,6 +193,9 @@ public final class GinsoEscapeGameTests {
             try{for(int x=(heart.getX()-35)>>4;x<=(heart.getX()+35)>>4;x++)for(int z=(heart.getZ()-35)>>4;z<=(heart.getZ()+35)>>4;z++){if(h.getLevel().setChunkForced(x,z,true))pins.add(new ChunkPos(x,z));h.getLevel().getChunk(x,z);}
                 p.setData(SpiritData.FORM,true);p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY);p.setHealth(20);p.getAbilities().invulnerable=false;
                 link=Optional.of(new SoulLink.Link(h.getLevel().dimension(),h.absolutePos(new BlockPos(8,2,8))));p.setData(SpiritData.SOUL_LINK,link);
+                // Match a real enclosing trunk; water must not exist in an open fixture/sky column.
+                for(int x=-5;x<=5;x++)for(int z=-5;z<=5;z++)if(Math.abs(x)==5||Math.abs(z)==5)
+                    for(int y=90;y<=100;y++)write(piece.point(new BlockPos(x,y,z)),Blocks.OAK_LOG.defaultBlockState());
                 write(heart,OriBlocks.GINSO_WATER_HEART.get().defaultBlockState());ready();
                 // Expire vanilla login damage protection before testing ordinary hurt(), not a bypass source.
                 for(int i=0;i<61;i++)p.tick();p.invulnerableTime=0;ready();

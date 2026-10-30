@@ -28,6 +28,8 @@
     "FeatherFireworkMixin"
   ],
   "client": [
+    "LumenLightmapMixin",
+    "LumenVisionMixin",
     "SpiritSpearReleaseMixin",
     "SpiritHeldHandMixin",
     "SpiritInventoryMixin",

@@ -2,6 +2,8 @@ package cn.wwl.orimod.progression;
 
 /** Session timers; pending healing is cancelled on form, equipment and dimension changes. */
 public final class EnergyState {
+    public final ExplorationShardRules.Breath breath = new ExplorationShardRules.Breath();
+    public long prospectorAt = Long.MIN_VALUE;
     /** R34: game time when the next Soul Link may be made. */
     public long soulLinkReadyAt;
     /** R37: game time when the companion may fire the next Spirit Flame. */

@@ -281,7 +281,7 @@ public final class ShardGameTests {
     private static ServerPlayer player(GameTestHelper h, int shards) { var p = Fixtures.player(h); prepare(p, shards); return p; }
     private static void prepare(ServerPlayer p, int shards) {
         SpiritForm.toggle(p); p.setData(SpiritData.ABILITIES, (1 << 14) - 1);
-        p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withOwned(2047).withEquipped(shards));
+        p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withOwned(Shard.MASK).withEquipped(shards));
         p.setData(SpiritData.ENERGY, 10f); p.setHealth(10); p.setNoGravity(true);
         p.getData(SpiritData.ENERGY_STATE).flameReadyAt = Long.MAX_VALUE;
     }

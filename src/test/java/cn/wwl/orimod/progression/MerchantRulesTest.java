@@ -15,11 +15,11 @@ class MerchantRulesTest {
         assertEquals(MerchantRules.price(shard.id())*3,MerchantRules.panelPrice(shard)*2);
     }
     @Test void pricesMatchStrengthTable(){
-        assertEquals(List.of(100,100,80,100,120,200,120,120,160,140,140),Arrays.stream(Shard.values()).map(s->MerchantRules.price(s.id())).toList());
+        assertEquals(List.of(100,100,80,100,120,200,120,120,160,140,140,160,100,120,140,140,120),Arrays.stream(Shard.values()).map(s->MerchantRules.price(s.id())).toList());
         assertEquals(40,MerchantRules.price("ruin"));assertEquals(60,MerchantRules.price("tree"));assertEquals(50,MerchantRules.price("blight"));assertEquals(-1,MerchantRules.price("unknown"));
     }
-    @Test void stockIsStableUniqueAndUnowned(){for(int owned=0;owned<=2047;owned++){
-        var stock=MerchantRules.stock(107,owned);assertEquals(stock,MerchantRules.stock(107,owned));assertEquals(stock.size(),new HashSet<>(stock).size());assertEquals(Math.min(3,11-Integer.bitCount(owned)),stock.size());
+    @Test void stockIsStableUniqueAndUnowned(){for(int owned=0;owned<=Shard.MASK;owned++){
+        var stock=MerchantRules.stock(107,owned);assertEquals(stock,MerchantRules.stock(107,owned));assertEquals(stock.size(),new HashSet<>(stock).size());assertEquals(Math.min(3,Shard.values().length-Integer.bitCount(owned)),stock.size());
         for(var id:stock)assertEquals(0,owned&Shard.byId(id).bit);
     }}
     @Test void daysChangeSelectionWithoutRandomWallClock(){assertNotEquals(MerchantRules.stock(107,0),MerchantRules.stock(108,0));assertEquals(0,MerchantRules.day(23999));assertEquals(1,MerchantRules.day(24000));assertEquals(-1,MerchantRules.day(-1));}

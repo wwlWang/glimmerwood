@@ -11,7 +11,11 @@ public enum Shard {
     TRIPLE_JUMP(32, Ability.BASH),
     /** R99: WotW-inspired pickup sustain, Bash upgrade, retaliation and wall attachment. */
     LIFE_HARVEST(64, null), ENERGY_HARVEST(128, null), ULTRA_BASH(256, Ability.BASH),
-    THORN(512, null), STICKY(1024, Ability.CLIMB);
+    THORN(512, null), STICKY(1024, Ability.CLIMB),
+    MAGNET(2048, null), DEEP_BREATH(4096, null), LUMEN_SIGHT(8192, null),
+    PROSPECTOR(16384, null), EMBER_SKIN(32768, null), FORAGER(65536, null);
+
+    public static final int MASK = 131071;
 
     public final int bit;
     public final Ability prerequisite;

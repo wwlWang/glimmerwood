@@ -88,6 +88,18 @@ public final class SpiritProgression {
                 player.setData(SpiritData.PROGRESS,p.withLight(p.light()-cost).withOwned(p.ownedShards()|shard.bit));
                 reply(player,"progress.orimod.unlocked",shard.title());
             }
+            case "shard_slot" -> {
+                // One authoritative transaction for drag swaps; never unequip then race a second packet.
+                var parts = target.split(":", 2);
+                if (parts.length != 2 || !parts[0].matches("[0-3]")) return;
+                int slot = parts[0].charAt(0) - '0';
+                var shard = Shard.byId(parts[1]);
+                if (slot >= slots(player) || shard == null || (p.ownedShards() & shard.bit) == 0) return;
+                player.setData(SpiritData.PROGRESS, p.withSlot(slot, shard.bit));
+                player.setData(SpiritData.ENERGY, energy(player));
+                if (!Shard.RESILIENCE.equipped(player)) player.getData(SpiritData.ENERGY_STATE).pendingHeal = false;
+                reply(player, "progress.orimod.equipped", shard.title());
+            }
             case "equip", "unequip" -> {
                 var shard = Shard.byId(target);
                 if (shard == null || (p.ownedShards() & shard.bit) == 0) return;

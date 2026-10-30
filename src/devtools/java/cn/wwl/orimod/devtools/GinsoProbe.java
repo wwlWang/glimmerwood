@@ -65,7 +65,7 @@ final class GinsoProbe {
             row.put("origin",xyz(p));row.put("height",g.sculpture().height);row.put("shapeSeed",g.shapeSeed());row.put("shapeVersion",g.shapeVersion());row.put("courseVersion",g.courseVersion());
             row.put("escapeVersion",g.escapeVersion());
             if(g.escapeVersion()!=0){
-                var escape=g.escape();var plan=GinsoEscapeRules.plan(escape);
+                var escape=g.escape();var plan=GinsoEscapeRules.plan(escape,g.escapeVersion());
                 var route=escape.path().stream().map(q->{
                     var foot=g.point(new BlockPos(q.x(),(int)Math.floor(q.feet()),q.z()));
                     return Map.of("position",List.of(foot.getX()+.5,foot.getY()+q.feet()%1,foot.getZ()+.5),"distance",q.distance(),"corners",q.corners());
@@ -82,7 +82,7 @@ final class GinsoProbe {
             row.put("heart",xyz(g.point(course.heart())));row.put("checkpoints",course.wells().stream().map(g::point).map(GinsoProbe::xyz).toList());
             if(g.courseVersion()==1){row.put("lantern",xyz(g.point(GinsoInterior.LANTERN)));row.put("flower",xyz(g.point(GinsoInterior.GRAPPLE)));row.put("vent",xyz(g.point(GinsoInterior.VENT)));}
             row.put("sections",course.sections().stream().map(s->Map.of("id",s.id(),"start",xyz(g.point(s.start())),"goal",xyz(g.point(s.goal())),"floor",p.getY()+s.floor(),"top",p.getY()+s.top(),"required",s.required()==null?"basic":s.required().id())).toList());
-            row.put("hops",course.hops().stream().map(h->{var hop=new LinkedHashMap<String,Object>();
+            row.put("hops",g.ascentHops().stream().map(h->{var hop=new LinkedHashMap<String,Object>();
                 hop.put("section",h.section());hop.put("start",xyz(g.point(h.start())));hop.put("goal",xyz(g.point(h.goal())));
                 hop.put("floor",p.getY()+h.floor());hop.put("top",p.getY()+h.top());hop.put("side",h.side());
                 if(h.interaction()!=null)hop.put("interaction",xyz(g.point(h.interaction())));return hop;}).toList());

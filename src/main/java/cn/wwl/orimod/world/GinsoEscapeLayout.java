@@ -49,7 +49,7 @@ public final class GinsoEscapeLayout {
     private Audit audit=new Audit(0,0,0,0,0);
     private GinsoEscapeLayout(GinsoShape shape,long seed,int turn){this.shape=shape;this.seed=seed;this.turn=turn;}
     public static int checked(int shape,int course,int escape){
-        if(escape!=0&&(escape!=VERSION||shape!=3||course!=2))throw new IllegalArgumentException("Ginso escape version mismatch: "+shape+"/"+course+"/"+escape);
+        if(escape!=0&&!(shape==3&&(course==2&&escape==1||course==3&&escape==2)))throw new IllegalArgumentException("Ginso escape version mismatch: "+shape+"/"+course+"/"+escape);
         return escape;
     }
     public static Layout empty(){return EMPTY;}

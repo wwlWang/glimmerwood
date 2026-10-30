@@ -21,9 +21,9 @@ public final class GinsoPiece extends StructurePiece {
     private record ShapeKey(long seed,int version){}
     private static final Map<ShapeKey,GinsoShape> CACHE=new LinkedHashMap<>();
     public GinsoPiece(BlockPos at,long seed){this(at,seed,0,0);}
-    public GinsoPiece(BlockPos at,long seed,int entrance,int approach){this(at,seed,entrance,approach,GinsoShape.VERSION,GinsoCourses.forShape(GinsoShape.VERSION));}
+    public GinsoPiece(BlockPos at,long seed,int entrance,int approach){this(at,seed,entrance,approach,GinsoShape.VERSION,GinsoCourses.VERSION);}
     public GinsoPiece(BlockPos at,long seed,int entrance,int approach,int shapeVersion,int courseVersion){
-        this(at,seed,entrance,approach,shapeVersion,courseVersion,shapeVersion==3&&courseVersion==2?GinsoEscapeLayout.VERSION:0);
+        this(at,seed,entrance,approach,shapeVersion,courseVersion,shapeVersion==3?(courseVersion==3?2:courseVersion==2?1:0):0);
     }
     public GinsoPiece(BlockPos at,long seed,int entrance,int approach,int shapeVersion,int courseVersion,int escapeVersion){
         super(OriWorldgen.GINSO_PIECE.get(),0,bounds(at,shapeVersion));origin=at.immutable();this.seed=seed;
@@ -45,7 +45,13 @@ public final class GinsoPiece extends StructurePiece {
     public int shapeVersion(){return shapeVersion;}
     public int courseVersion(){return courseVersion;}
     public int escapeVersion(){return escapeVersion;}
-    public GinsoEscapeLayout.Layout escape(){return escapeVersion==0?GinsoEscapeLayout.empty():GinsoEscapeLayout.forTree(seed,entrance,sculpture());}
+    public GinsoEscapeLayout.Layout escape(){return escapeVersion==0?GinsoEscapeLayout.empty():escapeVersion==2?GinsoClimbEscape.forTree(seed,entrance,sculpture()).layout():GinsoEscapeLayout.forTree(seed,entrance,sculpture());}
+    public BlockPos escapeHeart(){return escapeVersion==2?GinsoClimbCourse.HEART:GinsoEscapeLayout.HEART;}
+    public BlockPos escapeSafe(){return escapeVersion==2?GinsoClimbCourse.SAFE:GinsoEscapeLayout.SAFE;}
+    public List<GinsoCourses.Hop> ascentHops(){
+        if(escapeVersion!=2)return course().hops();
+        var hops=new ArrayList<>(course().hops());hops.addAll(GinsoClimbEscape.forTree(seed,entrance,sculpture()).crownHops());return List.copyOf(hops);
+    }
     public GinsoShape sculpture(){return shape(seed,shapeVersion);}
     public Block leafAt(int x,int y,int z){
         return leafBlock(sculpture(),x,y,z);
@@ -115,10 +121,10 @@ public final class GinsoPiece extends StructurePiece {
                         else continue;
                     }
                     // v2 course owns its entry stair; the old grading/overlay ordering is frozen for v1.
-                    if(courseVersion==2&&inside!=0)c=inside;
+                    if(courseVersion>=2&&inside!=0)c=inside;
                     byte escapeCell=escape.cell(lx,dy,lz);if(escapeCell!=0)c=escapeCell;
-                    // Only newly saved EscapeVersion=1 pieces own a heart. Frozen layouts are unchanged.
-                    if(escapeVersion==1&&lx==0&&dy==94&&lz==0)c=21;
+                    // Saved version selects the heart; missing versions never acquire a new start.
+                    if(escapeVersion!=0&&lx==escapeHeart().getX()&&dy==escapeHeart().getY()&&lz==escapeHeart().getZ())c=21;
                     if(c==GinsoShape.EMPTY)continue;
                     p.set(x,origin.getY()+dy,z);if(!clip.isInside(p)||level.isOutsideBuildHeight(p))continue;
                     // Most of the tall shaft is already air. Avoid WorldGenRegion's write

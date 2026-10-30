@@ -41,7 +41,10 @@ public final class SpiritScreen extends Screen {
         for (int i = 0; i < tabs.length; i++) {
             int tab = i;
             var button = addRenderableWidget(new SpiritButton(left + 10 + i * (tabWidth + 4), top + 34, tabWidth, 20,
-                    Component.translatable("screen.orimod." + tabs[i]), b -> { page = tab; selectedId = ""; detailScroll = 0; rebuildWidgets(); }));
+                    Component.translatable("screen.orimod." + tabs[i]), b -> {
+                        if (tab == 1) { minecraft.setScreen(new ShardScreen(this)); return; }
+                        page = tab; selectedId = ""; detailScroll = 0; rebuildWidgets();
+                    }));
             button.active = i != page;
         }
         choices = addRenderableWidget(new ChoiceList(listWidth, bodyHeight, bodyTop));

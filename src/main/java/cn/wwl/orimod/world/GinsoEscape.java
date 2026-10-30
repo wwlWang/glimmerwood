@@ -33,10 +33,12 @@ public final class GinsoEscape {
     public static final class Session {
         public final UUID id=UUID.randomUUID();
         public final ServerLevel level;public final GinsoPiece piece;public final GinsoEscapeLayout.Layout layout;public final GinsoEscapeRules.Plan plan;
+        public final GinsoFloodVolume flood;
         public Phase phase=Phase.PREPARE;public Outcome outcome=Outcome.NONE;
         public int elapsed, submerged, maximumSubmerged, cooldown, rewardedLight;public String rewardedCell="";
         public boolean eligible, invalidated;public float startingHealth;
-        private Session(ServerPlayer p,GinsoPiece piece){this.level=p.serverLevel();this.piece=piece;layout=piece.escape();plan=GinsoEscapeRules.plan(layout);
+        private Session(ServerPlayer p,GinsoPiece piece){this.level=p.serverLevel();this.piece=piece;layout=piece.escape();plan=GinsoEscapeRules.plan(layout,piece.escapeVersion(),cn.wwl.orimod.config.OriServerConfig.ginsoWaterMultiplier());
+            flood=GinsoFloodVolume.forPiece(level,piece);
             eligible=SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator();startingHealth=p.getHealth();}
         public boolean active(){return phase==Phase.PREPARE||phase==Phase.RUNNING;}
         public double water(){return piece.origin().getY()+GinsoEscapeRules.water(plan,elapsed);}
@@ -56,7 +58,7 @@ public final class GinsoEscape {
     }
     public static boolean start(ServerPlayer p,BlockPos heart){
         var piece=GinsoCourse.at(p.serverLevel(),heart);
-        if(piece==null||piece.escapeVersion()!=1||!piece.point(GinsoEscapeLayout.HEART).equals(heart))return reject(p,"unavailable");
+        if(piece==null||piece.escapeVersion()==0||!piece.point(piece.escapeHeart()).equals(heart))return reject(p,"unavailable");
         return start(p,piece);
     }
     /** Same validation for placed structure fixtures and the right-click path. */
@@ -64,14 +66,23 @@ public final class GinsoEscape {
         var old=session(p);if(old!=null&&(old.active()||old.cooldown>0))return reject(p,old.active()?"running":"cooldown");
         var recovery=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
         if(recovery.pending()||recovery.retryAt()>clock(p))return reject(p,"cooldown");
-        var heart=piece.point(GinsoEscapeLayout.HEART);
-        if(piece.escapeVersion()!=1||!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)
+        var heart=piece.point(piece.escapeHeart());
+        if(piece.escapeVersion()==0||!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)
                 ||p.distanceToSqr(Vec3.atCenterOf(heart))>36||!p.isAlive()||p.isPassenger()||Restoration.active(p)
                 ||(!SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator()))return reject(p,"unavailable");
+        if(piece.escapeVersion()==2){
+            var missing=GinsoClimbEscape.missing(p.getData(SpiritData.ABILITIES));
+            if(!missing.isEmpty()){
+                var names=Component.empty();
+                for(int i=0;i<missing.size();i++){if(i>0)names.append(", ");names.append(missing.get(i).title());}
+                p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.requires",names),true);return false;
+            }
+            if(!SpiritData.isSpirit(p))return reject(p,"spirit_required");
+        }
         var s=new Session(p,piece);var at=s.local(p.position());
         if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z))return reject(p,"approach");
         SESSIONS.put(p.getUUID(),s);
-        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(GinsoEscapeLayout.SAFE),true,0));
+        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(piece.escapeSafe()),true,0));
         GinsoEscapePayload.send(p,s,true);
         EscapeSupport.title(p,"title.orimod.ginso.prepare","subtitle.orimod.ginso.prepare",5,40,15);
         return true;
@@ -90,7 +101,7 @@ public final class GinsoEscape {
         }
         if(!p.isAlive()){end(p,s,Outcome.DEAD,false);return;}
         if(p.serverLevel()!=s.level){end(p,s,Outcome.DIMENSION,false);return;}
-        var heart=s.piece.point(GinsoEscapeLayout.HEART);
+        var heart=s.piece.point(s.piece.escapeHeart());
         if(s.invalidated||s.level.getChunkSource().getChunkNow(heart.getX()>>4,heart.getZ()>>4)==null
                 ||!s.level.getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)) {end(p,s,Outcome.CHUNK,true);return;}
         s.eligible &= !p.isCreative()&&!p.isSpectator();
@@ -98,9 +109,13 @@ public final class GinsoEscape {
         var at=s.local(p.position());
         if(s.phase==Phase.RUNNING&&s.layout.exit().contains(at.x,at.y,at.z)&&p.onGround()){end(p,s,Outcome.SUCCESS,false);return;}
         if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z)){end(p,s,Outcome.OUTSIDE,true);return;}
-        boolean wet=s.phase==Phase.RUNNING&&s.layout.inFlood(at.x,at.y,at.z)&&p.getY()<s.water();
+        boolean wet=s.phase==Phase.RUNNING&&s.flood.contains(at.x,at.y,at.z)&&p.getY()<s.water()
+                &&GinsoFloodVolume.passable(s.level,s.piece.origin(),s.piece.entrance(),GinsoFloodVolume.cell(at.x,at.y,at.z));
         drag(p,wet);
-        s.submerged=wet&&p.getEyeY()<s.water()?s.submerged+1:0;
+        var eye=s.local(p.getEyePosition());
+        boolean headWet=wet&&p.getEyeY()<s.water()&&s.flood.contains(eye.x,eye.y,eye.z)
+                &&GinsoFloodVolume.passable(s.level,s.piece.origin(),s.piece.entrance(),GinsoFloodVolume.cell(eye.x,eye.y,eye.z));
+        s.submerged=headWet?s.submerged+1:0;
         s.maximumSubmerged=Math.max(s.maximumSubmerged,s.submerged);
         if(s.submerged>0&&s.submerged%20==0&&p.getHealth()>4)
             EscapeSupport.hurt(p,p.damageSources().drown(),Math.min(1,p.getHealth()-4));
@@ -119,7 +134,7 @@ public final class GinsoEscape {
         if(outcome==Outcome.SUCCESS){reward(p,s);EscapeSupport.title(p,"title.orimod.ginso.success","subtitle.orimod.ginso.success",5,50,20);}
         else if(outcome!=Outcome.DEAD&&p.isAlive())p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.failed",Component.translatable("message.orimod.ginso.reason."+outcome.name().toLowerCase(Locale.ROOT))),false);
         if(outcome==Outcome.DEAD)p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);
-        else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(GinsoEscapeLayout.SAFE),returnSafe,clock(p)+s.cooldown));
+        else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(s.piece.escapeSafe()),returnSafe,clock(p)+s.cooldown));
         GinsoEscapePayload.send(p,s,false);
         if(returnSafe&&p.isAlive())recover(p);
     }
@@ -153,7 +168,7 @@ public final class GinsoEscape {
     public static void unload(net.neoforged.neoforge.event.level.ChunkEvent.Unload e){
         // Mark only: never reload a chunk from its unload callback. Recovery runs on the next player tick.
         if(e.getLevel() instanceof ServerLevel level)for(var s:SESSIONS.values())
-            if(s.active()&&s.level==level&&new net.minecraft.world.level.ChunkPos(s.piece.point(GinsoEscapeLayout.HEART)).equals(e.getChunk().getPos()))s.invalidated=true;
+            if(s.active()&&s.level==level&&new net.minecraft.world.level.ChunkPos(s.piece.point(s.piece.escapeHeart())).equals(e.getChunk().getPos()))s.invalidated=true;
     }
     public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p){SESSIONS.remove(p.getUUID());recover(p);GinsoEscapePayload.clear(p);}}
     public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)disconnect(p);}
@@ -169,7 +184,7 @@ public final class GinsoEscape {
     public static Map<String,Object> diagnostics(ServerPlayer p){
         var s=session(p);var out=new LinkedHashMap<String,Object>();var r=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
         out.put("phase",s==null?(r.retryAt()>clock(p)?"COOLDOWN":"READY"):s.phase.name());out.put("pendingRecovery",r.pending());out.put("receipt",p.getData(SpiritData.PROGRESS).rewards().getOrDefault(RECEIPT,0));
-        if(s!=null){out.put("session",s.id.toString());out.put("elapsedTicks",s.elapsed);out.put("waterY",s.water());out.put("submergedTicks",s.submerged);out.put("maximumSubmergedTicks",s.maximumSubmerged);out.put("outcome",s.outcome.name());out.put("cooldownTicks",s.cooldown);out.put("referenceSeconds",s.plan.referenceSeconds());out.put("limitTicks",s.plan.limitTicks());out.put("rewardLight",s.rewardedLight);out.put("rewardCell",s.rewardedCell);out.put("initialHealth",s.startingHealth);out.put("health",p.getHealth());out.put("safe",List.of(s.piece.point(GinsoEscapeLayout.SAFE).getX(),s.piece.point(GinsoEscapeLayout.SAFE).getY(),s.piece.point(GinsoEscapeLayout.SAFE).getZ()));}
+        if(s!=null){out.put("session",s.id.toString());out.put("elapsedTicks",s.elapsed);out.put("waterY",s.water());out.put("submergedTicks",s.submerged);out.put("maximumSubmergedTicks",s.maximumSubmerged);out.put("outcome",s.outcome.name());out.put("cooldownTicks",s.cooldown);out.put("referenceSeconds",s.plan.referenceSeconds());out.put("limitTicks",s.plan.limitTicks());out.put("rewardLight",s.rewardedLight);out.put("rewardCell",s.rewardedCell);out.put("initialHealth",s.startingHealth);out.put("health",p.getHealth());out.put("safe",List.of(s.piece.point(s.piece.escapeSafe()).getX(),s.piece.point(s.piece.escapeSafe()).getY(),s.piece.point(s.piece.escapeSafe()).getZ()));}
         return out;
     }
     private GinsoEscape(){}

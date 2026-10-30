@@ -5,7 +5,7 @@ import java.util.*;
 
 /** Saved course contracts. The released v1 field is never rebuilt from the current layout. */
 public final class GinsoCourses {
-    public static final int VERSION=2;
+    public static final int VERSION=3;
     public record Hop(String section,int floor,int top,int side,BlockPos start,BlockPos goal,
                       BlockPos interaction,byte kind) {}
     public record Layout(Map<BlockPos,Byte> blocks,List<GinsoInterior.Section> sections,List<BlockPos> wells,
@@ -25,9 +25,9 @@ public final class GinsoCourses {
     public static int forShape(int shape){return GinsoShape.checkedVersion(shape)<=2?1:2;}
     public static int checked(int shape,int course){
         // CourseVersion was absent before 993a88f: those already-built exteriors stay empty.
-        if(course!=0&&course!=forShape(shape))throw new IllegalArgumentException("Ginso shape/course mismatch: "+shape+"/"+course);
+        if(course!=0&&course!=forShape(shape)&&!(shape==3&&course==3))throw new IllegalArgumentException("Ginso shape/course mismatch: "+shape+"/"+course);
         return course;
     }
-    public static Layout layout(int version){return switch(version){case 0->EMPTY;case 1->LEGACY;case 2->TallGinsoInterior.layout();default->throw new IllegalArgumentException("Unknown Ginso course "+version);};}
+    public static Layout layout(int version){return switch(version){case 0->EMPTY;case 1->LEGACY;case 2->TallGinsoInterior.layout();case 3->GinsoClimbCourse.layout();default->throw new IllegalArgumentException("Unknown Ginso course "+version);};}
     private GinsoCourses(){}
 }

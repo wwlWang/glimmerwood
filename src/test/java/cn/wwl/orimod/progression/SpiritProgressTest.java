@@ -44,7 +44,7 @@ class SpiritProgressTest {
         assertEquals(expected, SpiritProgress.EMPTY.withCapacity(input).capacityLevel());
     }
 
-    @Test void unknownShardBitsAreDiscarded() { assertEquals(2047, SpiritProgress.EMPTY.withOwned(4095).ownedShards()); }
+    @Test void unknownShardBitsAreDiscarded() { assertEquals(Shard.MASK, SpiritProgress.EMPTY.withOwned(-1).ownedShards()); }
     @Test void oldNbtRetainsAllSixShardBitsAndEquipment() {
         for (int equipped = 0; equipped <= 63; equipped++) {
             var tag = new net.minecraft.nbt.CompoundTag();
@@ -54,8 +54,8 @@ class SpiritProgressTest {
             assertEquals(SpiritProgress.VERSION, value.version());
         }
     }
-    @Test void allElevenShardsRoundTripThroughNbt() {
-        var original = new SpiritProgress(1, 120, 2047, 2047, 3, 2, Map.of("hint/updraft", 1));
+    @Test void allShardsRoundTripThroughNbt() {
+        var original = new SpiritProgress(1, 120, Shard.MASK, Shard.MASK, 3, 2, Map.of("hint/updraft", 1));
         var nbt = SpiritProgress.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, original).getOrThrow();
         assertEquals(original, SpiritProgress.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, nbt).getOrThrow());
     }

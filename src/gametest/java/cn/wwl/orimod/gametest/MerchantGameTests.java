@@ -24,10 +24,10 @@ public final class MerchantGameTests {
     @GameTestGenerator public static Collection<TestFunction> cases(){
         var tests=new ArrayList<TestFunction>();
         for(var shard:Shard.values())add(tests,"buy_"+shard.id()+"_once",(h,s)->{
-            s.p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY.withLight(500).withOwned(2047&~shard.bit));
+            s.p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY.withLight(500).withOwned(Shard.MASK&~shard.bit));
             var quote=s.open(0);h.assertValueEqual(quote.offers().size(),1,"Only missing shard offered");var packet=s.packet(quote,shard.id());
             MerchantTrading.buy(s.p,packet);MerchantTrading.buy(s.p,packet);
-            h.assertValueEqual(s.p.getData(SpiritData.PROGRESS).ownedShards(),2047,"Shard not granted");s.balance(500-MerchantRules.price(shard.id()));
+            h.assertValueEqual(s.p.getData(SpiritData.PROGRESS).ownedShards(),Shard.MASK,"Shard not granted");s.balance(500-MerchantRules.price(shard.id()));
             var after=s.quote();h.assertFalse(after.offers().getFirst().available(),"Sold shard offered again");h.assertValueEqual(after.offers().getFirst().id(),shard.id(),"Sale rerolled stock");
         });
         add(tests,"insufficient_light_keeps_progress",(h,s)->{s.p.setData(SpiritData.PROGRESS,SpiritProgress.EMPTY.withLight(79));var q=s.open(0);MerchantTrading.buy(s.p,s.packet(q,q.offers().getFirst().id()));s.balance(79);h.assertValueEqual(s.p.getData(SpiritData.PROGRESS).ownedShards(),0,"Unaffordable shard");h.assertValueEqual(s.quote().message(),"funds","Refusal");});
