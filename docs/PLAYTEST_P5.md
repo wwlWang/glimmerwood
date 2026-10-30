@@ -135,3 +135,5 @@
 ## P5-K 新提交 `bff08b8`（R117 D 腐化生态）到达后的快速复查
 测试中途作者推了 `bff08b8`（腐化核心蔓延、动物腐化、腐化氛围、去掉左侧旧能量条）。以上 F/H/J 都是在 `cf989da` 代码上测的；下面是重启客户端换到 `bff08b8` 后的补测。
 - 能量条卡红（A1）：新代码上照样复现——活 15 秒后拒绝一次 → `/kill` → 重生回满能量 5 秒后整条仍红 `playtest-p5-g-a1-newcode-respawn5s.png` **[仍存在]**（`energyFlashUntil` 那段没改）。
+- 腐化生态冒烟（`p5new`，自然生成的腐化地面，核心 `(726,70,668)`，`/locate structure orimod:blighted_grounds` + `/ori blight nearest`）：站在里面 30 秒，**自然回血停止**（HP 16 不动）、**能量 100→83**（约 0.5/秒）、附近召唤的 3 头牛里离核心最近的那头 `infected=true`、紫色雾气/天空生效（`atmosphere.blight.intensity 0.35`，`radius 14.4`）**[通过]** `playtest-p5-g-blight-natural-30s.png`。蔓延速度、动物恢复、打碎核心后按原状还原 **[未测：时间]**。
+- **[信息] 命令放的腐化之核不会蔓延**：`/setblock … orimod:gloom_core` 放在草地上 30 秒，地表、动物、回血都没变化——方块实体只有带世界生成 `terrain` 时才注册生态（`GloomCoreBlockEntity.registerLoaded`），属于设计，但创造模式/命令测试时容易以为坏了。
