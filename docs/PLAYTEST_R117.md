@@ -8,3 +8,8 @@
 
 Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。截图 `/workspace/oriMod/shots/playtest-p4-*`，脚本 `/workspace/oriMod/pt117/`。**不改代码**，只记录。标注 **[已修复] / [仍存在] / [有变化] / [新·复现] / [新·怀疑]**。
 
+## P4-0 新世界起步（`orimod_dev_pt117`，seed 117117，生存/普通，不用作弊命令看自然流程）
+- 出生点 `(2.5,78,36.5)` 樱花丘陵。`locate`：spirit_tree 20 格 `(0,16)`、forest_spring 330、blighted 364、cave_altar 494、great_spirit_tree 534、creek 679、glades_outpost 756、ginso_tree 1746（新树 → Course 3 / Escape 2）。
+- **[新·复现，minor] `locate structure orimod:spirit_tree` 指向空地：** 出生点旁 `(0,~,16)` 和 `(240,~,-400)` 两处结构起点，四周和空中俯拍都没有灵树（`playtest-p4-spirit-tree-sites.png` 右下 / 左下）；`(240,~,320)` 那处正常（左上，蓝色灵树）。和 P3-5 `blighted_grounds` 是同一类问题：`FeatureSitePiece.postProcess` 放不下 feature 时结构起点仍然登记。新玩家出生点旁「20 格外的灵树」其实不存在，用导引/地图石会扑空。
+- 人形 HUD 原版；右上角原版教程提示正常。精灵相关的起步引导需先合成精灵核心（P2-A 已测，本轮不重复）。
+
