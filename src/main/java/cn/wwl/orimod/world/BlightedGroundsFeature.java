@@ -109,9 +109,9 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         var result=preflight(context.level(),context.origin(),context.random().nextLong());if(result.reason()!=Reason.OK)return false;
         for(var e:result.writes().entrySet())context.level().setBlock(e.getKey(),e.getValue(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
         var positions=result.writes().keySet().stream().filter(p->!p.equals(result.center())).mapToLong(BlockPos::asLong).toArray();
-        if(context.level().getBlockEntity(result.center()) instanceof GloomCoreBlockEntity core)core.terrain(positions);
+        if(context.level().getBlockEntity(result.center()) instanceof GloomCoreBlockEntity core)core.generatedTerrain(positions);
         // Generation workers must never mutate the dimension SavedData. Core.onLoad registers after promotion.
-        if(context.level() instanceof ServerLevel server)BlightData.get(server).register(result.center(),positions);
+        if(context.level() instanceof ServerLevel server)BlightData.get(server).register(result.center(),positions,true);
         FeatureSites.generated(context.level(),result.center(),FeatureSites.Kind.BLIGHT);
         return true;
     }

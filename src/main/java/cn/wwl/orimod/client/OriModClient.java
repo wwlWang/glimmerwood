@@ -17,6 +17,8 @@ public final class OriModClient {
         modEventBus.addListener(OriModClient::configReloaded);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritHud::hideVanilla);
         modEventBus.addListener(SpiritHud::register);
+        modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e)->e.register((s,t)->0x9c57bd,cn.wwl.orimod.item.OriItems.GLOOM_RESIDUE.get()));
+        modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers e)->cn.wwl.orimod.client.render.CorruptAnimalLayer.layers(e));
         modEventBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerBlockEntityRenderer(cn.wwl.orimod.block.OriBlockEntities.SANCTUARY.get(), cn.wwl.orimod.client.render.SanctuaryRenderer::new));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.DoorOpening::render);
@@ -81,6 +83,8 @@ public final class OriModClient {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritAppearance::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritGlow::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.render.SpiritHands::emptyArm);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.BlightAtmosphereClient::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.BlightAtmosphereClient::logout);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::fog);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.client.fx.GloomTideClient::logout);

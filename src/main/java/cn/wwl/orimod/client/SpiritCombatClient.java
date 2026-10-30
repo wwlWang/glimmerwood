@@ -96,15 +96,7 @@ public final class SpiritCombatClient {
     public static void register(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(OriMod.MOD_ID, "combat"), (graphics, delta) -> {
             var mc = Minecraft.getInstance();
-            if (mc.player == null || mc.screen != null || mc.options.hideGui || !SpiritData.isSpirit(mc.player)) return;
-            float energy = SpiritProgression.energy(mc.player), max = SpiritProgression.maxEnergy(mc.player);
-            int x = 8, y = graphics.guiHeight() - 62, width = 84;
-            boolean low = energyFlashing() || mc.player.getMainHandItem().is(OriItems.SPIRIT_BOW) && energy < SpiritCombat.BOW_COST;
-            if (!SpiritHud.enabled()) {
-            graphics.drawString(mc.font, Component.translatable("hud.orimod.energy", (int)energy, (int)max), x, y - 12, low ? 0xFFB09E : 0xC6F5FF, true);
-            graphics.fill(x - 1, y - 1, x + width + 1, y + 5, 0xBB14232E);
-            graphics.fill(x, y, x + (int)(width * energy / max), y + 4, low ? 0xFFE39080 : 0xFF86DDEC);
-            }
+            if (mc.player == null || mc.screen != null || mc.options.hideGui || mc.player.isSpectator() || !SpiritData.isSpirit(mc.player)) return;
             var view = mc.player.getData(SpiritData.COMBAT_VIEW);
             int cx = graphics.guiWidth() / 2, cy = graphics.guiHeight() / 2;
             if (mc.player.isUsingItem() && mc.player.getUseItem().is(OriItems.SPIRIT_BOW)) {

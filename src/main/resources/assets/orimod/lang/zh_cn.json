@@ -400,6 +400,7 @@
   "entity.orimod.gloom_beetle": "腐光甲虫",
   "hint.orimod.gloom_beetle": "萤：正面打不动！跳到它背上下砸！",
   "item.orimod.gloom_beetle_spawn_egg": "腐光甲虫刷怪蛋",
+  "block.orimod.blight_leaves": "腐化枯叶",
   "block.orimod.blighted_soil": "腐化之土",
   "block.orimod.gloom_thorns": "腐光荆棘",
   "block.orimod.withered_spirit_log": "枯死灵木",
@@ -572,5 +573,8 @@
   "screen.orimod.shard_unlock_2": "学会钩索后解锁，无需额外花费灵光。",
   "screen.orimod.shard_unlock_3": "累计学会 10 种能力后解锁，无需额外花费灵光。",
   "message.orimod.ginso.escape.requires": "逃亡需要先学会：%s",
-  "message.orimod.ginso.escape.spirit_required": "切换为精灵形态后再取走水之心的光。"
+  "message.orimod.ginso.escape.spirit_required": "切换为精灵形态后再取走水之心的光。",
+  "item.orimod.gloom_residue": "腐化残渣",
+  "message.orimod.blight_exposure": "腐化：自然恢复受阻，精灵能量正在流失。",
+  "message.orimod.blight_exposure_human": "腐化：自然恢复受阻。"
 }

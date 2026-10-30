@@ -400,6 +400,7 @@
   "entity.orimod.gloom_beetle": "Gloom Beetle",
   "hint.orimod.gloom_beetle": "Glimmer: Its front is armored! Jump behind it and Stomp!",
   "item.orimod.gloom_beetle_spawn_egg": "Gloom Beetle Spawn Egg",
+  "block.orimod.blight_leaves": "Blighted Leaves",
   "block.orimod.blighted_soil": "Blighted Soil",
   "block.orimod.gloom_thorns": "Gloom Thorns",
   "block.orimod.withered_spirit_log": "Withered Spirit Log",
@@ -572,5 +573,8 @@
   "screen.orimod.shard_unlock_2": "Learn Grapple to unlock. No extra Spirit Light cost.",
   "screen.orimod.shard_unlock_3": "Learn 10 abilities to unlock. No extra Spirit Light cost.",
   "message.orimod.ginso.escape.requires": "Learn these abilities before starting the escape: %s",
-  "message.orimod.ginso.escape.spirit_required": "Enter spirit form before taking the Water Heart’s light."
+  "message.orimod.ginso.escape.spirit_required": "Enter spirit form before taking the Water Heart’s light.",
+  "item.orimod.gloom_residue": "Gloom Residue",
+  "message.orimod.blight_exposure": "Corruption: natural recovery is suppressed; spirit energy is draining.",
+  "message.orimod.blight_exposure_human": "Corruption: natural recovery is suppressed."
 }

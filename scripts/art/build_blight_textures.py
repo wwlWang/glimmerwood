@@ -7,6 +7,38 @@ import struct
 import zlib
 OUT = Path(__file__).resolve().parents[2] / 'src/main/resources/assets/orimod/textures/block'
 
+# R117: original, hand-placed 16x16 leaf clusters. Dots are fully transparent;
+# each 0..4 is one fixed grey-purple color. No vanilla pixels or tint input.
+LEAF_ROWS = tuple(row.replace(' ', '') for row in (
+    "123. 0123 ..12 3201",
+    "2341 .234 1123 421.",
+    "341. .341 2341 21..",
+    ".10. 001. 341. .012",
+    "01.. 1230 .10. 1234",
+    "123. 2341 ..01 2341",
+    "2341 341. 1234 341.",
+    "341. .10. 2341 .10.",
+    ".10. ..01 341. 0123",
+    "01.. 1234 .10. 1234",
+    "1234 2341 ..01 2341",
+    "2341 341. 1234 .41.",
+    "341. .10. 2341 ..1.",
+    ".10. 0123 341. 01..",
+    "01.. 1234 .10. 1234",
+    "1230 2341 ..01 2341",
+))
+LEAF_PALETTE = ((33,28,39), (46,38,54), (60,49,70), (75,62,86), (92,77,104))
+assert len(LEAF_ROWS) == 16 and all(len(row) == 16 for row in LEAF_ROWS)
+
+RESIDUE_ROWS = (
+    "................", ".........12.....", "........1231....", ".......123421...",
+    ".......23431....", ".......3410.....", "........10......", "....123.........",
+    "...12341........", "..1234431...12..", "..234431...1231.", "..34310.....210.",
+    "...210..........", ".......12.......", "......1231......", ".......10.......",
+)
+RESIDUE_PALETTE = ((40,25,47), (68,39,83), (101,58,125), (141,88,166), (185,129,203))
+assert len(RESIDUE_ROWS) == 16 and all(len(row) == 16 for row in RESIDUE_ROWS)
+
 def png(pixel, frames=1):
     def chunk(kind, data):
         return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
@@ -14,6 +46,10 @@ def png(pixel, frames=1):
     return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR',struct.pack('>IIBBBBB',16,16*frames,8,6,0,0,0)) + chunk(b'IDAT',zlib.compress(raw,9)) + chunk(b'IEND',b'')
 
 def pixel(kind,x,y,damage=0):
+    if kind in ('leaves','residue'):
+        rows,palette=(LEAF_ROWS,LEAF_PALETTE) if kind=='leaves' else (RESIDUE_ROWS,RESIDUE_PALETTE)
+        symbol=rows[y][x]
+        return (0,0,0,0) if symbol=='.' else palette[int(symbol)]+(255,)
     grain = (x*13+y*31+x*y*3)%19-9
     if kind=='soil':
         stain = ((x-4)**2+(y-6)**2<13 or (x-12)**2+(y-13)**2<10)
@@ -39,10 +75,10 @@ def pixel(kind,x,y,damage=0):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()
-    textures={'blighted_soil':('soil',0),'gloom_thorns':('thorn',0),'withered_spirit_log':('log',0),'withered_spirit_log_top':('end',0)}
+    textures={'gloom_residue':('residue',0),'blight_leaves':('leaves',0),'blighted_soil':('soil',0),'gloom_thorns':('thorn',0),'withered_spirit_log':('log',0),'withered_spirit_log_top':('end',0)}
     textures.update({f'gloom_core_{i}':('core',i) for i in range(5)})
     for name,(kind,damage) in textures.items():
-        path=OUT/(name+'.png')
+        path=(OUT.parent/'item' if kind=='residue' else OUT)/(name+'.png')
         frames=12 if kind=='core' else 1
         def animated(x,y):
             rgba=pixel(kind,x,y%16,damage)
@@ -52,7 +88,7 @@ def main():
         data=png(animated,frames)
         if args.check:
             if not path.exists() or path.read_bytes()!=data: raise SystemExit(f'Stale blight texture: {path}')
-        else: OUT.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+        else: path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
         print(f'{"Verified" if args.check else "Generated"} {path.name}')
         if frames>1:
             metadata=path.with_suffix('.png.mcmeta');text=json.dumps({'animation':{'frametime':4,'interpolate':True}},indent=2)+'\n'

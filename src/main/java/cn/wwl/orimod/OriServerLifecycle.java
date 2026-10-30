@@ -37,6 +37,10 @@ public final class OriServerLifecycle {
         cn.wwl.orimod.progression.Restoration.clear();
         cn.wwl.orimod.world.GinsoEscape.clear();
         cn.wwl.orimod.world.RestorationBloom.clear();
+        cn.wwl.orimod.world.BlightEcology.clear();
+        cn.wwl.orimod.world.BlightAtmosphereSync.clear();
+        cn.wwl.orimod.world.BlightMobs.clear();
+        cn.wwl.orimod.entity.CorruptedAnimals.clear();
         cn.wwl.orimod.world.GloomTide.reset();
         cn.wwl.orimod.world.FeatureSites.clear();
         RuinLocator.discardAll();

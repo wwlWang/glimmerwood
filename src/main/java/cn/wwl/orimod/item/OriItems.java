@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class OriItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(OriMod.MOD_ID);
+    public static final DeferredItem<Item> GLOOM_RESIDUE=ITEMS.registerSimpleItem("gloom_residue",new Item.Properties());
     public static final DeferredItem<SpiritCoreItem> SPIRIT_CORE = ITEMS.register("spirit_core", () -> new SpiritCoreItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<SpiritLightItem> SPIRIT_LIGHT = ITEMS.register("spirit_light", () -> new SpiritLightItem(new Item.Properties()));
     public static final DeferredItem<SpiritCellItem> LIFE_CELL = ITEMS.register("life_cell", () -> new SpiritCellItem(cn.wwl.orimod.progression.SpiritCells.Kind.LIFE, new Item.Properties().stacksTo(16)));

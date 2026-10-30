@@ -12,15 +12,18 @@ public final class GloomCoreBlockEntity extends BlockEntity {
     private int health=BlightRules.HEALTH;
     long lastRefused=Long.MIN_VALUE;
     private long[] terrain=new long[0];
+    private boolean naturalEcology;
     public GloomCoreBlockEntity(BlockPos pos,BlockState state){super(OriBlockEntities.GLOOM_CORE.get(),pos,state);}
     public int health(){return health;}
     public void terrain(long[] positions){terrain=positions.clone();setChanged();}
-    @Override public void onLoad(){super.onLoad();if(level instanceof ServerLevel server && server.getServer().isSameThread() && terrain.length>0)BlightData.get(server).register(worldPosition,terrain);}
+    public void generatedTerrain(long[] positions){naturalEcology=true;terrain(positions);registerLoaded();}
+    private void registerLoaded(){if(level instanceof ServerLevel server&&server.getServer().isSameThread()&&terrain.length>0){BlightData.get(server).register(worldPosition,terrain,naturalEcology);BlightEcology.wake(server,worldPosition);}}
+    @Override public void onLoad(){super.onLoad();registerLoaded();}
     public boolean hit(ServerPlayer player,BlightRules.Source source){
         if(!(level instanceof ServerLevel server) || health<=0)return false;
         int amount=BlightRules.damage(source);
         if(amount==0){GloomCoreBlock.reject(server,worldPosition,player);return false;}
-        if(terrain.length>0)BlightData.get(server).register(worldPosition,terrain);
+        if(terrain.length>0)BlightData.get(server).register(worldPosition,terrain,naturalEcology);
         health=Math.max(0,health-amount);setChanged();
         if(health==0){
             BlightData.get(server).begin(server,worldPosition);
@@ -31,6 +34,6 @@ public final class GloomCoreBlockEntity extends BlockEntity {
         }
         return true;
     }
-    @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.putInt("health",health);tag.putLongArray("terrain",terrain);}
-    @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);health=tag.contains("health")?Math.max(0,Math.min(40,tag.getInt("health"))):40;terrain=tag.getLongArray("terrain");}
+    @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.putInt("health",health);tag.putLongArray("terrain",terrain);if(naturalEcology)tag.putBoolean("natural_ecology",true);}
+    @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);health=tag.contains("health")?Math.max(0,Math.min(40,tag.getInt("health"))):40;terrain=tag.getLongArray("terrain");naturalEcology=tag.getBoolean("natural_ecology");}
 }

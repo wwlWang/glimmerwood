@@ -73,16 +73,18 @@ public final class GloomTideDefense {
         return out;
     }
     public static void invalidate(ServerLevel level, BlockPos pos) {
+        BlightProtection.invalidate(level,pos);
         var cache = CACHE.get(level);
         if (cache != null) cache.remove(SectionPos.asLong(pos));
     }
     public static void unloadChunk(ChunkEvent.Unload event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        BlightProtection.unload(level,event.getChunk().getPos());
         var cache = CACHE.get(level); if (cache == null) return;
         var pos = event.getChunk().getPos();
         cache.keySet().removeIf(key -> SectionPos.x(key) == pos.x && SectionPos.z(key) == pos.z);
     }
-    public static void clear(ServerLevel level) { CACHE.remove(level); }
-    public static void reset() { CACHE.clear(); }
+    public static void clear(ServerLevel level) { CACHE.remove(level);BlightProtection.clear(level); }
+    public static void reset() { CACHE.clear();BlightProtection.clear(); }
     private GloomTideDefense() {}
 }

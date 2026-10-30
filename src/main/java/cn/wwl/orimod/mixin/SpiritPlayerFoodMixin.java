@@ -27,4 +27,6 @@ public abstract class SpiritPlayerFoodMixin {
     private Difficulty noPeacefulSpiritRefill(Level level) {
         return SpiritData.isSpirit((Player)(Object)this) ? Difficulty.NORMAL : level.getDifficulty();
     }
+    @Redirect(method="aiStep",at=@At(value="INVOKE",target="Lnet/minecraft/world/entity/player/Player;heal(F)V"))
+    private void corruptionStopsPeacefulHealing(Player player,float amount){if(!cn.wwl.orimod.progression.BlightExposure.suppress(player))player.heal(amount);}
 }

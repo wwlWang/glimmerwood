@@ -25,7 +25,9 @@
     "SpiritSprintParticlesMixin",
     "RestorationMoveMixin",
     "KuroFeatherItemMixin",
-    "FeatherFireworkMixin"
+    "FeatherFireworkMixin",
+    "CorruptAnimalLootMixin",
+    "CorruptChickenMixin"
   ],
   "client": [
     "LumenLightmapMixin",
@@ -49,7 +51,9 @@
     "SpiritAnimationDropMixin",
     "SpiritAnimationInteractionMixin",
     "FeatherElytraLayerMixin",
-    "FeatherItemNameMixin"
+    "FeatherItemNameMixin",
+    "CorruptAnimalTintMixin",
+    "CorruptAnimalLayersMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -22,6 +22,7 @@ public final class SpiritRecovery {
         Regenerate.tick(p);
         if (s.recoveryLastTick == now) return;
         s.recoveryLastTick = now;
+        if(BlightExposure.suppress(p))return;
         if (now % 4 == 0) {
             float amount = RecoveryRules.energy(SpiritProgression.energy(p), SpiritProgression.maxEnergy(p), now - s.lastSpent,
                     Regenerate.active(p) || cn.wwl.orimod.combat.Flash.active(p), Shard.RECOVERY.equipped(p), .2f);

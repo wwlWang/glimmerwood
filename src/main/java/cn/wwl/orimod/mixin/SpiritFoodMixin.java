@@ -12,4 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SpiritFoodMixin {
     @Inject(method="tick", at=@At("HEAD"), cancellable=true)
     private void spiritMetabolism(Player p, CallbackInfo ci) { if (SpiritData.isSpirit(p)) ci.cancel(); }
+    @Redirect(method="tick",at=@At(value="INVOKE",target="Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
+    private boolean corruptionStopsNaturalHealing(net.minecraft.world.level.GameRules rules,net.minecraft.world.level.GameRules.Key<net.minecraft.world.level.GameRules.BooleanValue> key,Player player){
+        return rules.getBoolean(key)&&!cn.wwl.orimod.progression.BlightExposure.suppress(player);
+    }
 }

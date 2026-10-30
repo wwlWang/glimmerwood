@@ -222,6 +222,12 @@ public final class DevelopmentBridge {
                 return server.submit(() -> Map.<String, Object>of("saved", server.saveEverything(true, true, true),
                         "serverTick", server.getTickCount())).get(35, TimeUnit.SECONDS);
             }
+            case "blight_ecology_probe", "blight_animals_probe", "blight_boundary_probe" -> {
+                require(mc.player!=null&&mc.getSingleplayerServer()!=null,"Single-player world required");
+                var server=mc.getSingleplayerServer();var id=mc.player.getUUID();
+                var center=new net.minecraft.core.BlockPos(action.get("x").getAsInt(),action.get("y").getAsInt(),action.get("z").getAsInt());
+                return server.submit(()->{var level=server.getPlayerList().getPlayer(id).serverLevel();return switch(operation){case "blight_animals_probe"->BlightProbe.animals(level,center);case "blight_boundary_probe"->BlightProbe.boundary(level,center);default->BlightProbe.scan(level,center);};}).get(30,TimeUnit.SECONDS);
+            }
             case "spirit_tree_probe" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var server = mc.getSingleplayerServer();
@@ -735,7 +741,7 @@ public final class DevelopmentBridge {
             case "render_diagnostics" -> {
                 return Map.of("photon", com.lowdragmc.photon.client.compat.iris.IrisDiagnostics.report(
                         com.lowdragmc.photon.client.compat.iris.IrisCompat.diagnosticsTarget()),
-                        "aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics());
+                        "aura", cn.wwl.orimod.client.fx.SpiritAura.diagnostics(),"atmosphere",cn.wwl.orimod.client.fx.GloomTideClient.diagnostics());
             }
             case "spirit_capture_actor" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null,"Integrated world required");

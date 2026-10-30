@@ -16,8 +16,9 @@ public final class SpiritHud {
     public static boolean enabled(){var p=Minecraft.getInstance().player;return p!=null && SpiritData.isSpirit(p) && !p.isSpectator()
             && (!OriClientConfig.SPEC.isLoaded() || !OriClientConfig.VANILLA_HUD.get());}
     public static void hideVanilla(RenderGuiLayerEvent.Pre e){
-        if(!enabled())return;
+        if(!spiritHud())return;
         var n=e.getName();
+        if(!enabled()){if(n.equals(VanillaGuiLayers.FOOD_LEVEL))e.setCanceled(true);return;}
         if(n.equals(VanillaGuiLayers.FOOD_LEVEL)||n.equals(VanillaGuiLayers.PLAYER_HEALTH)
                 ||n.equals(VanillaGuiLayers.EXPERIENCE_BAR)||n.equals(VanillaGuiLayers.EXPERIENCE_LEVEL))e.setCanceled(true);
     }
@@ -25,11 +26,16 @@ public final class SpiritHud {
         e.registerBelow(VanillaGuiLayers.PLAYER_HEALTH,ResourceLocation.parse("orimod:life_energy"),(g,t)->meters(g));
         e.registerAbove(VanillaGuiLayers.AIR_LEVEL,ResourceLocation.parse("orimod:light_skills"),(g,t)->extras(g));
     }
+    private static boolean spiritHud(){var p=Minecraft.getInstance().player;return p!=null&&SpiritData.isSpirit(p)&&!p.isSpectator();}
     private static void meters(GuiGraphics g){
         var mc=Minecraft.getInstance();var p=mc.player;
-        if(!enabled()||mc.options.hideGui||mc.gameMode==null||!mc.gameMode.canHurtPlayer())return;
+        if(!spiritHud()||mc.options.hideGui||mc.gameMode==null||!mc.gameMode.canHurtPlayer())return;
         int left=g.guiWidth()/2-91,right=g.guiWidth()/2+91;
         int lifeY=g.guiHeight()-mc.gui.leftHeight,energyY=g.guiHeight()-mc.gui.rightHeight;
+        if(!enabled()){
+            int rows=row(g,"energy",SpiritProgression.energy(p),SpiritProgression.maxEnergy(p),10,right,energyY,0xFFFFFF,true);
+            mc.gui.rightHeight+=rows*10;smallText(g,(int)SpiritProgression.energy(p)+"/"+(int)SpiritProgression.maxEnergy(p),right+4,energyY,0x82D9FF,false);return;
+        }
         int life=p.hasEffect(MobEffects.WITHER)?0xA8A4BA:p.hasEffect(MobEffects.POISON)?0xB6DB40:p.getTicksFrozen()>0?0x82D9FF:0xFFFFFF;
         int lifeRows=row(g,"life",p.getHealth(),p.getMaxHealth(),2,left,lifeY,life,false);
         int energyRows=row(g,"energy",SpiritProgression.energy(p),SpiritProgression.maxEnergy(p),10,right,energyY,

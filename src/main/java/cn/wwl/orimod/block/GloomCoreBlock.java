@@ -37,7 +37,7 @@ public final class GloomCoreBlock extends Block implements EntityBlock {
         l.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,p.getX()+.5,p.getY()+.7,p.getZ()+.5,5,.3,.4,.3,.02);
     }
     @Override protected void onRemove(BlockState s,Level l,BlockPos p,BlockState next,boolean moving){
-        if(!s.is(next.getBlock()) && l instanceof ServerLevel server)cn.wwl.orimod.world.BlightData.get(server).removeCore(p);
+        if(!s.is(next.getBlock()) && l instanceof ServerLevel server)cn.wwl.orimod.world.BlightData.get(server).removed(server,p);
         super.onRemove(s,l,p,next,moving);
     }
     @Override public void animateTick(BlockState s,Level l,BlockPos p,RandomSource random){

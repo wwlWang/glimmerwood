@@ -50,6 +50,10 @@ public final class OriMod {
         bus.addListener(cn.wwl.orimod.world.RestorationBloom::unload);
         bus.addListener(cn.wwl.orimod.world.RestorationBloom::tick);
         modEventBus.addListener(cn.wwl.orimod.network.GloomTidePayload::register);
+        modEventBus.addListener(cn.wwl.orimod.network.BlightAtmospherePayload::register);
+        bus.addListener(cn.wwl.orimod.world.BlightAtmosphereSync::tick);
+        bus.addListener(cn.wwl.orimod.world.BlightAtmosphereSync::logout);
+        bus.addListener(cn.wwl.orimod.world.BlightMobs::join);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.GloomTide::join);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.world.GloomTide::death);
@@ -65,7 +69,8 @@ public final class OriMod {
         cn.wwl.orimod.block.OriBlockEntities.register(modEventBus);
         bus.addListener(cn.wwl.orimod.block.SanctuaryMigration::load);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.block.BlightInteractions::projectile);
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightEcology::tick);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightEcology::unloadChunk);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::login);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(cn.wwl.orimod.world.BlightData::leave);
         cn.wwl.orimod.world.FeatureSites.register(modEventBus);
@@ -79,6 +84,13 @@ public final class OriMod {
         cn.wwl.orimod.item.OriItems.register(modEventBus);
         cn.wwl.orimod.recipe.OriRecipes.register(modEventBus);
         cn.wwl.orimod.spirit.SpiritData.register(modEventBus);
+        cn.wwl.orimod.entity.CorruptedAnimals.register(modEventBus);
+        bus.addListener(cn.wwl.orimod.entity.CorruptedAnimals::join);
+        bus.addListener(cn.wwl.orimod.entity.CorruptedAnimals::leave);
+        bus.addListener(cn.wwl.orimod.entity.CorruptedAnimals::tick);
+        bus.addListener(cn.wwl.orimod.entity.CorruptedAnimals::drops);
+        bus.addListener(cn.wwl.orimod.entity.CorruptedAnimals::interact);
+        bus.addListener(cn.wwl.orimod.progression.BlightExposure::tick);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopping);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(OriServerLifecycle::stopped);
         modEventBus.addListener(cn.wwl.orimod.network.MerchantOfferPayload::register);
