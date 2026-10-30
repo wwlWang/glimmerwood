@@ -98,3 +98,11 @@
 - 滑翔中改渲染距离 12→2→12（强制重建区块）、滑翔中重载资源包（相当于 F3+T）：都保持 `glide`，无闪退、无卡动作 **[通过]**。F3+A 本身：devtools 的 `raw_key` 只能单键按放，按不住 F3 组合 **[未测：工具]**。
 - 老存档升级：`orimod_dev_play04_r29`（R29 时代，gametime 155002）、`orimod_dev_settings_r15`（R15）、`orimod_dev_pt116p3` 都能 3–10 秒打开，进度字段齐全（缺的字段按默认补）、形态保留、跳+二段跳+冲刺正常、日志 0 条新警告 **[通过]**。（顺带：从 r29 换到 r15 这种「新存档 gametime 更小」的情况在老玩家多个存档之间很常见，见上面水中冲刺失效。）
 - 攀上沿冷却跨存档：与水中冲刺同写法，**[未测：脚本难以稳定触发攀上沿，按代码判断同样会卡]**。
+
+## P5-H 性能（llvmpipe 软件渲染，1920×1080，`-Xmx` 默认；绝对 FPS 偏低，只看相对变化）
+- **[新·复现，major] 新建世界卡在加载界面 38–54 秒，客户端完全无响应**（AUDIT C2 客户端侧实测）：devtools 连 `/state` 都超时，画面停在「生成世界」。
+  - seed 116555（`orimod_dev_p5h_b`）：点创建到能操作 **38.8 s**，其中大灵树选址 `selection 33251 ms`（`22:54:02 Preparing start region` → `22:54:36 Great Spirit Tree site … distance 786`）。
+  - seed 5555（`orimod_dev_p5h_a`）：**53.9 s**，选址跑了约 50 秒后**失败**：`WARN No untouched Great Spirit Tree site within 800 of spawn (-112,63,-336)`（BIOME 1819 / BUILD_HEIGHT 291 / ROOT_RELIEF 144…）——**这个世界第一次进去没有大灵树**。
+  - **[新·复现，major] 选址失败的世界每次打开都会重新搜，而且更慢**：退出后重开 `p5h_a`，又卡了 **100 秒**（`selection 100063 ms`），这次放宽到 1052 格才选到 `(-856,71,408)`。也就是说：某些种子第一次进世界没有大灵树，第二次进还要多等将近 2 分钟。选到之后再开就只要 3 秒。原因：`GreatTreeSites.started` 在 `site()==null` 时每次启动都同步 `choose()`，`searchLimit` 随 gametime 变大（`world/GreatTreeSites.java:47-52,95-142`）。专用服务器上 100 秒同步卡顿会超过 watchdog 默认 60 秒 **[怀疑：没在专用服务器上实测这个种子]**。
+  - 对照：已有大灵树的老存档打开 3–10 秒。
+  - 日志里的 `spawn (0,64,0)`（seed 116555）不是取错：这个世界玩家实际出生在 `(4,72,-8)`，本来就在原点附近 **[AUDIT C2 附带怀疑 → 排除]**。
