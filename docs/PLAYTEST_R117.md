@@ -43,3 +43,11 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。截�
 - **深息**：代码上只在「不能呼吸」时减半耗氧；但精灵形态一旦学会水中冲刺（`WATER_DASH`）就永远不会缺氧（`WaterMovement.breathe`），所以 **`/ori unlock all` 之后深息完全没用**，只在学水中冲刺之前有用 **[新·代码确认，minor/设计]**。矿脉感应 / 丰收：概率+节流（6%/100 tick、10%），本轮没有采到足够样本 **[未测]**。
 - **[新·复现，minor] 重生后能量条一直是红色（「能量不足」闪烁卡住）**：能量不足时按武器会让能量条闪红 8 tick（`SpiritCombatClient.energyFlashUntil = player.tickCount + 8`）。玩家死亡重生后客户端 `tickCount` 从 0 重新计数，旧的截止值还在，于是 **满能量 100/100 也一直显示红色**，重生 400 tick 后仍是红的；要等新 tickCount 追上旧值（之前玩得越久，红得越久）。`playtest-p4-energy-flash-stuck.png`（上：重生后；二：正常闪红；三、四：再次死亡重生后 40 / 440 tick）。换维度也会重建客户端玩家，推测同样会触发 **[怀疑]**。
 
+## P4-4 新金索树 Course 3 / Escape 2（C2，seed 117117，origin `(-680,67,-1560)`，courseVersion 3 / escapeVersion 2，高 111）
+- `ginso_state`：入口 `(-680,66,-1581)`、水之心 `(-680,72,-1560)`（树底）、安全点 `(-680,72,-1562)`、3 个检查点 y88/118/161、分段 wall→bash→grapple→…，`referenceSeconds 184.21`、`limitTicks 4150`。
+- **入口 → 水之心（真实输入步行）**：从树外台阶走进根洞约 20 格就到心室，不需要技能 **[通过]**。中途有一扇**关着的深色橡木门**（`(-680,72..73,-1564)`），要右键开门（walk_route 被门挡住）**[信息]**。心室内光线较暗，但水之心本身发光、清楚可见 `playtest-p4-ginso-heart-sheet.png`。
+- **缺技能拒绝**：只有冲刺+Bash 时使用水之心 → actionbar「逃亡需要先学会：攀爬、牵引、滑翔」，不开始 **[通过]** `playtest-p4-ginso-refuse-crop.png`。**[新·复现，cosmetic]** 同时手上的「灵迹指引」也被触发了（聊天栏「寻找附近的灵迹。」）——方块拒绝后 use 继续传给了手中物品。
+- **水位**：准备 60 tick 后开始上涨，实测 63.0→74.8 / 18 s ≈ 0.6 格/秒（与第一段 0.60 一致）；服务端/客户端 `waterY` 相差 <0.05 **[通过]**。站着不动：水到头后 60 tick → `SUBMERGED`，HP 20→17，回到底部安全点，冷却 65 tick 后可再开 **[通过]**。水面在心室地板以下时看不到；漫过以后整个画面是原版水下色调 `playtest-p4-ginso-water-sheet.png`。
+- **乱来**：逃亡中 `/ori form off` → 继续 RUNNING（人形也不打断）**[信息，同 P3]**；逃亡中 `/kill` → `DEAD`，重生后服务端/客户端水体都清空（`volumeCells 0`）**[通过]**；逃亡中退出世界再进 → `COOLDOWN`，客户端无残留水体，人在安全点 **[通过]**；逃亡中**从门走回树外** → `OUTSIDE`、会话结束，人留在外面不被拉回 **[通过]**。
+- 整条 Course 3 攀升（墙/Bash/抓钩/风/树冠抓钩到出口）的真人通关 **[未测]**：路线 38 段、参考 184 秒，本轮脚本控制器做不到可靠的技能衔接；作者已有三次真实输入记录（`src/test/resources/r117/ginso-climb-times.csv`）。
+
