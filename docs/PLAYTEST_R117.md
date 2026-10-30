@@ -82,5 +82,17 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。截�
 | 「Received synced attachments from unknown entity」日志（P3-5） | 见 P4-7 日志扫描 | |
 | 手持精灵核心右键切形态（P3-5） | 仍存在（设计） | 代码未改 |
 | 重复逃生每次 +10 灵光（P3-4） | 仍存在 | 逃生代码未改；本轮 `/kill` 母翼/心脏首次仍给 +100 |
-| 洞穴下降阶梯很暗 / 白天光晕盖住第三人称武器 / 设置里中英混排 / ginso 苔根图标溢出（P1） | 未逐项复测 | 第三人称持刃截图里武器可见（`tp-sheet`），其余未看 |
+| 白天光晕盖住第三人称武器（P1） | **仍存在（怀疑）** | 正面第三人称持刃/持锤，看不出手里的武器 `playtest-p4-tp-weapons.png` |
+| 洞穴下降阶梯很暗 / 设置里中英混排 / ginso 苔根图标溢出（P1） | 未复测 | |
+
+## P4-6 乱测（竞技场 `(300,200,300)`：一面原木墙、一面石墙、Bash 锚、抓钩花）
+- **乱按**：14 个键（跳/冲刺/Bash/潜行/四向/切形态/三技能槽/攻击/使用）每 2 tick 随机按放，10 段 × 150 tick：出现过 dash / bash_aim / launch / glide / wall_slide / resume，无卡死、无 NaN、无界面残留，`predictionRejections 0`、`predictionMismatches 0`，结束时 `unconfirmedPredictions 1` **[通过]**（运动记录 `run-devtools/devtools/pt116p3-p4chaos*.json`）。**[工具注意]** 键名带 `key.` 前缀又被 helper 再加一次会变成无效键，脚本静默无效（第一次乱按 0 位移就是这个原因）。
+- **换维度后能量条同样卡红**：能量不足时按一下矛 → 进下界 → 回满能量 100/100 仍是红色；回主世界后仍然红 `playtest-p4-energy-flash-dimension.png` **[复现，与 P4-3 同一问题]**。
+- **原版怪**：持刃对 2 骷髅 + 僵尸 + 蜘蛛连砍：僵尸 18→0、骷髅被打残（骷髅互射也有）；蜘蛛爬到屏障墙上 2 HP 够不着（原版）；有抗性时无异常 **[通过]**。没有抗性、10 HP 时被苦力怕+骷髅打死一次（正常难度，原版行为）。
+- **[新·复现，cosmetic] 身上插的箭按原版人形尺寸渲染**：被骷髅射中后，精灵身上插着好几支和身体差不多长的箭，从各个方向戳出来，第三人称很显眼 `playtest-p4-tp-weapons.png`。
+- 旁观模式下左下角显示旧版能量文字条「能量 100/100」（红色，同样受卡红影响）`playtest-p4-ginso-far.png` **[新·复现，cosmetic]**。
+
+## P4-7 日志 / 崩溃
+- `latest.log`（本次客户端整段，约 700 行）：模组相关只有 `Failed to load texture: gemrender:atlas/orimod/models/entity/kuro_feather.glb`（FileNotFoundException，1 次；与 P1 的 gloom_heart 同类，羽毛照常渲染）**[仍存在同类，minor]**；`orimod-server.toml is not correct. Correcting`（新增 `ginsoEscapeWaterSpeedMultiplier` 后旧配置自动补全，信息）；`Received synced attachments from unknown entity` 1 次（死亡重生时）；`Can't keep up` 3 次，其中一次 35 秒/713 tick——旁观模式飞到 1700 格外的金索树、现场生成区块时（llvmpipe + 大型 worldgen，信息）。
+- crash-reports：无新文件（最新仍是 10-19 的两份旧报告）。
 
