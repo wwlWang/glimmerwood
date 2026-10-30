@@ -96,3 +96,15 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。截�
 - `latest.log`（本次客户端整段，约 700 行）：模组相关只有 `Failed to load texture: gemrender:atlas/orimod/models/entity/kuro_feather.glb`（FileNotFoundException，1 次；与 P1 的 gloom_heart 同类，羽毛照常渲染）**[仍存在同类，minor]**；`orimod-server.toml is not correct. Correcting`（新增 `ginsoEscapeWaterSpeedMultiplier` 后旧配置自动补全，信息）；`Received synced attachments from unknown entity` 1 次（死亡重生时）；`Can't keep up` 3 次，其中一次 35 秒/713 tick——旁观模式飞到 1700 格外的金索树、现场生成区块时（llvmpipe + 大型 worldgen，信息）。
 - crash-reports：无新文件（最新仍是 10-19 的两份旧报告）。
 
+## P4-8 全量测试
+- 客户端正常 leave_world/quit 后，`cleanGameTestWorld` → `scripts/check.sh --no-daemon --no-parallel`（HEAD 源码 = `9c8770f`，之后只有本文档提交）：**BUILD SUCCESSFUL（6m38s），JUnit 1816 / 0 失败 / 0 跳过；GameTest「All 1397 required tests passed」/ 0 失败 / 0 跳过**。日志 `/workspace/oriMod/pt117/full.log`。
+
+## Pass 4 小结（严重度从高到低）
+1. **minor** 能量不足闪红在重生/换维度后卡住：满能量也一直红（`energyFlashUntil` 用 `player.tickCount`，新玩家实例从 0 计数）（P4-3/P4-6）。
+2. **minor** `spirit_tree` 结构起点放不下灵树也被 locate 记录：出生点旁「20 格外的灵树」不存在（与 blighted_grounds 同一机制）（P4-0）。
+3. **minor** 精灵形态在粘液块上一直弹，不会停稳；下砸砸粘液块第一下弹得比起点高 13 格（P4-2）。
+4. **minor（设计）** 深息碎片在学会水中冲刺后完全无效（精灵本来就不缺氧）（P4-3）。
+5. **minor** 和平难度召唤腐光之心仍提示「苏醒了」（祭坛状态已不再被消耗）（P4-2）。
+6. **cosmetic** 身上插的箭按人形尺寸渲染；金索水之心拒绝时手里的灵迹指引也被触发；碎片界面「灵光 / 光点」混用；旁观模式显示旧版能量条；中毒时生命格不变色。
+7. 仍存在的旧问题见 P4-5：Iris R 键冲突、遗迹机关可挖/可推、forest_spring 暗室无顶、挑战不检查技能、制图师多扣费、速度/缓慢/缓降对精灵无效、键名不一致、盾牌挡住精灵等。已修复：一人称火把、640×480 徽标遮挡。
+
