@@ -18,6 +18,9 @@ public final class SpiritHud {
     public static void hideVanilla(RenderGuiLayerEvent.Pre e){
         if(!spiritHud())return;
         var n=e.getName();
+        if(n.equals(VanillaGuiLayers.AIR_LEVEL) && cn.wwl.orimod.movement.WaterMovement.active(Minecraft.getInstance().player)) {
+            e.setCanceled(true); return;
+        }
         if(!enabled()){if(n.equals(VanillaGuiLayers.FOOD_LEVEL))e.setCanceled(true);return;}
         if(n.equals(VanillaGuiLayers.FOOD_LEVEL)||n.equals(VanillaGuiLayers.PLAYER_HEALTH)
                 ||n.equals(VanillaGuiLayers.EXPERIENCE_BAR)||n.equals(VanillaGuiLayers.EXPERIENCE_LEVEL))e.setCanceled(true);

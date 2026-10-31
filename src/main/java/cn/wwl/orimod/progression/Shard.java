@@ -23,6 +23,10 @@ public enum Shard {
     public String id() { return name().toLowerCase(java.util.Locale.ROOT); }
     public Component title() { return Component.translatable("shard.orimod." + id()); }
     public Component description() { return Component.translatable("shard.orimod." + id() + ".description"); }
+    public Component description(Player player) {
+        return this == DEEP_BREATH && player != null && Ability.WATER_DASH.unlocked(player)
+                ? Component.translatable("shard.orimod.deep_breath.swim_description") : description();
+    }
     public boolean equipped(Player player) { return SpiritData.isSpirit(player) && (player.getData(SpiritData.PROGRESS).equippedShards() & bit) != 0; }
     public static Shard byId(String id) { for (var value : values()) if (value.id().equals(id)) return value; return null; }
 }

@@ -25,7 +25,9 @@ public final class SpiritForm {
         }
         cn.wwl.orimod.combat.SpiritCombat.cancel(player, "form");
         cn.wwl.orimod.progression.Regenerate.release(player);
+        cn.wwl.orimod.movement.VanillaMotion.clear(player);
         player.setData(SpiritData.FORM, becomingSpirit);
+        cn.wwl.orimod.progression.DeepBreath.update(player);
         cn.wwl.orimod.movement.FeatherGlide.formChanged(player);
         player.refreshDimensions();
         cn.wwl.orimod.fx.SpiritFxLifecycle.formChanged(player);

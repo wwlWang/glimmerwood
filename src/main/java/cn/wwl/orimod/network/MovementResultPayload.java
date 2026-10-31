@@ -32,6 +32,7 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
         if (actionId <= state.actionId) return;
         state.actionId = actionId;
         if (mode == RELOCATE) {
+            cn.wwl.orimod.movement.VanillaMotion.clear(player);
             state.predictedJumps.clear(); state.groundJumpAvailable = false;
             state.groundedAt = -100; state.groundLockUntil = 0; state.lastWallRefill = "";
             state.mode = IDLE; state.activeTicks = 0; state.relocations++;
@@ -69,6 +70,9 @@ public record MovementResultPayload(int entityId, String dimension, int actionId
             state.targetCooldowns.put(state.recentBash, state.recentBashUntil);
             state.groundLockUntil = Math.max(state.groundLockUntil, now + 4);
         }
+        // STOMP target: y is the real start height, z identifies repeated leases of the same fall.
+        if (mode == STOMP && !cn.wwl.orimod.movement.SlimeBounce.receiveStomp(player, targetPosition.y, (long)targetPosition.z)) return;
+        cn.wwl.orimod.movement.SlimeBounce.takeover(state, mode);
         state.mode = mode == RELOCATE ? IDLE : mode;
         state.activeTicks = ticks;
         state.velocity = velocity;

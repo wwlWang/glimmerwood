@@ -554,6 +554,7 @@
   "shard.orimod.magnet.description": "Pull dropped items and experience orbs from up to 6 blocks away.",
   "shard.orimod.deep_breath": "Deep Breath",
   "shard.orimod.deep_breath.description": "Consume half as much air underwater.",
+  "shard.orimod.deep_breath.swim_description": "Swim 25% faster while in spirit form. Water Dash is unchanged.",
   "shard.orimod.lumen_sight": "Lumen Sight",
   "shard.orimod.lumen_sight.description": "Gently brighten dark places. Fades in bright light.",
   "shard.orimod.prospector": "Prospector",

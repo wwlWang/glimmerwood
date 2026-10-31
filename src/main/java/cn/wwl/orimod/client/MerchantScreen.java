@@ -38,7 +38,7 @@ public final class MerchantScreen extends Screen {
             var row=offer.offers().get(i);var shard=Shard.byId(row.id());var name=shard==null?Component.translatable("merchant.orimod.guide."+row.id()):shard.title();
             g.drawWordWrap(font,name,left+12,top+48+i*42,panelWidth-36-buyWidth,row.available()?0xD7EBEC:0x7E999E);
             if(shard!=null){
-                String description=shard.description().getString();int available=panelWidth-24;
+                String description=shard.description(net.minecraft.client.Minecraft.getInstance().player).getString();int available=panelWidth-24;
                 String brief=font.width(description)<=available?description:font.plainSubstrByWidth(description,available-font.width("…"))+"…";
                 g.drawString(font,brief,left+12,top+72+i*42,0x9CBEC2,false);
             }
@@ -47,7 +47,7 @@ public final class MerchantScreen extends Screen {
         String message=offer.message().isEmpty()?(offer.job()==1?"cartography":offer.offers().isEmpty()?"empty":"daily"):offer.message();
         g.drawWordWrap(font,Component.translatable("merchant.orimod."+message),left+12,top+176,panelWidth-24,0xD8C69B);super.render(g,x,y,partial);
         for(int i=0;i<offer.offers().size();i++)if(x>=left+12 && x<left+panelWidth-12 && y>=top+72+i*42 && y<top+83+i*42){
-            var shard=Shard.byId(offer.offers().get(i).id());if(shard!=null)g.renderTooltip(font,font.split(shard.description(),Math.min(300,width-30)),x,y);
+            var shard=Shard.byId(offer.offers().get(i).id());if(shard!=null)g.renderTooltip(font,font.split(shard.description(net.minecraft.client.Minecraft.getInstance().player),Math.min(300,width-30)),x,y);
         }
     }
     public Map<String,Object> debug(){return Map.of("open",true,"entityId",offer.entityId(),"job",offer.job(),"day",offer.day(),"balance",offer.balance(),"busy",offer.busy(),"message",offer.message(),"offers",offer.offers().stream().map(o->Map.of("id",o.id(),"price",o.price(),"available",o.available())).toList());}

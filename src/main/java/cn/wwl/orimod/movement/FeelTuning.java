@@ -207,9 +207,25 @@ public final class FeelTuning {
     }
 
     /** One tick of horizontal feel. {@code wish} is the unit input direction (zero for none). */
+    /** Vanilla stores ordinary friction as a float (0.6f is slightly greater than double 0.6). */
+    public static boolean slippery(float friction) { return friction > .6f; }
+
+    /** Takes POST-friction motion. Only input accelerates; vanilla travel supplies the entire coast decay. */
+    public static Vec3 slipperyHorizontal(Vec3 velocity, Vec3 wish, double scale, double attributeScale, float friction) {
+        double top = TOP_SPEED * scale * attributeScale;
+        if (wish.lengthSqr() < 1e-8 || velocity.horizontalDistance() > top) return velocity;
+        double acceleration = top * (1 - .6f * .91f) * Math.pow(.6f / friction, 3);
+        var next = velocity.add(wish.normalize().scale(acceleration));
+        return next.horizontalDistance() > top ? next.normalize().scale(top) : next;
+    }
+
     public static Vec3 horizontal(Vec3 velocity, Vec3 wish, boolean grounded, double scale, double control) {
+        return horizontal(velocity, wish, grounded, scale, control, 1);
+    }
+
+    public static Vec3 horizontal(Vec3 velocity, Vec3 wish, boolean grounded, double scale, double control, double attributeScale) {
         Vec3 v = new Vec3(velocity.x, 0, velocity.z);
-        double speed = v.length(), top = TOP_SPEED * scale;
+        double speed = v.length(), top = TOP_SPEED * scale * attributeScale;
         boolean input = wish.lengthSqr() > 1e-4;
         if (speed > top + 1e-6 && (!input || wish.dot(v) > 0)) {
             // Momentum carry: above the run speed we bleed slowly and keep steering along the input.
@@ -218,9 +234,9 @@ public final class FeelTuning {
             Vec3 dir = input ? approach(v.normalize(), wish, (grounded ? .35 : .12) * control, (grounded ? .35 : .12) * control).normalize() : v.normalize();
             return dir.scale(decayed);
         }
-        if (grounded) return approach(v, wish.scale(top), GROUND_ACCEL * control, GROUND_DECEL * control);
+        if (grounded) return approach(v, wish.scale(top), GROUND_ACCEL * control * attributeScale, GROUND_DECEL * control * attributeScale);
         if (!input) return speed <= AIR_DRAG ? Vec3.ZERO : v.scale((speed - AIR_DRAG) / speed);
-        return approach(v, wish.scale(top), AIR_ACCEL * control, AIR_ACCEL * control);
+        return approach(v, wish.scale(top), AIR_ACCEL * control * attributeScale, AIR_ACCEL * control * attributeScale);
     }
 
     /**
@@ -228,12 +244,16 @@ public final class FeelTuning {
      * @return the adjusted vertical velocity.
      */
     public static double vertical(double vy, boolean jumpHeld, boolean released) {
+        return vertical(vy, jumpHeld, released, GRAVITY);
+    }
+
+    public static double vertical(double vy, boolean jumpHeld, boolean released, double gravity) {
         if (vy < MAX_FALL) {
             // This function only runs after ability ownership ends. Ease excess downward momentum,
             // rather than exempting it forever or braking all of it in one frame.
             double next = MAX_FALL + (vy - MAX_FALL) * (1 - FALL_RETURN_RATE);
             if (MAX_FALL - next <= FALL_RETURN_EPSILON) next = MAX_FALL;
-            return next / .98 + GRAVITY;
+            return next / .98 + gravity;
         }
         if (released && vy > JUMP_CUT_MIN) return vy * JUMP_CUT;
         double scale;
@@ -241,8 +261,8 @@ public final class FeelTuning {
         else if (vy > 0) scale = jumpHeld ? RISE_GRAVITY_SCALE : 1;
         else scale = fallGravityScale(vy);
         // Vanilla subtracts GRAVITY next; pre-compensate so the effective gravity is GRAVITY * scale.
-        double adjusted = vy + GRAVITY * (1 - scale);
-        return Math.max(adjusted, MAX_FALL / .98 + GRAVITY);
+        double adjusted = vy + gravity * (1 - scale);
+        return Math.max(adjusted, MAX_FALL / .98 + gravity);
     }
 
     /** Constant downward acceleration; jump count never changes gravity. */

@@ -38,6 +38,10 @@ public final class OriMod {
         bus.addListener(cn.wwl.orimod.world.GinsoSanctuary::spawn);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::damaged);
         bus.addListener(cn.wwl.orimod.progression.SpiritRecovery::logout);
+        bus.addListener(cn.wwl.orimod.progression.DeepBreath::login);
+        bus.addListener(cn.wwl.orimod.progression.DeepBreath::logout);
+        bus.addListener(cn.wwl.orimod.progression.DeepBreath::clone);
+        bus.addListener(cn.wwl.orimod.progression.DeepBreath::death);
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.progression.RecoveryOrbs::drops);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::login);

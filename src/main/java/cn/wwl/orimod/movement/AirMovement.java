@@ -45,6 +45,7 @@ public final class AirMovement {
         if (!cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return;
         s.stompUntil = now + 80;
         s.stompStartY = player.getY();
+        SlimeBounce.beginSlam(player, s.stompStartY);
         s.stompVelocity = cn.wwl.orimod.combat.SlamRules.START_SPEED;
         s.jumpUntil = -100;
         s.acceptedStomps++;

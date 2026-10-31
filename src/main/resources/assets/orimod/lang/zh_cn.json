@@ -554,6 +554,7 @@
   "shard.orimod.magnet.description": "吸引 6 格内的掉落物和经验球。",
   "shard.orimod.deep_breath": "深息",
   "shard.orimod.deep_breath.description": "水下氧气消耗减半。",
+  "shard.orimod.deep_breath.swim_description": "精灵形态下游泳速度提升 25%。水中冲刺不变。",
   "shard.orimod.lumen_sight": "夜目",
   "shard.orimod.lumen_sight.description": "柔和照亮暗处，在明亮处逐渐退去。",
   "shard.orimod.prospector": "矿脉感应",

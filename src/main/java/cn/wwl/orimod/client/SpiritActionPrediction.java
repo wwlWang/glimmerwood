@@ -69,6 +69,7 @@ public final class SpiritActionPrediction {
     }
 
     private static void start(MovementState s, MoveMode mode, int ticks, Vec3 velocity, long until) {
+        cn.wwl.orimod.movement.SlimeBounce.takeover(s, mode);
         s.mode = mode; s.activeTicks = ticks; s.velocity = velocity; s.lastAction = mode;
         s.predictedMode = mode; s.predictedUntil = until; s.predictedActions++;
     }

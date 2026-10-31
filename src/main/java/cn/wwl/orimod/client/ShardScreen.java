@@ -142,7 +142,7 @@ public final class ShardScreen extends Screen {
         var lines = new ArrayList<net.minecraft.util.FormattedCharSequence>();
         if (shard != null) {
             lines.add(shard.title().getVisualOrderText());
-            lines.addAll(font.split(shard.description().copy().withStyle(net.minecraft.ChatFormatting.GRAY), 220));
+            lines.addAll(font.split(shard.description(net.minecraft.client.Minecraft.getInstance().player).copy().withStyle(net.minecraft.ChatFormatting.GRAY), 220));
             lines.addAll(font.split(tr(owned(shard) ? "screen.orimod.shard_gestures" : "screen.orimod.shard_source", MerchantRules.price(shard.id()), MerchantRules.panelPrice(shard)).copy().withStyle(net.minecraft.ChatFormatting.DARK_GRAY), 220));
             if (owned(shard) && (progress().equippedShards() & shard.bit) == 0 && Integer.bitCount(progress().equippedShards()) >= slots())
                 lines.addAll(font.split(tr("progress.orimod.slots_full").copy().withStyle(net.minecraft.ChatFormatting.GRAY), 220));

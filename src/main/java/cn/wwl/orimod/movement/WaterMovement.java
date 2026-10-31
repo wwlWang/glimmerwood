@@ -25,9 +25,13 @@ public final class WaterMovement {
 
     /** Swim boost toward the look direction while moving forward, capped at {@link #SWIM_MAX}. */
     public static Vec3 swimVelocity(Vec3 velocity, Vec3 look, boolean forward) {
+        return swimVelocity(velocity, look, forward, 1);
+    }
+    /** Same attribute as vanilla water travel; doesn't alter Water Dash or trim an external faster impulse. */
+    public static Vec3 swimVelocity(Vec3 velocity, Vec3 look, boolean forward, double swimSpeed) {
         if (!forward) return velocity;
-        var boosted = velocity.add(look.normalize().scale(SWIM_BOOST));
-        return boosted.length() > SWIM_MAX && boosted.length() > velocity.length() ? velocity : boosted;
+        var boosted = velocity.add(look.normalize().scale(SWIM_BOOST * swimSpeed));
+        return boosted.length() > SWIM_MAX * swimSpeed && boosted.length() > velocity.length() ? velocity : boosted;
     }
 
     /** Server: air never runs out. */

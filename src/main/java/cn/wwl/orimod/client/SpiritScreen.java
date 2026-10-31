@@ -65,7 +65,7 @@ public final class SpiritScreen extends Screen {
             entries.add(new Definition("claim", "blade", tr("item.orimod.spirit_blade"), tr("guide.orimod.blade")));
             for (var ability : Ability.values()) entries.add(new Definition("ability", ability.id(), ability.title(), ability.description()));
         } else if (page == 1) {
-            for (var shard : Shard.values()) entries.add(new Definition("shard", shard.id(), shard.title(), shard.description()));
+            for (var shard : Shard.values()) entries.add(new Definition("shard", shard.id(), shard.title(), shard.description(net.minecraft.client.Minecraft.getInstance().player)));
             entries.add(new Definition("capacity", "capacity_upgrade", tr("screen.orimod.energy_capacity"), tr("guide.orimod.capacity")));
         } else if(page==3) {
             for(var w:cn.wwl.orimod.progression.WillWisp.values())entries.add(new Definition("wisp",w.id(),tr("wisp.orimod."+w.id()),tr("wisp.orimod."+w.id()+".source")));

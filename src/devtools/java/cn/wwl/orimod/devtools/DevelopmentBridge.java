@@ -1038,6 +1038,15 @@ public final class DevelopmentBridge {
                 "exhaustion", player.getFoodData().getExhaustionLevel(), "air", player.getAirSupply(), "maxAir", player.getMaxAirSupply(),
                 "effects", player.getActiveEffects().stream().map(effect -> Map.of("id", effect.getEffect().getRegisteredName(),
                         "amplifier", effect.getAmplifier(), "duration", effect.getDuration())).toList()));
+        // P5-G audit: observe actual vanilla attributes and input state, without changing physics.
+        state.put("physics", Map.of("sprinting", player.isSprinting(), "onGround", player.onGround(),
+                "movementSpeed", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
+                "swimSpeed", player.getAttributeValue(net.neoforged.neoforge.common.NeoForgeMod.SWIM_SPEED),
+                "gravity", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY),
+                "jumpStrength", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH),
+                "safeFall", player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SAFE_FALL_DISTANCE),
+                "friction", player.level().getBlockState(player.getBlockPosBelowThatAffectsMyMovement())
+                        .getFriction(player.level(), player.getBlockPosBelowThatAffectsMyMovement(), player)));
         state.put("transport", Map.of("passenger", player.isPassenger(), "vehicle", player.getVehicle() == null ? "none" : player.getVehicle().getType().toString(),
                 "sleeping", player.isSleeping(), "climbable", player.onClimbable(), "swimming", player.isVisuallySwimming()));
         state.put("collision", Map.of("stepHeight", player.maxUpStep(), "horizontal", player.horizontalCollision,

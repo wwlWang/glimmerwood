@@ -97,6 +97,7 @@ public final class SpiritProgression {
                 if (slot >= slots(player) || shard == null || (p.ownedShards() & shard.bit) == 0) return;
                 player.setData(SpiritData.PROGRESS, p.withSlot(slot, shard.bit));
                 player.setData(SpiritData.ENERGY, energy(player));
+                DeepBreath.update(player);
                 if (!Shard.RESILIENCE.equipped(player)) player.getData(SpiritData.ENERGY_STATE).pendingHeal = false;
                 reply(player, "progress.orimod.equipped", shard.title());
             }
@@ -109,6 +110,7 @@ public final class SpiritProgression {
                 if (!remove && Integer.bitCount(p.equippedShards()) >= slots(player)) { reply(player, "progress.orimod.slots_full"); return; }
                 player.setData(SpiritData.PROGRESS, p.withEquipped(remove ? p.equippedShards() & ~shard.bit : p.equippedShards() | shard.bit));
                 player.setData(SpiritData.ENERGY, energy(player));
+                DeepBreath.update(player);
                 if (shard == Shard.RESILIENCE) player.getData(SpiritData.ENERGY_STATE).pendingHeal = false;
                 reply(player, remove ? "progress.orimod.unequipped" : "progress.orimod.equipped", shard.title());
             }
@@ -131,6 +133,7 @@ public final class SpiritProgression {
     /** All production unlock paths share the same once-only weapon receipt. */
     public static void unlock(ServerPlayer player, Ability ability) {
         player.setData(SpiritData.ABILITIES, player.getData(SpiritData.ABILITIES) | ability.bit);
+        DeepBreath.update(player);
         var gift = WeaponGift.forAbility(ability);
         if (gift != null) gift.grant(player);
     }

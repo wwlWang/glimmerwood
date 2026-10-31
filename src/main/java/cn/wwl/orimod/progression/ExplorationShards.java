@@ -20,7 +20,9 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class ExplorationShards {
     private ExplorationShards() {}
     public static void tick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer p) || !p.isAlive() || p.isSpectator()) return;
+        if (!(event.getEntity() instanceof ServerPlayer p)) return;
+        DeepBreath.update(p);
+        if (!p.isAlive() || p.isSpectator()) return;
         if (p.level().getGameTime() % ExplorationShardRules.MAGNET_INTERVAL == 0) pull(p);
         if (Shard.EMBER_SKIN.equipped(p) && p.getRemainingFireTicks() > 0)
             p.setRemainingFireTicks(ExplorationShardRules.fireTicks(p.getRemainingFireTicks()));
@@ -42,7 +44,7 @@ public final class ExplorationShards {
     }
     public static void breathe(LivingBreatheEvent event) {
         if (event.getEntity() instanceof ServerPlayer p) {
-            boolean active = !event.canBreathe() && Shard.DEEP_BREATH.equipped(p) && !p.isSpectator();
+            boolean active = !event.canBreathe() && !Ability.WATER_DASH.unlocked(p) && Shard.DEEP_BREATH.equipped(p) && !p.isSpectator();
             event.setConsumeAirAmount(p.getData(SpiritData.ENERGY_STATE).breath.consume(event.getConsumeAirAmount(), active));
         }
     }

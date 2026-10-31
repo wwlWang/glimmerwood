@@ -30,7 +30,7 @@ public final class SpiritMovement {
 
     public static boolean canMove(Player player) {
         if(player instanceof ServerPlayer s && cn.wwl.orimod.progression.Restoration.active(s))return false;
-        return SpiritData.isSpirit(player) && player.isAlive() && !player.isSpectator() && !player.isSleeping()
+        return SpiritData.isSpirit(player) && !VanillaMotion.riptide(player) && player.isAlive() && !player.isSpectator() && !player.isSleeping()
                 && !player.isPassenger() && !cn.wwl.orimod.block.OriFluids.inWater(player) && !player.isInLava()
                 && !player.onClimbable() && !player.isFallFlying() && !player.getAbilities().flying;
     }
@@ -380,6 +380,7 @@ public final class SpiritMovement {
 
     /** Called after an actual server position synchronization, never inferred from travel distance. */
     public static void teleported(ServerPlayer player) {
+        VanillaMotion.clear(player);
         if (player.getData(SpiritData.COMBAT).mode.equals(cn.wwl.orimod.combat.HammerSlam.MODE))
             cn.wwl.orimod.combat.SpiritCombat.cancel(player, "teleport");
         var s = player.getData(SpiritData.MOVEMENT);
@@ -465,6 +466,7 @@ public final class SpiritMovement {
     }
 
     private static void signal(ServerPlayer player, MovementState s, MoveMode mode, int ticks, Vec3 velocity, int jumpSequence) {
+        SlimeBounce.takeover(s, mode);
         // Grapple re-signals every pull tick; only its first signal is a new action.
         if (mode != GRAPPLE || s.mode != GRAPPLE) cn.wwl.orimod.fx.SpiritFxLifecycle.moved(player, mode);
         s.mode = mode;
@@ -477,6 +479,6 @@ public final class SpiritMovement {
         PacketDistributor.sendToPlayer(player, new MovementResultPayload(player.getId(), player.level().dimension().location().toString(),
                 ++s.actionId, jumpSequence, mode, ticks, velocity, s.airJumpSpent, s.airDashSpent,
                 s.bash == null || s.bash.target.entity() == null ? -1 : s.bash.target.entity().getId(),
-                s.bash != null ? s.bash.targetPosition : s.grapple != null ? s.grapple.point() : Vec3.ZERO));
+                mode == STOMP ? new Vec3(0, s.stompStartY, s.stompUntil) : s.bash != null ? s.bash.targetPosition : s.grapple != null ? s.grapple.point() : Vec3.ZERO));
     }
 }

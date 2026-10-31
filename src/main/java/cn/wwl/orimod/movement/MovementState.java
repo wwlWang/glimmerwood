@@ -4,6 +4,9 @@ import net.minecraft.world.phys.Vec3;
 
 /** Transient per-player state. Air charges start spent so loading in mid-air is not a refill. */
 public final class MovementState {
+    public final SlimeBounce.State slime = new SlimeBounce.State();
+    public final SpiritPhysics.Vertical vertical = new SpiritPhysics.Vertical();
+    public final VanillaMotion.State vanillaMotion = new VanillaMotion.State();
     public long lastInput = -100, jumpUntil = -100, jumpPressedAt = -100, groundedAt = -100, groundLockUntil, dashReadyAt, wallReadyAt;
     public int sequence = -1, actionId, activeTicks, wallDirection = -1;
     public boolean jumpHeld, dashHeld, crouching, active, airJumpSpent = true, airDashSpent = true, groundJumpAvailable;

@@ -57,12 +57,18 @@ public final class SpiritControls {
         var player = event.getEntity();
         if (player != mc.player) return;
         SpiritClientSession.observe();
+        player.getData(SpiritData.MOVEMENT).vertical.clear();
         if (bladeOwner != player || bladeWorld != player.level()) {
             bladeOwner = player; bladeWorld = player.level();
             bladeMotion = new cn.wwl.orimod.movement.BladeMotion();
             feelBlade = net.minecraft.world.phys.Vec3.ZERO; feelControlled = false;
         }
         var input = event.getInput();
+        cn.wwl.orimod.movement.SlimeBounce.observeHammer(player, player.getData(SpiritData.COMBAT_VIEW));
+        if (cn.wwl.orimod.movement.VanillaMotion.riptide(player)) {
+            // Native launch velocities have not passed through our previous friction.
+            feelControlled = wasDash = false; feelFriction = 1; dashExit = null;
+        }
         if(RestorationClient.active()){input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=input.shiftKeyDown=false;player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);return;}
         boolean active = mc.screen == null && mc.isWindowActive() && SpiritMovement.canMove(player);
         if (!SpiritData.isSpirit(player) && !sentActive) return;
@@ -165,7 +171,7 @@ public final class SpiritControls {
             if (active) feel(player, state, input, (flags & MovementInputPayload.JUMP) != 0);
             else { feelControlled = false; cancelBlade(player); }
         } else { feelControlled = false; cancelBlade(player); }
-        if (active && !player.onGround() && cn.wwl.orimod.combat.HammerSlam.falling(
+        if (active && !player.onGround() && !cn.wwl.orimod.movement.SlimeBounce.active(player) && cn.wwl.orimod.combat.HammerSlam.falling(
                 player.getData(SpiritData.COMBAT_VIEW), player.level().getGameTime()))
             player.setDeltaMovement(cn.wwl.orimod.combat.HammerSlam.velocity(player.getDeltaMovement()));
         prevJumpHeld = (flags & MovementInputPayload.JUMP) != 0;
@@ -195,6 +201,9 @@ public final class SpiritControls {
     private static void feel(net.minecraft.world.entity.player.Player player, cn.wwl.orimod.movement.MovementState state,
                              net.minecraft.client.player.Input input, boolean jumpHeld) {
         var d = player.getDeltaMovement();
+        var groundPos = player.getBlockPosBelowThatAffectsMyMovement();
+        float friction = player.level().getBlockState(groundPos).getFriction(player.level(), groundPos, player);
+        boolean slippery = player.onGround() && cn.wwl.orimod.movement.FeelTuning.slippery(friction);
         long now = player.level().getGameTime();
         boolean airImpulse = bladeMotion.observe(player.getData(SpiritData.COMBAT_VIEW), true, player.onGround(), player.getYRot());
         // Recover the pre-friction velocity vanilla travel stored last tick, so our curve owns the motion.
@@ -212,6 +221,8 @@ public final class SpiritControls {
         // Remove last frame's forced step before steering; add this frame's step only AFTER braking.
         // A collision/external impulse breaks the match and is left untouched.
         var h = !raw && feelControlled && observed.distanceToSqr(feelH) < 1e-4 ? feelH.subtract(feelBlade) : observed;
+        // On ice keep the friction vanilla already applied; ordinary ground still uses the exact Ori curve.
+        if (slippery && !raw) h = h.scale(feelFriction);
         if (wasDash && dashExit == null) dashExit = player.getDeltaMovement();
         wasDash = false;
         if (dashExit != null) {
@@ -224,15 +235,17 @@ public final class SpiritControls {
         var wish = MovementRules.inputDirection(input.forwardImpulse, input.leftImpulse, player.getYRot(), false);
         double scale = input.shiftKeyDown ? cn.wwl.orimod.movement.FeelTuning.CROUCH_SCALE : player.isUsingItem() ? cn.wwl.orimod.movement.FeelTuning.USING_ITEM_SCALE : 1;
         double control = now - wallJumpAt < cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_TICKS ? cn.wwl.orimod.movement.FeelTuning.WALL_JUMP_CONTROL_SCALE : 1;
-        h = cn.wwl.orimod.movement.FeelTuning.horizontal(h, wish, grounded, scale, control);
+        double attributeScale = cn.wwl.orimod.movement.SpiritPhysics.speedMultiplier(player);
+        h = slippery ? cn.wwl.orimod.movement.FeelTuning.slipperyHorizontal(h, wish, scale, attributeScale, friction)
+                : cn.wwl.orimod.movement.FeelTuning.horizontal(h, wish, grounded, scale, control, attributeScale);
         feelBlade = bladeMotion.ground(h, grounded, path -> cn.wwl.orimod.movement.BladeSupport.supported(player, path));
         h = h.add(feelBlade);
         // Hammer lives in COMBAT_VIEW, not a movement lease. Its fall must not be pulled back
         // toward the ordinary terminal speed before HammerSlam applies its acceleration below.
         boolean hammerFall = cn.wwl.orimod.combat.HammerSlam.falling(player.getData(SpiritData.COMBAT_VIEW), now);
-        double vy = grounded && d.y <= 0 || hammerFall ? d.y : cn.wwl.orimod.movement.FeelTuning.vertical(d.y, jumpHeld, prevJumpHeld && !jumpHeld);
-        vy = bladeMotion.vertical(vy);
-        player.setDeltaMovement(h.x, vy, h.z);
+        cn.wwl.orimod.movement.SpiritPhysics.prepareVertical(player, jumpHeld, prevJumpHeld && !jumpHeld,
+                !hammerFall, bladeMotion.vertical(Double.NEGATIVE_INFINITY));
+        player.setDeltaMovement(h.x, d.y, h.z);
         input.forwardImpulse = input.leftImpulse = 0;   // vanilla moveRelative would add its own acceleration on top
         feelH = h; feelControlled = true;
         var below = player.level().getBlockState(player.getBlockPosBelowThatAffectsMyMovement());
@@ -283,7 +296,7 @@ public final class SpiritControls {
             waterDashReadyAt = time + cn.wwl.orimod.movement.WaterMovement.DASH_COOLDOWN;
             player.setDeltaMovement(cn.wwl.orimod.movement.WaterMovement.dashVelocity(look));
             PacketDistributor.sendToServer(new cn.wwl.orimod.network.ProgressActionPayload("water_dash", ""));
-        } else player.setDeltaMovement(cn.wwl.orimod.movement.WaterMovement.swimVelocity(player.getDeltaMovement(), look, player.input != null && player.input.forwardImpulse > 0));
+        } else player.setDeltaMovement(cn.wwl.orimod.movement.WaterMovement.swimVelocity(player.getDeltaMovement(), look, player.input != null && player.input.forwardImpulse > 0, player.getAttributeValue(net.neoforged.neoforge.common.NeoForgeMod.SWIM_SPEED)));
     }
 
     public static void tick(ClientTickEvent.Post event) {

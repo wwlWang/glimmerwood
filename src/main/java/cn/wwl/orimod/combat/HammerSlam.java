@@ -36,8 +36,9 @@ public final class HammerSlam {
         var state = player.getData(SpiritData.COMBAT);
         state.mode = MODE; state.stage = 0; state.startedAt = player.level().getGameTime();
         state.slamStartY = player.getY();
+        cn.wwl.orimod.movement.SlimeBounce.beginSlam(player, state.slamStartY);
         state.weapon = player.getUseItem();
-        player.setData(SpiritData.COMBAT_VIEW, new CombatView(++state.actionId, MODE, 0, state.startedAt));
+        player.setData(SpiritData.COMBAT_VIEW, new CombatView(++state.actionId, MODE, 0, state.startedAt, state.slamStartY));
         var current = player.getDeltaMovement();
         player.setDeltaMovement(current.x * .3, SlamRules.initialSpeed(current.y), current.z * .3);
         player.hurtMarked = true;
