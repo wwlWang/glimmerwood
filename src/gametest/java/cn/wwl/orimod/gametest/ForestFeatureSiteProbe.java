@@ -66,6 +66,6 @@ final class ForestFeatureSiteProbe {
             report.put("status","complete");
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}}).get();}
         catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
-        finally{executor.shutdown();try{Files.writeString(Path.of("forest-feature-ghosts.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}finally{server.halt(false);}}
+        finally{executor.shutdown();try{Files.writeString(ReportFiles.output(Path.of("forest-feature-ghosts.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}finally{server.halt(false);}}
     }
 }

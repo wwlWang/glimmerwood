@@ -52,7 +52,12 @@ final class FeatureSiteReservations {
             if(!inside(RuinDecision.Box.of(CreekStructureReservations.outpostEnvelope(cp)),origin,26))continue;
             var key=new Key(GLADES,cp.toLong(),GreatTreeSites.site(c.randomState()));
             var qualified=state.outposts.get(key,()->ForestStructureReservations.qualify(c,outpost.get(),cp));
-            if(qualified.isPresent())for(var box:qualified.get().boxes())if(inside(box,origin,14))return "STRUCTURE_"+GLADES;
+            if(qualified.isPresent()){
+                var found=qualified.get();
+                var structure=c.registryAccess().registryOrThrow(Registries.STRUCTURE).get(found.structure());
+                // Match StructureStart/RuinVegetationGuard: the union includes terrain adaptation padding.
+                if(inside(RuinDecision.Box.of(structure.adjustBoundingBox(envelope(found.boxes()))),origin,14))return "STRUCTURE_"+GLADES;
+            }
         }
         if(site==FeatureSiteStructure.Site.BLIGHTED_GROUNDS){
             var set=sets.get(TREES);

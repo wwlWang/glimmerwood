@@ -219,7 +219,7 @@ public final class CreekTerrainGameTests {
                             CreekTerrainSurface.building(state,l,p,false)?"BUILDING":"IGNORE"));
         }
         try {var out=java.nio.file.Path.of("../build/test-results/creek-terrain-categories.json");java.nio.file.Files.createDirectories(out.getParent());
-            java.nio.file.Files.writeString(out,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(categories));
+            java.nio.file.Files.writeString(ReportFiles.output(out),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(categories));
         }catch(java.io.IOException e){throw new IllegalStateException(e);}
         h.succeed();
     }

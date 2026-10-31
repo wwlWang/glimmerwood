@@ -46,6 +46,41 @@ public final class P5WorldgenGameTests {
             h.assertTrue(level.getBlockState(base.offset(SpiritTreeShape.HEART)).is(OriBlocks.SPIRIT_TREE_HEART),"Accepted plan lost to decoration");
             h.assertTrue(level.getBlockState(base.offset(0,-2,-4)).is(OriBlocks.SPIRIT_LOG),"Carved foot left unsupported");
         }));
+        for(var decoration:List.of(Blocks.MOSSY_COBBLESTONE,Blocks.COBBLESTONE,Blocks.SNOW_BLOCK,Blocks.POWDER_SNOW))
+            add(tests,"accepted_plan_adapts_"+net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(decoration).getPath(),h->fixture(h,base->{
+                var level=h.getLevel();var plan=plan(level,base);
+                h.assertTrue((boolean)call(plan,"allowed",new Class<?>[0]),"Invalid dry noise fixture");
+                level.setBlock(base,decoration.defaultBlockState(),18);
+                level.setBlock(base.offset(0,-1,-4),decoration.defaultBlockState(),18);
+                var untouched=base.offset(10,-1,0);level.setBlock(untouched,Blocks.SNOW_BLOCK.defaultBlockState(),18);
+                var result=call(plan,"place",new Class<?>[]{net.minecraft.world.level.WorldGenLevel.class,FeatureSiteStructure.Site.class},level,FeatureSiteStructure.Site.SPIRIT_TREE);
+                h.assertValueEqual(result,"OK","Surface decoration invalidated accepted plan");
+                h.assertTrue(level.getBlockState(base.offset(SpiritTreeShape.HEART)).is(OriBlocks.SPIRIT_TREE_HEART),"Heart missing");
+                h.assertTrue(level.getBlockState(untouched).is(Blocks.SNOW_BLOCK),"Clearing decoration excavated snowy ground outside writes");
+            }));
+        add(tests,"glades_adaptation_padding_reserved_before_registration",h->{
+            var env=new ForestExternalReservationGameTests.Environment(h.getLevel(),7007);
+            var feature=env.structure("orimod:blighted_grounds");
+            try {
+                var type=Class.forName("cn.wwl.orimod.world.FeatureSiteReservations");
+                var ctor=type.getDeclaredConstructor();ctor.setAccessible(true);var reservation=ctor.newInstance();
+                var pt=Class.forName("cn.wwl.orimod.world.FeatureSitePlan");
+                var pc=pt.getDeclaredConstructor(String.class,BlockPos.class,Map.class);pc.setAccessible(true);
+                var at=new BlockPos(-1412,65,-1780);var plan=pc.newInstance("OK",at,Map.of());
+                var reason=call(reservation,"rejection",new Class<?>[]{net.minecraft.world.level.levelgen.structure.Structure.GenerationContext.class,pt,FeatureSiteStructure.Site.class},env.context(feature,new ChunkPos(at)),plan,FeatureSiteStructure.Site.BLIGHTED_GROUNDS);
+                h.assertValueEqual(reason,"STRUCTURE_orimod:glades_outpost","Missed padded outpost boundary from actual seed 7007");
+            } catch(ReflectiveOperationException e){throw new AssertionError(e);}
+        });
+        add(tests,"planned_site_reserves_surface_lake_but_not_deep_cavity",h->fixture(h,base->{
+            var plan=plan(h.getLevel(),base);var piece=plannedPiece(base,plan);
+            var box=new net.minecraft.world.level.levelgen.structure.BoundingBox(base.getX()-6,base.getY()-4,base.getZ()+6,base.getX()+9,base.getY()+3,base.getZ()+21);
+            h.assertTrue(piece.protectsLake(box),"Surface lake can invalidate registered start");
+            var saved=new FeatureSitePiece(piece.createTag(StructurePieceSerializationContext.fromLevel(h.getLevel())));
+            h.assertTrue(saved.protectsLake(box),"Reservation was lost on reload");
+            h.assertFalse(piece.protectsLake(box.moved(0,-16,0)),"Deep lake was unnecessarily rejected");
+            h.assertFalse(piece.protectsLake(box.moved(32,0,0)),"Distant lake was unnecessarily rejected");
+            h.assertFalse(new FeatureSitePiece(FeatureSiteStructure.Site.SPIRIT_TREE,base).protectsLake(box),"Legacy strict feature changed rules");
+        }));
         add(tests,"unexpected_chest_rejects_plan_atomically",h->fixture(h,base->{
             var level=h.getLevel();var plan=plan(level,base);
             h.assertTrue((boolean)call(plan,"allowed",new Class<?>[0]),"Invalid fixture");

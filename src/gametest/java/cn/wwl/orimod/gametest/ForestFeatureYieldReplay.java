@@ -28,6 +28,6 @@ public final class ForestFeatureYieldReplay {
             tests.add(Map.of("name",name,"accepted",result.get("accepted"),"conflicts",result.get("conflictCount"),"missing",result.get("missing")));
         }
         var out=Map.of("source",args[0],"positiveAccepted",true,"positiveYielded",positive.get("yieldedFeatureSiteExceptions"),"negativeMutations",tests,"allAssertionsPassed",true);
-        Files.writeString(Path.of(args[1]),G.toJson(out));System.out.println("FEATURE YIELD REPLAY PASS: actual positive + 5 negative mutations");
+        Files.writeString(ReportFiles.output(Path.of(args[1])),G.toJson(out));System.out.println("FEATURE YIELD REPLAY PASS: actual positive + 5 negative mutations");
     }
 }

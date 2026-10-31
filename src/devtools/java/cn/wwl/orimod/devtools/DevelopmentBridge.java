@@ -453,6 +453,11 @@ public final class DevelopmentBridge {
                     return Map.<String,Object>of("id", entityId, "action", animation);
                 }).get(5, TimeUnit.SECONDS);
             }
+            case "flame_probe" -> {
+                require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
+                var id=mc.player.getUUID();
+                return mc.getSingleplayerServer().submit(()->FlameProbe.inspect(mc.getSingleplayerServer().getPlayerList().getPlayer(id))).get(5,TimeUnit.SECONDS);
+            }
             case "nearby_entities" -> {
                 require(mc.player != null && mc.getSingleplayerServer() != null, "Single-player world required");
                 var id = mc.player.getUUID();

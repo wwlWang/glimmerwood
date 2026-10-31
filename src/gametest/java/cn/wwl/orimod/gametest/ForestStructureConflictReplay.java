@@ -36,7 +36,7 @@ public final class ForestStructureConflictReplay {
             require(rule(result,expected)||result.get("missing").toString().contains(expected),name+" "+result);
             tests.add(Map.of("name",name,"accepted",false,"expectedRule",expected,"result",compact(result)));
         }
-        report.put("negativeMutations",tests);report.put("allAssertionsPassed",true);Files.writeString(dir.resolve("result.json"),G.toJson(report));
+        report.put("negativeMutations",tests);report.put("allAssertionsPassed",true);Files.writeString(ReportFiles.output(dir.resolve("result.json")),G.toJson(report));
         System.out.println("STRUCTURE CONFLICT REPLAY PASS: village witness + closed fixture positive + 4 negative mutations; archived trail whole-run coverage remains explicitly incomplete");
     }
 }

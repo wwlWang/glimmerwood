@@ -38,5 +38,5 @@ public final class P5ChunkPerformanceAudit {
             }catch(Exception ex){report.put("status","failed");report.put("error",ex.toString());save(report);server.halt(false);}
         });
     }
-    private static void save(Map<String,Object> report){try{Files.writeString(Path.of("p5-chunk-performance.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
+    private static void save(Map<String,Object> report){try{Files.writeString(ReportFiles.output(Path.of("p5-chunk-performance.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
 }

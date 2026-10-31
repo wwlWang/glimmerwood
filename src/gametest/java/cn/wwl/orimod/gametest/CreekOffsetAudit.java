@@ -134,5 +134,5 @@ final class CreekOffsetAudit {
         catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{executor.shutdown();write(report);server.halt(false);}
     }
-    private static void write(Map<String,Object> report){try{Files.writeString(Path.of("offsets.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new RuntimeException(e);}}
+    private static void write(Map<String,Object> report){try{Files.writeString(ReportFiles.output(Path.of("offsets.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new RuntimeException(e);}}
 }

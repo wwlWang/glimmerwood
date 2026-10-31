@@ -202,8 +202,8 @@ public final class BlightGrowthGameTests {
             report.put("result","passed");
         }finally{
             System.out.println("R117_BLIGHT_DAY "+new com.google.gson.Gson().toJson(report));
-            try{java.nio.file.Files.writeString(java.nio.file.Path.of("../evidence/r117-d/latest-area.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)+"\n");}catch(java.io.IOException e){throw new RuntimeException(e);}
-            level.getDataStorage().set("orimod_blight",previous);BlightEcology.clear();
+            try{java.nio.file.Files.writeString(ReportFiles.output(java.nio.file.Path.of("../build/test-results/r117-d/latest-area.json")),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)+"\n");}catch(java.io.IOException e){throw new RuntimeException(e);}
+            finally {level.getDataStorage().set("orimod_blight",previous);BlightEcology.clear();}
         }
     }
     private static Map<String,Object> point(int tick,BlightRegion r){return Map.of("tick",tick,"columns",r.columns().size(),"newColumns",r.grownColumns(),"radius",r.radius(),"records",r.size(),

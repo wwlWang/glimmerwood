@@ -78,7 +78,7 @@ public final class CreekGuardEvidence {
         if(!FULL)return;var report=new LinkedHashMap<String,Object>();report.put("protocol","unaltered creek_acceptance full five rounds plus read-only observer");
         report.put("startEpochMillis",START_MILLIS);report.put("phases",PHASES);
         report.put("events",EVENTS.stream().sorted(Comparator.comparingLong(r->((Number)r.get("sequence")).longValue())).toList());
-        try{Files.writeString(Path.of("creek-full-evidence.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}
+        try{Files.writeString(ReportFiles.output(Path.of("creek-full-evidence.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}
     }
     private static void snapshot(ServerLevel l,String phase){
         var rows=new ArrayList<Map<String,Object>>();
@@ -121,7 +121,7 @@ public final class CreekGuardEvidence {
             report.put("status","complete");
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{report.put("phases",PHASES);report.put("events",EVENTS.stream().sorted(Comparator.comparingLong(r->((Number)r.get("sequence")).longValue())).toList());
-            try{Files.writeString(Path.of("creek-guard-evidence.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}finally{server.halt(false);}}
+            try{Files.writeString(ReportFiles.output(Path.of("creek-guard-evidence.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}finally{server.halt(false);}}
     }
     private static List<Integer> xyz(BlockPos p){return List.of(p.getX(),p.getY(),p.getZ());}
     private CreekGuardEvidence(){}

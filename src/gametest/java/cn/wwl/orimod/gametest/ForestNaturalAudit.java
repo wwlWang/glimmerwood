@@ -148,5 +148,5 @@ final class ForestNaturalAudit {
     private static List<Integer> xyz(BlockPos p){return List.of(p.getX(),p.getY(),p.getZ());}
     private void fail(Exception e){report.put("error",e.toString());e.printStackTrace();finish("failed");}
     private void finish(String status){ForestLavaEvidence.save();ended=true;report.put("status",status);try{CreekFixtureChunks.release(level,forced);}finally{write();server.halt(false);}}
-    private void write(){try{Files.writeString(Path.of("forest-natural.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
+    private void write(){try{Files.writeString(ReportFiles.output(Path.of("forest-natural.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
 }

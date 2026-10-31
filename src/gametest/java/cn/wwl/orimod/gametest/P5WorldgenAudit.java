@@ -17,6 +17,8 @@ final class P5WorldgenAudit {
             var rows=new ArrayList<Map<String,Object>>();
             int[][] points=level.getSeed()==116555?new int[][]{{-2332,67,-132,-2333,62,-133},{-340,67,1348,-347,62,1358}}
                     :new int[][]{{-594,65,-1382,-596,62,-1388},{2156,67,-2055,2164,62,-2052},{1340,70,700,1339,62,707}};
+            String supplied=System.getProperty("orimod.worldgen.support.points","");
+            if(!supplied.isEmpty())points=Arrays.stream(supplied.split(";")).map(row->Arrays.stream(row.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
             for(var xyz:points){
                 var origin=new BlockPos(xyz[0],xyz[1],xyz[2]);var at=new BlockPos(xyz[3],xyz[4],xyz[5]);
                 var generator=level.getChunkSource().getGenerator();var random=level.getChunkSource().randomState();
@@ -25,7 +27,7 @@ final class P5WorldgenAudit {
                 for(int y=level.getMinBuildHeight();y<=origin.getY()+2;y++)values.add(Map.of("y",y,"actual",level.getBlockState(at.atY(y)).toString(),"noise",column.getBlock(y).toString()));
                 rows.add(Map.of("origin",origin.toShortString(),"firstWater",at.toShortString(),"columns",values));
             }
-            try{Files.writeString(Path.of("p5-support-audit.json"),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("seed",level.getSeed(),"rows",rows)));}
+            try{Files.writeString(ReportFiles.output(Path.of("p5-support-audit.json")),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("seed",level.getSeed(),"rows",rows)));}
             catch(Exception ex){throw new IllegalStateException(ex);}
             server.halt(false);return;
         }
@@ -58,7 +60,7 @@ final class P5WorldgenAudit {
                         var result=(RuinStructure.SiteResult)method.invoke(forest,context,forest.kind.currentVersion());
                         rows.add(Map.of("ms",(System.nanoTime()-before)/1e6,"reason",result.reason()));
                     }
-                    recording.stop();recording.dump(Path.of("forest-prediction.jfr"));save(Map.of("status","complete","rows",rows));
+                    recording.stop();recording.dump(ReportFiles.output(Path.of("forest-prediction.jfr")));save(Map.of("status","complete","rows",rows));
                 }catch(Exception e){throw new IllegalStateException(e);}
                 server.halt(false);return;
             }
@@ -123,5 +125,5 @@ final class P5WorldgenAudit {
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{report.put("elapsedSeconds",(System.nanoTime()-begin)/1e9);save(report);server.halt(false);}
     }
-    static void save(Map<String,Object> r){try{Files.writeString(Path.of("p5-worldgen-audit.json"),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(r));}catch(Exception e){throw new IllegalStateException(e);}}
+    static void save(Map<String,Object> r){try{Files.writeString(ReportFiles.output(Path.of("p5-worldgen-audit.json")),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(r));}catch(Exception e){throw new IllegalStateException(e);}}
 }

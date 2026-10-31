@@ -205,7 +205,7 @@ public final class ForestLavaEvidence {
     static void save(){if(!ENABLED)return;try{
         var stacks=new TreeMap<Integer,List<String>>();STACKS.forEach((k,v)->stacks.put(v,k));
         var file=Path.of("forest-lava-evidence.json");var pending=Path.of("forest-lava-evidence.pending.json");
-        try(var writer=Files.newBufferedWriter(pending)){
+        try(var writer=Files.newBufferedWriter(ReportFiles.output(pending))){
             new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("events",EVENTS.stream().sorted(Comparator.comparingLong(e->((Number)e.get("sequence")).longValue())).toList(),"snapshots",List.copyOf(SNAPSHOTS),"stacks",stacks),writer);
         }
         Files.move(pending,file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);

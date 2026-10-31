@@ -109,7 +109,7 @@ public final class CreekSitingAudit {
                     }
                 }catch(Exception e){throw new RuntimeException(e);}
             }).get();
-            recording.stop();recording.dump(Path.of("candidates.jfr"));
+            recording.stop();recording.dump(ReportFiles.output(Path.of("candidates.jfr")));
             var events=new ArrayList<Map<String,Object>>();report.put("events",events);
             try(var input=new RecordingFile(Path.of("candidates.jfr"))){while(input.hasMoreEvents()){
                 var e=input.readEvent();var row=new LinkedHashMap<String,Object>();row.put("type",e.getEventType().getName());row.put("ms",e.getDuration().toNanos()/1e6);row.put("thread",e.getThread().getJavaName());
@@ -137,5 +137,5 @@ public final class CreekSitingAudit {
     private static Object field(Object o,String name)throws Exception{var f=lookupField(o.getClass(),name);f.setAccessible(true);return f.get(o);}
     private static Object invoke(Object o,String name,Class<?>[] types,Object...args)throws Exception{var m=lookupMethod(o.getClass(),name,types);m.setAccessible(true);return m.invoke(o,args);}
     private static Object reflect(java.lang.reflect.Method m,Object o,Object...args){try{return m.invoke(o,args);}catch(Exception e){throw new RuntimeException(e);}}
-    private static void write(Map<String,Object> report){try{Files.writeString(Path.of("candidates.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new RuntimeException(e);}}
+    private static void write(Map<String,Object> report){try{Files.writeString(ReportFiles.output(Path.of("candidates.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new RuntimeException(e);}}
 }

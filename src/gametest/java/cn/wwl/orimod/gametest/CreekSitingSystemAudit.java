@@ -122,5 +122,5 @@ final class CreekSitingSystemAudit {
         finally{executor.shutdown();write(report);server.halt(false);}
     }
     private static ChunkPos chunk(JsonObject r){var p=r.getAsJsonArray("chunk");return new ChunkPos(p.get(0).getAsInt(),p.get(1).getAsInt());}
-    private static void write(Map<String,Object> r){try{Files.writeString(Path.of("system-siting.json"),new GsonBuilder().setPrettyPrinting().create().toJson(r));}catch(Exception e){throw new RuntimeException(e);}}
+    private static void write(Map<String,Object> r){try{Files.writeString(ReportFiles.output(Path.of("system-siting.json")),new GsonBuilder().setPrettyPrinting().create().toJson(r));}catch(Exception e){throw new RuntimeException(e);}}
 }

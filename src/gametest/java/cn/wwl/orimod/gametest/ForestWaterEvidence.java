@@ -64,7 +64,7 @@ public final class ForestWaterEvidence {
         }
         PHASES.add(Map.of("site",site,"phase",name,"worldTick",l.getGameTime(),"statuses",statuses,"columns",rows));save();
     }
-    static void save(){if(!ENABLED)return;try{Files.writeString(Path.of("forest-water-evidence.json"),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("phases",PHASES,"writes",List.copyOf(WRITES),"ownWriteAttempts",List.copyOf(OWN_WRITES),"ownSlices",List.copyOf(SLICES))));}catch(Exception e){throw new IllegalStateException(e);}}
+    static void save(){if(!ENABLED)return;try{Files.writeString(ReportFiles.output(Path.of("forest-water-evidence.json")),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("phases",PHASES,"writes",List.copyOf(WRITES),"ownWriteAttempts",List.copyOf(OWN_WRITES),"ownSlices",List.copyOf(SLICES))));}catch(Exception e){throw new IllegalStateException(e);}}
     private static List<Integer> xyz(BlockPos p){return List.of(p.getX(),p.getY(),p.getZ());}
     private ForestWaterEvidence(){}
 }

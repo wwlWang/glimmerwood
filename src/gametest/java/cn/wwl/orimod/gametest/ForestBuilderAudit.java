@@ -124,5 +124,5 @@ final class ForestBuilderAudit {
         catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{executor.shutdown();report.put("wallMs",(System.nanoTime()-start)/1e6);write(report);server.halt(false);}
     }
-    private static void write(Map<String,Object> report){try{Files.writeString(Path.of("forest-builder.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
+    private static void write(Map<String,Object> report){try{Files.writeString(ReportFiles.output(Path.of("forest-builder.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception e){throw new IllegalStateException(e);}}
 }

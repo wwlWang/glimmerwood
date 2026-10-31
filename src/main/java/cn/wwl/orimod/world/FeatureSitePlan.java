@@ -41,7 +41,7 @@ record FeatureSitePlan(String reason,BlockPos base,Map<BlockPos,BlockState> writ
                     level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,x,z)));
             for(int y=top;y>=base.getY()-6;y--){
                 var p=new BlockPos(x,y,z);var state=level.getBlockState(p);
-                if(naturalVegetation(state))transaction.put(p,Blocks.AIR.defaultBlockState());
+                if(naturalVegetation(state)||y>=base.getY() && boulder(state))transaction.put(p,Blocks.AIR.defaultBlockState());
             }
         }
         for(var entry:writes.entrySet()){
@@ -109,6 +109,13 @@ record FeatureSitePlan(String reason,BlockPos base,Map<BlockPos,BlockState> writ
     }
     private static boolean replaceable(BlockState state){
         return state.getFluidState().isEmpty() && (!state.hasBlockEntity()||state.is(Blocks.BEE_NEST))
-                && (SpiritTreeFeature.replaceable(state)||naturalVegetation(state)||BlightedGroundsFeature.naturalFloor(state));
+                && (SpiritTreeFeature.replaceable(state)||naturalVegetation(state)||surfaceDecoration(state)||BlightedGroundsFeature.naturalFloor(state));
+    }
+    /** Surface rules and LOCAL_MODIFICATIONS decorate after noise preflight; registered structures reserve their own masonry. */
+    private static boolean surfaceDecoration(BlockState state){
+        return boulder(state)||state.is(Blocks.SNOW_BLOCK)||state.is(Blocks.POWDER_SNOW);
+    }
+    private static boolean boulder(BlockState state){
+        return state.is(Blocks.MOSSY_COBBLESTONE)||state.is(Blocks.COBBLESTONE);
     }
 }

@@ -216,7 +216,7 @@ final class WorldgenAudit {
 
     private static int[] coordinates(BlockPos pos) { return new int[]{pos.getX(), pos.getY(), pos.getZ()}; }
     private static void write(Path path, Map<String, Object> data) {
-        try { Files.writeString(path, new GsonBuilder().setPrettyPrinting().create().toJson(data) + "\n"); }
+        try { Files.writeString(ReportFiles.output(path), new GsonBuilder().setPrettyPrinting().create().toJson(data) + "\n"); }
         catch (Exception error) { throw new IllegalStateException("Cannot write worldgen audit", error); }
     }
 }

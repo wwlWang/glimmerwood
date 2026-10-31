@@ -187,6 +187,21 @@
 
 ---
 
+## 批次 I — 第二轮试玩核实与修复（基线 7bfd6dd）
+
+实施与验证记录：`evidence/p5-fix/I/README.md`。I1–I4 核实后直接实施；I5 不改；I6 以调查为先。
+
+> 已完成：干净源码导出初始和运行结束后均无 evidence 目录，含地形完整全量 exit 0：JUnit **1881/1881**、GameTest **1625/1625**，均无失败或跳过。实机四武器 × 十目标 × 两种能量状态 **80/80**；三种子真实 FULL 实放由 **81/89** 提升至 **89/89**，登记数未减少。33 个冻结文件逐字节一致；I6 连续观察未复现，未改调度。
+
+- **I1 [确认] 条件中立生物被萤先手攻击**：有 owner 的 `CombatTargets.canHit` 与无 owner 的入口都把猪灵/蜘蛛当成普通 Enemy。增加 `orimod:conditionally_neutral` 标签；仅攻击针对 owner 的目标/报复/愤怒状态，无 owner 不猜测敌对关系。检查 Goal、Brain ATTACK_TARGET 和 ANGRY_AT。
+- **I2 [确认] 武器抢占交互**：`SpiritCombatClient.input` 在原版方块/实体交互分派之前取消 use 输入。把武器的能量/冷却拒绝放到原版 `MultiPlayerGameMode.useItem` 后备路径，方块/实体成功交互优先；四把武器逐项验证。
+- **I3 [确认] 干净克隆报告目录不存在**：`BlightGrowthGameTests` 直接写被忽略的 evidence 路径。改至 build/test-results，GameTest 报告写入统一创建父目录；最终在初始无 evidence 的干净源码导出运行含地形全量。
+- **I4 [确认] locate 空起点**：多种子真实 FULL 基线复现苔石及 UNEXPECTED_RUIN。林间营地的预测使用未扩展的 piece 盒，实放使用 terrain_adaptation 扩展后的总盒，口径不一致；同时发现雪块/细雪及浅岩浆湖池的后期生成差异。修复后按相同种子/查询网格复扫，实放率 100%，实放数不得低于基线。冻结布局、NBT 和优先级保持不变。
+- **I5 [审定不改] 自然树木/叶子的保护策略**：沿用 E1 审定范围。
+- **I6 [未复现] 萤偶尔几分钟不攻击**：没有持续目标锁；每个就绪 tick 重新选择 6 格内视线通畅目标。冷却为主世界 game time 的 14 tick。检查遮挡、形态/觉醒/开关、目标筛选与渲染区别；实机连续 3610 服务端 tick、257 次攻击无分钟级停火，未调整生产调度。
+
+---
+
 ## 交付
 
 每批完成后在 `evidence/p5-fix/<批次>/README.md` 写：每条的核实结论、改动、测试和截图。证据目录不提交。

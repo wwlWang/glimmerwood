@@ -37,14 +37,6 @@ public final class SpiritCombatClient {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
         if(RestorationClient.active()){event.setCanceled(true);event.setSwingHand(false);return;}
-        if (event.isUseItem() && cn.wwl.orimod.item.SpiritWeaponUse.blocked(mc.player, mc.player.getItemInHand(event.getHand()))) {
-            event.setCanceled(true); event.setSwingHand(false);
-            if (REFUSAL.refuse()) {
-                energyFlashUntil = SpiritClientSession.now() + 8;
-                mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), .2f, .65f);
-            }
-            return;
-        }
         if (event.isAttack() && mc.player.getMainHandItem().is(OriItems.SPIRIT_BLADE)) {
             // The server still resolves the spirit combo, but vanilla owns its visible swing,
             // including repeated swings while the attack key is held against a block.
@@ -55,10 +47,23 @@ public final class SpiritCombatClient {
                 awaitingAttackUntil = SpiritClientSession.now() + 12;
                 PacketDistributor.sendToServer(new CombatInputPayload(false));
             }
-        } else if (event.isUseItem() && blockUse && (mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_BOW)
-                || mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_SPEAR))) {
-            event.setCanceled(true); event.setSwingHand(false);
         }
+    }
+
+    /** Called only after vanilla has offered the click to the targeted block/entity. */
+    public static boolean refuseItemUse(net.minecraft.world.InteractionHand hand) {
+        SpiritClientSession.observe();
+        var mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+        var stack = mc.player.getItemInHand(hand);
+        if (cn.wwl.orimod.item.SpiritWeaponUse.blocked(mc.player, stack)) {
+            if (REFUSAL.refuse()) {
+                energyFlashUntil = SpiritClientSession.now() + 8;
+                mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), .2f, .65f);
+            }
+            return true;
+        }
+        return blockUse && (stack.is(OriItems.SPIRIT_BOW) || stack.is(OriItems.SPIRIT_SPEAR));
     }
 
     public static void opening(ScreenEvent.Opening event) {

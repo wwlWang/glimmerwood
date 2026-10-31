@@ -45,7 +45,7 @@ final class CreekLocateAudit {
                 if(found==null)throw new IllegalStateException("locate returned no site");
                 var p=found.getFirst();row.put("position",List.of(p.getX(),p.getY(),p.getZ()));row.put("distance",Math.hypot(p.getX()-8000,p.getZ()-8000));
             }
-            recording.stop();recording.dump(Path.of("locate.jfr"));
+            recording.stop();recording.dump(ReportFiles.output(Path.of("locate.jfr")));
             var events=new ArrayList<Map<String,Object>>();output.put("events",events);
             try(var reader=new RecordingFile(Path.of("locate.jfr"))){while(reader.hasMoreEvents()){
                 var e=reader.readEvent();var name=e.getEventType().getName();
@@ -56,7 +56,7 @@ final class CreekLocateAudit {
             output.put("status","complete");
         }catch(Exception e){output.put("status","failed");output.put("error",e.toString());e.printStackTrace();}
         finally{
-            try{Files.writeString(Path.of("locate.json"),new GsonBuilder().setPrettyPrinting().create().toJson(output));}
+            try{Files.writeString(ReportFiles.output(Path.of("locate.json")),new GsonBuilder().setPrettyPrinting().create().toJson(output));}
             catch(Exception e){throw new IllegalStateException(e);}
             finally{try{CreekFixtureChunks.settle(level,"locate-stop");}finally{server.halt(false);}}
         }

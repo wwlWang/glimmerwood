@@ -57,6 +57,12 @@ public final class FeatureSitePiece extends StructurePiece {
     public FeatureSiteStructure.Site site() { return site; }
     public BlockPos origin() { return origin; }
 
+    /** Noise-approved surface must survive later lake decoration, including neighbouring chunks. */
+    public boolean protectsLake(BoundingBox lake) {
+        return placementVersion>0 && new BoundingBox(origin.getX()-14,origin.getY()-6,origin.getZ()-14,
+                origin.getX()+14,origin.getY()+SpiritTreeShape.MAX_HEIGHT+8,origin.getZ()+14).intersects(lake);
+    }
+
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putString("Site", site.id()); tag.putLong("Origin", origin.asLong());
         if(placementVersion>0){tag.putInt("PlacementVersion",placementVersion);tag.putLong("PlacementSeed",placementSeed);}

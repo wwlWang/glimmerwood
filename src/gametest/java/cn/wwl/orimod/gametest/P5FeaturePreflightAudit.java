@@ -40,7 +40,7 @@ final class P5FeaturePreflightAudit {
                 }
                 var out=new LinkedHashMap<String,Object>();out.put("kind",kind);out.put("oldOrigin",row.get("origin").getAsString());out.put("oldPlacedAt",row.getAsJsonObject("outcome").get("at").getAsString());out.put("candidates",atList);results.add(out);
                 System.out.println("P5_LOST_SITE "+out);
-                Files.writeString(Path.of("p5-preflight-diagnosis.json"),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(results));
+                Files.writeString(ReportFiles.output(Path.of("p5-preflight-diagnosis.json")),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(results));
             }
         }catch(Exception ex){throw new IllegalStateException(ex);}finally{e.getServer().halt(false);}
     }

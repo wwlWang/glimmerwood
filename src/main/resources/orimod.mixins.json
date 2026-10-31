@@ -59,7 +59,8 @@
     "FeatherItemNameMixin",
     "CorruptAnimalTintMixin",
     "CorruptAnimalLayersMixin",
-    "NonPlayerWeaponModelMixin"
+    "NonPlayerWeaponModelMixin",
+    "SpiritWeaponInteractionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

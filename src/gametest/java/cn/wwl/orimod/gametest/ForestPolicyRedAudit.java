@@ -25,6 +25,6 @@ final class ForestPolicyRedAudit {
             out.put("status","passed");
         }catch(AssertionError e){out.put("status","failed_assertion");out.put("failure",e.getMessage());System.out.println("FOREST_POLICY_RED "+e.getMessage());}
         catch(Exception e){out.put("status","fixture_error");out.put("error",e.toString());e.printStackTrace();}
-        finally{try{Files.writeString(Path.of("forest-policy-red.json"),new GsonBuilder().setPrettyPrinting().create().toJson(out));}catch(Exception e){throw new IllegalStateException(e);}finally{CreekFixtureChunks.settle(l,"forest-policy-red-stop");server.halt(false);}}
+        finally{try{Files.writeString(ReportFiles.output(Path.of("forest-policy-red.json")),new GsonBuilder().setPrettyPrinting().create().toJson(out));}catch(Exception e){throw new IllegalStateException(e);}finally{CreekFixtureChunks.settle(l,"forest-policy-red-stop");server.halt(false);}}
     }
 }

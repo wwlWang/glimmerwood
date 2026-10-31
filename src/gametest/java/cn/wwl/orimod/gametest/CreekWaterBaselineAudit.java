@@ -71,5 +71,5 @@ final class CreekWaterBaselineAudit {
         finally{write(out);server.halt(false);}
     }
     private static List<List<Integer>> positions(Set<BlockPos> ps){return ps.stream().sorted(Comparator.<BlockPos>comparingInt(BlockPos::getX).thenComparingInt(BlockPos::getZ).thenComparingInt(BlockPos::getY)).map(p->List.of(p.getX(),p.getY(),p.getZ())).toList();}
-    private static void write(Map<String,Object> out){try{Files.writeString(Path.of("water-baseline.json"),new GsonBuilder().setPrettyPrinting().create().toJson(out));}catch(Exception e){throw new IllegalStateException(e);}}
+    private static void write(Map<String,Object> out){try{Files.writeString(ReportFiles.output(Path.of("water-baseline.json")),new GsonBuilder().setPrettyPrinting().create().toJson(out));}catch(Exception e){throw new IllegalStateException(e);}}
 }

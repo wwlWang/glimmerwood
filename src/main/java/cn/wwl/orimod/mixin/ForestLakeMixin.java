@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 abstract class ForestLakeMixin {
     @Inject(method="place",at=@At("HEAD"),cancellable=true)
     private void orimod$preserveForest(FeaturePlaceContext<LakeFeature.Configuration> context,CallbackInfoReturnable<Boolean> result){
-        if(RuinVegetationGuard.blocksForestLake(context.level(),context.origin()))result.setReturnValue(false);
+        if((RuinVegetationGuard.blocksForestLake(context.level(),context.origin()) || RuinVegetationGuard.blocksFeatureLake(context.level(),context.origin())))result.setReturnValue(false);
     }
 }

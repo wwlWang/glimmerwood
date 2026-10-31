@@ -110,7 +110,7 @@ public final class ForestStructureEvidence {
             }
         }
         var stacks=new TreeMap<Integer,List<String>>();STACKS.forEach((s,id)->stacks.put(id,s));
-        try{Files.writeString(Path.of("forest-structures-"+index+".json"),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("input",input,"stacks",stacks,"archaeology",archaeology.values(),"result",result)));}
+        try{Files.writeString(ReportFiles.output(Path.of("forest-structures-"+index+".json")),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("input",input,"stacks",stacks,"archaeology",archaeology.values(),"result",result)));}
         catch(Exception e){throw new IllegalStateException(e);}
         result.put("evidenceFile","forest-structures-"+index+".json");result.put("archaeology",List.copyOf(archaeology.values()));return result;
     }

@@ -73,7 +73,7 @@ final class GinsoUpgradeAudit {
         }catch(Throwable error){report.put("status","failed");report.put("error",error.toString());OriMod.LOGGER.error("Ginso upgrade audit failed",error);}
         finally{
             report.put("elapsedSeconds",(System.nanoTime()-started)/1e9);
-            try{Files.writeString(output,new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception error){throw new RuntimeException(error);}
+            try{Files.writeString(ReportFiles.output(output),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception error){throw new RuntimeException(error);}
             server.halt(false);
         }
     }

@@ -103,7 +103,7 @@ final class CreekProfileAudit {
                 }
                 commands.add(row);
             }
-            recording.stop();var file=Path.of("creek-natural.jfr");recording.dump(file);
+            recording.stop();var file=Path.of("creek-natural.jfr");recording.dump(ReportFiles.output(file));
             var events=new ArrayList<Map<String,Object>>();var samplings=new ArrayList<Map<String,Object>>();
             try(var reader=new RecordingFile(file)){
                 while(reader.hasMoreEvents()){
@@ -131,7 +131,7 @@ final class CreekProfileAudit {
             report.put("chunkGenerationEvents",events);report.put("status","complete");
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{
-            try{Files.writeString(Path.of("creek-profile.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}
+            try{Files.writeString(ReportFiles.output(Path.of("creek-profile.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}
             catch(Exception e){throw new IllegalStateException(e);}
             finally{
                 // This headless harness owns synchronous chunk requests too.

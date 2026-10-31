@@ -63,7 +63,7 @@ final class CreekAcceptanceAudit {
                 // Save partial evidence and drain normal generation continuations
                 // outside every measured interval. A 2G heap must not retain all
                 // fifteen remote fixture regions until shutdown.
-                Files.writeString(Path.of("creek-acceptance.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));
+                Files.writeString(ReportFiles.output(Path.of("creek-acceptance.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));
                 System.out.println("CREEK_ACCEPTANCE_SITE round="+round+" warmup="+(round<2)+" kind="+kind.id+" max="+row.get("heaviest"));
                 CreekFixtureChunks.settle(level,"acceptance-site");
                 CreekGuardEvidence.checkpoint(level,piece,"AFTER_SCAN_AND_SETTLE");
@@ -73,7 +73,7 @@ final class CreekAcceptanceAudit {
             assertNoRecording();report.put("status","complete");
         }catch(Exception e){report.put("status","failed");report.put("error",e.toString());e.printStackTrace();}
         finally{
-            try{Files.writeString(Path.of("creek-acceptance.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}
+            try{Files.writeString(ReportFiles.output(Path.of("creek-acceptance.json")),new GsonBuilder().setPrettyPrinting().create().toJson(report));}
             catch(Exception e){throw new IllegalStateException(e);}
             finally{try{CreekGuardEvidence.finishFull();}finally{server.halt(false);}}
         }

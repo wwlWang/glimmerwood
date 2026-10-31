@@ -50,10 +50,10 @@ final class RuinFreezeSnapshot {
             Files.createDirectories(directory());
             for(var e:Map.of("states",image.states,"blockEntities",image.entities,"fluidTicks",image.fluids).entrySet()){
                 var md=MessageDigest.getInstance("SHA-256");var file=directory().resolve(name+"."+e.getKey()+".txt.gz");
-                try(var stream=new GZIPOutputStream(Files.newOutputStream(file))){for(String line:e.getValue()){byte[] bytes=(line+"\n").getBytes(StandardCharsets.UTF_8);md.update(bytes);stream.write(bytes);}}
+                try(var stream=new GZIPOutputStream(Files.newOutputStream(ReportFiles.output(file)))){for(String line:e.getValue()){byte[] bytes=(line+"\n").getBytes(StandardCharsets.UTF_8);md.update(bytes);stream.write(bytes);}}
                 out.put(e.getKey(),Map.of("count",e.getValue().size(),"sha256",HexFormat.of().formatHex(md.digest()),"file",file.getFileName().toString()));
             }
-            Files.writeString(directory().resolve(name+".json"),new GsonBuilder().setPrettyPrinting().create().toJson(out));return out;
+            Files.writeString(ReportFiles.output(directory().resolve(name+".json")),new GsonBuilder().setPrettyPrinting().create().toJson(out));return out;
         }catch(Exception e){throw new IllegalStateException("Cannot preserve freeze evidence "+label,e);}
     }
     static BoundingBox pinnedBounds(String name){
@@ -77,6 +77,6 @@ final class RuinFreezeSnapshot {
             }
         }catch(IOException e){throw new UncheckedIOException(e);}catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
     }
-    static void tag(String name,CompoundTag tag){if(!enabled())return;try{Files.createDirectories(directory());Files.writeString(directory().resolve(name+".snbt"),canonical(tag));}catch(IOException e){throw new UncheckedIOException(e);}}
+    static void tag(String name,CompoundTag tag){if(!enabled())return;try{Files.createDirectories(directory());Files.writeString(ReportFiles.output(directory().resolve(name+".snbt")),canonical(tag));}catch(IOException e){throw new UncheckedIOException(e);}}
     private RuinFreezeSnapshot(){}
 }

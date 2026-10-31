@@ -104,7 +104,7 @@ public final class GameTestSaveWatchdog {
                 var directory = report.getParent().resolve("gametest-save-watchdog");
                 Files.createDirectories(directory);
                 var path = directory.resolve(run + "-" + (++sample) + ".txt");
-                try (var out = new PrintWriter(Files.newBufferedWriter(path))) {
+                try (var out = new PrintWriter(Files.newBufferedWriter(ReportFiles.output(path)))) {
                     out.println("elapsedSeconds=" + (System.nanoTime() - started) / 1e9);
                     out.println("Holder handles were captured at ServerStoppingEvent; later-created holders are not included.");
                     out.println("forced counts are stop-entry snapshots; readiness below is sampled now.");

@@ -75,6 +75,21 @@ public final class RuinVegetationGuard {
     static boolean protects(BoundingBox bounds, BlockPos tree) {
         return protects(bounds, tree, TREE_MARGIN);
     }
+
+    /** Registered feature sites also precede LAKES. Read only immutable starts already supplied to FEATURES. */
+    public static boolean blocksFeatureLake(WorldGenLevel level,BlockPos origin){
+        if(!(level instanceof WorldGenRegion region))return false;
+        var lake=new BoundingBox(origin.getX(),origin.getY()-4,origin.getZ(),origin.getX()+15,origin.getY()+3,origin.getZ()+15);
+        var center=new ChunkPos(origin);
+        for(int x=center.x-3;x<=center.x+3;x++)for(int z=center.z-3;z<=center.z+3;z++){
+            if(!region.hasChunk(x,z))continue;
+            for(var start:region.getChunk(x,z,ChunkStatus.STRUCTURE_STARTS).getAllStarts().values()){
+                if(!start.isValid()||!(start.getStructure() instanceof FeatureSiteStructure))continue;
+                for(var piece:start.getPieces())if(piece instanceof FeatureSitePiece site&&site.protectsLake(lake))return true;
+            }
+        }
+        return false;
+    }
     static boolean protects(BoundingBox bounds, BlockPos tree, int margin) {
         return tree.getX() >= bounds.minX() - margin && tree.getX() <= bounds.maxX() + margin
                 && tree.getZ() >= bounds.minZ() - margin && tree.getZ() <= bounds.maxZ() + margin;
