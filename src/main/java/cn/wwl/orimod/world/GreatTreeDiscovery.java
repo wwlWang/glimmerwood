@@ -32,8 +32,8 @@ public final class GreatTreeDiscovery {
     }
     /** Sneak-use a map stone: guidance can point into new chunks without generating them. */
     public static boolean guide(ServerPlayer p){
-        var site=GreatTreeSite.get(p.server.overworld()).site();
-        if(site==null){p.displayClientMessage(Component.translatable("commands.orimod.great_tree.none"),true);return false;}
+        var data=GreatTreeSite.get(p.server.overworld());var site=data.site();
+        if(site==null){p.displayClientMessage(Component.translatable(data.noSite()?"commands.orimod.great_tree.no_site":"commands.orimod.great_tree.none"),true);return false;}
         PacketDistributor.sendToPlayer(p,new RuinGuidePayload(Level.OVERWORLD.location().toString(),site.origin().north(site.shapeVersion()==1?18:24),"great_spirit_tree"));
         p.displayClientMessage(Component.translatable("message.orimod.great_tree.guide"),true);return true;
     }

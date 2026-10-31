@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 /**
  * R114: spirit trees and blighted grounds were biome-modifier features, so {@code /locate structure} could never find
  * them. They are now structure starts (one per random_spread cell) whose single piece runs the unchanged feature in its
- * origin chunk. The start is a noise-only prefilter; the feature keeps its full real-block preflight.
+ * origin chunk. The start owns a complete noise-column plan; placement only adapts later natural decoration.
  */
 public final class FeatureSiteStructure extends Structure {
     public enum Site {
@@ -54,43 +54,77 @@ public final class FeatureSiteStructure extends Structure {
     public static final MapCodec<FeatureSiteStructure> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             settingsCodec(instance), Codec.STRING.fieldOf("site").forGetter(value -> value.site.id())
     ).apply(instance, (settings, site) -> new FeatureSiteStructure(settings, Site.byId(site))));
+    private final FeatureSiteReservations reservations = new FeatureSiteReservations();
     public final Site site;
     public FeatureSiteStructure(StructureSettings settings, Site site) { super(settings); this.site = site; }
 
+    record Accepted(FeatureSitePlan plan,long seed) {}
+    private record ChoiceKey(long chunk,GreatTreeSite.Site greatTree) {}
+    private final java.util.Map<net.minecraft.world.level.levelgen.RandomState,RuinDecisionCache<ChoiceKey,Optional<Accepted>>> choices=
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+        long started=System.nanoTime();var accepted=choose(context);
+        if(Boolean.getBoolean("orimod.worldgen.site.profile"))cn.wwl.orimod.OriMod.LOGGER.info(
+                "FEATURE_PREFLIGHT seed={} kind={} chunk={},{} accepted={} ms={}",context.seed(),site.id(),context.chunkPos().x,context.chunkPos().z,accepted.isPresent(),(System.nanoTime()-started)/1e6);
+        return accepted.map(a->new GenerationStub(a.plan.base(),builder->builder.addPiece(new FeatureSitePiece(site,a.plan.base(),a.seed,a.plan))));
+    }
+    Optional<Accepted> choose(GenerationContext context) {
+        RuinDecisionCache<ChoiceKey,Optional<Accepted>> cache;
+        synchronized(choices){cache=choices.computeIfAbsent(context.randomState(),key->new RuinDecisionCache<>(256));}
+        return cache.get(new ChoiceKey(context.chunkPos().toLong(),GreatTreeSites.site(context.randomState())),()->compute(context));
+    }
+    private Optional<Accepted> compute(GenerationContext context) {
         if(GreatTreeSites.reserved(context.randomState(),context.chunkPos().getMiddleBlockX(),context.chunkPos().getMiddleBlockZ(),Site.RADIUS+8))return Optional.empty();
         if(GinsoStructure.reserved(context,22))return Optional.empty();
-        // Keep the origin RADIUS-compatible: anywhere in the chunk keeps all writes inside its 3x3 neighbourhood.
-        var random = context.random();
-        int x = context.chunkPos().getMinBlockX() + random.nextInt(16), z = context.chunkPos().getMinBlockZ() + random.nextInt(16);
-        int y = height(context, x, z);
-        if (!RuinSiteRules.surfaceInRange(y)) return Optional.empty();
-        if (!context.validBiome().test(context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(x),
-                QuartPos.fromBlock(y), QuartPos.fromBlock(z), context.randomState().sampler()))) return Optional.empty();
-        // Coarse grid first (most sites fail there), then the fine 3-block grid: the old 6-block step alone let a
-        // 4-block bump between samples through (phantom start at -190,34). Coarse points are not sampled twice.
-        int r = site.sampleRadius, fine = Math.max(1, r / 4), coarse = Math.max(fine, r / 2);
-        int[] range = {y, y};
-        // Water surfaces count as height in WORLD_SURFACE_WG: keep every sample at least 2 above sea level, so shores and
-        // swamp pools (the features refuse wet floors) don't leave located but empty starts.
-        int dry = context.chunkGenerator().getSeaLevel() + 2;
-        if (y < dry) return Optional.empty();
-        for (int step : fine == coarse ? new int[]{fine} : new int[]{coarse, fine})
-            for (int dx = -r; dx <= r; dx += step) for (int dz = -r; dz <= r; dz += step) {
-                if (dx * dx + dz * dz > r * r || step == fine && step != coarse && dx % coarse == 0 && dz % coarse == 0) continue;
-                int h = height(context, x + dx, z + dz);
-                range[0] = Math.min(range[0], h); range[1] = Math.max(range[1], h);
-                if (h < dry || range[1] - range[0] > site.maxRelief || Math.abs(h - y) > site.maxDeviation) return Optional.empty();
+        var random=context.random();
+        var initial=new BlockPos(context.chunkPos().getMinBlockX()+random.nextInt(16),0,context.chunkPos().getMinBlockZ()+random.nextInt(16));
+        var terrain=new FeatureTerrain.Noise(context.chunkGenerator(),context.randomState(),context.heightAccessor(),initial);
+        // Preserve the legacy same-chunk retry positions. One column cache serves all three attempts.
+        for(var candidate:FeatureSitePiece.candidates(initial)){
+            long seed=random.nextLong();int x=candidate.getX(),z=candidate.getZ();
+            boolean possibleBiome=false;
+            for(int qy=QuartPos.fromBlock(RuinSiteRules.MIN_SURFACE);qy<=QuartPos.fromBlock(RuinSiteRules.MAX_SURFACE);qy++)
+                if(context.validBiome().test(context.biomeSource().getNoiseBiome(x>>2,qy,z>>2,context.randomState().sampler()))){possibleBiome=true;break;}
+            if(!possibleBiome)continue;
+            String quick=reservations.quickRejection(context,candidate);
+            if(quick!=null){
+                if(Boolean.getBoolean("orimod.worldgen.site.profile"))cn.wwl.orimod.OriMod.LOGGER.info("FEATURE_CHEAP_REJECT seed={} kind={} chunk={},{} at={} reason={}",context.seed(),site.id(),context.chunkPos().x,context.chunkPos().z,candidate.toShortString(),quick);
+                continue;
             }
-        var column = context.chunkGenerator().getBaseColumn(x, z, context.heightAccessor(), context.randomState());
-        if (!column.getBlock(y).getFluidState().isEmpty() || !column.getBlock(y - 1).getFluidState().isEmpty()
-                || column.getBlock(y - 1).isAir()) return Optional.empty();
-        var origin = new BlockPos(x, y, z);
-        return Optional.of(new GenerationStub(origin, builder -> builder.addPiece(new FeatureSitePiece(site, origin))));
+            int y=terrain.getHeight(Heightmap.Types.WORLD_SURFACE_WG,x,z);
+            if(!RuinSiteRules.surfaceInRange(y)||y<context.chunkGenerator().getSeaLevel()+2)continue;
+            if(!context.validBiome().test(context.biomeSource().getNoiseBiome(x>>2,y>>2,z>>2,context.randomState().sampler())))continue;
+            if(!coarse(terrain,new BlockPos(x,y,z),seed))continue;
+            long started=System.nanoTime();
+            var plan=FeatureSitePlan.check(site,terrain,new BlockPos(x,y,z),seed);long checked=System.nanoTime();
+            String refusal=plan.allowed()?reservations.rejection(context,plan,site):plan.reason();
+            if(Boolean.getBoolean("orimod.worldgen.site.profile"))cn.wwl.orimod.OriMod.LOGGER.info(
+                    "FEATURE_DETAIL kind={} chunk={},{} at={} terrainMs={} reservationMs={} reason={}",site.id(),context.chunkPos().x,context.chunkPos().z,candidate.toShortString(),(checked-started)/1e6,(System.nanoTime()-checked)/1e6,refusal);
+            if(plan.allowed()&&refusal==null)return Optional.of(new Accepted(plan,seed));
+        }
+        return Optional.empty();
     }
 
-    private static int height(GenerationContext context, int x, int z) {
-        return context.chunkGenerator().getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+    /** A subset of the final predicates, not a new placement rule. Reject steep/wet sites before crown/disc reads. */
+    private boolean coarse(FeatureTerrain terrain,BlockPos origin,long seed){
+        var points=new java.util.LinkedHashSet<BlockPos>();points.add(BlockPos.ZERO);
+        if(site==Site.SPIRIT_TREE){
+            for(int x:new int[]{-2,2})for(int z:new int[]{-2,2})points.add(new BlockPos(x,0,z));
+        }else{
+            var soil=BlightedGroundsShape.plan(net.minecraft.util.RandomSource.create(seed).nextLong()).soil();
+            points.add(soil.stream().min(java.util.Comparator.comparingInt(BlockPos::getX)).orElseThrow());
+            points.add(soil.stream().max(java.util.Comparator.comparingInt(BlockPos::getX)).orElseThrow());
+            points.add(soil.stream().min(java.util.Comparator.comparingInt(BlockPos::getZ)).orElseThrow());
+            points.add(soil.stream().max(java.util.Comparator.comparingInt(BlockPos::getZ)).orElseThrow());
+        }
+        int min=Integer.MAX_VALUE,max=Integer.MIN_VALUE;
+        for(var point:points){
+            var at=origin.offset(point);int surface=terrain.getHeight(Heightmap.Types.WORLD_SURFACE_WG,at.getX(),at.getZ());
+            if(surface!=terrain.getHeight(Heightmap.Types.OCEAN_FLOOR_WG,at.getX(),at.getZ()))return false;
+            min=Math.min(min,surface);max=Math.max(max,surface);
+            if(max-min>(site==Site.SPIRIT_TREE?SpiritTreeFeature.MAX_RELIEF:6))return false;
+        }
+        return true;
     }
 
     @Override public StructureType<?> type() { return OriWorldgen.FEATURE_SITE.get(); }

@@ -3,6 +3,7 @@
   "package": "cn.wwl.orimod.gametest.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "P5PrepareLevelsMixin",
     "GameTestIoMetricsMixin",
     "GameTestBatchDiskMixin",
     "GameTestChunkSaveDiskMixin",

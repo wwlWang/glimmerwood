@@ -482,6 +482,7 @@
   "message.orimod.skill_wheel": "Hold %s to view and assign learned skills, including Regenerate.",
   "message.orimod.skill_bound": "%s is bound to %s.",
   "commands.orimod.great_tree.site": "Spirit Tree: %s; spawn %s; distance %s blocks; begun=%s; sampled chunks=%s; slowest writes=%s ms",
+  "commands.orimod.great_tree.no_site": "No suitable untouched Great Spirit Tree site was found within 2500 blocks of spawn in this world.",
   "commands.orimod.great_tree.none": "No untouched Spirit Tree site found. Try /ori great_tree repick.",
   "commands.orimod.great_tree.started": "The Spirit Tree has already begun generating; repicking would create a second tree.",
   "block.orimod.great_spirit_wood": "Spirit Tree Bark",

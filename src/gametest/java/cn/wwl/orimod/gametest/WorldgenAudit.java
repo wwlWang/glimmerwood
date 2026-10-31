@@ -23,6 +23,9 @@ final class WorldgenAudit {
     private WorldgenAudit() {}
 
     static void started(ServerStartedEvent event) {
+        if (P5ChunkPerformanceAudit.enabled()) { P5ChunkPerformanceAudit.started(event); return; }
+        if ("p5_preflight".equals(System.getProperty("orimod.worldgen.audit.mode"))) { P5FeaturePreflightAudit.started(event); return; }
+        if (java.util.Set.of("p5_startup","p5_features","p5_locate").contains(System.getProperty("orimod.worldgen.audit.mode",""))) { P5WorldgenAudit.started(event); return; }
         if ("forest_system".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestSystemAudit.started(event); return; }
         if ("creek_guard_evidence".equals(System.getProperty("orimod.worldgen.audit.mode"))) { CreekGuardEvidence.started(event); return; }
         if ("forest_natural".equals(System.getProperty("orimod.worldgen.audit.mode"))) { ForestNaturalAudit.started(event); return; }

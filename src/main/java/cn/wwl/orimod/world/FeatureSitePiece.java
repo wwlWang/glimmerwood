@@ -19,24 +19,33 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 
 import java.util.Optional;
 
-/**
- * Places its feature once, when the origin chunk decorates (writes reach the 3x3 neighbourhood exactly like the old
- * biome-modifier feature did). Neighbours may already carry vanilla trees: if the strict preflight declines, vanilla
- * logs/leaves inside the footprint are cleared and the feature is tried once more, so a located site is rarely empty.
- */
+/** Runs the saved authoritative plan once in its origin chunk. Legacy NBT retains strict feature retries. */
 public final class FeatureSitePiece extends StructurePiece {
     private final FeatureSiteStructure.Site site;
     private final BlockPos origin;
+    private int placementVersion;
+    private long placementSeed;
+    private FeatureSitePlan plan;
+    private String refusal = "";
 
     public FeatureSitePiece(FeatureSiteStructure.Site site, BlockPos origin) {
         super(OriWorldgen.FEATURE_SITE_PIECE.get(), 0, bounds(origin));
         this.site = site; this.origin = origin.immutable();
     }
 
+    FeatureSitePiece(FeatureSiteStructure.Site site,BlockPos origin,long seed,FeatureSitePlan plan){
+        this(site,origin);this.placementVersion=1;this.placementSeed=seed;this.plan=plan;
+        int bottom=Math.min(origin.getY()-1,plan.writes().keySet().stream().mapToInt(BlockPos::getY).min().orElse(origin.getY()))
+                -FeatureSitePlan.MAX_SUPPORT_EXTENSION;
+        this.boundingBox=new BoundingBox(origin.getX()-14,bottom,origin.getZ()-14,
+                origin.getX()+14,origin.getY()+SpiritTreeShape.MAX_HEIGHT+8,origin.getZ()+14);
+    }
+
     public FeatureSitePiece(CompoundTag tag) {
         super(OriWorldgen.FEATURE_SITE_PIECE.get(), tag);
         this.site = FeatureSiteStructure.Site.byId(tag.getString("Site"));
         this.origin = BlockPos.of(tag.getLong("Origin"));
+        this.placementVersion=tag.getInt("PlacementVersion");this.placementSeed=tag.getLong("PlacementSeed");
     }
 
     private static BoundingBox bounds(BlockPos origin) {
@@ -50,11 +59,18 @@ public final class FeatureSitePiece extends StructurePiece {
 
     @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putString("Site", site.id()); tag.putLong("Origin", origin.asLong());
+        if(placementVersion>0){tag.putInt("PlacementVersion",placementVersion);tag.putLong("PlacementSeed",placementSeed);}
     }
 
     @Override public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator,
                                       RandomSource random, BoundingBox chunkBounds, ChunkPos chunk, BlockPos pivot) {
         if (!chunk.equals(new ChunkPos(origin))) return;
+        if(placementVersion>0){
+            long seed=placementSeed;var at=origin;
+            if (place(level, generator, at, seed)) return;
+            com.mojang.logging.LogUtils.getLogger().warn("orimod {} registered start at {} could not place its accepted plan: {}",site.id(),origin,refusal);
+            return;
+        }
         var reasons = new java.util.ArrayList<String>();
         String reason = "";
         for (var at : candidates(origin)) {
@@ -71,11 +87,15 @@ public final class FeatureSitePiece extends StructurePiece {
             reasons.add(at.toShortString() + ": " + reason);
         }
         // A located start with no content; logged so acceptance runs can count phantoms and see why.
-        com.mojang.logging.LogUtils.getLogger().debug("orimod {} start at {} declined by its feature preflight: {}", site.id(), origin, reasons);
+        com.mojang.logging.LogUtils.getLogger().warn("orimod {} legacy start at {} declined by its feature preflight: {}", site.id(), origin, reasons);
     }
 
     /** The feature draws its shape seed as the first nextLong() of this source (see declineReason). */
     private boolean place(WorldGenLevel level, ChunkGenerator generator, BlockPos at, long seed) {
+        if(placementVersion>0){
+            if(plan==null)plan=FeatureSitePlan.check(site,new FeatureTerrain.Noise(generator,level.getLevel().getChunkSource().randomState(),level,origin),origin,seed);
+            refusal=plan.place(level,site);return refusal.equals("OK");
+        }
         return site.feature().place(new FeaturePlaceContext<>(Optional.empty(), level, generator, RandomSource.create(seed), at,
                 NoneFeatureConfiguration.INSTANCE));
     }

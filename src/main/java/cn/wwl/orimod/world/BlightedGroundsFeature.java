@@ -43,7 +43,7 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         return state.is(BlockTags.DIRT) || state.is(BlockTags.SAND) || state.is(Blocks.CLAY)
                 || state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Blocks.GRAVEL);
     }
-    static boolean poolHolds(WorldGenLevel level,BlockPos center,BlockPos offset,Map<BlockPos,Integer> groundAt){
+    static boolean poolHolds(FeatureTerrain level,BlockPos center,BlockPos offset,Map<BlockPos,Integer> groundAt){
         int y=groundAt.get(offset);
         var bed=new BlockPos(center.getX()+offset.getX(),y-2,center.getZ()+offset.getZ());
         if(!level.getBlockState(bed).isFaceSturdy(level,bed,Direction.UP))return false;
@@ -56,24 +56,24 @@ public final class BlightedGroundsFeature extends Feature<NoneFeatureConfigurati
         return true;
     }
     public static Preflight preflight(WorldGenLevel level,BlockPos origin,long seed){
+        return preflight(FeatureTerrain.world(level),origin,seed);
+    }
+    static Preflight preflight(FeatureTerrain level,BlockPos origin,long seed){
         var plan=BlightedGroundsShape.plan(seed);
         // No synchronous loads for commands; WorldGenRegion only reads its already supplied neighborhood.
-        for(int x=(origin.getX()-14)>>4;x<=(origin.getX()+14)>>4;x++)for(int z=(origin.getZ()-14)>>4;z<=(origin.getZ()+14)>>4;z++)
-            if(level instanceof ServerLevel server?server.getChunkSource().getChunkNow(x,z)==null:!level.hasChunk(x,z))return no(Reason.UNLOADED,origin);
+        if(!level.available(origin,14))return no(Reason.UNLOADED,origin);
         int height=level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,origin.getX(),origin.getZ());
         var center=new BlockPos(origin.getX(),height,origin.getZ());
-        if(RuinVegetationGuard.blocksTree(level,center,12))return no(Reason.RUIN,center);
-        if(nearBlock(level,center,12,OriBlocks.SPIRIT_TREE_HEART.get()) || nearBlock(level,center,12,OriBlocks.GLOOM_CORE.get()))return no(Reason.SANCTUARY,center);
+        if(level.ruin(center,12))return no(Reason.RUIN,center);
+        if(level.near(center,12,OriBlocks.SPIRIT_TREE_HEART.get()) || level.near(center,12,OriBlocks.GLOOM_CORE.get()))return no(Reason.SANCTUARY,center);
         var surface=new HashMap<BlockPos,BlockPos>();int min=height,max=height;
-        var soil=plan.soil();var heights=new int[soil.size()];int i=0;
-        for(var offset:soil)heights[i++]=level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,center.getX()+offset.getX(),center.getZ()+offset.getZ());
+        var soil=plan.soil();
         // Only the relief across the disc caps the terrain (<= 6). The soil follows each column, and a per-column limit
         // against the centre (or median) rejected sites over small carved dips the start's noise prefilter cannot see.
         var groundAt=new HashMap<BlockPos,Integer>();
-        i=0;
         for(var offset:soil){
             int x=center.getX()+offset.getX(),z=center.getZ()+offset.getZ();
-            int y=heights[i++];
+            int y=level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,x,z);
             min=Math.min(min,y);max=Math.max(max,y);
             var floor=new BlockPos(x,y-1,z);var state=level.getBlockState(floor);
             if(max-min>6)return no(Reason.TERRAIN,center,"relief "+min+".."+max+" at "+floor.toShortString());

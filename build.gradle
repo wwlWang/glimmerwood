@@ -32,7 +32,13 @@ configurations {
     devtoolsRuntimeOnly.extendsFrom runtimeOnly
 }
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
 
 // Candidate rendering dependencies stay in the development tools until combined runtime acceptance passes.
 dependencies {
@@ -40,7 +46,7 @@ dependencies {
     clientLaunchRuntimeOnly files('libs/runtime/gemrender-0.1.17.jar')
     compileOnly fileTree(dir: 'libs/compile', include: '*.jar')
     // Optional: only SpiritGlowIris touches Iris, and it is loaded only when Iris is installed.
-    compileOnly files('libs/runtime/iris-neoforge-1.8.12+mc1.21.1.jar')
+    compileOnly 'maven.modrinth:iris:1.8.12+1.21.1-neoforge'
     devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
     devtoolsCompileOnly fileTree(dir: 'libs/compile', include: '*.jar')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
@@ -56,6 +62,9 @@ sourceSets.main.resources {
 
 // Exercise the shipped cave layout under the isolated GameTest namespace without a stale copy.
 tasks.named('processGametestResources') {
+    from('src/gametest/resources/data/orimod_gametest/structure/platform_room.nbt') {
+        into 'data/orimod_p5_worldgen/structure'
+    }
     from('src/gametest/resources/data/orimod_gametest/structure/platform_room.nbt') {
         into 'data/orimod_p5/structure'
     }
@@ -134,7 +143,7 @@ neoForge {
             sourceSet = sourceSets.gametest
             loadedMods = [mods.orimod, mods.orimod_gametest]
             gameDirectory = project.file('run-gametest')
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_r117,orimod_p5,orimod_cave_rebuild,orimod_forest_rebuild,orimod_creek_rebuild,orimod_forest_freeze,orimod_forest_red,orimod_forest_approach,orimod_forest_liquid')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_r117,orimod_p5,orimod_p5_worldgen,orimod_cave_rebuild,orimod_forest_rebuild,orimod_creek_rebuild,orimod_forest_freeze,orimod_forest_red,orimod_forest_approach,orimod_forest_liquid')
             systemProperty 'orimod.gametest.report', file('build/test-results/gametest.xml').absolutePath
         }
         worldgenAudit {

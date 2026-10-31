@@ -71,7 +71,11 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
     /** Same ordered predicates as placement. NOT_DRY also includes an unsupported/log/leaf/entity floor;
      * BUILD_HEIGHT includes WorldGenRegion write bounds. ServerLevel intentionally has no ruin guard. */
     public static Preflight preflight(WorldGenLevel level, BlockPos origin) {
-        if (RuinVegetationGuard.blocksTree(level, origin, SpiritTreeShape.RADIUS))
+        return preflight(FeatureTerrain.world(level), origin);
+    }
+
+    static Preflight preflight(FeatureTerrain level, BlockPos origin) {
+        if (level.ruin(origin, SpiritTreeShape.RADIUS))
             return Preflight.rejected(Reason.RUIN_GUARD, origin, origin, origin.getY(), origin.getY());
         int[] heights = new int[25];
         BlockPos badFloor = null;
@@ -88,7 +92,7 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
         // Preserve terrainAllowed's dry-first short circuit when both checks fail.
         if (badFloor != null) return Preflight.rejected(Reason.NOT_DRY, base, badFloor, minY, maxY);
         if (!terrainAllowed(heights, true)) return Preflight.rejected(Reason.RELIEF, base, base, minY, maxY);
-        if (BlightedGroundsFeature.nearBlock(level, base, 12, OriBlocks.GLOOM_CORE.get()))
+        if (level.near(base, 12, OriBlocks.GLOOM_CORE.get()))
             return Preflight.rejected(Reason.BLIGHT_GUARD, base, base, minY, maxY);
         var plan = SpiritTreeShape.plan(base);
         var writes = new LinkedHashMap<BlockPos, BlockState>();
@@ -112,7 +116,7 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
         var clearance = new HashSet<>(writes.keySet());
         for (var offset : plan.crownSpace()) clearance.add(base.offset(offset));
         // Preflight includes the alcove air, supports, fluids, block entities, build height and feature write bounds.
-        for (var pos : clearance) {
+        for (var pos : clearance.stream().sorted(java.util.Comparator.comparingInt(BlockPos::getY)).toList()) {
             if (level.isOutsideBuildHeight(pos) || !level.ensureCanWrite(pos))
                 return Preflight.rejected(Reason.BUILD_HEIGHT, base, pos, minY, maxY);
             var existing = level.getBlockState(pos);
@@ -122,7 +126,7 @@ public final class SpiritTreeFeature extends Feature<NoneFeatureConfiguration> {
         return new Preflight(Reason.OK, base, null, minY, maxY, Collections.unmodifiableMap(writes));
     }
 
-    private static boolean supported(WorldGenLevel level, BlockPos pos) {
+    private static boolean supported(FeatureTerrain level, BlockPos pos) {
         var state = level.getBlockState(pos);
         return state.getFluidState().isEmpty() && !state.hasBlockEntity() && !state.is(BlockTags.LOGS)
                 && !state.is(BlockTags.LEAVES) && state.isFaceSturdy(level, pos, Direction.UP);

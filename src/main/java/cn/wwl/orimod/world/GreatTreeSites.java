@@ -46,11 +46,36 @@ public final class GreatTreeSites {
     public static void load(LevelEvent.Load e){
         if(e.getLevel() instanceof ServerLevel level && level.dimension()==Level.OVERWORLD){var data=GreatTreeSite.get(level);if(data.site()!=null)publish(level,data.site());}
     }
+    private static boolean enabled(net.minecraft.server.MinecraftServer server){
+        return server.getWorldData().worldGenOptions().generateStructures()
+                && !(server.overworld().getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource);
+    }
+    /** loadLevel TAIL: after spawn preparation, before the dedicated-server watchdog is started. */
+    public static void prepare(net.minecraft.server.MinecraftServer server){
+        if(!enabled(server))return;
+        var level=server.overworld();var data=GreatTreeSite.get(level);
+        if(!data.needsSearch()){if(data.site()!=null)publish(level,data.site());return;}
+        var search=new Search(level,0);
+        if(data.completedRange()<MAX_DISTANCE){
+            var found=search.run(0,MAX_DISTANCE);
+            if(found!=null)data.choose(found);
+            data.searched(MAX_DISTANCE);level.getDataStorage().save();
+        }
+        if(data.site()==null){
+            var found=search.run(2,2500);
+            if(found!=null)data.choose(found);
+            data.searched(2500);level.getDataStorage().save();
+        }
+        if(data.site()!=null)publish(level,data.site());
+        OriMod.LOGGER.info("Great Spirit Tree preparation finished: {} ms, candidates {}, columns {}, range {}, result {}",
+                search.elapsedMs(),search.checked,search.terrain.size(),data.completedRange(),data.site()==null?"NO_SITE":data.site().origin());
+    }
+    /** Publish only. An unresolved result must never trigger an unbounded search after watchdog startup. */
     public static void started(ServerStartedEvent e){
-        var level=e.getServer().overworld();
-        if(!e.getServer().getWorldData().worldGenOptions().generateStructures() || level.getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource)return;
-        var data=GreatTreeSite.get(level);
-        if(data.site()==null)choose(level,0);else publish(level,data.site());
+        if(!enabled(e.getServer()))return;
+        var level=e.getServer().overworld();var data=GreatTreeSite.get(level);
+        if(data.site()!=null)publish(level,data.site());
+        else if(data.needsSearch())OriMod.LOGGER.warn("Great Spirit Tree result unresolved after loadLevel; skipping late search");
     }
     public static void unload(LevelEvent.Unload e){
         if(e.getLevel() instanceof ServerLevel level){flush(level);ACTIVE.remove(level.getChunkSource().randomState());synchronized(SHAPES){SHAPES.clear();}}
@@ -86,60 +111,98 @@ public final class GreatTreeSites {
             for(int x=(old.getX()-extent)>>4;x<=(old.getX()+extent)>>4;x++)for(int z=(old.getZ()-extent)>>4;z<=(old.getZ()+extent)>>4;z++)
                 if(level.getChunkSource().chunkMap.getVisibleChunkIfPresent(ChunkPos.asLong(x,z))!=null || disk.exists(x,z))return false;
         }
-        var rejected=new TreeMap<String,Integer>();var oldTerrainRejected=new TreeMap<String,Integer>();long start=System.nanoTime();
-        // Neighbouring candidates share the same 8-block sample lattice. Cache noise columns for this one search only.
-        record Terrain(int floor,int surface){}
-        var terrain=new HashMap<Long,Terrain>();
-        java.util.function.BiFunction<Integer,Integer,Terrain> column=(xx,zz)->terrain.computeIfAbsent(ChunkPos.asLong(xx,zz),k->new Terrain(
-                generator.getBaseHeight(xx,zz,Heightmap.Types.OCEAN_FLOOR_WG,level,state),
-                generator.getBaseHeight(xx,zz,Heightmap.Types.WORLD_SURFACE_WG,level,state)));
-        record Candidate(int x,int z,int pass){}
-        var examined=new HashSet<Candidate>();
-        int searchLimit=GreatTreeSiteRules.searchLimit(level.getGameTime());
-        double angle=new Random(seed^0x47524541544cL^salt).nextDouble()*Math.PI*2;
-        // Fresh worlds stay within 800. Existing worlds may widen after both inner-ring passes.
-        for(int pass=0;pass<(searchLimit>MAX_DISTANCE?3:2);pass++)for(int radius=pass==2?832:336;radius<=(pass==2?searchLimit:MAX_DISTANCE-16);radius+=32){
-            int samples=Math.max(24,(int)(radius*Math.PI*2/40));
-            for(int i=0;i<samples;i++){
-                double a=angle+i*Math.PI*2/samples;
-                int x=((spawn.getX()+(int)(Math.cos(a)*radius))&~15)+8,z=((spawn.getZ()+(int)(Math.sin(a)*radius))&~15)+8;
-                double distance=Math.hypot(x-spawn.getX(),z-spawn.getZ());
-                if(distance<MIN_DISTANCE || distance>(pass==2?searchLimit:MAX_DISTANCE))continue;
-                if(!examined.add(new Candidate(x,z,pass)))continue;
-                String reason=null;int extent=GreatTreeShape.RADIUS+16;
-                for(int cx=(x-extent)>>4;cx<=(x+extent)>>4 && reason==null;cx++)for(int cz=(z-extent)>>4;cz<=(z+extent)>>4;cz++)
-                    if(level.getChunkSource().chunkMap.getVisibleChunkIfPresent(ChunkPos.asLong(cx,cz))!=null || disk.exists(cx,cz)){reason="GENERATED";break;}
-                if(reason!=null){rejected.merge(reason,1,Integer::sum);continue;}
-                int y=column.apply(x,z).floor();
-                var biome=generator.getBiomeSource().getNoiseBiome(x>>2,y>>2,z>>2,state.sampler());
-                if(biome.is(BiomeTags.IS_OCEAN)||biome.is(BiomeTags.IS_DEEP_OCEAN)||biome.is(BiomeTags.IS_MOUNTAIN)||biome.is(BiomeTags.IS_RIVER) || pass==0&&!biome.is(PREFERRED))reason="BIOME";
-                else if(y<generator.getSeaLevel()+2 || y+GreatTreeShape.MAX_Y>level.getMaxBuildHeight()-8)reason="HEIGHT_OR_WATER";
-                int min=y,max=y,innerMax=y,deepWater=0,canopySamples=0;String oldReason=null;
-                // Only roots bear load. The overhanging crown may span shallow water; reject a predominantly deep-water ring.
-                if(reason==null)for(int dx=-80;dx<=80 && reason==null;dx+=8)for(int dz=-80;dz<=80;dz+=8){
-                    if(dx*dx+dz*dz>80*80)continue;
-                    var sample=column.apply(x+dx,z+dz);int h=sample.floor(),surface=sample.surface();
-                    boolean core=dx*dx+dz*dz<=44*44,inner=Math.abs(dx)<=16&&Math.abs(dz)<=16;
-                    if(core){min=Math.min(min,h);max=Math.max(max,h);}if(inner)innerMax=Math.max(innerMax,h);
-                    if(oldReason==null&&(h<generator.getSeaLevel()+1||surface-h>1))oldReason=core?"ROOT_WATER":"CANOPY_WATER";
-                    reason=GreatTreeSiteRules.rejection(h,surface,y,min,max,core,inner,generator.getSeaLevel());
-                    if(oldReason==null&&reason!=null)oldReason=reason;
-                    if(!core){canopySamples++;if(surface-h>8)deepWater++;}
-                    if(reason!=null)break;
-                }
-                if(oldReason!=null)oldTerrainRejected.merge(oldReason,1,Integer::sum);
-                if(reason==null&&!GreatTreeSiteRules.canopy(deepWater,canopySamples))reason="CANOPY_DEEP_WATER";
-                if(innerMax+GreatTreeShape.MAX_Y>level.getMaxBuildHeight()-8)reason="BUILD_HEIGHT";
-                if(reason!=null){rejected.merge(reason,1,Integer::sum);continue;}
-                var chosen=new GreatTreeSite.Site(new BlockPos(x,innerMax,z),spawn,seed^BlockPos.asLong(x,0,z)^0x115B,GreatTreeShape.VERSION);
-                data.choose(chosen);
-                // Persist before worldgen can see it: a crash must not lose the choice but keep its generated chunks.
-                level.getDataStorage().save();publish(level,chosen);
-                OriMod.LOGGER.info("Great Spirit Tree site {} spawn {} distance {} selection {} ms rejected {}; old dry-canopy terrain rejects {}; chosen deep ring {}/{}",chosen.origin(),spawn,chosen.spawnDistance(),(System.nanoTime()-start)/1e6,rejected,oldTerrainRejected,deepWater,canopySamples);
-                return true;
-            }
+        var search=new Search(level,salt);
+        var chosen=search.run(0,GreatTreeSiteRules.searchLimit(level.getGameTime()));
+        if(chosen==null)return false;
+        data.choose(chosen);level.getDataStorage().save();publish(level,chosen);return true;
+    }
+
+    private record Offset(int x,int z){}
+    private static final List<Offset> SAMPLES=samples();
+    private static List<Offset> samples(){
+        var points=new ArrayList<Offset>();
+        for(int dx=-80;dx<=80;dx+=8)for(int dz=-80;dz<=80;dz+=8)
+            if(dx*dx+dz*dz<=80*80)points.add(new Offset(dx,dz));
+        // Same exact points and predicates: early rejection only changes the work order.
+        points.sort(Comparator.comparingInt(p->Math.abs(p.x)<=16&&Math.abs(p.z)<=16?0:p.x*p.x+p.z*p.z<=44*44?1:2));
+        return List.copyOf(points);
+    }
+    private static boolean biomeAllowed(net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome,int pass){
+        return !biome.is(BiomeTags.IS_OCEAN)&&!biome.is(BiomeTags.IS_DEEP_OCEAN)
+                &&!biome.is(BiomeTags.IS_MOUNTAIN)&&!biome.is(BiomeTags.IS_RIVER)&&(pass!=0||biome.is(PREFERRED));
+    }
+    private static final class Search {
+        final ServerLevel level;
+        final BlockPos spawn;
+        final long seed,start=System.nanoTime();
+        final net.minecraft.world.level.chunk.ChunkGenerator generator;
+        final RandomState state;
+        final RegionHeaders disk;
+        final Map<Long,NoiseSurfaceSample> terrain=new HashMap<>();
+        final double angle;
+        long nextLog=start+5_000_000_000L;
+        int checked;
+        Search(ServerLevel level,int salt){
+            this.level=level;spawn=level.getSharedSpawnPos();seed=level.getSeed();
+            generator=level.getChunkSource().getGenerator();state=level.getChunkSource().randomState();
+            disk=new RegionHeaders(level.getServer().getWorldPath(LevelResource.ROOT).resolve("region"));
+            angle=new Random(seed^0x47524541544cL^salt).nextDouble()*Math.PI*2;
         }
-        OriMod.LOGGER.warn("No untouched Great Spirit Tree site within {} of spawn {}: {}; old dry-canopy terrain rejects {}",searchLimit,spawn,rejected,oldTerrainRejected);return false;
+        double elapsedMs(){return (System.nanoTime()-start)/1e6;}
+        NoiseSurfaceSample column(int x,int z){return terrain.computeIfAbsent(ChunkPos.asLong(x,z),k->NoiseSurfaceSample.at(generator,state,level,x,z));}
+        boolean possibleBiome(int x,int z,int pass){
+            // Test every possible final quart Y. This may retain a bad candidate, never reject a valid one.
+            for(int y=(generator.getSeaLevel()+2)>>2;y<=(level.getMaxBuildHeight()-GreatTreeShape.MAX_Y-8)>>2;y++)
+                if(biomeAllowed(generator.getBiomeSource().getNoiseBiome(x>>2,y,z>>2,state.sampler()),pass))return true;
+            return false;
+        }
+        GreatTreeSite.Site run(int firstPass,int searchLimit){
+            var rejected=new TreeMap<String,Integer>();
+            record Candidate(int x,int z,int pass){}
+            var examined=new HashSet<Candidate>();
+            for(int pass=firstPass;pass<(searchLimit>MAX_DISTANCE?3:2);pass++)for(int radius=pass==2?832:336;radius<=(pass==2?searchLimit:MAX_DISTANCE-16);radius+=32){
+                int samples=Math.max(24,(int)(radius*Math.PI*2/40));
+                for(int i=0;i<samples;i++){
+                    double a=angle+i*Math.PI*2/samples;
+                    int x=((spawn.getX()+(int)(Math.cos(a)*radius))&~15)+8,z=((spawn.getZ()+(int)(Math.sin(a)*radius))&~15)+8;
+                    double distance=Math.hypot(x-spawn.getX(),z-spawn.getZ());
+                    if(distance<MIN_DISTANCE||distance>(pass==2?searchLimit:MAX_DISTANCE)||!examined.add(new Candidate(x,z,pass)))continue;
+                    checked++;
+                    if(System.nanoTime()>=nextLog){
+                        OriMod.LOGGER.info("Great Spirit Tree search range {} pass {}: checked {}, elapsed {} ms",searchLimit,pass,checked,elapsedMs());
+                        nextLog=System.nanoTime()+5_000_000_000L;
+                    }
+                    String reason=null;int extent=GreatTreeShape.RADIUS+16;
+                    for(int cx=(x-extent)>>4;cx<=(x+extent)>>4&&reason==null;cx++)for(int cz=(z-extent)>>4;cz<=(z+extent)>>4;cz++)
+                        if(level.getChunkSource().chunkMap.getVisibleChunkIfPresent(ChunkPos.asLong(cx,cz))!=null||disk.exists(cx,cz)){reason="GENERATED";break;}
+                    if(reason==null&&!possibleBiome(x,z,pass))reason="BIOME_PREFILTER";
+                    if(reason!=null){rejected.merge(reason,1,Integer::sum);continue;}
+                    int y=column(x,z).floor();
+                    var biome=generator.getBiomeSource().getNoiseBiome(x>>2,y>>2,z>>2,state.sampler());
+                    if(!biomeAllowed(biome,pass))reason="BIOME";
+                    else if(y<generator.getSeaLevel()+2||y+GreatTreeShape.MAX_Y>level.getMaxBuildHeight()-8)reason="HEIGHT_OR_WATER";
+                    int min=y,max=y,innerMax=y,deepWater=0,canopySamples=0;
+                    if(reason==null)for(var offset:SAMPLES){
+                        int dx=offset.x,dz=offset.z;var sample=column(x+dx,z+dz);int h=sample.floor(),surface=sample.surface();
+                        boolean core=dx*dx+dz*dz<=44*44,inner=Math.abs(dx)<=16&&Math.abs(dz)<=16;
+                        if(core){min=Math.min(min,h);max=Math.max(max,h);}if(inner)innerMax=Math.max(innerMax,h);
+                        reason=GreatTreeSiteRules.rejection(h,surface,y,min,max,core,inner,generator.getSeaLevel());
+                        if(!core){canopySamples++;if(surface-h>8)deepWater++;}
+                        if(reason!=null)break;
+                    }
+                    if(reason==null&&!GreatTreeSiteRules.canopy(deepWater,canopySamples))reason="CANOPY_DEEP_WATER";
+                    if(innerMax+GreatTreeShape.MAX_Y>level.getMaxBuildHeight()-8)reason="BUILD_HEIGHT";
+                    if(reason!=null){rejected.merge(reason,1,Integer::sum);continue;}
+                    var chosen=new GreatTreeSite.Site(new BlockPos(x,innerMax,z),spawn,seed^BlockPos.asLong(x,0,z)^0x115B,GreatTreeShape.VERSION);
+                    OriMod.LOGGER.info("Great Spirit Tree search range {} selected {} after {} ms, checked {}, columns {}, rejected {}",
+                            searchLimit,chosen.origin(),elapsedMs(),checked,terrain.size(),rejected);
+                    return chosen;
+                }
+            }
+            OriMod.LOGGER.info("Great Spirit Tree search range {} finished without site: {} ms, checked {}, columns {}, rejected {}",
+                    searchLimit,elapsedMs(),checked,terrain.size(),rejected);
+            return null;
+        }
     }
 
     /** Read-only Anvil location tables. A partial or corrupt file rejects conservatively; never creates/opens a chunk. */

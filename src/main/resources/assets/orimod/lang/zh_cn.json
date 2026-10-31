@@ -482,6 +482,7 @@
   "message.orimod.skill_wheel": "按住 %s 查看并绑定已学技能，也可换入复原。",
   "message.orimod.skill_bound": "%s 已绑定到 %s。",
   "commands.orimod.great_tree.site": "灵树：%s；出生点 %s；距离 %s 格；已开始生成=%s；采样区块=%s；最慢写入=%s ms",
+  "commands.orimod.great_tree.no_site": "此世界出生点 2500 格内没有找到适合大灵树的未生成地形。",
   "commands.orimod.great_tree.none": "未找到未生成的灵树站点，可用 /ori great_tree repick 重选。",
   "commands.orimod.great_tree.started": "灵树已经开始生成，不能重选以免出现第二棵。",
   "block.orimod.great_spirit_wood": "灵树树皮",

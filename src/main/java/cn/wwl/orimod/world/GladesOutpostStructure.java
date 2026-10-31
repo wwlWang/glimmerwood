@@ -19,7 +19,8 @@ public final class GladesOutpostStructure extends Structure {
     public Site preflight(GenerationContext c){
         var at=placement(c.chunkPos().getWorldPosition(),Rotation.getRandom(c.random()));
         var heights=new HashMap<BlockPos,Integer>();
-        java.util.function.ToIntFunction<BlockPos> sample=p->heights.computeIfAbsent(p,q->height(c,q));
+        var cells=CreekSurfaceSample.supported(c.chunkGenerator())?new CreekSurfaceSample.Cells(c.chunkGenerator(),c.heightAccessor(),c.randomState()):null;
+        java.util.function.ToIntFunction<BlockPos> sample=p->heights.computeIfAbsent(p,q->cells==null?height(c,q):cells.at(q.getX(),q.getZ()).floor());
         var entry=at.block(GladesOutpostPiece.ENTRY);int surface=sample.applyAsInt(entry),min=surface,max=surface;
         var finalAt=new RuinPlacement(at.origin().atY(surface-3),at.rotation());
         var biome=c.biomeSource().getNoiseBiome(entry.getX()>>2,surface>>2,entry.getZ()>>2,c.randomState().sampler());
@@ -37,7 +38,7 @@ public final class GladesOutpostStructure extends Structure {
             if(!RuinSiteRules.approachOk(y,surface))return new Site(Rejection.ENTRY_APPROACH,finalAt,approach);
         }
         // Check fluids after cheap biome/relief rejection. Never flatten rivers or ocean floors.
-        for(var h:heights.entrySet())if(!dry(c,h.getKey(),h.getValue()))return new Site(Rejection.NOT_DRY,finalAt,approach);
+        for(var h:heights.entrySet())if(!(cells==null?dry(c,h.getKey(),h.getValue()):cells.at(h.getKey().getX(),h.getKey().getZ()).dry()))return new Site(Rejection.NOT_DRY,finalAt,approach);
         return new Site(Rejection.OK,finalAt,approach);
     }
     @Override protected Optional<GenerationStub> findGenerationPoint(GenerationContext c){
