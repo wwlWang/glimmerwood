@@ -170,7 +170,7 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
 - **副手拿模组物品时连放技能**（冲刺 → 二段跳 → 光爆 → 右键 → 闪光 → 蓄力灵焰 → 右键，副手分别拿灵锤 / 灵矛 / 灵弓 / 精灵核心）**[通过，无报错]**。
   - 副手拿精灵核心、主手空着时右键会**切回人形**（原版副手使用逻辑，核心本来就是“右键切形态”）。连招里顺手按右键就会被变回人形 **[信息]**。
   - （脚本按住前进 70 tick 把自己跑出了平台、掉到下面，属于脚本问题，不影响结论。）
-- **精灵形态不死图腾** **[通过]**：副手图腾、`/damage @s 100`，图腾触发，剩 3 血，仍是精灵形态，萤提示「你倒下了…」类的台词正常。
+- **精灵形态不死图腾** **[通过]**：副手图腾、`/damage @s 100`，图腾触发，剩 3 血，仍是精灵形态，萤的台词「你伤得很重！先退开，我帮你回复。」正常弹出（截图字小，大意如此）。
 - **滑翔中狂按 F5**：70 格空中按住跳跃滑翔，同时 60 次轮换 第一人称 / 背后 / 正面 视角（约 50 ms 一次）：60 次采样里 57 次是 `glide`（另 3 次是起跳前），滑翔不中断，最后视角回第一人称，无报错 **[通过]**。
 
 ### P6-3b 下界床 / 重生锚 / 末地返回传送门 / 极限模式（`pt6/chaosB.py`、`credits.py`）
@@ -182,3 +182,12 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
   - 已看过名单后第二次进返回传送门：直接回到重生点（下界锚），精灵形态、能量 100，冲刺 / 二段跳都能用 **[通过]**。
 - **极限模式里以精灵形态死亡** **[通过]**：新建极限世界 `p6_hc`（种子 6066），觉醒后变精灵 → `/kill` → 死亡画面只有「旁观世界 / 标题屏幕」→ 进入旁观，HUD 没有能量条；在旁观里按冲刺 / 光爆 / 切形态都没有反应，无报错 `playtest-p6-c-hardcore-spectator.png`。
   - **[新·怀疑，cosmetic]** 旁观画面中央附近还有一个小白光点，像是萤还跟着已经变成旁观者的玩家；只看到一张截图，没确认。
+
+### P6-3c 数据包禁用模组配方 / 进度（`pt6/dp.py`，世界内 `datapacks/p6_disable`，测完已删除并 `/reload` 恢复）
+- 用 `neoforge:false` 条件禁掉 `orimod:spirit_core`、`ruin_guide`、`bash_anchor` 三个配方和 `orimod:story/spirit` 一个进度，`/reload`：
+  - 三个配方从游戏里消失（`/recipe give` 报「未知的配方」），没有报错 **[通过]**。
+  - **[信息] 禁掉一个中间进度会让后面整串进度都加载失败**：日志 `Couldn't load advancements: [story/all_wisps, earth_wisp, heart_wisp, explore, wing_wisp, ginso_escape, blight, ginso, skill, orimod:restoration]`——连旧的「森林复苏」`restoration` 也挂在新树下面，一起没了。这是原版进度树“缺父节点”的正常行为；模组的 `StoryProgress.award` 拿不到进度时直接跳过，没有崩溃，形态切换等功能照常 **[通过]**。整合包作者如果想关掉某一个进度，需要知道这一点。
+
+### P6-1e-4 零碎回归（`pt6/misc.py`）
+- **和平难度召唤腐光之心仍提示「苏醒了」（P4 / P5 / E8）[已修复]**：和平难度右键手放的腐光祭坛，屏幕下方提示「和平难度下腐光之心不会苏醒。」，40 格内没有腐光之心，祭坛 `activated: 0b`、`phase: DORMANT` `playtest-p6-m-peaceful-altar.png`。
+- **`/setblock` 放的腐化之核不扩散（P5）[仍存在，信息]**：在草地平台上 `setblock orimod:gloom_core`，`/ori blight nearest` 能找到它（8.5 格），但 `/tick sprint 6000` 后周围 25×25 抽样 81 格全是草方块，没有一格变成腐化之土。相关代码这轮没改，仍然只有自然生成的腐化地会扩散。
