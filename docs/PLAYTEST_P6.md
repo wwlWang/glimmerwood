@@ -11,6 +11,11 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
 - 盒子上默认 PATH 没有 `java`（`JAVA_HOME` 未设），要手动指向 `~/.gradle/jdks/eclipse_adoptium-21-amd64-linux.2`，环境问题，非模组问题 **[信息]**。
 - 全量 `scripts/check.sh`：为了不和试玩客户端抢同一个 Gradle 项目目录，在同一提交的干净克隆 `/tmp/p6clone` 里跑（与主仓库 7bfd6dd 完全相同），结果见 P6-0b。
 
+### P6-0b 全量 `scripts/check.sh`（干净克隆，9 分 29 秒）
+- JUnit **1881 / 0 失败 / 0 跳过**；GameTest **1580，1 个失败** → `check.sh` 以 `BUILD FAILED` 退出。
+- **[新·复现，minor/测试基础设施] `r117_blight_growth.flat_day_curve_and_restoration_cas` 在没有 `evidence/` 目录的机器上必然失败**：失败信息 `java.nio.file.NoSuchFileException: ../evidence/r117-d/latest-area.json`。测试本身的断言都过了（同一批 `R117_BLIGHT_DAY … "result":"passed"`），是 `BlightGrowthGameTests.java:205` 最后把报告写到 `../evidence/r117-d/`，而 `evidence/` 在 `.gitignore` 里，新克隆和本机主仓库都没有这个目录。也就是说 F3 修好了“新克隆编译”，但“新克隆跑 check.sh”仍然红，原因换成了这个。作者机器上有 evidence 目录所以看不到。
+- 其余 GameTest 没有时过时不过的情况（只跑了 1 轮，另一轮让给试玩客户端）。
+
 ## P6-1a 新世界启动 / 大灵树 / locate 空地（`pt6/nw.py`、`pt6/site.py`）
 新建 5 个世界（生存/普通，默认地形），计时“点创建 → 能操作”：
 
