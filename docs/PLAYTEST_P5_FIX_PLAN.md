@@ -84,14 +84,17 @@
 - 在 `findGenerationPoint` 里，用 `chunkGenerator.getBaseColumn` / `getBaseHeight`（只看噪声地形，不看装饰）做完整的列预检，覆盖 feature 阶段所有可能失败的条件：起伏、净空、根能否着地、水面等。
 - feature 阶段改为**一定放得下**：碰到普通植被就清掉；根不够长就用根或原木柱补到地面；只有在遇到无法自适应的情况（比如撞上其他结构）时才放弃，而且放弃要极少见。
 - 验收：对多个种子扫描所有 `locate` 结果，每个登记过的起点都要真的生成了树或腐化地（报告成功率，目标 100%，至少 ≥99%）；冻结基线不变；离线布局探针的用法参考记忆中的 offline-layout-probe。
+- 实施验收：三种子实放 **81/81**，各类型/种子的数量均不低于基线；地下支撑穿越水/空气最多 48 格，不因深空腔拒绝。完整四项计数、48 点 locate、出生区/跑图对照及已审定 636 ms 例外见 `evidence/p5-fix/F/README.md`；最终 JUnit **1870/1870**、含地形 GameTest **1541/1541**。
 
 ### F2 新世界第一次启动，主线程卡约 30 秒（大灵树选址）
 [确认] 5555 首次主线程搜索 93.906 秒，重进 162.817 秒；99.7% 为原版 NoiseChunk 密度采样，静态初始化不足 0.2 ms。审定方案：单遍取两种高度、原采样点先主干后根部、保守群系预筛；`loadLevel` TAIL、watchdog 启动前完成 800→2500；存搜索版本/阶段/NO_SITE，已有选址不重选。ServerStarted 只发布。完整方案与调用栈见 `evidence/p5-fix/F/F2_PLAN.md`。
 方案：先测量（选址的真实耗时、调用栈），再提方案交我审，不要直接改。可选方向：把选址挪到工作线程并且不阻塞 tick；把计算拆成多 tick 增量完成；按种子缓存结果。要确保专用服务器的看门狗（默认 60 秒）不会触发。
+- 实施验收：四种子 800 阶段与原选点一致，首次连续扩到 2500；默认 60000 ms watchdog 下均进入正常 tick，5555 重进不重搜。详见 F/README.md 和 F2_PLAN.md。
 
 ### F3 新克隆的仓库直接编译失败（Iris 包被 git 忽略）
 [确认] 编译依赖原为被忽略的本地 Iris jar。公开 Maven 的 `maven.modrinth:iris:1.8.12+1.21.1-neoforge` 与本地文件 SHA-1 一致；改为 compileOnly，运行时仍为可选依赖。
 方案：Iris 改为从公开 maven（比如 Modrinth maven）以 `compileOnly` 方式引入，或者写成可选依赖并由反射隔离，不再依赖本地被忽略的 jar。验收：在临时目录里 `git clone` 一份新仓库，`./gradlew build` 能通过（第一次需要联网下载依赖；如果沙箱没有网络就告诉我，由我来跑）。
+- 实施验收：最终工作树独立干净导出（无本地 Iris jar、无构建缓存）编译与 JUnit **1870/1870** 通过；提交 f90b766 后审查方从 GitHub 实际 `git clone` + `git lfs pull`，`compileJava compileGametestJava` 通过，克隆中无 Iris jar。
 
 ---
 
