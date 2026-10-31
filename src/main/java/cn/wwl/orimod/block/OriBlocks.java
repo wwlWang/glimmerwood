@@ -47,7 +47,7 @@ public final class OriBlocks {
     public static final DeferredBlock<GinsoWaterHeartBlock> GINSO_WATER_HEART=BLOCKS.register("ginso_water_heart",()->new GinsoWaterHeartBlock(BlockBehaviour.Properties.of()
             .strength(-1,3600000).noLootTable().noOcclusion().lightLevel(s->12).emissiveRendering((s,l,p)->true).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
     public static final DeferredBlock<GinsoRootLipBlock> GINSO_ROOT_LIP=BLOCKS.register("ginso_root_lip",()->new GinsoRootLipBlock(BlockBehaviour.Properties.of()
-            .strength(2).noLootTable().noOcclusion().sound(SoundType.WOOD)));
+            .strength(-1,3600000).noLootTable().noOcclusion().sound(SoundType.WOOD)));
     public static final DeferredBlock<GinsoLandingBlock> GINSO_LANDING=BLOCKS.register("ginso_landing",()->new GinsoLandingBlock(BlockBehaviour.Properties.of()
             .strength(2).sound(SoundType.MOSS)));
     public static final DeferredBlock<GinsoFungusBlock> GINSO_FUNGUS=BLOCKS.register("ginso_fungus",()->new GinsoFungusBlock(BlockBehaviour.Properties.of()
@@ -58,7 +58,7 @@ public final class OriBlocks {
             .strength(.2f).noOcclusion().sound(SoundType.AZALEA_LEAVES).isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false)));
     public static final DeferredBlock<Block> GINSO_LEAF_CORE=BLOCKS.registerSimpleBlock("ginso_leaf_core",BlockBehaviour.Properties.of()
             .strength(.2f).sound(SoundType.AZALEA_LEAVES).isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
-    public static final DeferredBlock<SpiritVineBlock> GINSO_VINE=BLOCKS.register("ginso_vine",()->new SpiritVineBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<SpiritVineBlock> GINSO_VINE=BLOCKS.register("ginso_vine",()->new GinsoVineBlock(BlockBehaviour.Properties.of()
             .instabreak().noCollission().noOcclusion().lightLevel(s->4).sound(SoundType.CAVE_VINES)));
     public static final DeferredBlock<GreatSpiritRootBlock> GREAT_SPIRIT_ROOT=BLOCKS.register("great_spirit_root",()->new GreatSpiritRootBlock(BlockBehaviour.Properties.of()
             .strength(2).lightLevel(s->s.getValue(GreatSpiritRootBlock.LIGHT).emission).sound(SoundType.WOOD)));
@@ -82,8 +82,8 @@ public final class OriBlocks {
     public static final DeferredBlock<SpiritLanternBlock> BASH_ANCHOR = BLOCKS.register("bash_anchor", () -> new SpiritLanternBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> SpiritLanternBlock.lightLevel(state.getValue(SpiritLanternBlock.LIT)))
             .sound(SoundType.AMETHYST)));
-    public static final DeferredBlock<Block> GRAPPLE_FLOWER = BLOCKS.registerSimpleBlock("grapple_flower", BlockBehaviour.Properties.of()
-            .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AZALEA_LEAVES));
+    public static final DeferredBlock<Block> GRAPPLE_FLOWER = BLOCKS.register("grapple_flower", () -> new ProtectedBlock(BlockBehaviour.Properties.of()
+            .strength(1.5f).noCollission().noOcclusion().lightLevel(state -> 12).sound(SoundType.AZALEA_LEAVES)));
     /** R40: glowing updraft vent that lifts gliding players. */
     public static final DeferredBlock<UpdraftBlock> UPDRAFT = BLOCKS.register("updraft", () -> new UpdraftBlock(BlockBehaviour.Properties.of()
             .strength(1.5f).noOcclusion().lightLevel(state -> 8).sound(SoundType.AMETHYST)));
@@ -97,7 +97,7 @@ public final class OriBlocks {
     public static final DeferredBlock<CellPedestalBlock> ENERGY_CELL_PEDESTAL = pedestal(cn.wwl.orimod.progression.SpiritCells.Kind.ENERGY);
     private static DeferredBlock<CellPedestalBlock> pedestal(cn.wwl.orimod.progression.SpiritCells.Kind kind) {
         return BLOCKS.register(kind.name().toLowerCase(java.util.Locale.ROOT) + "_cell_pedestal", () -> new CellPedestalBlock(kind,
-                BlockBehaviour.Properties.of().strength(3, 12).noOcclusion().lightLevel(state -> 11).sound(SoundType.AMETHYST)));
+                BlockBehaviour.Properties.of().strength(-1, 3600000).noOcclusion().lightLevel(state -> 11).sound(SoundType.AMETHYST)));
     }
     /** R50: gloom altar that wakes the Gloom Heart boss. */
     public static final DeferredBlock<GloomAltarBlock> GLOOM_ALTAR = BLOCKS.register("gloom_altar", () -> new GloomAltarBlock(
@@ -126,7 +126,7 @@ public final class OriBlocks {
     public static final DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> CAVE_SHRINE = shrine(cn.wwl.orimod.world.RuinKind.CAVE);
     private static DeferredBlock<cn.wwl.orimod.world.RuinShrineBlock> shrine(cn.wwl.orimod.world.RuinKind kind) {
         return BLOCKS.register(kind.id + "_shrine", () -> new cn.wwl.orimod.world.RuinShrineBlock(kind,
-                BlockBehaviour.Properties.of().strength(3, 12).lightLevel(state -> 10).sound(SoundType.AMETHYST)));
+                BlockBehaviour.Properties.of().strength(-1, 3600000).lightLevel(state -> 10).sound(SoundType.AMETHYST)));
     }
     private OriBlocks() {}
     public static void register(IEventBus bus) {

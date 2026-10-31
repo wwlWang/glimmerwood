@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 /** R103: ability-only stone. The scheduled snapshot survives chunk saves without a block entity. */
-public final class CrackedRuinBlock extends Block {
+public final class CrackedRuinBlock extends ProtectedBlock {
     public static final BooleanProperty COLLAPSING = BooleanProperty.create("collapsing");
     public final CrackedRuin.Kind kind;
     public CrackedRuinBlock(CrackedRuin.Kind kind, Properties properties) {

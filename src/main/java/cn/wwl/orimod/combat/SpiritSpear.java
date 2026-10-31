@@ -74,8 +74,8 @@ public final class SpiritSpear extends ThrowableProjectile {
     }
 
     public static SpiritSpear thrown(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        var state = player.getData(SpiritData.ENERGY_STATE);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
+        var state = player.getData(SpiritData.COOLDOWNS);
         String refusal = refusal(SpiritData.isSpirit(player), Ability.SPEAR.unlocked(player), SpiritProgression.energy(player), now, state.spearReadyAt);
         if (refusal != null) {
             if (!refusal.equals("cooldown")) player.displayClientMessage(Component.translatable("message.orimod.spear." + refusal), true);

@@ -265,13 +265,14 @@ public final class SpiritMovement {
             player.displayClientMessage(Component.translatable("message.orimod.dash_locked"), true);
             return;
         }
-        if (now < s.dashReadyAt || s.crouching || (!grounded(player) && s.airDashSpent)) {
+        if (cn.wwl.orimod.progression.SpiritCooldowns.now(player) < player.getData(SpiritData.COOLDOWNS).dashReadyAt || s.crouching || (!grounded(player) && s.airDashSpent)) {
             s.rejectedDashes++;
             return;
         }
         if (!cn.wwl.orimod.combat.SpiritCombat.allowMovement(player)) return;
         s.airDashSpent = true;
         s.dashReadyAt = now + DASH_COOLDOWN_TICKS;
+        player.getData(SpiritData.COOLDOWNS).dashReadyAt = cn.wwl.orimod.progression.SpiritCooldowns.now(player) + DASH_COOLDOWN_TICKS;
         s.groundLockUntil = Math.max(s.groundLockUntil, now + DASH_TICKS + 1);
         s.acceptedDashes++;
         Vec3 direction = inputDirection(s, true).scale(DASH_SPEED);

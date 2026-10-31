@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.*;
 
 /** Invisible continuous wind in the landmark shaft. Walking is unaffected; only Glide accepts lift. */
-public final class GreatTreeWindBlock extends Block implements LiquidBlockContainer {
+public final class GreatTreeWindBlock extends ProtectedBlock implements LiquidBlockContainer {
     public GreatTreeWindBlock(Properties p){super(p);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Shapes.empty();}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.INVISIBLE;}

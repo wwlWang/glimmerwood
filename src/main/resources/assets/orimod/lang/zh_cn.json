@@ -576,5 +576,7 @@
   "message.orimod.ginso.escape.spirit_required": "切换为精灵形态后再取走水之心的光。",
   "item.orimod.gloom_residue": "腐化残渣",
   "message.orimod.blight_exposure": "腐化：自然恢复受阻，精灵能量正在流失。",
-  "message.orimod.blight_exposure_human": "腐化：自然恢复受阻。"
+  "message.orimod.blight_exposure_human": "腐化：自然恢复受阻。",
+  "message.orimod.well.escape": "金索逃亡期间无法使用灵泉传送。",
+  "message.orimod.altar_peaceful": "和平难度下腐光之心不会苏醒。"
 }

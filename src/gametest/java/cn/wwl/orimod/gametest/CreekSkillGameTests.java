@@ -39,7 +39,7 @@ public final class CreekSkillGameTests {
         try(var s=new CreekRuinsLayoutGameTests.Site(h,rotation,28700+rotation.ordinal()*200,5000);var c=Fixtures.connectedPlayer(h)){
             s.place();s.publish();var p=c.player();var layout=s.piece.layout();
             p.setGameMode(GameType.SURVIVAL);p.setData(SpiritData.FORM,true);p.setData(SpiritData.AWAKENED,true);p.setData(SpiritData.ABILITIES,6);
-            p.refreshDimensions();p.getData(SpiritData.ENERGY_STATE).flameReadyAt=Long.MAX_VALUE;
+            p.refreshDimensions();p.getData(SpiritData.COOLDOWNS).flameReadyAt=Long.MAX_VALUE;
             var target=s.p.block(new BlockPos(12,13,29));var goal=layout.checkpoints().getFirst().position();
             int run=0,best=0,bestLow=0,bestHigh=0,successes=0;var passingPitches=new ArrayList<Integer>();
             System.out.println("CREEK_BASH_SWEEP_CSV rotation,pitch,yaw_offset,jump_held,accepted_bashes,accepted_jumps,ticks,apex,x,y,z,on_ground,on_c1,edge_margin,goal_error,first_collision_tick,first_collision_x,first_collision_y,first_collision_z");
@@ -105,7 +105,7 @@ public final class CreekSkillGameTests {
             s.place();s.publish();var p=c.player();var layout=s.piece.layout();
             p.setGameMode(GameType.SURVIVAL);p.setData(SpiritData.FORM,true);p.setData(SpiritData.AWAKENED,true);p.setData(SpiritData.ABILITIES,6);
             p.refreshDimensions();p.setPos(s.p.point(layout.safe()));p.setDeltaMovement(Vec3.ZERO);p.setOnGround(true);
-            p.getData(SpiritData.ENERGY_STATE).flameReadyAt=Long.MAX_VALUE;
+            p.getData(SpiritData.COOLDOWNS).flameReadyAt=Long.MAX_VALUE;
             SpiritChallenge.request(p,s.p.block(layout.shrine()),true);
             try{
                 var challenge=SpiritChallenge.session(p);h.assertTrue(challenge!=null,"Bash fixture cannot start saved creek challenge");

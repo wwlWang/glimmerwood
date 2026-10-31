@@ -28,7 +28,7 @@ public final class MovementRespawnGameTests {
                     }
                     h.succeed();
                 }));
-        for (String name : List.of("respawn_packet_order", "removed_teleport_callback", "removed_cancel_callback", "replaced_instance_callback", "merchant_completion_after_respawn", "replaced_reject_callback"))
+        for (String name : List.of("respawn_packet_order", "removed_teleport_callback", "removed_cancel_callback", "replaced_instance_callback", "merchant_quote_after_respawn", "replaced_reject_callback"))
             tests.add(new TestFunction("movement_respawn", "movement_respawn." + name, "orimod_gametest:room", 80, 0, true,
                     h -> { check(h, name); h.succeed(); }));
         return tests;
@@ -39,15 +39,13 @@ public final class MovementRespawnGameTests {
         var old = c.player();
         var list = old.server.getPlayerList();
         ServerPlayer current = null;
-        SearchPlacement placement = null;
         cn.wwl.orimod.entity.GladesMerchant merchant = null;
-        java.util.function.Consumer<Optional<cn.wwl.orimod.world.RuinLocator.Found>> completion = null;
+        cn.wwl.orimod.network.MerchantBuyPayload purchase = null;
         try {
             SpiritForm.toggle(old);
             old.setRespawnPosition(h.getLevel().dimension(), h.absolutePos(new net.minecraft.core.BlockPos(5, 2, 5)), 0, true, false);
             old.getData(SpiritData.MOVEMENT).actionId = 100;
-            if (name.equals("merchant_completion_after_respawn")) {
-                placement = new SearchPlacement(h);
+            if (name.equals("merchant_quote_after_respawn")) {
                 old.setData(SpiritData.PROGRESS, cn.wwl.orimod.progression.SpiritProgress.EMPTY.withLight(500));
                 merchant = cn.wwl.orimod.entity.OriMobs.GLADES_MERCHANT.get().create(h.getLevel());
                 merchant.bind(1, old.blockPosition(), old.blockPosition().east(2), 0);
@@ -55,8 +53,7 @@ public final class MovementRespawnGameTests {
                 cn.wwl.orimod.progression.MerchantTrading.open(old, merchant);
                 var quote = FxGameTests.drain(c.channel()).stream().filter(p -> p instanceof ClientboundCustomPayloadPacket cp
                         && cp.payload() instanceof cn.wwl.orimod.network.MerchantOfferPayload).map(p -> (cn.wwl.orimod.network.MerchantOfferPayload)((ClientboundCustomPayloadPacket)p).payload()).reduce((a,b)->b).orElseThrow();
-                cn.wwl.orimod.progression.MerchantTrading.buy(old, new cn.wwl.orimod.network.MerchantBuyPayload(quote.entityId(), quote.merchant(), quote.day(), quote.token(), "ruin"));
-                completion = completion(old); // Retain the actual callback, before any locator tick schedules chunks.
+                purchase = new cn.wwl.orimod.network.MerchantBuyPayload(quote.entityId(), quote.merchant(), quote.day(), quote.token(), "tree");
             }
             FxGameTests.drain(c.channel());
             current = list.respawn(old, false, Entity.RemovalReason.KILLED);
@@ -70,8 +67,9 @@ public final class MovementRespawnGameTests {
                 var stale = packets.stream().filter(p -> p instanceof ClientboundCustomPayloadPacket cp
                         && cp.payload() instanceof MovementResultPayload m && m.actionId() > 100).toList();
                 h.assertTrue(stale.isEmpty(), "Old life receipt after client respawn: " + stale);
-            } else if (name.equals("merchant_completion_after_respawn")) {
-                completion.accept(Optional.empty());
+            } else if (name.equals("merchant_quote_after_respawn")) {
+                cn.wwl.orimod.progression.MerchantTrading.buy(old, purchase);
+                cn.wwl.orimod.progression.MerchantTrading.buy(current, purchase);
                 var delayed = FxGameTests.drain(c.channel());
                 h.assertFalse(delayed.stream().anyMatch(p -> p instanceof ClientboundCustomPayloadPacket cp
                         && cp.payload() instanceof cn.wwl.orimod.network.MerchantOfferPayload), "Merchant callback replied through retired player");
@@ -113,36 +111,10 @@ public final class MovementRespawnGameTests {
             cn.wwl.orimod.progression.MerchantTrading.close(old);
             cn.wwl.orimod.world.RuinLocator.cancel(old);
             if (merchant != null) merchant.discard();
-            if (placement != null) placement.close();
             // The old fixture's close() would remove the new UUID from PlayerList: close the live instance instead.
             if (current != null) list.remove(current); else list.remove(old);
             c.channel().finishAndReleaseAll();
         }
-    }
-    /** Register candidates only. No tick runs while the captured completion is retained. */
-    private static final class SearchPlacement implements AutoCloseable {
-        final Map<net.minecraft.world.level.levelgen.structure.Structure,List<net.minecraft.world.level.levelgen.structure.placement.StructurePlacement>> map;
-        final net.minecraft.world.level.levelgen.structure.Structure structure;
-        final List<net.minecraft.world.level.levelgen.structure.placement.StructurePlacement> previous;
-        @SuppressWarnings("unchecked") SearchPlacement(GameTestHelper h) {
-            try {
-                var generator=h.getLevel().getChunkSource().getGeneratorState(); generator.ensureStructuresGenerated();
-                var field=generator.getClass().getDeclaredField("placementsForStructure"); field.setAccessible(true);
-                map=(Map<net.minecraft.world.level.levelgen.structure.Structure,List<net.minecraft.world.level.levelgen.structure.placement.StructurePlacement>>)field.get(generator);
-                structure=h.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE).get(cn.wwl.orimod.world.RuinKind.FOREST.location());
-                previous=map.put(structure,List.of(new net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement(16,6,net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType.LINEAR,19721014)));
-            } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
-        }
-        public void close(){if(previous==null)map.remove(structure);else map.put(structure,previous);}
-    }
-    @SuppressWarnings("unchecked")
-    private static java.util.function.Consumer<Optional<cn.wwl.orimod.world.RuinLocator.Found>> completion(ServerPlayer p) {
-        try {
-            var searches = cn.wwl.orimod.world.RuinLocator.class.getDeclaredField("SEARCHES"); searches.setAccessible(true);
-            var search = ((Map<?,?>)searches.get(null)).get(p.getUUID());
-            var field = search.getClass().getDeclaredField("completion"); field.setAccessible(true);
-            return (java.util.function.Consumer<Optional<cn.wwl.orimod.world.RuinLocator.Found>>)field.get(search);
-        } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
     }
     private static List<MovementResultPayload> receipts(Fixtures.ConnectedPlayer c) {
         return FxGameTests.drain(c.channel()).stream().filter(p -> p instanceof ClientboundCustomPayloadPacket cp

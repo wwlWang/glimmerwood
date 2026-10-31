@@ -167,7 +167,7 @@ public final class BlightGameTests {
             var thorn=at.south(3);var core=at.east(3);var wall=at.west(3);var floor=at.north(3);var vessel=at.south(4).east(2);
             level.setBlock(thorn,OriBlocks.GLOOM_THORNS.get().defaultBlockState(),2);level.setBlock(core,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);
             level.setBlock(wall,OriBlocks.CRACKED_RUIN_WALL.get().defaultBlockState(),2);level.setBlock(floor,OriBlocks.CRACKED_RUIN_FLOOR.get().defaultBlockState(),2);
-            level.setBlock(vessel,OriBlocks.SPIRIT_LIGHT_VESSEL.get().defaultBlockState(),2);p.getData(SpiritData.ENERGY_STATE).flameReadyAt=0;
+            level.setBlock(vessel,OriBlocks.SPIRIT_LIGHT_VESSEL.get().defaultBlockState(),2);p.getData(SpiritData.COOLDOWNS).flameReadyAt=0;
             for(int tick=1;tick<=30;tick++)h.runAfterDelay(tick,()->SpiritFlame.tick(new PlayerTickEvent.Post(p)));
             h.runAfterDelay(31,()->{try{
                 h.assertTrue(level.isEmptyBlock(vessel),"Companion stopped targeting vessels");
@@ -189,14 +189,14 @@ public final class BlightGameTests {
             var level=h.getLevel();var p=c.player();var at=h.absolutePos(new BlockPos(20,3,20));p.setPos(Vec3.atBottomCenterOf(at));
             var thorn=at.south(3);level.setBlock(thorn,OriBlocks.GLOOM_THORNS.get().defaultBlockState(),2);
             var enemy=EntityType.ZOMBIE.create(level);enemy.setPos(Vec3.atBottomCenterOf(thorn).add(.6,0,0));enemy.setNoAi(true);level.addFreshEntity(enemy);
-            try{p.getData(SpiritData.ENERGY_STATE).flameReadyAt=0;float health=enemy.getHealth();SpiritFlame.tick(new PlayerTickEvent.Post(p));
+            try{p.getData(SpiritData.COOLDOWNS).flameReadyAt=0;float health=enemy.getHealth();SpiritFlame.tick(new PlayerTickEvent.Post(p));
                 h.assertTrue(enemy.getHealth()<health,"Companion never hit hostile");h.assertTrue(level.getBlockState(thorn).is(OriBlocks.GLOOM_THORNS),"Enemy hit splashed onto thorns");
             }finally{enemy.discard();}
         });
         timed(tests,"spirit_standing_in_thorns_loses_health_with_companion_enabled",(h,c)->{
             var level=h.getLevel();var p=c.player();p.getAbilities().invulnerable=false;for(int i=0;i<61;i++)p.tick();p.invulnerableTime=0;p.setHealth(p.getMaxHealth());
             var at=h.absolutePos(new BlockPos(20,3,20));level.setBlock(at.below(),Blocks.STONE.defaultBlockState(),2);level.setBlock(at,OriBlocks.GLOOM_THORNS.get().defaultBlockState(),2);
-            p.setPos(Vec3.atBottomCenterOf(at));p.getData(SpiritData.ENERGY_STATE).flameReadyAt=0;float initial=p.getHealth();
+            p.setPos(Vec3.atBottomCenterOf(at));p.getData(SpiritData.COOLDOWNS).flameReadyAt=0;float initial=p.getHealth();
             for(int tick=1;tick<=30;tick++)h.runAfterDelay(tick,()->{
                 SpiritFlame.tick(new PlayerTickEvent.Post(p));
                 // A tiny real movement runs Entity's block contact detection; no direct entityInside call.

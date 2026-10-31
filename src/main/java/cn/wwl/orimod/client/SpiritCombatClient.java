@@ -17,23 +17,30 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class SpiritCombatClient {
     private static boolean blockUse, sentCancel;
-    private static int lastAction, awaitingAttackUntil;
+    private static int lastAction;
+    private static long awaitingAttackUntil;
     private static final cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch REFUSAL = new cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch();
-    private static int energyFlashUntil;
+    private static long energyFlashUntil;
     public static boolean energyFlashing() {
+        SpiritClientSession.observe();
         var player = Minecraft.getInstance().player;
-        return player != null && player.tickCount < energyFlashUntil;
+        return player != null && SpiritClientSession.now() < energyFlashUntil;
     }
     private SpiritCombatClient() {}
+    static void resetSession() {
+        lastAction = 0; awaitingAttackUntil = energyFlashUntil = 0;
+        blockUse = sentCancel = false; REFUSAL.release();
+    }
 
     public static void input(InputEvent.InteractionKeyMappingTriggered event) {
+        SpiritClientSession.observe();
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
         if(RestorationClient.active()){event.setCanceled(true);event.setSwingHand(false);return;}
         if (event.isUseItem() && cn.wwl.orimod.item.SpiritWeaponUse.blocked(mc.player, mc.player.getItemInHand(event.getHand()))) {
             event.setCanceled(true); event.setSwingHand(false);
             if (REFUSAL.refuse()) {
-                energyFlashUntil = mc.player.tickCount + 8;
+                energyFlashUntil = SpiritClientSession.now() + 8;
                 mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), .2f, .65f);
             }
             return;
@@ -45,7 +52,7 @@ public final class SpiritCombatClient {
             if (mc.screen == null && mc.isWindowActive()) {
                 if (mc.hitResult != null && mc.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK)
                     mc.player.resetAttackStrengthTicker();
-                awaitingAttackUntil = mc.player.tickCount + 12;
+                awaitingAttackUntil = SpiritClientSession.now() + 12;
                 PacketDistributor.sendToServer(new CombatInputPayload(false));
             }
         } else if (event.isUseItem() && blockUse && (mc.player.getItemInHand(event.getHand()).is(OriItems.SPIRIT_BOW)
@@ -70,13 +77,14 @@ public final class SpiritCombatClient {
     }
 
     public static boolean awaitingAttack() {
+        SpiritClientSession.observe();
         var player = Minecraft.getInstance().player;
-        return player != null && player.tickCount < awaitingAttackUntil;
+        return player != null && SpiritClientSession.now() < awaitingAttackUntil;
     }
 
     public static void tick(ClientTickEvent.Pre event) {
         var mc = Minecraft.getInstance();
-        if (mc.player == null) { lastAction = awaitingAttackUntil = energyFlashUntil = 0; blockUse = sentCancel = false; REFUSAL.release(); return; }
+        if (mc.player == null) return;
         if (!mc.options.keyUse.isDown() || mc.screen != null || !mc.isWindowActive()) { blockUse = false; REFUSAL.release(); }
         if (mc.screen != null || !mc.isWindowActive() || !SpiritData.isSpirit(mc.player)) cancel();
         else sentCancel = false;

@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.*;
 import java.util.List;
 
 /** Invisible occupancy, with local collision and interaction delegated to exactly one core. No BE. */
-public final class SanctuaryPartBlock extends Block {
+public final class SanctuaryPartBlock extends ProtectedBlock {
     public static final EnumProperty<SanctuaryKind> KIND=EnumProperty.create("kind",SanctuaryKind.class);
     // IntegerProperty is unsigned: X/Z encode local -1..1 as 0..2; Y is the actual 0..2 layer.
     public static final IntegerProperty DX=IntegerProperty.create("dx",0,2),DY=IntegerProperty.create("dy",0,2),DZ=IntegerProperty.create("dz",0,2);

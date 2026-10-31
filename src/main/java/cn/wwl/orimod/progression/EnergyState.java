@@ -5,15 +5,7 @@ public final class EnergyState {
     public boolean blightInside;
     public final ExplorationShardRules.Breath breath = new ExplorationShardRules.Breath();
     public long prospectorAt = Long.MIN_VALUE;
-    /** R34: game time when the next Soul Link may be made. */
-    public long soulLinkReadyAt;
-    /** R37: game time when the companion may fire the next Spirit Flame. */
-    public long flameReadyAt;
-    /** R39: next Light Burst throw. */
-    public long burstReadyAt, waterDashReadyAt, chargeFlameReadyAt, spearReadyAt;
-    /** R41: next Spirit Well refill. */
-    public long wellReadyAt, wellTravelReadyAt;
-    public long lastSpent, lastHurt, healReadyAt;
+    public long lastSpent, lastHurt;
     public long recoveryHurtAt = Long.MIN_VALUE, recoveryLastTick = Long.MIN_VALUE;
     public final Regenerate.Session regenerate = new Regenerate.Session();
     /** R97: separate hint timers avoid treating a fresh player's tick zero as an energy spend. */
@@ -23,10 +15,10 @@ public final class EnergyState {
     public final CompanionLines.Session lines = new CompanionLines.Session();
     /** R101: unsaved tide participation, kill count and once-per-day dawn settlement. */
     public final cn.wwl.orimod.world.GloomTideRules.NightLedger tide = new cn.wwl.orimod.world.GloomTideRules.NightLedger();
-    /** R98: unsaved leases and cooldown for sustained Flash and the charge-flame input that excludes it. */
+    /** R98: unsaved leases for sustained Flash and the charge-flame input that excludes it. */
     public long flashUntil = Long.MIN_VALUE, flashActiveSince = Long.MIN_VALUE, flashLastTick = Long.MIN_VALUE,
             chargeFlameUntil = Long.MIN_VALUE;
-    public long flashReadyAt, flashNoticeAt;
+    public long flashNoticeAt;
     /** R99: rolling pickup healing and per-attacker retaliation cooldowns, never saved. */
     public final ShardEffects.HarvestWindow lifeHarvest = new ShardEffects.HarvestWindow();
     public final java.util.Map<java.util.UUID, Long> thornHits = new java.util.HashMap<>();

@@ -12,7 +12,7 @@ public final class MerchantRules {
             case THORN,STICKY,PROSPECTOR,EMBER_SKIN->140;case ULTRA_BASH,MAGNET->160;case TRIPLE_JUMP->200;
             case DEEP_BREATH->100;case LUMEN_SIGHT,FORAGER->120;
         };
-        return switch(id){case "ruin"->40;case "tree"->60;case "blight"->50;default->-1;};
+        return switch(id){case "tree"->60;case "blight"->50;default->-1;};
     }
     /** Progression fallback when no accessible outpost exists; merchant remains one third cheaper. */
     public static int panelPrice(Shard shard){return (price(shard.id())*3+1)/2;}

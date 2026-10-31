@@ -283,7 +283,7 @@ public final class ShardGameTests {
         SpiritForm.toggle(p); p.setData(SpiritData.ABILITIES, (1 << 14) - 1);
         p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY.withOwned(Shard.MASK).withEquipped(shards));
         p.setData(SpiritData.ENERGY, 10f); p.setHealth(10); p.setNoGravity(true);
-        p.getData(SpiritData.ENERGY_STATE).flameReadyAt = Long.MAX_VALUE;
+        p.getData(SpiritData.COOLDOWNS).flameReadyAt = Long.MAX_VALUE;
     }
     private static ItemEntity orb(ServerPlayer p, int count) {
         var item = new ItemEntity(p.level(), p.getX(), p.getY(), p.getZ(), new ItemStack(OriItems.SPIRIT_LIGHT.get(), count));

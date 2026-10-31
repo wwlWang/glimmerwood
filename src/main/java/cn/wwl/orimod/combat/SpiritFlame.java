@@ -29,8 +29,8 @@ public final class SpiritFlame {
     public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!player.getData(SpiritData.COMPANION_FLAME)) return;
-        var state = player.getData(SpiritData.ENERGY_STATE);
-        long now = player.level().getGameTime();
+        var state = player.getData(SpiritData.COOLDOWNS);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         if (!ready(SpiritData.isSpirit(player) && SpiritData.isAwakened(player), player.isAlive(), player.isSpectator(), now, state.flameReadyAt)) return;
         var target = target(player);
         // The companion may only auto-target vessels among blocks; hazards require deliberate attacks.
@@ -40,13 +40,14 @@ public final class SpiritFlame {
     }
 
     public static LivingEntity target(ServerPlayer player) {
-        return player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(RANGE), e -> e instanceof Enemy && e.isAlive()
+        return player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(RANGE), e -> !(e instanceof cn.wwl.orimod.world.PracticeTarget) && CombatTargets.canHit(player, e)
                         && !e.isInvisible() && !player.isAlliedTo(e) && player.distanceToSqr(e) <= RANGE * RANGE
                         && SpiritTargets.visible(player, e.getBoundingBox().getCenter()))
                 .stream().min(Comparator.comparingDouble(player::distanceToSqr)).orElse(null);
     }
 
     public static boolean fire(ServerPlayer player, LivingEntity target) {
+        if (!CombatTargets.canHit(player, target)) return false;
         var at = target.getBoundingBox().getCenter();
         SpiritFx.emit(player.serverLevel(), SpiritFxKind.SPIRIT_FLAME, at, player);
         boolean hit = target.hurt(player.damageSources().indirectMagic(player, player), DAMAGE);

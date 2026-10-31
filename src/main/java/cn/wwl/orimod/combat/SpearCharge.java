@@ -42,8 +42,8 @@ public final class SpearCharge {
     private static boolean canThrow(ServerPlayer player, ItemStack stack) {
         return stack.is(OriItems.SPIRIT_SPEAR) && !SpiritWeaponUse.blocked(player, stack)
                 && SpiritSpear.refusal(SpiritData.isSpirit(player), Ability.SPEAR.unlocked(player),
-                    SpiritProgression.energy(player), player.level().getGameTime(),
-                    player.getData(SpiritData.ENERGY_STATE).spearReadyAt) == null;
+                    SpiritProgression.energy(player), cn.wwl.orimod.progression.SpiritCooldowns.now(player),
+                    player.getData(SpiritData.COOLDOWNS).spearReadyAt) == null;
     }
 
     private static boolean stillHolding(ServerPlayer player, Charge charge) {

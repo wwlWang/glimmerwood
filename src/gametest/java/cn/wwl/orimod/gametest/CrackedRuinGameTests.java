@@ -176,7 +176,7 @@ public final class CrackedRuinGameTests {
     private static CrackedRuinBlock block(CrackedRuin.Kind kind) {return kind==CrackedRuin.Kind.WALL?OriBlocks.CRACKED_RUIN_WALL.get():OriBlocks.CRACKED_RUIN_FLOOR.get();}
     static void prepare(Fixtures.ConnectedPlayer c) {
         var p=c.player();p.setData(SpiritData.FORM,true);p.setData(SpiritData.ABILITIES,cn.wwl.orimod.command.OriCommands.allAbilities());p.setData(SpiritData.ENERGY,100f);
-        p.setNoGravity(true);p.getAbilities().invulnerable=true;p.getData(SpiritData.ENERGY_STATE).flameReadyAt=Long.MAX_VALUE;
+        p.setNoGravity(true);p.getAbilities().invulnerable=true;p.getData(SpiritData.COOLDOWNS).flameReadyAt=Long.MAX_VALUE;
     }
     private static void add(List<TestFunction> tests,String name,BiConsumer<GameTestHelper,Fixtures.ConnectedPlayer> run) {
         timed(tests,name,(h,c)->{try{run.accept(h,c);h.succeed();}finally{c.close();}});

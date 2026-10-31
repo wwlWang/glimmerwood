@@ -40,7 +40,7 @@ public final class SanctuaryOwnershipGameTests {
                         var s=h.getLevel().getBlockState(cell);
                         h.assertValueEqual(SanctuaryAssembly.owner(cell,s),owner,"Part owner/facing mismatch");
                         h.assertTrue(s.getCloneItemStack(new BlockHitResult(Vec3.atCenterOf(cell),Direction.UP,cell,false),h.getLevel(),cell,player).is(kind.block().asItem()),"Pick-block did not return core");
-                        h.assertValueEqual(s.getDestroyProgress(player,h.getLevel(),cell)>0,kind.shrine(),"Part changed survival mining permission");
+                        h.assertFalse(s.getDestroyProgress(player,h.getLevel(),cell)>0,"Unobtainable building member can be mined");
                         h.assertValueEqual(NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(),NbtUtils.writeBlockState(s)),s,"Palette round trip changed ownership");
                         if(!cell.equals(p)){
                             h.assertValueEqual(s.getRenderShape(),RenderShape.INVISIBLE,"Part rendered another model");

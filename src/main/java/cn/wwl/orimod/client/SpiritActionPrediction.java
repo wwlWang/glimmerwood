@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 public final class SpiritActionPrediction {
     public static final int GLIDE_LEASE = 4, BASH_LEASE = 5, ACK_SLACK = 4;
     private static boolean prevDash, prevBash;
+    static void resetSession() { prevDash = prevBash = false; }
     private SpiritActionPrediction() {}
 
     public static void apply(Player player, MovementState s, int flags, float forward, float left) {

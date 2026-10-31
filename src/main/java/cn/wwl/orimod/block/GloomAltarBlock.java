@@ -31,6 +31,10 @@ public final class GloomAltarBlock extends SanctuaryBlock {
     public static GloomHeart summon(ServerPlayer player, BlockPos pos) {
         var level = (ServerLevel) player.level();
         if (!SpiritData.isAwakened(player)) { player.displayClientMessage(Component.translatable("message.orimod.altar_dormant"), true); return null; }
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
+            player.displayClientMessage(Component.translatable("message.orimod.altar_peaceful"), true);
+            return null;
+        }
         if (SanctuaryBlockEntity.refuseCooldown(player, pos)) return null;
         if (awake(level, pos) != null) { player.displayClientMessage(Component.translatable("message.orimod.altar_awake"), true); return null; }
         var be=level.getBlockEntity(pos);

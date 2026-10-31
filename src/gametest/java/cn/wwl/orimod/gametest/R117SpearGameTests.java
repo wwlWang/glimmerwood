@@ -54,7 +54,7 @@ public final class R117SpearGameTests {
                 switch (reason) {
                     case "energy" -> p.setData(SpiritData.ENERGY, 11f);
                     case "item_cooldown" -> p.getCooldowns().addCooldown(OriItems.SPIRIT_SPEAR.get(), 24);
-                    case "server_cooldown" -> p.getData(SpiritData.ENERGY_STATE).spearReadyAt = p.level().getGameTime() + 24;
+                    case "server_cooldown" -> p.getData(SpiritData.COOLDOWNS).spearReadyAt = p.level().getGameTime() + 24;
                     case "form" -> p.setData(SpiritData.FORM, false);
                     case "locked" -> p.setData(SpiritData.ABILITIES, 0);
                 }

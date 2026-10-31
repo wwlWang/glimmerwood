@@ -19,7 +19,7 @@ import net.minecraft.world.phys.shapes.*;
 import java.util.Comparator;
 
 /** R103: a low crystal vessel, broken once by a player's attack; no block-item loot. */
-public final class SpiritLightVesselBlock extends Block {
+public final class SpiritLightVesselBlock extends ProtectedBlock {
     private static final VoxelShape SHAPE = box(3,0,3,13,10,13);
     public SpiritLightVesselBlock(Properties properties) { super(properties); }
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) { return SHAPE; }
@@ -53,7 +53,7 @@ public final class SpiritLightVesselBlock extends Block {
                     return hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(p);
                 }).findFirst().orElse(null);
         if (pos == null || !burst(player,pos)) return false;
-        player.getData(SpiritData.ENERGY_STATE).flameReadyAt = level.getGameTime()+SpiritFlame.COOLDOWN_TICKS;
+        player.getData(SpiritData.COOLDOWNS).flameReadyAt = cn.wwl.orimod.progression.SpiritCooldowns.now(player)+SpiritFlame.COOLDOWN_TICKS;
         SpiritFx.emit(level,SpiritFxKind.SPIRIT_FLAME,Vec3.atBottomCenterOf(pos).add(0,.3,0),player);
         return true;
     }

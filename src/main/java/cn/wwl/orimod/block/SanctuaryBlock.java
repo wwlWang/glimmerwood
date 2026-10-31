@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.shapes.*;
 
 /** Legacy single core or item-placed architecture. Only the core owns rendering/logic. */
-public class SanctuaryBlock extends Block implements EntityBlock {
+public class SanctuaryBlock extends ProtectedBlock implements EntityBlock {
     public static final BooleanProperty ASSEMBLED=BooleanProperty.create("assembled");
     public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
     public SanctuaryBlock(Properties properties) {

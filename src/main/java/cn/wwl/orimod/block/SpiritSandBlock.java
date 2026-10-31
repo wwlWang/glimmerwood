@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * (the same "swim" skill); that player passes through and is steered along the look direction, then pops out with a boost.
  * Collision is decided per entity (like powder snow), so mobs, items and other players still stand on it.
  */
-public final class SpiritSandBlock extends Block {
+public final class SpiritSandBlock extends ProtectedBlock {
     public static final double SPEED = .42, EXIT_BOOST = .85;
 
     public SpiritSandBlock(Properties properties) { super(properties); }

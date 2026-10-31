@@ -40,6 +40,15 @@ public final class SpiritControls {
     private static boolean blockJumpUntilReleased, blockDashUntilReleased, blockBashUntilReleased;
     private static int inputSequence;
     private SpiritControls() {}
+    static void resetSession() {
+        waterDashReadyAt = 0; wallJumpAt = -100;
+        waterDashHeld = burrowing = sentActive = prevJumpHeld = wasDash = feelControlled = false;
+        blockJumpUntilReleased = blockDashUntilReleased = blockBashUntilReleased = false;
+        feelAction = feelPrediction = inputSequence = 0;
+        feelH = feelBlade = net.minecraft.world.phys.Vec3.ZERO; dashExit = null; feelFriction = .91f;
+        bladeOwner = null; bladeWorld = null; bladeMotion = new cn.wwl.orimod.movement.BladeMotion();
+        wasSpirit = false; syncedCamera = null;
+    }
 
     public static void registerKeys(RegisterKeyMappingsEvent event) { event.register(TOGGLE); event.register(DASH); event.register(BASH); event.register(PANEL); event.register(SOUL_LINK); event.register(LIGHT_BURST); event.register(CHARGE_FLAME); event.register(FLASH); }
 
@@ -47,6 +56,7 @@ public final class SpiritControls {
         var mc = Minecraft.getInstance();
         var player = event.getEntity();
         if (player != mc.player) return;
+        SpiritClientSession.observe();
         if (bladeOwner != player || bladeWorld != player.level()) {
             bladeOwner = player; bladeWorld = player.level();
             bladeMotion = new cn.wwl.orimod.movement.BladeMotion();

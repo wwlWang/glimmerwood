@@ -43,8 +43,8 @@ public final class SpiritWell {
     /** Called when the player uses a shrine: refill health and energy if the well is ready. */
     public static boolean refill(ServerPlayer player) {
         if (!SpiritData.isAwakened(player)) return false;
-        var state = player.getData(SpiritData.ENERGY_STATE);
-        long now = player.level().getGameTime();
+        var state = player.getData(SpiritData.COOLDOWNS);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         if (now < state.wellReadyAt) return false;
         if (player.getHealth() >= player.getMaxHealth() && SpiritProgression.energy(player) >= SpiritProgression.maxEnergy(player)) return false;
         state.wellReadyAt = now + REFILL_COOLDOWN_TICKS;
@@ -66,6 +66,10 @@ public final class SpiritWell {
                 .sorted(java.util.Comparator.<BlockPos>comparingInt(BlockPos::getX).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getZ)).toList();
     }
     private static boolean canTravel(ServerPlayer p, BlockPos from) {
+        if (GinsoEscape.active(p)) {
+            p.displayClientMessage(Component.translatable("message.orimod.well.escape"), true);
+            return false;
+        }
         return from != null && SpiritData.isAwakened(p) && p.isAlive() && !p.isSpectator() && !p.isPassenger() && !p.isSleeping()
                 && p.distanceToSqr(Vec3.atCenterOf(from)) <= USE_RANGE * USE_RANGE
                 && p.serverLevel().getChunkSource().getChunkNow(from.getX() >> 4, from.getZ() >> 4) != null
@@ -93,14 +97,14 @@ public final class SpiritWell {
     }
     public static boolean travel(ServerPlayer p, BlockPos from, BlockPos to, String dimension) {
         if (!p.level().dimension().location().toString().equals(dimension) || !canTravel(p, from)
-                || to == null || from.equals(to) || p.level().getGameTime() < p.getData(SpiritData.ENERGY_STATE).wellTravelReadyAt
+                || to == null || from.equals(to) || cn.wwl.orimod.progression.SpiritCooldowns.now(p) < p.getData(SpiritData.COOLDOWNS).wellTravelReadyAt
                 || !discovered(p.getData(SpiritData.PROGRESS).rewards().keySet(),dimension).contains(to)) return false;
         var level = p.serverLevel();
         BlockPos stand = safeDestination(level,to,p);
         if (stand == null) {
             p.displayClientMessage(Component.translatable("message.orimod.well.unsafe"),true); return false;
         }
-        p.getData(SpiritData.ENERGY_STATE).wellTravelReadyAt = level.getGameTime() + TRAVEL_COOLDOWN_TICKS;
+        p.getData(SpiritData.COOLDOWNS).wellTravelReadyAt = cn.wwl.orimod.progression.SpiritCooldowns.now(p) + TRAVEL_COOLDOWN_TICKS;
         SpiritFx.emit(level,SpiritFxKind.FORM_SWITCH,p.position(),p);
         Vec3 at=Vec3.atBottomCenterOf(stand);
         p.teleportTo(level,at.x,at.y,at.z,p.getYRot(),p.getXRot());p.fallDistance=0;

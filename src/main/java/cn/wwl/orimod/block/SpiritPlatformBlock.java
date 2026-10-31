@@ -12,7 +12,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.*;
 
 /** Ghost outline until illuminated; warning never changes collision or block-light emission. */
-public final class SpiritPlatformBlock extends Block {
+public final class SpiritPlatformBlock extends ProtectedBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT, FADING = BooleanProperty.create("fading"), BLINK = BooleanProperty.create("blink");
     public SpiritPlatformBlock(Properties properties) {
         super(properties); registerDefaultState(stateDefinition.any().setValue(LIT,false).setValue(FADING,false).setValue(BLINK,false));

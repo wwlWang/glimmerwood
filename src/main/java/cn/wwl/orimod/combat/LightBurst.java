@@ -53,8 +53,8 @@ public final class LightBurst extends ThrowableProjectile {
         cn.wwl.orimod.block.PlatformLight.push(level,position(),cn.wwl.orimod.block.PlatformRules.Source.BURST);
         var owner = getOwner() instanceof ServerPlayer player ? player : null;
         int hit = 0;
-        for (var target : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(RADIUS), e -> e instanceof Enemy && e.isAlive()
-                && e.distanceToSqr(this) <= RADIUS * RADIUS && (owner == null || !owner.isAlliedTo(e)))) {
+        for (var target : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(RADIUS), e -> (owner == null ? CombatTargets.canHitWithoutOwner(e) : CombatTargets.canHit(owner, e))
+                && e.distanceToSqr(this) <= RADIUS * RADIUS)) {
             var source = owner == null ? damageSources().magic() : damageSources().indirectMagic(this, owner);
             if (target.hurt(source, DAMAGE)) {
                 hit++;
@@ -86,8 +86,8 @@ public final class LightBurst extends ThrowableProjectile {
     }
 
     public static LightBurst toss(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        var state = player.getData(SpiritData.ENERGY_STATE);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
+        var state = player.getData(SpiritData.COOLDOWNS);
         String refusal = refusal(SpiritData.isSpirit(player), Ability.LIGHT_BURST.unlocked(player), SpiritProgression.energy(player), now, state.burstReadyAt);
         if (refusal != null) {
             if (!refusal.equals("cooldown")) player.displayClientMessage(Component.translatable("message.orimod.light_burst." + refusal), true);

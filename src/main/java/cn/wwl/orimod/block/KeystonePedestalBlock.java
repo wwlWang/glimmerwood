@@ -20,7 +20,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** Shared ruin keys; empty pedestals reform after one game day until their own door opens. */
-public final class KeystonePedestalBlock extends Block {
+public final class KeystonePedestalBlock extends ProtectedBlock {
     public static final BooleanProperty FULL = BooleanProperty.create("full");
     private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
 

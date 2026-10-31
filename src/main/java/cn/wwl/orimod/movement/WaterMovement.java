@@ -38,8 +38,8 @@ public final class WaterMovement {
     /** Server: accept a water dash (cooldown) and play its FX. @return accepted. */
     public static boolean dash(ServerPlayer player) {
         if (!active(player)) return false;
-        var state = player.getData(SpiritData.ENERGY_STATE);
-        long now = player.level().getGameTime();
+        var state = player.getData(SpiritData.COOLDOWNS);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         if (now < state.waterDashReadyAt) return false;
         state.waterDashReadyAt = now + DASH_COOLDOWN;
         cn.wwl.orimod.fx.SpiritFx.emit((net.minecraft.server.level.ServerLevel) player.level(), cn.wwl.orimod.fx.SpiritFxKind.DASH, player.getX(), player.getY() + .5, player.getZ(), null);

@@ -20,7 +20,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import java.util.HashMap;
 
 /** R100: an unbreakable root heart; each player receives one Ori-style blessing per tree site. */
-public final class SpiritTreeHeartBlock extends Block {
+public final class SpiritTreeHeartBlock extends ProtectedBlock {
     public static final BooleanProperty BLOOMED = BooleanProperty.create("bloomed");
     public SpiritTreeHeartBlock(Properties properties) {
         super(properties);

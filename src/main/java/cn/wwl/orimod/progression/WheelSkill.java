@@ -17,14 +17,14 @@ public enum WheelSkill {
     public final String start, release, cancel;
     public final int minimumHold;
     public final float cost;
-    private final ToLongFunction<EnergyState> cooldown;
-    WheelSkill(Ability ability, Style style, String start, String release, String cancel, int minimumHold, float cost, ToLongFunction<EnergyState> cooldown) {
+    private final ToLongFunction<SpiritCooldowns> cooldown;
+    WheelSkill(Ability ability, Style style, String start, String release, String cancel, int minimumHold, float cost, ToLongFunction<SpiritCooldowns> cooldown) {
         this.ability=ability;this.style=style;this.start=start;this.release=release;this.cancel=cancel;this.minimumHold=minimumHold;this.cost=cost;this.cooldown=cooldown;
     }
     public String id() { return name().toLowerCase(java.util.Locale.ROOT); }
     public String titleKey() { return "ability.orimod."+id(); }
     public boolean learned(boolean awakened,int bits) { return awakened && (ability==null || (bits&ability.bit)!=0); }
     public boolean learned(Player p) { return learned(SpiritData.isAwakened(p),p.getData(SpiritData.ABILITIES)); }
-    public long readyAt(Player p) { return cooldown.applyAsLong(p.getData(SpiritData.ENERGY_STATE)); }
+    public long readyAt(Player p) { return cooldown.applyAsLong(p.getData(SpiritData.COOLDOWNS)); }
     public static WheelSkill byId(String id) { for(var skill:values())if(skill.id().equals(id))return skill;return null; }
 }

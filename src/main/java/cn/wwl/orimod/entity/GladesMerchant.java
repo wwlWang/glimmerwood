@@ -31,7 +31,7 @@ public final class GladesMerchant extends PathfinderMob {
     public void bind(int job,BlockPos well,BlockPos anchor,float yaw){entityData.set(JOB,job==1?1:0);this.well=well.immutable();this.anchor=anchor.immutable();facing=yaw;moveTo(anchor.getX()+.5,anchor.getY(),anchor.getZ()+.5,yaw,0);}
     @Override public Component getName(){return Component.translatable(job()==0?"merchant.orimod.mosswhisper":"merchant.orimod.lulu");}
     public List<String> stock(ServerPlayer player){
-        if(job()==1)return List.of("ruin","tree","blight");
+        if(job()==1)return List.of("tree","blight");
         long day=MerchantRules.day(level().getDayTime());if(day!=stockDay){stocks.clear();stockDay=day;}
         return stocks.computeIfAbsent(player.getUUID(),id->MerchantRules.stock(getUUID().getMostSignificantBits()^getUUID().getLeastSignificantBits()^id.getMostSignificantBits()^id.getLeastSignificantBits()^day*0x9E3779B97F4A7C15L,player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).ownedShards()));
     }

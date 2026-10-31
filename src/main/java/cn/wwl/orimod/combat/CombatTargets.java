@@ -13,6 +13,11 @@ import net.minecraft.world.entity.player.Player;
 public final class CombatTargets {
     private CombatTargets() {}
 
+    /** An orphaned area effect cannot infer which player a neutral mob is angry at. */
+    public static boolean canHitWithoutOwner(LivingEntity target) {
+        return target.isAlive() && !target.isSpectator() && target instanceof Enemy && !(target instanceof NeutralMob);
+    }
+
     public static boolean canHit(Player player, LivingEntity target) {
         if (!target.isAlive() || target.isSpectator() || target instanceof Player || player.isAlliedTo(target)
                 || target instanceof AbstractVillager || target instanceof TamableAnimal pet && pet.isTame()) return false;

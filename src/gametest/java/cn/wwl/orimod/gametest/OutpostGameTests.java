@@ -86,7 +86,7 @@ public final class OutpostGameTests {
                 String key="discover/"+ChallengeSession.key(level.dimension(),a);h.assertTrue(p.getData(SpiritData.PROGRESS).rewards().containsKey(key),"Outpost not discovered");
                 var rewards=new HashMap<>(p.getData(SpiritData.PROGRESS).rewards());rewards.put("discover/"+ChallengeSession.key(level.dimension(),b),1);p.setData(SpiritData.PROGRESS,p.getData(SpiritData.PROGRESS).withRewards(rewards));
                 h.assertTrue(SpiritWell.travel(p,a),"Outpost to ruin travel failed");h.assertValueEqual(p.blockPosition(),b.north(),"Ruin arrival");h.assertFalse(SpiritWell.travel(p,b),"Travel ignored the R113 anti-repeat cooldown");
-                p.getData(SpiritData.ENERGY_STATE).wellTravelReadyAt=level.getGameTime();
+                p.getData(SpiritData.COOLDOWNS).wellTravelReadyAt=level.getGameTime();
                 h.assertTrue(SpiritWell.travel(p,b),"Ruin to outpost travel failed after cooldown");h.assertValueEqual(p.blockPosition(),a.north(),"Outpost arrival");
             }
         });

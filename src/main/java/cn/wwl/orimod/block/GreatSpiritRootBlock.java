@@ -14,6 +14,6 @@ public final class GreatSpiritRootBlock extends Block {
         @Override public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Light> LIGHT=EnumProperty.create("light",Light.class);
-    public GreatSpiritRootBlock(Properties properties){super(properties);registerDefaultState(stateDefinition.any().setValue(LIGHT,Light.NONE));}
+    public GreatSpiritRootBlock(Properties properties){super(ProtectedBlock.durable(properties));registerDefaultState(stateDefinition.any().setValue(LIGHT,Light.NONE));}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(LIGHT);}
 }

@@ -46,8 +46,8 @@ public final class SoulLink {
     public static boolean safe(boolean feetFree, boolean headFree, boolean floorSolid) { return feetFree && headFree && floorSolid; }
 
     public static boolean create(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        var state = player.getData(SpiritData.ENERGY_STATE);
+        long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
+        var state = player.getData(SpiritData.COOLDOWNS);
         var refusal = refusal(SpiritData.isSpirit(player), player.onGround(), player.getData(SpiritData.CHALLENGE_ACTIVE),
                 player.isInLiquid(), SpiritProgression.energy(player), now, state.soulLinkReadyAt);
         if (refusal.isPresent()) {

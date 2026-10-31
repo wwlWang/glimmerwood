@@ -23,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * R44: a Life or Energy Cell resting on a pedestal, placed by ruin generation at hard-to-reach spots. Each
  * player can take its cell once (recorded per site in their progress, so the pedestal stays for others).
  */
-public final class CellPedestalBlock extends Block {
+public final class CellPedestalBlock extends ProtectedBlock {
     private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
     public final SpiritCells.Kind kind;
 

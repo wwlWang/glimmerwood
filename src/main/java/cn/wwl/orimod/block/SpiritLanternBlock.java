@@ -16,7 +16,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** R96: Ori's Bash lantern, adapted as a craftable, non-colliding light that flares when struck by spirit abilities. */
-public final class SpiritLanternBlock extends Block {
+public final class SpiritLanternBlock extends ProtectedBlock {
     /** R96: five seconds of bright light, with a dim resting glow for cave routes. */
     public static final int LIT_TICKS = 100, DIM_LIGHT = 7, LIT_LIGHT = 15;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;

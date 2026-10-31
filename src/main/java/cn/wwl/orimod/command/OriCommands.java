@@ -203,6 +203,7 @@ public final class OriCommands {
         p.setData(SpiritData.FORM, false);
         p.setData(SpiritData.ABILITIES, 0);
         p.setData(SpiritData.PROGRESS, SpiritProgress.EMPTY);
+        p.setData(SpiritData.COOLDOWNS, new cn.wwl.orimod.progression.SpiritCooldowns());
         p.setData(SpiritData.AWAKENED, false);
         p.refreshDimensions();
         SpiritCells.apply(p);

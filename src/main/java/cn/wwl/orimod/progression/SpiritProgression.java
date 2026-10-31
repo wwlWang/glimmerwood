@@ -255,9 +255,9 @@ public final class SpiritProgression {
             if (!Shard.RESILIENCE.equipped(player)) s.pendingHeal = false;
             else if (now - s.lastHurt >= 80) {
                 s.pendingHeal = false;
-                if (now >= s.healReadyAt && player.getHealth() < player.getMaxHealth() && spendEnergy(player, 6)) {
+                if (SpiritCooldowns.now(player) >= player.getData(SpiritData.COOLDOWNS).healReadyAt && player.getHealth() < player.getMaxHealth() && spendEnergy(player, 6)) {
                     player.heal(1);
-                    s.healReadyAt = now + 200;
+                    player.getData(SpiritData.COOLDOWNS).healReadyAt = SpiritCooldowns.now(player) + 200;
                 }
             }
         }

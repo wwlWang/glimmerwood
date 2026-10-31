@@ -24,7 +24,12 @@ public final class SpiritSkills {
             }
         }
         var ready=new java.util.ArrayList<Long>();
-        for(int i=0;i<3;i++){var skill=current.skill(i);ready.add(skill==null?0:skill.readyAt(p));}
+        long clock=SpiritCooldowns.now(p), local=p.level().getGameTime();
+        for(int i=0;i<3;i++){
+            var skill=current.skill(i);
+            long remaining=skill==null?0:Math.max(0,skill.readyAt(p)-clock);
+            ready.add(remaining==0?0:local+remaining);
+        }
         if(!ready.equals(p.getData(SpiritData.SKILL_READY)))p.setData(SpiritData.SKILL_READY,java.util.List.copyOf(ready));
     }
     public static boolean bind(ServerPlayer p,int slot,WheelSkill skill) {

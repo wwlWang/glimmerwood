@@ -56,6 +56,9 @@ sourceSets.main.resources {
 
 // Exercise the shipped cave layout under the isolated GameTest namespace without a stale copy.
 tasks.named('processGametestResources') {
+    from('src/gametest/resources/data/orimod_gametest/structure/platform_room.nbt') {
+        into 'data/orimod_p5/structure'
+    }
     from('src/gametest/resources/data/orimod_gametest/structure/room.nbt') {
         into 'data/orimod_r117/structure'
     }
@@ -131,7 +134,7 @@ neoForge {
             sourceSet = sourceSets.gametest
             loadedMods = [mods.orimod, mods.orimod_gametest]
             gameDirectory = project.file('run-gametest')
-            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_r117,orimod_cave_rebuild,orimod_forest_rebuild,orimod_creek_rebuild,orimod_forest_freeze,orimod_forest_red,orimod_forest_approach,orimod_forest_liquid')
+            systemProperty 'neoforge.enabledGameTestNamespaces', providers.gradleProperty('gameTestNamespaces').getOrElse('orimod_gametest,orimod_r117,orimod_p5,orimod_cave_rebuild,orimod_forest_rebuild,orimod_creek_rebuild,orimod_forest_freeze,orimod_forest_red,orimod_forest_approach,orimod_forest_liquid')
             systemProperty 'orimod.gametest.report', file('build/test-results/gametest.xml').absolutePath
         }
         worldgenAudit {

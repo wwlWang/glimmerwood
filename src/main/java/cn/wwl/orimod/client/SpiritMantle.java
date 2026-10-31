@@ -21,6 +21,10 @@ public final class SpiritMantle {
     private static long readyAt, startedAt = -100, endedAt = -100;
     private static Player owner;
     private SpiritMantle() {}
+    static void resetSession() {
+        ticks = -1; expected = 1; wall = null; lipY = 0; over = false;
+        readyAt = 0; startedAt = endedAt = -100; owner = null;
+    }
 
     /** True while the local player is mantling. */
     public static boolean active(Player player) { return ticks >= 0 && player == owner; }

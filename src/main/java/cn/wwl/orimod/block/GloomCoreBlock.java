@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.*;
 
-public final class GloomCoreBlock extends Block implements EntityBlock {
+public final class GloomCoreBlock extends ProtectedBlock implements EntityBlock {
     public static final IntegerProperty DAMAGE=IntegerProperty.create("damage",0,4);
     public GloomCoreBlock(Properties properties){super(properties);registerDefaultState(stateDefinition.any().setValue(DAMAGE,0));}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(DAMAGE);}

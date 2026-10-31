@@ -576,5 +576,7 @@
   "message.orimod.ginso.escape.spirit_required": "Enter spirit form before taking the Water Heart’s light.",
   "item.orimod.gloom_residue": "Gloom Residue",
   "message.orimod.blight_exposure": "Corruption: natural recovery is suppressed; spirit energy is draining.",
-  "message.orimod.blight_exposure_human": "Corruption: natural recovery is suppressed."
+  "message.orimod.blight_exposure_human": "Corruption: natural recovery is suppressed.",
+  "message.orimod.well.escape": "Cannot travel between Spirit Wells during the Ginso escape.",
+  "message.orimod.altar_peaceful": "The Gloom Heart cannot awaken on Peaceful difficulty."
 }

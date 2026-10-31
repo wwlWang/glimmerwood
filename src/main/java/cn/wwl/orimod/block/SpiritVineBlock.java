@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.*;
 
 /** Cold luminous hanging foliage. No berries or random growth: the authored 2–5 block strands stay that length. */
-public final class SpiritVineBlock extends Block {
+public class SpiritVineBlock extends Block {
     public static final MapCodec<SpiritVineBlock> CODEC = simpleCodec(SpiritVineBlock::new);
     public static final BooleanProperty TIP = BooleanProperty.create("tip");
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);

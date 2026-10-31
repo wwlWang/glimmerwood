@@ -282,7 +282,7 @@ public final class FlashGameTests {
             p.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = p.level().getGameTime() - 1;
             h.assertTrue(ChargeFlame.release(p) >= 0, "Expired keepalive rejected valid Charge Flame release");
             Fixtures.near(h, SpiritProgression.energy(p), 90, "Charge Flame cost changed");
-            p.getData(SpiritData.ENERGY_STATE).chargeFlameReadyAt = 0;
+            p.getData(SpiritData.COOLDOWNS).chargeFlameReadyAt = 0;
             p.getData(SpiritData.ENERGY_STATE).chargeFlameUntil = Long.MIN_VALUE;
             h.assertTrue(ChargeFlame.release(p) >= 0, "Absent keepalive rejected valid Charge Flame release");
             Fixtures.near(h, SpiritProgression.energy(p), 80, "Legacy release changed");
@@ -305,7 +305,7 @@ public final class FlashGameTests {
                 SpiritProgression.spendEnergy(p, SpiritProgression.energy(p));
                 if (renew) Flash.keepAlive(p); else tick(p);
                 h.assertFalse(Flash.active(p), "Zero-energy Flash survived");
-                h.assertValueEqual(p.getData(SpiritData.ENERGY_STATE).flashReadyAt, p.level().getGameTime() + 20, "Missing exhaustion cooldown");
+                h.assertValueEqual(p.getData(SpiritData.COOLDOWNS).flashReadyAt, p.level().getGameTime() + 20, "Missing exhaustion cooldown");
             });
         }
         timed(tests, "irregular_ten_to_twelve_tick_keepalives_preserve_age_and_cleanse", (h, c) -> {
@@ -423,7 +423,7 @@ public final class FlashGameTests {
             try {
                 var p = c.player(); SpiritForm.toggle(p); p.setData(SpiritData.ABILITIES, Ability.FLASH.bit);
                 p.setData(SpiritData.ENERGY, 100f); p.setNoGravity(true);
-                p.getData(SpiritData.ENERGY_STATE).flameReadyAt = Long.MAX_VALUE;
+                p.getData(SpiritData.COOLDOWNS).flameReadyAt = Long.MAX_VALUE;
                 run.accept(h, c);
             } catch (RuntimeException | Error e) { Flash.stop(c.player()); c.close(); throw e; }
         }));

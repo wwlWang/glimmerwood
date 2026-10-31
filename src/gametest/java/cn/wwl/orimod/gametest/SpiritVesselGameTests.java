@@ -57,7 +57,7 @@ public final class SpiritVesselGameTests {
         add(tests,"enemy_has_priority_over_visible_vessel",(h,c)->{
             var pos=place(h,new BlockPos(7,2,5));var zombie=new Zombie(h.getLevel());zombie.setNoAi(true);zombie.setNoGravity(true);zombie.setPos(c.player().position().add(0,0,2));h.getLevel().addFreshEntity(zombie);
             try {
-                var s=c.player().getData(SpiritData.ENERGY_STATE);s.flameReadyAt=0;float before=zombie.getHealth();SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
+                var s=c.player().getData(SpiritData.COOLDOWNS);s.flameReadyAt=0;float before=zombie.getHealth();SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
                 h.assertTrue(zombie.getHealth()<before,"Enemy was not attacked");h.assertTrue(h.getLevel().getBlockState(pos).is(OriBlocks.SPIRIT_LIGHT_VESSEL),"Vessel stole enemy priority");
                 zombie.discard();s.flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));drops(h,pos);
             }finally{zombie.discard();}
@@ -65,14 +65,14 @@ public final class SpiritVesselGameTests {
         add(tests,"flame_cannot_see_vessel_through_cracked_wall",(h,c)->{
             var pos=place(h,new BlockPos(8,2,5));
             for(int y=2;y<=4;y++)for(int z=4;z<=6;z++)h.setBlock(new BlockPos(7,y,z),OriBlocks.CRACKED_RUIN_WALL.get());
-            c.player().getData(SpiritData.ENERGY_STATE).flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
+            c.player().getData(SpiritData.COOLDOWNS).flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
             h.assertTrue(h.getLevel().getBlockState(pos).is(OriBlocks.SPIRIT_LIGHT_VESSEL),"Spirit Flame reached sealed secret through a wall");
             for(int y=2;y<=4;y++)h.setBlock(new BlockPos(7,y,5),Blocks.AIR);
             SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));drops(h,pos);
         });
         add(tests,"flame_uses_existing_six_block_radius",(h,c)->{
             c.player().setPos(c.player().position().add(0,.5,0));var edge=place(h,new BlockPos(11,2,5));var far=place(h,new BlockPos(12,2,5));
-            var s=c.player().getData(SpiritData.ENERGY_STATE);s.flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
+            var s=c.player().getData(SpiritData.COOLDOWNS);s.flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));
             h.assertTrue(h.getLevel().isEmptyBlock(edge),"Six-block boundary excluded");
             s.flameReadyAt=0;SpiritFlame.tick(new PlayerTickEvent.Post(c.player()));h.assertTrue(h.getLevel().getBlockState(far).is(OriBlocks.SPIRIT_LIGHT_VESSEL),"Seven-block vessel targeted");
         });

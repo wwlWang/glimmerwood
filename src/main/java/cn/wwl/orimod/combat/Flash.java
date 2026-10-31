@@ -74,7 +74,7 @@ public final class Flash {
     private static String refusal(ServerPlayer player, boolean continuing) {
         var s = player.getData(SpiritData.ENERGY_STATE);
         return refusal(SpiritData.isSpirit(player), Ability.FLASH.unlocked(player), SpiritProgression.energy(player),
-                player.level().getGameTime(), s.flashReadyAt, player.getData(SpiritData.MOVEMENT).mode,
+                cn.wwl.orimod.progression.SpiritCooldowns.now(player), player.getData(SpiritData.COOLDOWNS).flashReadyAt, player.getData(SpiritData.MOVEMENT).mode,
                 player.level().getGameTime() < s.chargeFlameUntil, continuing);
     }
 
@@ -121,7 +121,7 @@ public final class Flash {
         long age = now - s.flashActiveSince + 1;
         var level = player.serverLevel();
         for (var target : level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(RADIUS),
-                e -> e != player && e.isAlive() && e.distanceToSqr(player) <= RADIUS * RADIUS)) {
+                e -> CombatTargets.canHit(player, e) && e.distanceToSqr(player) <= RADIUS * RADIUS)) {
             if (target instanceof GloomSpitter spitter) {
                 spitter.dazzle(DAZZLE_TICKS);
                 if (age % GLOOM_INTERVAL == 0) target.hurt(player.damageSources().indirectMagic(player, player), GLOOM_DAMAGE);
@@ -144,7 +144,7 @@ public final class Flash {
     }
 
     private static void exhaust(ServerPlayer player, long now) {
-        player.getData(SpiritData.ENERGY_STATE).flashReadyAt = now + COOLDOWN_TICKS;
+        player.getData(SpiritData.COOLDOWNS).flashReadyAt = cn.wwl.orimod.progression.SpiritCooldowns.now(player) + COOLDOWN_TICKS;
         stop(player);
     }
 
