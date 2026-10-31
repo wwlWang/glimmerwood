@@ -31,3 +31,10 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
     - `spirit_tree registered start at (772,65,811) could not place its accepted plan: UNEXPECTED_RUIN`
     - `blighted_grounds registered start at (-1772,109,-124) could not place its accepted plan: UNEXPECTED_BLOCK minecraft:mossy_cobblestone at -1768,104,-134`（原版结构的苔石，可能是地牢/废墟）
   - 结论：结构起点仍会先登记、后放置失败，`locate` 照样指过去，只是从 P4 的“很多空点”降到约 1/11（22 个里 2 个）**[仍存在·降级]**。
+
+## P6-1b 客户端生命周期 / 冷却（`pt6/lc_lib.py`、`lc3.py`、`lc4.py`）
+- **换存档后水中冲刺失效（P5-F / AUDIT A2）[已修复]**：同一客户端进程先进老存档 `pt116p3`（gametime 149128），水池冲刺 8 tick 位移 3.95 / 3.75 / 3.75；退回标题进 `p6_r1`（gametime 2262），同样按法 **3.75 / 3.95 / 3.75**，正常。
+  - （我的第一版脚本在新世界里没等区块加载就 `fill` 水池、并在觉醒前切形态，得到 0.0，是脚本问题，已重跑排除。）
+- **死亡 / 换维度后能量条一直红（P4-3 / P5-F / AUDIT A1）[已修复]**：活 15 秒后手持灵矛 0 能量右键（能量条变红）→ `/kill` → 重生 → 补满，5 秒后整条是蓝的；再拒绝一次 → 传送到下界 → 补满 5 秒后也是蓝的 `playtest-p6-lc-energy-sheet.png`（上：拒绝瞬间红；中：重生 5 秒；下：下界 5 秒）。
+- **存档退出再进冷却清零、灵泉白嫖（AUDIT A3 / E5）[已修复]**：手放 `glades_well`，第 1 次右键：能量 6→100、生命 16→20 并打开灵泉界面；第 2 次被冷却挡住（只有自然回能 9.8）；**退出重进后第 3 次仍被挡住**；`/kill` 重生后第 4 次也被挡住。冷却按主世界 gameTime 计算，`/time set 0` 不影响。
+- **[新·复现，minor] 手持灵矛时右键灵泉没反应**：同一口井，主手拿灵矛时右键 6 次都没打开灵泉界面也没补满（`lc3.py`，屏幕一直是游戏画面），空手右键马上打开。灵矛“按住举起”的使用动作抢在方块交互前面。玩家拿着矛走到灵泉/圣所前右键会以为井坏了。其他“右键方块”（箱子、门、商人）是否也被抢见 P6-3。
