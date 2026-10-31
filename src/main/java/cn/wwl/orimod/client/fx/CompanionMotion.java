@@ -286,7 +286,7 @@ public final class CompanionMotion {
             state.pulseTicks = PULSE_TICKS;
         }
         if (payload.kind() == CompanionHintPayload.Kind.LINE) cn.wwl.orimod.client.CompanionLineOverlay.show(payload.id());
-        else mc.player.displayClientMessage(Component.translatable("hint.orimod." + payload.id()), true);
+        else mc.player.displayClientMessage(cn.wwl.orimod.client.ControlText.hint(payload.id()), true);
         mc.level.playLocalSound(mc.player.getX(), mc.player.getY(), mc.player.getZ(), SoundEvents.AMETHYST_BLOCK_RESONATE,
                 SoundSource.PLAYERS, HINT_VOLUME, HINT_PITCH, false);
     }

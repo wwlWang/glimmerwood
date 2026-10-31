@@ -341,6 +341,19 @@ public final class DevelopmentBridge {
                 KeyMapping.click(key.getKey());
                 heldKeys.put(key, duration);
             }
+            case "ui_text" -> {
+                return Map.of("bashHint",cn.wwl.orimod.client.ControlText.hint("bash_anchor").getString(),
+                        "panelHint",cn.wwl.orimod.client.ControlText.hint("shard_slot").getString(),
+                        "chargeFlame",cn.wwl.orimod.client.ControlText.description(cn.wwl.orimod.progression.Ability.CHARGE_FLAME).getString(),
+                        "dimensions",java.util.stream.Stream.of("minecraft:overworld","minecraft:the_nether","minecraft:the_end","example:crystal_caverns/upper")
+                                .collect(java.util.stream.Collectors.toMap(id->id,id->cn.wwl.orimod.client.DimensionNames.name(id).getString())));
+            }
+            case "key_bindings" -> {
+                // Read real Options-loaded keys; no shadow defaults or simulated options parser.
+                return Map.of("bindings", java.util.Arrays.stream(mc.options.keyMappings).map(k -> Map.of(
+                        "name", k.getName(), "key", k.saveString(), "default", k.getDefaultKey().getName(),
+                        "label", k.getTranslatedKeyMessage().getString(), "action", net.minecraft.network.chat.Component.translatable(k.getName()).getString())).toList());
+            }
             case "release_keys" -> releaseKeys();
             case "focus_game" -> GLFW.glfwFocusWindow(mc.getWindow().getWindow());
             case "walk_route" -> { releaseKeys();RouteInput.start(action.getAsJsonArray("points"));return RouteInput.state(); }

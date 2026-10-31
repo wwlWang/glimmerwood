@@ -20,7 +20,7 @@ class ClientConfigTest {
         assertFalse(OriClientConfig.SPEC.isCorrect(config), "v1 file lacks the R15 fields");
         OriClientConfig.SPEC.correct(config);
         assertTrue(OriClientConfig.SPEC.isCorrect(config));
-        assertEquals(true, config.get("keyDefaultsApplied"));
+        assertFalse(config.contains("keyDefaultsApplied"), "Obsolete key migration must be retired");
         assertEquals("FIRST_PERSON", String.valueOf(config.<Object>get("spiritCamera")));
         assertEquals(ClientConfigMigration.LEGACY, (int)config.<Integer>get("configVersion"));
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
@@ -34,7 +34,7 @@ class ClientConfigTest {
     @Test void emptyFileGetsPlanDefaults() {
         var config = CommentedConfig.inMemory();
         OriClientConfig.SPEC.correct(config);
-        assertEquals(false, config.get("keyDefaultsApplied"));
+        assertFalse(config.contains("keyDefaultsApplied"), "Fresh installs must not enable key migration");
         assertEquals("THIRD_PERSON_BACK", String.valueOf(config.<Object>get("spiritCamera")));
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
         // Plan 10.1: shake light by default; it must not start at full strength.
@@ -76,7 +76,7 @@ class ClientConfigTest {
         OriClientConfig.SPEC.correct(config);
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
         assertEquals("THIRD_PERSON_BACK", String.valueOf(config.<Object>get("spiritCamera")));
-        assertEquals(true, config.get("keyDefaultsApplied"));
+        assertFalse(config.contains("keyDefaultsApplied"), "Obsolete key migration must be retired");
     }
 
     @Test void everyStoredCameraNameStillLoads() {

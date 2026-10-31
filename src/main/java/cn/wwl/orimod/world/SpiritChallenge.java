@@ -43,6 +43,7 @@ public final class SpiritChallenge {
     public static void offer(ServerPlayer player, BlockPos shrine, RuinKind kind) {
         if (!player.isAlive() || player.distanceToSqr(Vec3.atCenterOf(shrine)) > 36) return;
         String key = ChallengeSession.key(player.level().dimension(), shrine);
+        if (SpiritData.isAwakened(player)) cn.wwl.orimod.progression.StoryProgress.award(player, cn.wwl.orimod.progression.StoryProgress.Step.EXPLORE);
         if (SpiritData.isAwakened(player) && SpiritProgression.reward(player, "discover/" + key, 15, 0))
             player.displayClientMessage(Component.translatable("challenge.orimod.discovered", kind.title(), 15), false);
         if (session(player) == null) SpiritWell.refill(player); // R41: shrines are Spirit Wells

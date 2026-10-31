@@ -271,6 +271,7 @@ public final class BlightData extends SavedData {
                     var rewards=new HashMap<>(progress.rewards());rewards.put(key,1);
                     player.setData(SpiritData.PROGRESS,progress.withRewards(rewards));SpiritProgression.grantLight(player,rewardAmounts.getOrDefault(entry.getKey().longValue(),BlightRules.REWARD));
                     CompanionLines.offer(player,CompanionLines.Line.FIRST_PURIFY);
+                    cn.wwl.orimod.progression.StoryProgress.award(player,cn.wwl.orimod.progression.StoryProgress.Step.BLIGHT);
                     cn.wwl.orimod.progression.WillWisps.purified(player,level,BlockPos.of(entry.getKey()));
                 }
                 recipients.remove();setDirty();

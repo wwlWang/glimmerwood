@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "orimod:spirit_blade"
+    },
+    "title": {
+      "translate": "advancement.orimod.story.spirit.title"
+    },
+    "description": {
+      "translate": "advancement.orimod.story.spirit.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "orimod:story/root"
+}

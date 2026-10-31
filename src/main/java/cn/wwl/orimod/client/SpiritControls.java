@@ -21,16 +21,16 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 public final class SpiritControls {
-    public static final KeyMapping TOGGLE = new KeyMapping("key.orimod.toggle_form", GLFW.GLFW_KEY_V, "key.categories.orimod");
-    public static final KeyMapping DASH = new KeyMapping("key.orimod.dash", GLFW.GLFW_KEY_C, "key.categories.orimod");
-    public static final KeyMapping BASH = new KeyMapping("key.orimod.bash", GLFW.GLFW_KEY_R, "key.categories.orimod");
+    public static final KeyMapping TOGGLE = new KeyMapping("key.orimod.toggle_form", GLFW.GLFW_KEY_M, "key.categories.orimod");
+    public static final KeyMapping DASH = new KeyMapping("key.orimod.dash", GLFW.GLFW_KEY_V, "key.categories.orimod");
+    public static final KeyMapping BASH = new KeyMapping("key.orimod.bash", GLFW.GLFW_KEY_B, "key.categories.orimod");
     public static final KeyMapping PANEL = new KeyMapping("key.orimod.panel", GLFW.GLFW_KEY_G, "key.categories.orimod");
-    public static final KeyMapping SOUL_LINK = new KeyMapping("key.orimod.soul_link", GLFW.GLFW_KEY_B, "key.categories.orimod");
+    public static final KeyMapping SOUL_LINK = new KeyMapping("key.orimod.soul_link", GLFW.GLFW_KEY_N, "key.categories.orimod");
     public static final KeyMapping LIGHT_BURST = new KeyMapping("key.orimod.light_burst", GLFW.GLFW_KEY_Z, "key.categories.orimod");
     /** Slot 2 retains its legacy mapping ID so custom Controls bindings migrate. */
-    public static final KeyMapping CHARGE_FLAME = new KeyMapping("key.orimod.charge_flame", GLFW.GLFW_KEY_X, "key.categories.orimod");
+    public static final KeyMapping CHARGE_FLAME = new KeyMapping("key.orimod.charge_flame", GLFW.GLFW_KEY_H, "key.categories.orimod");
     /** Slot 3 retains the original conflict-resolution policy. */
-    public static final KeyMapping FLASH = new KeyMapping("key.orimod.flash", GLFW.GLFW_KEY_H, "key.categories.orimod");
+    public static final KeyMapping FLASH = new KeyMapping("key.orimod.flash", GLFW.GLFW_KEY_J, "key.categories.orimod");
     private static CameraType humanCamera = CameraType.FIRST_PERSON;
     private static CameraType spiritCamera = CameraType.THIRD_PERSON_BACK;
     private static boolean wasSpirit;

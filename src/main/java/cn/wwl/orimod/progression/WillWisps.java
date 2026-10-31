@@ -26,7 +26,7 @@ public final class WillWisps {
         if(!p.isAlive() || p.isSpectator() || !p.getUUID().equals(e.owner()) || p.level()!=e.level() || !valid(e)
                 || !p.getBoundingBox().inflate(.75).intersects(e.getBoundingBox()))return false;
         boolean fresh=(p.getData(SpiritData.PROGRESS).wisps()&e.kind().bit)==0;
-        give(p,e.kind().bit);e.discard();
+        give(p,e.kind().bit);StoryProgress.wisps(p);e.discard();
         if(fresh){p.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.orimod.wisp.collected",net.minecraft.network.chat.Component.translatable("wisp.orimod."+e.kind().id())));
             cn.wwl.orimod.fx.SpiritFx.emit(p.serverLevel(),cn.wwl.orimod.fx.SpiritFxKind.WISP_COLLECT,p.getX(),p.getY()+1,p.getZ(),p);}
         return fresh;

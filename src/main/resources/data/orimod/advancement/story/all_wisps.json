@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "orimod:great_tree_heart"
+    },
+    "title": {
+      "translate": "advancement.orimod.story.all_wisps.title"
+    },
+    "description": {
+      "translate": "advancement.orimod.story.all_wisps.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "orimod:story/earth_wisp"
+}

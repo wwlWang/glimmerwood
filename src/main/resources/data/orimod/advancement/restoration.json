@@ -9,7 +9,6 @@
     "description": {
       "translate": "advancement.orimod.restoration.description"
     },
-    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
     "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
@@ -19,5 +18,6 @@
     "restored": {
       "trigger": "minecraft:impossible"
     }
-  }
+  },
+  "parent": "orimod:story/all_wisps"
 }

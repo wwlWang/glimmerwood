@@ -63,14 +63,14 @@ public final class SpiritScreen extends Screen {
         var entries = new ArrayList<Definition>();
         if (page == 0) {
             entries.add(new Definition("claim", "blade", tr("item.orimod.spirit_blade"), tr("guide.orimod.blade")));
-            for (var ability : Ability.values()) entries.add(new Definition("ability", ability.id(), ability.title(), ability.description()));
+            for (var ability : Ability.values()) entries.add(new Definition("ability", ability.id(), ability.title(), ControlText.description(ability)));
         } else if (page == 1) {
             for (var shard : Shard.values()) entries.add(new Definition("shard", shard.id(), shard.title(), shard.description(net.minecraft.client.Minecraft.getInstance().player)));
             entries.add(new Definition("capacity", "capacity_upgrade", tr("screen.orimod.energy_capacity"), tr("guide.orimod.capacity")));
         } else if(page==3) {
             for(var w:cn.wwl.orimod.progression.WillWisp.values())entries.add(new Definition("wisp",w.id(),tr("wisp.orimod."+w.id()),tr("wisp.orimod."+w.id()+".source")));
         } else {
-            entries.add(new Definition("locate", "ruins", tr("guide.orimod.ruins.title"), tr("guide.orimod.ruins")));
+            entries.add(new Definition("locate", "ruins", tr("guide.orimod.ruins.title"), Component.translatable("guide.orimod.ruins", Component.keybind("key.use"))));
             entries.add(new Definition("exit_challenge", "exit_challenge", tr("challenge.orimod.exit"), tr("guide.orimod.exit_challenge")));
             for (String id : List.of("awakening", "movement", "bash", "light", "shards", "weapons"))
                 entries.add(new Definition("guide", id, tr("guide.orimod." + id + ".title"), guideText(id)));
@@ -213,7 +213,7 @@ public final class SpiritScreen extends Screen {
             if(page==3 && minecraft.player!=null){
                 var w=cn.wwl.orimod.progression.WillWisp.byId(d.id);boolean owned=(minecraft.player.getData(SpiritData.PROGRESS).wisps()&w.bit)!=0;
                 description=description.copy().append("\n\n").append(tr(owned?"wisp.orimod.collected":"wisp.orimod.missing"));
-                for(var pending:RestorationClient.state().pending())if(pending.kind()==w)description=description.copy().append("\n\n").append(Component.translatable("wisp.orimod.pending",pending.dimension(),pending.pos().getX(),pending.pos().getY(),pending.pos().getZ()));
+                for(var pending:RestorationClient.state().pending())if(pending.kind()==w)description=description.copy().append("\n\n").append(Component.translatable("wisp.orimod.pending",DimensionNames.name(pending.dimension()),pending.pos().getX(),pending.pos().getY(),pending.pos().getZ()));
                 if(w==cn.wwl.orimod.progression.WillWisp.EARTH)description=description.copy().append("\n").append(Component.translatable("wisp.orimod.purifications",cn.wwl.orimod.progression.WillWisp.purifications(minecraft.player.getData(SpiritData.PROGRESS))));
                 description=description.copy().append("\n\n").append(tr(RestorationClient.state().completed()?"message.orimod.restoration.complete":"wisp.orimod.ritual"));
             }

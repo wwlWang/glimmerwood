@@ -99,25 +99,23 @@ public final class ShardScreen extends Screen {
     @Override public void renderBackground(GuiGraphics g, int x, int y, float partial) {}
     @Override public void render(GuiGraphics g, int mx, int my, float partial) {
         renderTransparentBackground(g);
-        // Vanilla container bevel and slot dimensions, including the one-pixel inset.
-        g.fill(left, top, left + WIDTH, top + HEIGHT, 0xFF373737);
-        g.fill(left + 1, top + 1, left + WIDTH - 1, top + HEIGHT - 1, 0xFFFFFFFF);
-        g.fill(left + 3, top + 3, left + WIDTH - 3, top + HEIGHT - 3, 0xFFC6C6C6);
-        g.fill(left + WIDTH - 3, top + 3, left + WIDTH - 1, top + HEIGHT - 1, 0xFF555555);
-        g.fill(left + 3, top + HEIGHT - 3, left + WIDTH - 1, top + HEIGHT - 1, 0xFF555555);
-        g.drawString(font, title, left + 8, top + 8, 0x404040, false);
+        // Spirit panel framing; vanilla-sized recessed slots and hit boxes below stay unchanged.
+        g.fill(left, top, left + WIDTH, top + HEIGHT, 0xF211292F);
+        g.renderOutline(left, top, WIDTH, HEIGHT, 0xFF5C8A82);
+        g.fill(left, top, left + WIDTH, top + 2, 0xFF8CDAC8);
+        g.drawString(font, title, left + 8, top + 8, SpiritButton.TEXT, false);
         if (minecraft.player == null) { super.render(g, mx, my, partial); return; }
         var light = tr("screen.orimod.light", progress().light());
-        g.drawString(font, light, left + WIDTH - font.width(light) - 8, top + 8, 0x404040, false);
-        g.drawString(font, tr("screen.orimod.shard_slots", slots(), ShardSlots.MAX), left + 8, top + 22, 0x404040, false);
+        g.drawString(font, light, left + WIDTH - font.width(light) - 8, top + 8, SpiritButton.TEXT, false);
+        g.drawString(font, tr("screen.orimod.shard_slots", slots(), ShardSlots.MAX), left + 8, top + 22, SpiritButton.TEXT, false);
         for (int i = 0; i < ShardSlots.MAX; i++) {
             slot(g, equipX(i), top + 34, inSlot(i), false, mx, my);
             if (i >= slots() && inSlot(i) == null) g.drawString(font, "×", equipX(i) + 5, top + 39, 0x555555, false);
         }
-        g.drawString(font, tr("screen.orimod.shard_gestures"), left + 8, top + 59, 0x404040, false);
-        g.drawString(font, tr("screen.orimod.shard_collection"), left + 8, top + 77, 0x404040, false);
+        g.drawString(font, tr("screen.orimod.shard_gestures"), left + 8, top + 59, SpiritButton.TEXT, false);
+        g.drawString(font, tr("screen.orimod.shard_collection"), left + 8, top + 77, SpiritButton.TEXT, false);
         for (var shard : Shard.values()) slot(g, catalogX(shard.ordinal()), catalogY(shard.ordinal()), shard, !owned(shard), mx, my);
-        g.drawString(font, tr("screen.orimod.shards_spirit_only"), left + 8, top + 133, 0x555555, false);
+        g.drawString(font, tr("screen.orimod.shards_spirit_only"), left + 8, top + 133, SpiritButton.MUTED, false);
         super.render(g, mx, my, partial);
         if (held != null && dragging) {
             g.pose().pushPose(); g.pose().translate(0, 0, 300); g.renderItem(icon(held), mx - 8, my - 8); g.pose().popPose();

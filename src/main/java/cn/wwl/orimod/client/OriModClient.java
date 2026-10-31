@@ -13,6 +13,7 @@ public final class OriModClient {
         container.registerExtensionPoint(net.neoforged.neoforge.client.gui.IConfigScreenFactory.class,
                 (mod, parent) -> new net.neoforged.neoforge.client.gui.ConfigurationScreen(mod, parent,
                         (context, key, element) -> cn.wwl.orimod.config.OriClientConfig.HIDDEN_IN_MENU.contains(key) ? null : element));
+        modEventBus.addListener(cn.wwl.orimod.client.render.NonPlayerWeaponModels::register);
         modEventBus.addListener(OriModClient::configLoaded);
         modEventBus.addListener(OriModClient::configReloaded);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SpiritHud::hideVanilla);

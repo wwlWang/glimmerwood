@@ -58,7 +58,8 @@
     "FeatherElytraLayerMixin",
     "FeatherItemNameMixin",
     "CorruptAnimalTintMixin",
-    "CorruptAnimalLayersMixin"
+    "CorruptAnimalLayersMixin",
+    "NonPlayerWeaponModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

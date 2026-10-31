@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "orimod:blighted_soil"
+    },
+    "title": {
+      "translate": "advancement.orimod.story.earth_wisp.title"
+    },
+    "description": {
+      "translate": "advancement.orimod.story.earth_wisp.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "reached": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "orimod:story/blight"
+}

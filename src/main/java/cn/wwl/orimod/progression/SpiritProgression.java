@@ -133,6 +133,7 @@ public final class SpiritProgression {
     /** All production unlock paths share the same once-only weapon receipt. */
     public static void unlock(ServerPlayer player, Ability ability) {
         player.setData(SpiritData.ABILITIES, player.getData(SpiritData.ABILITIES) | ability.bit);
+        StoryProgress.award(player, StoryProgress.Step.SKILL);
         DeepBreath.update(player);
         var gift = WeaponGift.forAbility(ability);
         if (gift != null) gift.grant(player);

@@ -14,6 +14,12 @@ import net.minecraft.world.level.Level;
 public final class SpiritCoreItem extends Item {
     public SpiritCoreItem(Properties properties) { super(properties); }
 
+    @Override public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> lines,
+                                          net.minecraft.world.item.TooltipFlag flag) {
+        lines.add(Component.translatable("tooltip.orimod.spirit_core").withStyle(net.minecraft.ChatFormatting.GRAY));
+        lines.add(Component.translatable("tooltip.orimod.spirit_core.guide").withStyle(net.minecraft.ChatFormatting.AQUA));
+    }
+
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
             if (!SpiritData.isAwakened(player)) {
@@ -23,6 +29,7 @@ public final class SpiritCoreItem extends Item {
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
                         new cn.wwl.orimod.network.ProgressReplyPayload(Component.translatable("message.orimod.awakened"), true));
             }
+            cn.wwl.orimod.progression.StoryProgress.award(serverPlayer, cn.wwl.orimod.progression.StoryProgress.Step.ROOT);
             SpiritForm.toggle(serverPlayer);
             player.getCooldowns().addCooldown(this, 10);
         }

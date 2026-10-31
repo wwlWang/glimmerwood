@@ -82,6 +82,7 @@ public final class GinsoEscape {
         var s=new Session(p,piece);var at=s.local(p.position());
         if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z))return reject(p,"approach");
         SESSIONS.put(p.getUUID(),s);
+        cn.wwl.orimod.progression.StoryProgress.award(p,cn.wwl.orimod.progression.StoryProgress.Step.GINSO);
         p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(piece.escapeSafe()),true,0));
         GinsoEscapePayload.send(p,s,true);
         EscapeSupport.title(p,"title.orimod.ginso.prepare","subtitle.orimod.ginso.prepare",5,40,15);
@@ -131,7 +132,7 @@ public final class GinsoEscape {
     private static void end(ServerPlayer p,Session s,Outcome outcome,boolean returnSafe){
         if(!s.active())return;
         s.outcome=outcome;s.phase=outcome==Outcome.SUCCESS?Phase.SUCCESS:Phase.FAILED;s.cooldown=GinsoEscapeRules.RETRY_TICKS;drag(p,false);
-        if(outcome==Outcome.SUCCESS){reward(p,s);EscapeSupport.title(p,"title.orimod.ginso.success","subtitle.orimod.ginso.success",5,50,20);}
+        if(outcome==Outcome.SUCCESS){cn.wwl.orimod.progression.StoryProgress.award(p,cn.wwl.orimod.progression.StoryProgress.Step.GINSO_ESCAPE);reward(p,s);EscapeSupport.title(p,"title.orimod.ginso.success","subtitle.orimod.ginso.success",5,50,20);}
         else if(outcome!=Outcome.DEAD&&p.isAlive())p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.failed",Component.translatable("message.orimod.ginso.reason."+outcome.name().toLowerCase(Locale.ROOT))),false);
         if(outcome==Outcome.DEAD)p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);
         else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(s.piece.escapeSafe()),returnSafe,clock(p)+s.cooldown));

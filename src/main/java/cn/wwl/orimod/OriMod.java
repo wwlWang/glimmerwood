@@ -45,6 +45,7 @@ public final class OriMod {
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, cn.wwl.orimod.progression.RecoveryOrbs::drops);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::tick);
         bus.addListener(cn.wwl.orimod.progression.WillWisps::login);
+        bus.addListener(cn.wwl.orimod.progression.StoryProgress::login);
         bus.addListener(cn.wwl.orimod.progression.Restoration::tick);
         bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST,cn.wwl.orimod.progression.Restoration::hurt);
         bus.addListener(cn.wwl.orimod.progression.Restoration::death);

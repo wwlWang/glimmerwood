@@ -53,6 +53,7 @@ public final class SpiritTreeHeartBlock extends ProtectedBlock {
             player.displayClientMessage(Component.translatable("message.orimod.tree.dormant"), true);
             return false;
         }
+        cn.wwl.orimod.progression.StoryProgress.award(player, cn.wwl.orimod.progression.StoryProgress.Step.EXPLORE);
         var progress = player.getData(SpiritData.PROGRESS);
         String key = siteKey(level, pos);
         if (progress.rewards().containsKey(key)) {

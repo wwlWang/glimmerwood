@@ -92,6 +92,8 @@ public final class SpiritVanillaLayers {
                 SKIN.vertex(geometry, random.nextInt(geometry.vertexCount()), point, normal);
                 poses.pushPose();
                 poses.translate(point.x, point.y, point.z);
+                // Model-space contact stays on the skin; only the embedded projectile is reduced.
+                poses.scale(.45f, .45f, .45f);
                 ((SpiritStuckLayerAccessor)layer).orimod$renderStuck(poses, buffers, light, player,
                         -normal.x, -normal.y, -normal.z, partial);
                 poses.popPose();
