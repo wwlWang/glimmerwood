@@ -71,6 +71,9 @@ public final class BlightGameTests {
             h.assertTrue(place(h,base,4),"Feature failed");h.assertTrue(level.getBlockState(base).is(OriBlocks.GLOOM_CORE),"Missing core");h.assertTrue(level.getChunk(base).getData(FeatureSites.BLIGHTS).contains(base.asLong()),"Generated core absent from durable journal");h.assertValueEqual(FeatureSites.get(level).nearest(level,FeatureSites.Kind.BLIGHT,Vec3.atCenterOf(base),p->true).orElseThrow(),base,"Core index missing");
             for(var block:List.of(OriBlocks.BLIGHTED_SOIL,OriBlocks.GLOOM_THORNS,OriBlocks.WITHERED_SPIRIT_LOG,OriBlocks.GLOOM_WATER))h.assertTrue(check.writes().values().stream().anyMatch(s->s.is(block)),"Missing "+block.getId());
             h.assertValueEqual(BlightData.get(level).status(Vec3.atCenterOf(base)).get("state"),"active","Feature failed to register ledger");
+            var core=(GloomCoreBlockEntity)level.getBlockEntity(base);var terrain=core.saveWithFullMetadata(level.registryAccess()).getLongArray("terrain");
+            h.assertTrue(terrain.length>100,"Feature footprint unexpectedly single-column");core.registerDefaultFootprint();
+            h.assertTrue(java.util.Arrays.equals(terrain,core.saveWithFullMetadata(level.registryAccess()).getLongArray("terrain")),"Delayed default registration replaced feature footprint");
         }));
         for(String obstruction:List.of("water","steep","chest","heart","log"))add(tests,"preflight_"+obstruction+"_writes_nothing",(h,c)->site(h,10,base->{
             var level=h.getLevel();
@@ -138,6 +141,21 @@ public final class BlightGameTests {
         add(tests,"manual_unregistered_core_cannot_farm_region_rewards",(h,c)->{
             var pos=core(h,new BlockPos(8,3,8));int light=c.player().getData(SpiritData.PROGRESS).light();for(int i=0;i<4;i++)BlightInteractions.hit(c.player(),pos,BlightRules.Source.SMASH);
             h.assertTrue(h.getLevel().isEmptyBlock(pos),"Unregistered core indestructible");for(int i=0;i<610;i++)BlightData.get(h.getLevel()).advance(h.getLevel());h.assertValueEqual(c.player().getData(SpiritData.PROGRESS).light(),light,"Manual core paid region reward");
+        });
+        add(tests,"command_core_no_reward_survives_region_and_block_reload",(h,c)->{
+            var level=h.getLevel();var pos=core(h,new BlockPos(8,3,8));
+            var be=(GloomCoreBlockEntity)level.getBlockEntity(pos);be.registerDefaultFootprint();
+            h.assertTrue(BlightData.get(level).ecology(pos)!=null,"Command core did not register ecology");
+            var tag=be.saveWithFullMetadata(level.registryAccess());
+            var restored=new GloomCoreBlockEntity(pos,be.getBlockState());restored.loadWithComponents(tag,level.registryAccess());
+            h.assertTrue(restored.saveWithFullMetadata(level.registryAccess()).getBoolean("command_ecology"),"Command origin lost on BE reload");
+            BlightData.get(level).defend(level,pos,c.player());
+            var data=BlightData.load(BlightData.get(level).save(new CompoundTag(),level.registryAccess()),level.registryAccess());
+            int light=c.player().getData(SpiritData.PROGRESS).light();
+            level.removeBlock(pos,false);data.begin(level,pos);
+            for(int i=0;i<610;i++)data.advance(level);
+            h.assertTrue(data.completed(pos),"Reloaded command core did not restore");
+            h.assertValueEqual(c.player().getData(SpiritData.PROGRESS).light(),light,"Reload gave command core a region reward");
         });
         add(tests,"core_denies_tools_projectiles_and_entity_destruction",(h,c)->{
             var p=core(h,new BlockPos(8,3,8));var state=h.getLevel().getBlockState(p);state.attack(h.getLevel(),p,c.player());

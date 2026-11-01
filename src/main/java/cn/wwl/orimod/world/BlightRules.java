@@ -6,7 +6,7 @@ public final class BlightRules {
             MAX_PARTICIPANTS=16, REWARD=60, SANCTUARY_RADIUS=32, DEFENDER_LIMIT=3, DEFENDER_COOLDOWN=100;
     public enum Source { CHARGE_FLAME, SMASH, LIGHT_BURST, SPEAR, FLASH, STOMP, BASHED_IMPACT, BLADE, ARROW, HAND, FLAME }
     public static int damage(Source source) {
-        return switch(source) { case CHARGE_FLAME->12; case SMASH->10; case LIGHT_BURST->8; case SPEAR->6; case FLASH->4; default->0; };
+        return switch(source) { case CHARGE_FLAME->12; case SMASH->10; case LIGHT_BURST->8; case SPEAR->6; case FLASH,ARROW->4; case BLADE->3; default->0; };
     }
     /** Clearing a hazard is a deliberate attack, not a side effect of the companion or sustained Flash. */
     public static boolean clearsThorns(Source source) {

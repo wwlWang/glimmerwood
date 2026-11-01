@@ -38,7 +38,7 @@ public final class ChargeFlame {
         cn.wwl.orimod.network.AnimationActionPayload.spell(player, cn.wwl.orimod.network.AnimationActionPayload.Action.CAST_STOP);
         long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         var state = player.getData(SpiritData.COOLDOWNS);
-        String refusal = refusal(SpiritData.isSpirit(player), Ability.CHARGE_FLAME.unlocked(player), SpiritProgression.energy(player), now, state.chargeFlameReadyAt);
+        String refusal = refusal(SpiritData.isSpirit(player), Ability.CHARGE_FLAME.unlocked(player), SpiritProgression.energyForUse(player), now, state.chargeFlameReadyAt);
         if (refusal != null) {
             if (!refusal.equals("cooldown")) player.displayClientMessage(Component.translatable("message.orimod.charge_flame." + refusal), true);
             return -1;

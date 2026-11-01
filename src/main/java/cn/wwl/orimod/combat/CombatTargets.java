@@ -17,6 +17,28 @@ public final class CombatTargets {
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("orimod", "conditionally_neutral"));
     private CombatTargets() {}
 
+    /** Deliberately aimed attacks follow vanilla damage/anger, while retaining friendly protection. */
+    public static boolean canHitDirect(Player player, LivingEntity target) {
+        if (target == player || !target.isAlive() || target.isSpectator() || player.isAlliedTo(target)) return false;
+        if (target instanceof TamableAnimal pet && player.getUUID().equals(pet.getOwnerUUID())) return false;
+        if (target instanceof net.minecraft.world.entity.animal.horse.AbstractHorse horse
+                && player.getUUID().equals(horse.getOwnerUUID())) return false;
+        return !(target instanceof PracticeTarget practice) || player.getUUID().equals(practice.owner);
+    }
+
+    /** Pick the first entity, including protected friends, so a friend never makes the ray hit through it. */
+    public static LivingEntity aimed(Player player, double reach) {
+        var from = player.getEyePosition();
+        var to = from.add(player.getLookAngle().scale(Math.min(reach, player.entityInteractionRange())));
+        var wall = player.level().clip(new net.minecraft.world.level.ClipContext(from, to,
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+        if (wall.getType() != net.minecraft.world.phys.HitResult.Type.MISS) to = wall.getLocation();
+        var hit = net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(player, from, to,
+                player.getBoundingBox().expandTowards(to.subtract(from)).inflate(1),
+                e -> !e.isSpectator() && e.isPickable() && !e.isPassengerOfSameVehicle(player), from.distanceToSqr(to));
+        return hit != null && hit.getEntity() instanceof LivingEntity living ? living : null;
+    }
+
     /** An orphaned area effect cannot infer which player a neutral mob is angry at. */
     public static boolean canHitWithoutOwner(LivingEntity target) {
         return target.isAlive() && !target.isSpectator() && target instanceof Enemy && !(target instanceof NeutralMob)

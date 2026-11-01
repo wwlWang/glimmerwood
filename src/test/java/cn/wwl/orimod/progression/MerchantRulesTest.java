@@ -15,7 +15,7 @@ class MerchantRulesTest {
         assertEquals(MerchantRules.price(shard.id())*3,MerchantRules.panelPrice(shard)*2);
     }
     @Test void pricesMatchStrengthTable(){
-        assertEquals(List.of(100,100,80,100,120,200,120,120,160,140,140,160,100,120,140,140,120),Arrays.stream(Shard.values()).map(s->MerchantRules.price(s.id())).toList());
+        assertEquals(List.of(100,100,80,100,120,200,120,120,160,140,140,160,100,120,140,140,120,160),Arrays.stream(Shard.values()).map(s->MerchantRules.price(s.id())).toList());
         assertEquals(-1,MerchantRules.price("ruin"));assertEquals(60,MerchantRules.price("tree"));assertEquals(50,MerchantRules.price("blight"));assertEquals(-1,MerchantRules.price("unknown"));
     }
     @Test void stockIsStableUniqueAndUnowned(){for(int owned=0;owned<=Shard.MASK;owned++){

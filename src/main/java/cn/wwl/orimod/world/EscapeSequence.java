@@ -51,13 +51,47 @@ public final class EscapeSequence {
         var bar = new ServerBossEvent(Component.translatable("bossbar.orimod.escape"), BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
         bar.addPlayer(player);
         ACTIVE.put(player.getUUID(), new Session(player.level().dimension().location().toString(), origin, player.level().getGameTime(), bar));
+        save(player);
         warning(player, FRONT_DELAY_TICKS / 20);
         player.level().playSound(null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_EMERGE, SoundSource.HOSTILE, 1.5f, .7f);
     }
 
     public static void stop(ServerPlayer player) {
+        player.setData(SpiritData.GLOOM_ESCAPE, GloomEscapeProgress.EMPTY);
+        detach(player);
+    }
+
+    private static void detach(ServerPlayer player) {
         var s = ACTIVE.remove(player.getUUID());
         if (s != null) s.bar().removeAllPlayers();
+    }
+
+    private static void save(ServerPlayer player) {
+        var s = session(player);
+        if (s != null) player.setData(SpiritData.GLOOM_ESCAPE, new GloomEscapeProgress(s.dimension(), s.origin(),
+                (int)Math.clamp(player.level().getGameTime() - s.start(), 0, LIMIT_TICKS)));
+    }
+
+    public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) { save(p); detach(p); }
+    }
+    public static void login(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        detach(p);
+        var saved = p.getData(SpiritData.GLOOM_ESCAPE);
+        if (!saved.pending()) return;
+        if (!p.isAlive() || !saved.dimension().equals(p.level().dimension().location().toString())) { stop(p); return; }
+        var bar = new ServerBossEvent(Component.translatable("bossbar.orimod.escape"), BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
+        bar.setProgress(EscapeSupport.remaining(saved.elapsed(), LIMIT_TICKS));
+        bar.addPlayer(p);
+        ACTIVE.put(p.getUUID(), new Session(saved.dimension(), saved.origin(), p.level().getGameTime() - saved.elapsed(), bar));
+        p.displayClientMessage(Component.translatable("message.orimod.escape.resumed"), true);
+    }
+    public static void dimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p && session(p) != null) fail(p);
+    }
+    public static void death(net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) stop(p);
     }
 
     public static void stopAll() { ACTIVE.values().forEach(s -> s.bar().removeAllPlayers()); ACTIVE.clear(); }
@@ -69,6 +103,7 @@ public final class EscapeSequence {
         var level = (ServerLevel) player.level();
         if (!player.isAlive() || !level.dimension().location().toString().equals(s.dimension())) { fail(player); return; }
         long t = level.getGameTime() - s.start();
+        save(player); // Also covers vanilla autosaves that happen before the logout event.
         double dist = Math.hypot(player.getX() - s.origin().x, player.getZ() - s.origin().z);
         s.bar().setProgress(EscapeSupport.remaining(t,LIMIT_TICKS));
         if (escaped(dist, level.canSeeSky(player.blockPosition().above()))) { victory(player); return; }
@@ -103,6 +138,7 @@ public final class EscapeSequence {
     public static boolean victory(ServerPlayer player) {
         var session=ACTIVE.remove(player.getUUID());
         if(session==null)return false;
+        player.setData(SpiritData.GLOOM_ESCAPE, GloomEscapeProgress.EMPTY);
         session.bar().removeAllPlayers();
         var level = (ServerLevel) player.level();
         title(player, "title.orimod.victory", "subtitle.orimod.victory", 10, 70, 20);

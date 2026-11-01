@@ -11,9 +11,11 @@ public final class SlimeBounce {
     public static final class State {
         private boolean bouncing;
         private double origin = Double.NaN;
+        private double fallOrigin = Double.NaN;
+        private net.minecraft.world.phys.Vec3 lastPosition;
         private int until, hammerAction = -1;
         private long stompToken = Long.MIN_VALUE, finishedStompToken = Long.MIN_VALUE;
-        public void clear() { bouncing = false; origin = Double.NaN; }
+        public void clear() { bouncing = false; origin = fallOrigin = Double.NaN; lastPosition = null; }
     }
     public static void beginSlam(Player player, double origin) {
         var s = player.getData(SpiritData.MOVEMENT).slime;
@@ -49,6 +51,24 @@ public final class SlimeBounce {
     }
     public static void clear(Player player) { player.getData(SpiritData.MOVEMENT).slime.clear(); }
 
+    /** Track the actual apex, before collision resets fallDistance. Does not change ordinary air motion. */
+    public static void observeFall(Player player) {
+        var s = player.getData(SpiritData.MOVEMENT).slime;
+        if (!SpiritData.isSpirit(player) || player.isInWaterOrBubble() || player.isInLava()
+                || player.onClimbable() || player.getAbilities().flying || player.isFallFlying()
+                || player.isPassenger() || VanillaMotion.riptide(player)) { s.clear(); return; }
+        var position = player.position();
+        if (s.lastPosition != null && position.distanceToSqr(s.lastPosition) > 64) s.clear();
+        s.lastPosition = position;
+        if (s.bouncing) return; // Later bounces already use vanilla gravity and drag, with no new impulse.
+        if (!Double.isFinite(s.fallOrigin) || player.onGround() || player.getY() > s.fallOrigin)
+            s.fallOrigin = player.getY();
+        switch (player.getData(SpiritData.MOVEMENT).mode) {
+            case GLIDE, GRAPPLE, BASH_AIM, DASH -> s.fallOrigin = player.getY();
+            default -> { }
+        }
+    }
+
     /** Incoming speed from a vanilla fall, not from the accelerated stomp/hammer or fallDistance (which resets). */
     public static double freeFallSpeed(double height, double gravity) {
         if (!(height > 0) || !(gravity > 0)) return 0;
@@ -66,14 +86,16 @@ public final class SlimeBounce {
         if (!SpiritData.isSpirit(player) || player.getDeltaMovement().y <= 0) return;
         var movement = player.getData(SpiritData.MOVEMENT);
         var s = movement.slime;
+        boolean alreadyBouncing = s.bouncing;
         s.bouncing = true; s.finishedStompToken = s.stompToken;
-        if (Double.isFinite(s.origin) && player.tickCount <= s.until) {
+        double from = Double.isFinite(s.origin) && player.tickCount <= s.until ? s.origin : s.fallOrigin;
+        if (!alreadyBouncing && Double.isFinite(from)) {
             double gravity = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY);
             if (player.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING)) gravity = Math.min(gravity, .01);
             var v = player.getDeltaMovement();
-            player.setDeltaMovement(v.x, Math.min(v.y, freeFallSpeed(s.origin - player.getY(), gravity)), v.z);
+            player.setDeltaMovement(v.x, freeFallSpeed(from - player.getY(), gravity), v.z);
         }
-        s.origin = Double.NaN;
+        s.origin = s.fallOrigin = Double.NaN;
         // Don't let an unexpired network lease slam the client into the slime a second time.
         if (movement.mode == MoveMode.STOMP) { movement.mode = MoveMode.IDLE; movement.activeTicks = 0; }
     }

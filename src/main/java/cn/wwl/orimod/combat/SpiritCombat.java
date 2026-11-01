@@ -52,6 +52,13 @@ public final class SpiritCombat {
 
     public static void attack(ServerPlayer player) {
         if (!available(player) || !player.getMainHandItem().is(OriItems.SPIRIT_BLADE) || movementOwnsAction(player)) return;
+        // Armor stands use a native two-click window of five ticks. The seven-tick
+        // combo cadence cannot break one; preserve the actual Player.attack interaction.
+        if (CombatTargets.aimed(player, player.entityInteractionRange()) instanceof net.minecraft.world.entity.decoration.ArmorStand stand) {
+            cancel(player, "native_armor_stand");
+            player.attack(stand); // AttackEntityEvent below still enforces allies/ownership.
+            return;
+        }
         var s = player.getData(SpiritData.COMBAT);
         long now = player.level().getGameTime();
         if (s.mode.equals("blade")) {
@@ -65,7 +72,7 @@ public final class SpiritCombat {
         var s = player.getData(SpiritData.COMBAT);
         if (stage == 1) s.comboHits.clear();
         s.mode = "blade"; s.stage = stage; s.startedAt = player.level().getGameTime();
-        s.weapon = player.getMainHandItem(); s.buffered = false; s.hitTargets.clear(); s.bladeStarts++;
+        s.weapon = player.getMainHandItem(); s.buffered = false; s.hitTargets.clear(); s.hitBlocks.clear(); s.bladeStarts++;
         publish(player);
         player.swing(InteractionHand.MAIN_HAND, true);
         step(player);
@@ -82,13 +89,18 @@ public final class SpiritCombat {
     }
 
     public static void attackEntity(AttackEntityEvent event) {
+        var stack = event.getEntity().getMainHandItem();
+        if ((stack.is(OriItems.SPIRIT_BLADE) || stack.is(OriItems.SPIRIT_SPEAR) || stack.is(OriItems.SPIRIT_HAMMER)
+                || stack.is(OriItems.SPIRIT_BOW)) && event.getTarget() instanceof LivingEntity target
+                && !CombatTargets.canHitDirect(event.getEntity(), target)) { event.setCanceled(true); return; }
         if (!event.getEntity().getMainHandItem().is(OriItems.SPIRIT_BLADE)) return;
+        if (event.getTarget() instanceof net.minecraft.world.entity.decoration.ArmorStand) return;
         event.setCanceled(true);
         if (event.getEntity() instanceof ServerPlayer player) attack(player);
     }
 
     public static boolean canUseBow(Player player) {
-        return available(player) && Ability.BOW.unlocked(player) && SpiritProgression.energy(player) >= BOW_COST
+        return available(player) && Ability.BOW.unlocked(player) && SpiritProgression.energyForUse(player) >= BOW_COST
                 && !movementOwnsAction(player) && !player.getCooldowns().isOnCooldown(OriItems.SPIRIT_BOW.get());
     }
 
@@ -110,8 +122,8 @@ public final class SpiritCombat {
         publish(player);
         if (!valid) return;
         float power = (float)charge / BOW_FULL_CHARGE;
-        // R67: a full sneaking charge fans three arrows (Spirit Arc volley).
-        boolean volley = ArcVolley.applies(charge, player.isShiftKeyDown(), SpiritProgression.energy(player));
+        // Splinter replaces the hidden sneaking trigger; partial/low-energy shots retain the single arrow.
+        boolean volley = ArcVolley.applies(charge, cn.wwl.orimod.progression.Shard.SPLINTER.equipped(player), SpiritProgression.energyForUse(player));
         var directions = volley ? ArcVolley.directions(player.getLookAngle()) : java.util.List.of(player.getLookAngle());
         int fired = 0;
         for (Vec3 direction : directions) {
@@ -146,7 +158,7 @@ public final class SpiritCombat {
         SpearCharge.cancel(player);
         var s = player.getData(SpiritData.COMBAT);
         if (s.mode.equals("idle")) return;
-        s.mode = "idle"; s.stage = 0; s.buffered = false; s.weapon = ItemStack.EMPTY; s.hitTargets.clear(); s.comboHits.clear();
+        s.mode = "idle"; s.stage = 0; s.buffered = false; s.weapon = ItemStack.EMPTY; s.hitTargets.clear(); s.hitBlocks.clear(); s.comboHits.clear();
         s.lastCancel = reason; s.cancellations++;
         if (player.isUsingItem() && player.getUseItem().is(OriItems.SPIRIT_BOW)) player.stopUsingItem();
         publish(player);
@@ -185,9 +197,10 @@ public final class SpiritCombat {
         Vec3 origin = player.position().add(0, player.getBbHeight() * .55, 0);
         float yaw = player.getYRot();
         double reach = BladeArc.reach(s.stage);
-        cn.wwl.orimod.block.BlightInteractions.melee(player,reach);
+        cn.wwl.orimod.block.BlightInteractions.melee(player,reach,s.hitBlocks);
+        var primary = CombatTargets.aimed(player, reach);
         for (var target : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach, BladeArc.VERTICAL, reach),
-                entity -> CombatTargets.canHit(player, entity))) {
+                entity -> entity == primary ? CombatTargets.canHitDirect(player, entity) : CombatTargets.canHit(player, entity))) {
             Vec3 closest = BladeArc.closest(origin, target.getBoundingBox());
             if (!BladeArc.contains(origin, yaw, closest, s.stage)
                     || !SpiritTargets.visible(player, closest) || s.hitTargets.contains(target.getUUID())) continue;
@@ -230,5 +243,13 @@ public final class SpiritCombat {
                         arrow.getX(), arrow.getY(), arrow.getZ(), arrow.getOwner());
             }
         }
+    }
+
+    public static void projectileImpact(net.neoforged.neoforge.event.entity.ProjectileImpactEvent event) {
+        if (event.getProjectile().getTags().contains("orimod_spirit_arrow")
+                && event.getProjectile().getOwner() instanceof Player owner
+                && event.getRayTraceResult() instanceof net.minecraft.world.phys.EntityHitResult hit
+                && hit.getEntity() instanceof LivingEntity target && !CombatTargets.canHitDirect(owner, target))
+            event.setCanceled(true);
     }
 }

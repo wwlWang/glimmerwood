@@ -24,7 +24,7 @@ public final class Regenerate {
             default -> false;
         };
         return RecoveryRules.refusal(SpiritCombat.available(p) && !Restoration.active(p), p.getHealth(), p.getMaxHealth(),
-                SpiritProgression.energy(p), movement || p.isUsingItem() || !p.getData(SpiritData.COMBAT).mode.equals("idle")
+                SpiritProgression.energyForUse(p), movement || p.isUsingItem() || !p.getData(SpiritData.COMBAT).mode.equals("idle")
                         || Flash.active(p) || p.level().getGameTime() < s.chargeFlameUntil, s.regenerate.interrupted);
     }
     public static boolean keepAlive(ServerPlayer p) {

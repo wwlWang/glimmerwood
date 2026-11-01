@@ -48,7 +48,7 @@ class ExplorationShardRulesTest {
     @Test void newShardsHaveStableDistinctBitsAndBilingualDescriptions() throws Exception {
         int mask = 0;
         for (var shard : Shard.values()) { assertEquals(1, Integer.bitCount(shard.bit)); assertEquals(0, mask & shard.bit); mask |= shard.bit; }
-        assertEquals(131071, mask); assertEquals(mask, Shard.MASK);
+        assertEquals((1 << Shard.values().length) - 1, mask); assertEquals(mask, Shard.MASK);
         for (var lang : new String[]{"en_us", "zh_cn"}) try (var stream = getClass().getResourceAsStream("/assets/orimod/lang/" + lang + ".json")) {
             var json = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(stream, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             for (var shard : Shard.values()) for (var suffix : new String[]{"", ".description"})

@@ -49,7 +49,7 @@ public final class P5MotionGameTests {
             LOG.info("P5_G gravity={} slow={} humanFall={} spiritFall={}",gravity,slow,hd,sd);
         });
         for(int pitch:List.of(30,60,80))add(tests,"riptide_native_full_flight_"+pitch,h->riptide(h,pitch));
-        for(double gravity:List.of(.04,.08,.16))for(String action:List.of("drop","stomp","hammer"))add(tests,"slime_"+action+"_gravity_"+gravity,h->slime(h,action,gravity));
+        for(double gravity:List.of(.04,.08,.16))for(String action:List.of("drop","drop10","drop30","stomp","hammer"))add(tests,"slime_"+action+"_gravity_"+gravity,h->slime(h,action,gravity));
         for(var block:List.of(Blocks.STONE,Blocks.ICE,Blocks.BLUE_ICE))add(tests,"surface_"+net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath(),h->surface(h,block));
         for(boolean boost:List.of(false,true))add(tests,"jump_attribute_"+boost,h->{
             var p=player(h,true,0);floor(h,Blocks.STONE,5);p.setOnGround(true);
@@ -151,29 +151,31 @@ public final class P5MotionGameTests {
         LOG.info("P5_G riptide pitch={} human={} spirit={} postSpinHuman={} postSpinSpirit={}",pitch,hd,sd,human.getZ()-postHuman,spirit.getZ()-postSpirit);
     }
     private static void slime(GameTestHelper h,String action,double gravity){
-        floor(h,Blocks.SLIME_BLOCK,5);double height=action.equals("drop")?3:30;
+        floor(h,Blocks.SLIME_BLOCK,5);double height=action.equals("drop")?3:action.equals("drop10")?10:30;
         var human=player(h,false,height);var spirit=player(h,true,height);double base=human.getY()-height;
         for(var p:List.of(human,spirit))p.getAttribute(Attributes.GRAVITY).setBaseValue(gravity);
-        if(!action.equals("drop")){
+        if(!action.startsWith("drop")){
             if(action.equals("hammer"))SlimeBounce.observeHammer(spirit,new cn.wwl.orimod.combat.CombatView(1,"hammer_slam",0,0,spirit.getY()));
             else SlimeBounce.beginSlam(spirit,spirit.getY());
         }
-        int hb=0,sb=0;double hp=0,sp=0,lastH=0,lastS=0;
+        int hb=0,sb=0;double hp=0,sp=0,lastH=0,lastS=0,tailH=0,tailS=0;
         for(int t=0;t<360;t++){
-            if(!action.equals("drop") && sb==0)spirit.setDeltaMovement(cn.wwl.orimod.combat.HammerSlam.velocity(spirit.getDeltaMovement()));
+            if(!action.startsWith("drop") && sb==0)spirit.setDeltaMovement(cn.wwl.orimod.combat.HammerSlam.velocity(spirit.getDeltaMovement()));
             step(human,false);
             // Slam owns descent, exactly as the controller; after collision SlimeBounce owns vertical travel.
-            step(spirit,action.equals("drop")||sb>0);
+            step(spirit,action.startsWith("drop")||sb>0);
             double hy=human.getDeltaMovement().y,sy=spirit.getDeltaMovement().y;
             if(hy>0&&lastH<=0)hb++;if(sy>0&&lastS<=0)sb++;
             if(hb>0)hp=Math.max(hp,human.getY()-base);if(sb>0)sp=Math.max(sp,spirit.getY()-base);
+            if(t>=340){tailH=Math.max(tailH,Math.abs(human.getY()-base));tailS=Math.max(tailS,Math.abs(spirit.getY()-base));}
             lastH=hy;lastS=sy;
         }
         h.assertTrue(hb>0&&sb>0,"no slime collision");
-        h.assertTrue(human.onGround()&&spirit.onGround(),"bounce failed to settle in 360 ticks");
+        LOG.info("P5_K slime360 action={} gravity={} humanGround={} spiritGround={} humanY={} spiritY={} humanVy={} spiritVy={}",action,gravity,human.onGround(),spirit.onGround(),human.getY()-base,spirit.getY()-base,human.getDeltaMovement().y,spirit.getDeltaMovement().y);
+        h.assertTrue(tailH<.01&&tailS<.01,"bounce failed to settle in final 20 of 360 ticks: human="+tailH+" spirit="+tailS);
         near(h,spirit.getY(),base,1e-6,"spirit stopped above slime");
         h.assertTrue(sp<=height+.001,"bounce exceeded real start height");
-        if(!action.equals("drop"))near(h,sp,hp,Math.max(.25,hp*.1),"slam not equivalent to native fall");
+        near(h,sp,hp,hp*.1,"bounce not equivalent to native fall");
         LOG.info("P5_G slime action={} gravity={} humanBounces={} spiritBounces={} humanPeak={} spiritPeak={} finalY={}",action,gravity,hb,sb,hp,sp,spirit.getY()-base);
     }
     private static void near(GameTestHelper h,double actual,double expected,double tolerance,String message){h.assertTrue(Math.abs(actual-expected)<=tolerance,message+": "+actual+" vs "+expected);}

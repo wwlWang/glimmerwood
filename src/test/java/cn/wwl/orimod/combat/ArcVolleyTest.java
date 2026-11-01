@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ArcVolleyTest {
-    @Test void onlyAFullSneakingChargeWithEnergy() {
+    @Test void onlyAFullSplinterChargeWithEnergy() {
         assertTrue(ArcVolley.applies(SpiritCombat.BOW_FULL_CHARGE, true, ArcVolley.COST));
         assertFalse(ArcVolley.applies(SpiritCombat.BOW_FULL_CHARGE - 1, true, 100));
         assertFalse(ArcVolley.applies(SpiritCombat.BOW_FULL_CHARGE, false, 100));

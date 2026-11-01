@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -41,14 +42,15 @@ public final class SpiritSpear extends ThrowableProjectile {
 
     /** Pierce: damage each valid target once; vanish after {@link #PIERCE} hits. @return whether it was damaged. */
     public boolean pierce(LivingEntity target) {
-        if (isRemoved() || !(getOwner() instanceof ServerPlayer owner) || !CombatTargets.canHit(owner, target) || !hit.add(target.getId())) return false;
+        if (isRemoved() || !(getOwner() instanceof ServerPlayer owner) || !CombatTargets.canHitDirect(owner, target) || !hit.add(target.getId())) return false;
         boolean hurt = target.hurt(damageSources().indirectMagic(this, owner), DAMAGE);
         if (hit.size() >= PIERCE) discard();
         return hurt;
     }
 
     @Override protected boolean canHitEntity(net.minecraft.world.entity.Entity entity) {
-        return super.canHitEntity(entity) && !hit.contains(entity.getId());
+        return super.canHitEntity(entity) && !hit.contains(entity.getId())
+                && (!(getOwner() instanceof Player owner) || !(entity instanceof LivingEntity living) || CombatTargets.canHitDirect(owner, living));
     }
 
     @Override protected void onHitEntity(EntityHitResult result) {
@@ -76,7 +78,7 @@ public final class SpiritSpear extends ThrowableProjectile {
     public static SpiritSpear thrown(ServerPlayer player) {
         long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         var state = player.getData(SpiritData.COOLDOWNS);
-        String refusal = refusal(SpiritData.isSpirit(player), Ability.SPEAR.unlocked(player), SpiritProgression.energy(player), now, state.spearReadyAt);
+        String refusal = refusal(SpiritData.isSpirit(player), Ability.SPEAR.unlocked(player), SpiritProgression.energyForUse(player), now, state.spearReadyAt);
         if (refusal != null) {
             if (!refusal.equals("cooldown")) player.displayClientMessage(Component.translatable("message.orimod.spear." + refusal), true);
             return null;

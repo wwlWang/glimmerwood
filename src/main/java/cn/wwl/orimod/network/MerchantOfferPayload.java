@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import java.util.*;
 public record MerchantOfferPayload(int entityId,UUID merchant,long day,UUID token,int job,int balance,List<Offer> offers,String message,boolean busy) implements CustomPacketPayload {
-    public record Offer(String id,int price,boolean available){public Offer{if(price<0 || cn.wwl.orimod.progression.MerchantRules.price(id)!=price)throw new IllegalArgumentException("Invalid offer price");}}
+    public record Offer(String id,int price,boolean available){public Offer{if(price<0 || cn.wwl.orimod.progression.MerchantRules.price(id)!=price && !(price==0 && (id.equals("tree")||id.equals("blight"))))throw new IllegalArgumentException("Invalid offer price");}}
     public static final Type<MerchantOfferPayload> TYPE=new Type<>(ResourceLocation.parse("orimod:merchant_offer"));
     public static final StreamCodec<RegistryFriendlyByteBuf,MerchantOfferPayload> CODEC=StreamCodec.of((b,p)->{
         b.writeByte(1);b.writeVarInt(p.entityId);b.writeUUID(p.merchant);b.writeLong(p.day);b.writeUUID(p.token);b.writeByte(p.job);b.writeVarInt(p.balance);b.writeByte(p.offers.size());

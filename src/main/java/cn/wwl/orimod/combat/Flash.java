@@ -73,7 +73,7 @@ public final class Flash {
 
     private static String refusal(ServerPlayer player, boolean continuing) {
         var s = player.getData(SpiritData.ENERGY_STATE);
-        return refusal(SpiritData.isSpirit(player), Ability.FLASH.unlocked(player), SpiritProgression.energy(player),
+        return refusal(SpiritData.isSpirit(player), Ability.FLASH.unlocked(player), SpiritProgression.energyForUse(player),
                 cn.wwl.orimod.progression.SpiritCooldowns.now(player), player.getData(SpiritData.COOLDOWNS).flashReadyAt, player.getData(SpiritData.MOVEMENT).mode,
                 player.level().getGameTime() < s.chargeFlameUntil, continuing);
     }
@@ -88,7 +88,7 @@ public final class Flash {
         var s = player.getData(SpiritData.ENERGY_STATE);
         if (ACTIVE.contains(player) && !active(player)) stop(player);
         boolean continuing = ACTIVE.contains(player);
-        if (continuing && SpiritProgression.energy(player) <= 0) { exhaust(player, now); return false; }
+        if (continuing && SpiritProgression.energyForUse(player) <= 0) { exhaust(player, now); return false; }
         String reason = refusal(player, continuing);
         if (!SpiritCombat.available(player) || weaponBusy(player) || reason != null) {
             stop(player);
@@ -108,13 +108,13 @@ public final class Flash {
         if (!(event.getEntity() instanceof ServerPlayer player) || !ACTIVE.contains(player)) return;
         var s = player.getData(SpiritData.ENERGY_STATE);
         long now = player.level().getGameTime();
-        if (SpiritProgression.energy(player) <= 0) { exhaust(player, now); return; }
+        if (SpiritProgression.energyForUse(player) <= 0) { exhaust(player, now); return; }
         if (!active(player) || weaponBusy(player) || refusal(player, true) != null) { stop(player); return; }
         if (s.flashLastTick == now) return;
         s.flashLastTick = now;
-        float energy = SpiritProgression.energy(player);
+        float energy = SpiritProgression.energyForUse(player);
         SpiritProgression.spendEnergy(player, Math.min(energy, COST_PER_TICK));
-        if (SpiritProgression.energy(player) <= 0) {
+        if (SpiritProgression.energyForUse(player) <= 0) {
             exhaust(player, now);
             return;
         }

@@ -46,7 +46,7 @@ public final class RuinVegetationGuard {
             if(!region.hasChunk(x,z))continue;
             for(var start:region.getChunk(x,z,ChunkStatus.STRUCTURE_STARTS).getAllStarts().values()){
                 if(!start.isValid()||!(start.getStructure() instanceof RuinStructure))continue;
-                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&(ruin.kind()==RuinKind.CREEK&&ruin.layoutVersion()==1||ruin.kind()==RuinKind.FOREST&&ruin.forestTerrainVersion()==1)
+                for(var piece:start.getPieces())if(piece instanceof RuinPiece ruin&&(ruin.kind()==RuinKind.CREEK&&ruin.layoutVersion()>=1||ruin.kind()==RuinKind.FOREST&&ruin.forestTerrainVersion()==1)
                         &&protects(ruin.getBoundingBox(),cell,0))return true;
             }
         }

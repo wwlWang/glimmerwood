@@ -19,12 +19,15 @@ public final class MerchantScreen extends Screen {
     }
     @Override protected void init(){
         panelWidth=Math.min(360,width-20);panelHeight=Math.min(252,height-12);left=(width-panelWidth)/2;top=(height-panelHeight)/2;clearWidgets();
-        buyWidth=offer.offers().stream().mapToInt(row->font.width(Component.translatable("merchant.orimod.buy",row.price()))+16).max().orElse(80);
+        buyWidth=offer.offers().stream().mapToInt(row->font.width(buyLabel(row))+16).max().orElse(80);
         for(int i=0;i<offer.offers().size();i++){
-            var row=offer.offers().get(i);var button=addRenderableWidget(new SpiritButton(left+panelWidth-12-buyWidth,top+48+i*42,buyWidth,20,Component.translatable("merchant.orimod.buy",row.price()),b->purchase(row.id())));
+            var row=offer.offers().get(i);var button=addRenderableWidget(new SpiritButton(left+panelWidth-12-buyWidth,top+48+i*42,buyWidth,20,buyLabel(row),b->purchase(row.id())));
             button.active=!offer.busy() && row.available() && offer.balance()>=row.price();
         }
         addRenderableWidget(new SpiritButton(left+panelWidth-80,top+panelHeight-28,70,20,Component.translatable("gui.done"),b->onClose()));
+    }
+    private static Component buyLabel(MerchantOfferPayload.Offer row) {
+        return row.price()==0?Component.translatable("merchant.orimod.restore_guide"):Component.translatable("merchant.orimod.buy",row.price());
     }
     private void purchase(String id){PacketDistributor.sendToServer(new MerchantBuyPayload(offer.entityId(),offer.merchant(),offer.day(),offer.token(),id));offer=new MerchantOfferPayload(offer.entityId(),offer.merchant(),offer.day(),offer.token(),offer.job(),offer.balance(),offer.offers(),"searching",true);rebuildWidgets();}
     @Override public void onClose(){PacketDistributor.sendToServer(new MerchantBuyPayload(offer.entityId(),offer.merchant(),offer.day(),offer.token(),"close"));super.onClose();}

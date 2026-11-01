@@ -19,5 +19,6 @@ public final class CombatState {
     public SpearCharge.Charge spear;
     public record ComboHit(int stage, net.minecraft.world.damagesource.DamageSource source) {}
     public final java.util.Map<UUID, ComboHit> comboHits = new java.util.HashMap<>();
+    public final Set<Long> hitBlocks = new HashSet<>();
     public final Set<UUID> hitTargets = new HashSet<>();
 }

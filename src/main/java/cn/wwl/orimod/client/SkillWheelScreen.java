@@ -90,7 +90,7 @@ public final class SkillWheelScreen extends Screen {
         for(int i=0;i<3;i++){
             var skill=slots.skill(i);int xx=x+i*29;icon(g,skill,xx,y,16);
             long ticks=i<ready.size()?Math.max(0,ready.get(i)-p.level().getGameTime()):0;
-            boolean lacks=skill!=null&&cn.wwl.orimod.progression.SpiritProgression.energy(p)<skill.cost;
+            boolean lacks=skill!=null&&cn.wwl.orimod.progression.SpiritProgression.energyForUse(p)<skill.cost;
             if(ticks>0){g.fill(xx,y,xx+16,y+16,0x99101929);g.drawCenteredString(mc.font,""+(ticks+19)/20,xx+8,y+4,0xFFFFFF);}
             else if(lacks)g.fill(xx,y,xx+16,y+16,0x77552230);
             g.drawCenteredString(mc.font,SkillControls.key(i).getTranslatedKeyMessage(),xx+8,y+17,lacks?0xEC879B:0xCADDE8);

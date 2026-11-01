@@ -9,7 +9,7 @@ public final class MerchantRules {
         var shard=Shard.byId(id);
         if(shard!=null)return switch(shard){
             case GATHERING->80;case CAPACITY,RECOVERY,RESILIENCE->100;case AIR_CONTROL,LIFE_HARVEST,ENERGY_HARVEST->120;
-            case THORN,STICKY,PROSPECTOR,EMBER_SKIN->140;case ULTRA_BASH,MAGNET->160;case TRIPLE_JUMP->200;
+            case THORN,STICKY,PROSPECTOR,EMBER_SKIN->140;case ULTRA_BASH,MAGNET,SPLINTER->160;case TRIPLE_JUMP->200;
             case DEEP_BREATH->100;case LUMEN_SIGHT,FORAGER->120;
         };
         return switch(id){case "tree"->60;case "blight"->50;default->-1;};

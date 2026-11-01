@@ -78,7 +78,7 @@ public final class RuinPiece extends TemplateStructurePiece implements net.neofo
     private final ForestGradedTerrain gradedForest;
     public int forestTerrainVersion(){return forestTerrainVersion;}
     private static int checkedForestVersion(RuinKind kind,int layout,int version){
-        if(version<0||version>1||version!=0&&(kind!=RuinKind.FOREST||layout!=1))throw new IllegalArgumentException("Invalid forest terrain version "+version);
+        if(version<0||version>1||version!=0&&(kind!=RuinKind.FOREST||layout<1||layout>2))throw new IllegalArgumentException("Invalid forest terrain version "+version);
         return version;
     }
     private final ForestRuinTerrain forestTerrain;

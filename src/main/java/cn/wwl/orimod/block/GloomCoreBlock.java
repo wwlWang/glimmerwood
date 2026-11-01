@@ -23,22 +23,33 @@ public final class GloomCoreBlock extends ProtectedBlock implements EntityBlock 
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new GloomCoreBlockEntity(p,s);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return box(3,0,3,13,16,13);}
     @Override public boolean canEntityDestroy(BlockState s,BlockGetter l,BlockPos p,Entity e){return false;}
-    @Override protected void attack(BlockState s,Level l,BlockPos p,Player player){if(l instanceof ServerLevel server && player instanceof ServerPlayer sp)reject(server,p,sp);}
+    @Override protected void attack(BlockState s,Level l,BlockPos p,Player player){if(l instanceof ServerLevel server && player instanceof ServerPlayer sp && !player.getMainHandItem().is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE))reject(server,p,sp);}
     @Override protected void onProjectileHit(Level l,BlockState s,BlockHitResult hit,Projectile projectile){
-        // SpiritSpear's impact adapter has already applied its allowed damage.
-        if(!(projectile instanceof cn.wwl.orimod.combat.SpiritSpear) && l instanceof ServerLevel server && projectile.getOwner() instanceof ServerPlayer p)reject(server,hit.getBlockPos(),p);
+        // Spears and bursts apply damage in their own impact/detonation adapters.
+        if (projectile instanceof cn.wwl.orimod.combat.SpiritSpear
+                || projectile instanceof cn.wwl.orimod.combat.LightBurst) return;
+        if (l instanceof ServerLevel server && projectile.getOwner() instanceof ServerPlayer p) {
+            if (projectile instanceof net.minecraft.world.entity.projectile.AbstractArrow
+                    && projectile.getTags().contains("orimod_spirit_arrow"))
+                BlightInteractions.hit(p, hit.getBlockPos(), cn.wwl.orimod.world.BlightRules.Source.ARROW);
+            else reject(server, hit.getBlockPos(), p);
+        }
     }
     public static void reject(ServerLevel l,BlockPos p,ServerPlayer player){
         CompanionHints.core(player,p);
         if(l.getBlockEntity(p) instanceof GloomCoreBlockEntity core){
             long now=l.getGameTime();if(core.lastRefused!=Long.MIN_VALUE && now>=core.lastRefused && now-core.lastRefused<10)return;core.lastRefused=now;
         }
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.orimod.blight.ineffective"),true);
         l.playSound(null,p,SoundEvents.AMETHYST_BLOCK_HIT,SoundSource.BLOCKS,.5f,1.7f);
         l.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,p.getX()+.5,p.getY()+.7,p.getZ()+.5,5,.3,.4,.3,.02);
     }
     @Override protected void onRemove(BlockState s,Level l,BlockPos p,BlockState next,boolean moving){
         if(!s.is(next.getBlock()) && l instanceof ServerLevel server)cn.wwl.orimod.world.BlightData.get(server).removed(server,p);
         super.onRemove(s,l,p,next,moving);
+    }
+    @Override protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (level.getBlockEntity(pos) instanceof GloomCoreBlockEntity core) core.registerDefaultFootprint();
     }
     @Override public void animateTick(BlockState s,Level l,BlockPos p,RandomSource random){
         double pulse=.5+.5*Math.sin((l.getGameTime()+p.asLong()%60)*Math.PI/30);

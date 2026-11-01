@@ -49,7 +49,7 @@ public final class SoulLink {
         long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         var state = player.getData(SpiritData.COOLDOWNS);
         var refusal = refusal(SpiritData.isSpirit(player), player.onGround(), player.getData(SpiritData.CHALLENGE_ACTIVE),
-                player.isInLiquid(), SpiritProgression.energy(player), now, state.soulLinkReadyAt);
+                player.isInLiquid(), SpiritProgression.energyForUse(player), now, state.soulLinkReadyAt);
         if (refusal.isPresent()) {
             player.displayClientMessage(Component.translatable("message.orimod.soul_link." + refusal.get()), true);
             return false;

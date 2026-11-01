@@ -1,0 +1,81 @@
+{
+  "generator": "scripts/art/build_p5k_ruins_v2.py",
+  "layoutVersion": 2,
+  "base_sha256": "4fc365bbfe3168c24a3276531124b5d5f4750b380ff52c13d2c578a88a5f4de3",
+  "sha256": "4ea7abaac4c2199fcc70e472255383393e6d803861d657342e72a261fabed102",
+  "changed_blocks": [
+    {
+      "position": [
+        10,
+        12,
+        29
+      ],
+      "before": "orimod:great_spirit_root",
+      "after": "minecraft:air"
+    },
+    {
+      "position": [
+        11,
+        12,
+        29
+      ],
+      "before": "orimod:great_spirit_root",
+      "after": "minecraft:air"
+    },
+    {
+      "position": [
+        12,
+        12,
+        29
+      ],
+      "before": "orimod:great_spirit_root",
+      "after": "minecraft:air"
+    },
+    {
+      "position": [
+        9,
+        12,
+        30
+      ],
+      "before": "minecraft:mossy_stone_bricks",
+      "after": "orimod:great_spirit_root"
+    },
+    {
+      "position": [
+        9,
+        13,
+        30
+      ],
+      "before": "minecraft:mossy_stone_brick_stairs",
+      "after": "orimod:great_spirit_root"
+    },
+    {
+      "position": [
+        10,
+        13,
+        30
+      ],
+      "before": "minecraft:air",
+      "after": "orimod:great_spirit_root"
+    },
+    {
+      "position": [
+        11,
+        13,
+        30
+      ],
+      "before": "minecraft:air",
+      "after": "orimod:great_spirit_root"
+    },
+    {
+      "position": [
+        11,
+        13,
+        29
+      ],
+      "before": "minecraft:air",
+      "after": "orimod:great_spirit_root"
+    }
+  ],
+  "old_versions_unchanged": true
+}

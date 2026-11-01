@@ -68,7 +68,7 @@ public final class GinsoEscape {
         if(recovery.pending()||recovery.retryAt()>clock(p))return reject(p,"cooldown");
         var heart=piece.point(piece.escapeHeart());
         if(piece.escapeVersion()==0||!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)
-                ||p.distanceToSqr(Vec3.atCenterOf(heart))>36||!p.isAlive()||p.isPassenger()||Restoration.active(p)
+                ||p.distanceToSqr(Vec3.atCenterOf(heart))>36||!p.isAlive()||Restoration.active(p)
                 ||(!SpiritData.isAwakened(p)&&!p.isCreative()&&!p.isSpectator()))return reject(p,"unavailable");
         if(piece.escapeVersion()==2){
             var missing=GinsoClimbEscape.missing(p.getData(SpiritData.ABILITIES));
@@ -81,12 +81,23 @@ public final class GinsoEscape {
         }
         var s=new Session(p,piece);var at=s.local(p.position());
         if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z))return reject(p,"approach");
+        dismount(p);
         SESSIONS.put(p.getUUID(),s);
         cn.wwl.orimod.progression.StoryProgress.award(p,cn.wwl.orimod.progression.StoryProgress.Step.GINSO);
         p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(piece.escapeSafe()),true,0));
         GinsoEscapePayload.send(p,s,true);
         EscapeSupport.title(p,"title.orimod.ginso.prepare","subtitle.orimod.ginso.prepare",5,40,15);
         return true;
+    }
+    private static void dismount(ServerPlayer p) {
+        if (p.isPassenger()) { p.stopRiding(); reject(p, "no_vehicle"); }
+    }
+    public static void mount(net.neoforged.neoforge.event.entity.EntityMountEvent event) {
+        if (event.isMounting() && event.getEntityMounting() instanceof ServerPlayer p
+                && session(p) != null && session(p).active()) {
+            event.setCanceled(true);
+            reject(p, "no_vehicle");
+        }
     }
     private static boolean reject(ServerPlayer p,String reason){p.displayClientMessage(Component.translatable("message.orimod.ginso.escape."+reason),true);return false;}
     private static long clock(ServerPlayer p){return p.server.overworld().getGameTime();}
@@ -105,6 +116,7 @@ public final class GinsoEscape {
         var heart=s.piece.point(s.piece.escapeHeart());
         if(s.invalidated||s.level.getChunkSource().getChunkNow(heart.getX()>>4,heart.getZ()>>4)==null
                 ||!s.level.getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)) {end(p,s,Outcome.CHUNK,true);return;}
+        dismount(p);
         s.eligible &= !p.isCreative()&&!p.isSpectator();
         s.elapsed++;if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS)s.phase=Phase.RUNNING;
         var at=s.local(p.position());

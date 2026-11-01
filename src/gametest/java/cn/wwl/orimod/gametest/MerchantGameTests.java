@@ -98,6 +98,16 @@ public final class MerchantGameTests {
             s.balance(outcome.equals("spent")?0:500);
             h.assertTrue(s.packets(RuinGuidePayload.class).isEmpty(),"Stale service sent a guide");
         });
+        for(var kind:FeatureSites.Kind.values())add(tests,"repeat_guide_free_even_without_balance_"+kind,(h,s)->{
+            var at=s.p.blockPosition().east(10);var next=at.east(2);var block=kind==FeatureSites.Kind.TREE?OriBlocks.SPIRIT_TREE_HEART:OriBlocks.GLOOM_CORE;
+            s.set(at,block.get().defaultBlockState());s.set(next,block.get().defaultBlockState());s.data.add(kind,at);s.data.add(kind,next);
+            String id=kind==FeatureSites.Kind.TREE?"tree":"blight";var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,id));s.balance(500-MerchantRules.price(id));
+            var saved=SpiritProgress.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE,s.p.getData(SpiritData.PROGRESS)).getOrThrow();
+            s.p.setData(SpiritData.PROGRESS,SpiritProgress.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE,saved).getOrThrow().withLight(0));
+            MerchantTrading.close(s.p);q=s.open(1);h.assertValueEqual(q.offers().stream().filter(o->o.id().equals(id)).findFirst().orElseThrow().price(),0,"Client quote still charges for known target");MerchantTrading.buy(s.p,s.packet(q,id));s.balance(0);
+            h.assertValueEqual(s.quote().message(),"already_located","Repeat at zero balance was refused/charged");h.assertValueEqual(s.packets(RuinGuidePayload.class).getLast().entry(),at,"Repeat guide not restored");
+            s.set(at,Blocks.AIR.defaultBlockState());s.p.setData(SpiritData.PROGRESS,s.p.getData(SpiritData.PROGRESS).withLight(100));q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,id));s.balance(100-MerchantRules.price(id));h.assertValueEqual(s.packets(RuinGuidePayload.class).getLast().entry(),next,"New target did not need a new purchase");
+        });
         return tests;
     }
     private static void add(List<TestFunction> tests,String name,BiConsumer<GameTestHelper,Site> run){tests.add(new TestFunction("merchant","merchant."+name,"orimod_gametest:platform_room",100,0,true,h->{try(var s=new Site(h)){run.accept(h,s);}h.succeed();}));}

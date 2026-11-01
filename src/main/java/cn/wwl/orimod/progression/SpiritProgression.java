@@ -32,8 +32,14 @@ public final class SpiritProgression {
                 + SpiritCells.ENERGY_PER_CELL * SpiritCells.count(player, SpiritCells.Kind.ENERGY);
     }
     public static float energy(Player player) { return Math.clamp(player.getData(SpiritData.ENERGY), 0, maxEnergy(player)); }
+    /** Resource eligibility only; HUD and recovery still use the real stored energy. */
+    public static float energyForUse(Player player) {
+        return player.getAbilities().instabuild ? Float.MAX_VALUE : energy(player);
+    }
     public static boolean spendEnergy(ServerPlayer player, float amount) {
-        if (!Float.isFinite(amount) || amount <= 0 || energy(player) < amount) return false;
+        if (!Float.isFinite(amount) || amount <= 0) return false;
+        if (player.getAbilities().instabuild) return true;
+        if (energy(player) < amount) return false;
         player.setData(SpiritData.ENERGY, energy(player) - amount);
         player.getData(SpiritData.ENERGY_STATE).lastSpent = player.level().getGameTime();
         player.getData(SpiritData.ENERGY_STATE).lastHintSpendAt = player.level().getGameTime();

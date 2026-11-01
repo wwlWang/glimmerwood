@@ -22,9 +22,10 @@ public final class BlightInteractions {
         for(var pos:CrackedRuin.scan(player.serverLevel(),new AABB(at,at).inflate(cn.wwl.orimod.item.SpiritHammerItem.RADIUS,1.5,cn.wwl.orimod.item.SpiritHammerItem.RADIUS).expandTowards(0,1,0),s->s.is(OriBlocks.GLOOM_CORE)||s.is(OriBlocks.GLOOM_THORNS)))hit(player,pos,BlightRules.Source.SMASH);
     }
     /** Use outline rays so collision-free brambles can be struck, while solid walls still occlude them. */
-    public static void melee(ServerPlayer player,double reach){
+    public static void melee(ServerPlayer player,double reach){melee(player,reach,new java.util.HashSet<>());}
+    public static void melee(ServerPlayer player,double reach,java.util.Set<Long> hitBlocks){
         var from=player.getEyePosition();var hit=player.level().clip(new net.minecraft.world.level.ClipContext(from,from.add(player.getLookAngle().scale(reach)),net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
-        if(hit.getType()==HitResult.Type.BLOCK)hit(player,hit.getBlockPos(),BlightRules.Source.BLADE);
+        if(hit.getType()==HitResult.Type.BLOCK && hitBlocks.add(hit.getBlockPos().asLong()))hit(player,hit.getBlockPos(),BlightRules.Source.BLADE);
     }
     public static void projectile(net.neoforged.neoforge.event.tick.EntityTickEvent.Pre event){
         var entity=event.getEntity();

@@ -88,7 +88,7 @@ public final class LightBurst extends ThrowableProjectile {
     public static LightBurst toss(ServerPlayer player) {
         long now = cn.wwl.orimod.progression.SpiritCooldowns.now(player);
         var state = player.getData(SpiritData.COOLDOWNS);
-        String refusal = refusal(SpiritData.isSpirit(player), Ability.LIGHT_BURST.unlocked(player), SpiritProgression.energy(player), now, state.burstReadyAt);
+        String refusal = refusal(SpiritData.isSpirit(player), Ability.LIGHT_BURST.unlocked(player), SpiritProgression.energyForUse(player), now, state.burstReadyAt);
         if (refusal != null) {
             if (!refusal.equals("cooldown")) player.displayClientMessage(Component.translatable("message.orimod.light_burst." + refusal), true);
             return null;

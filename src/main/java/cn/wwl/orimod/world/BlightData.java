@@ -39,6 +39,7 @@ public final class BlightData extends SavedData {
         final Set<UUID> extraMobs=new HashSet<>();
         boolean purifying; int elapsed; double radius=1; long nextDefender;
         boolean naturalEcology;
+        boolean rewardEligible = true;
         BlightRegion ecology;
         int duration=600,reward=60,ecologyScan;
         Region(BlockPos center,long[] positions){
@@ -76,8 +77,11 @@ public final class BlightData extends SavedData {
         register(center,positions,false);
     }
     public void register(BlockPos center,long[] positions,boolean naturalEcology){
+        register(center,positions,naturalEcology,true);
+    }
+    public void register(BlockPos center,long[] positions,boolean naturalEcology,boolean rewardEligible){
         if(positions.length==0 || completed.contains(center.asLong()) || regions.containsKey(center.asLong()))return;
-        var r=new Region(center,positions);r.naturalEcology=naturalEcology;regions.put(center.asLong(),r);indexCore(r);setDirty();
+        var r=new Region(center,positions);r.naturalEcology=naturalEcology;r.rewardEligible=rewardEligible;regions.put(center.asLong(),r);indexCore(r);setDirty();
     }
     private void indexCore(Region r){coreChunks.computeIfAbsent(chunk(r.center),k->new HashSet<>()).add(r.center.asLong());atmosphereRevision++;}
     private void removeCoreIndex(Region r){var set=coreChunks.get(chunk(r.center));if(set!=null){set.remove(r.center.asLong());if(set.isEmpty())coreChunks.remove(chunk(r.center));}atmosphereRevision++;}
@@ -240,7 +244,7 @@ public final class BlightData extends SavedData {
     private void markComplete(long center){completed.add(center);completedChunks.computeIfAbsent(chunk(BlockPos.of(center)),k->new HashSet<>()).add(center);}
     private void finish(ServerLevel level,Region r){
         long key=r.center.asLong();unindex(r);removeCoreIndex(r);regions.remove(key);waves.remove(key);markComplete(key);
-        if(!r.participants.isEmpty()){pending.put(key,new ArrayList<>(r.participants));if(r.reward!=60)rewardAmounts.put(key,r.reward);}
+        if(r.rewardEligible&&!r.participants.isEmpty()){pending.put(key,new ArrayList<>(r.participants));if(r.reward!=60)rewardAmounts.put(key,r.reward);}
         setDirty();deliver(level,null);
         SpiritFx.emit(level,SpiritFxKind.PURIFY,Vec3.atCenterOf(r.center),null);
     }
@@ -320,6 +324,7 @@ public final class BlightData extends SavedData {
         for(var r:regions.values()){
             var e=new CompoundTag();e.putLong("center",r.center.asLong());e.putBoolean("purifying",r.purifying);e.putInt("elapsed",r.elapsed);e.putLong("next_defender",r.nextDefender);
             if(r.naturalEcology)e.putBoolean("natural_ecology",true);
+            if(!r.rewardEligible)e.putBoolean("no_region_reward",true);
             if(r.ecology!=null){e.put("ecology",r.ecology.save());e.putInt("duration",r.duration);e.putInt("reward",r.reward);}
             var chunks=new ListTag();r.chunks.forEach((key,p)->{var c=new CompoundTag();c.putLong("chunk",key);c.putLongArray("positions",p.positions);c.putInt("cursor",p.cursor);chunks.add(c);});e.put("chunks",chunks);
             if(!r.animals.isEmpty())e.put("animals",uuids(r.animals));if(!r.extraMobs.isEmpty())e.put("ecology_mobs",uuids(r.extraMobs));e.put("participants",uuids(r.participants));e.put("guards",uuids(r.guards));list.add(e);
@@ -340,6 +345,7 @@ public final class BlightData extends SavedData {
             var r=new Region(BlockPos.of(center),all.stream().mapToLong(Long::longValue).toArray());
             r.purifying=e.getBoolean("purifying");r.nextDefender=e.getLong("next_defender");
             r.naturalEcology=e.getBoolean("natural_ecology");
+            r.rewardEligible=!e.getBoolean("no_region_reward");
             if(e.contains("ecology",Tag.TAG_COMPOUND)){
                 r.ecology=BlightRegion.load(r.center,e.getCompound("ecology"),registries);r.radius=Math.max(r.radius,r.ecology.radius());
                 r.duration=Math.clamp(e.contains("duration")?e.getInt("duration"):600,600,BlightEcologyRules.duration(64));r.reward=Math.clamp(e.contains("reward")?e.getInt("reward"):60,60,180);

@@ -20,27 +20,49 @@ public final class MerchantTrading {
     }
     private static void send(ServerPlayer p,Session s,String message){
         var progress=p.getData(SpiritData.PROGRESS);
-        var offers=s.stock.stream().map(id->new MerchantOfferPayload.Offer(id,MerchantRules.price(id),Shard.byId(id)==null || (progress.ownedShards()&Shard.byId(id).bit)==0)).toList();
+        var offers=s.stock.stream().map(id->new MerchantOfferPayload.Offer(id,quotedPrice(p,id),Shard.byId(id)==null || (progress.ownedShards()&Shard.byId(id).bit)==0)).toList();
         PacketDistributor.sendToPlayer(p,new MerchantOfferPayload(s.merchant.getId(),s.merchant.getUUID(),s.day,s.token,s.merchant.job(),progress.light(),offers,message,false));
+    }
+    private static int quotedPrice(ServerPlayer p,String id) {
+        if (id.equals("tree") || id.equals("blight")) {
+            var kind=id.equals("tree")?FeatureSites.Kind.TREE:FeatureSites.Kind.BLIGHT;
+            var target=FeatureSites.get(p.serverLevel()).nearest(p,kind);
+            if(target.isPresent()) {
+                var guide=new RuinGuidePayload(p.level().dimension().location().toString(),target.get(),id.equals("tree")?"spirit_tree":"blighted_grounds");
+                if(p.getData(SpiritData.PROGRESS).rewards().containsKey(locationReceipt(guide)))return 0;
+            }
+        }
+        return MerchantRules.price(id);
     }
     public static void buy(ServerPlayer p,MerchantBuyPayload packet){
         var s=SESSIONS.get(p.getUUID());
         if(s!=null && !cn.wwl.orimod.spirit.PlayerLifecycle.current(s.player)){SESSIONS.remove(p.getUUID(),s);return;}
         if(s==null || s.player!=p || !s.token.equals(packet.token()) || s.merchant.getId()!=packet.entityId() || !s.merchant.getUUID().equals(packet.merchant()))return;
         if(packet.product().equals("close")){close(p);return;}
-        String reason=refusal(p,s,packet.product(),packet.day());if(!reason.isEmpty()){refresh(p,s,reason);return;}
+        String reason=refusal(p,s,packet.product(),packet.day(),Shard.byId(packet.product())==null);if(!reason.isEmpty()){refresh(p,s,reason);return;}
         String id=packet.product();
         if(Shard.byId(id)!=null){pay(p,s,id,null);return;}
         var kind=id.equals("tree")?FeatureSites.Kind.TREE:FeatureSites.Kind.BLIGHT;
         var found=FeatureSites.get(p.serverLevel()).nearest(p,kind);
         if(found.isEmpty())refresh(p,s,"not_found");else pay(p,s,id,new RuinGuidePayload(p.level().dimension().location().toString(),found.get(),id.equals("tree")?"spirit_tree":"blighted_grounds"));
     }
-    private static String refusal(ServerPlayer p,Session s,String id,long day){var progress=p.getData(SpiritData.PROGRESS);return MerchantRules.refusal(valid(p,s.merchant),p.distanceToSqr(s.merchant),day,MerchantRules.day(p.level().getDayTime()),s.stock.contains(id) && day==s.day,progress.light(),id,progress.ownedShards());}
+    private static String refusal(ServerPlayer p,Session s,String id,long day,boolean free){var progress=p.getData(SpiritData.PROGRESS);return MerchantRules.refusal(valid(p,s.merchant),p.distanceToSqr(s.merchant),day,MerchantRules.day(p.level().getDayTime()),s.stock.contains(id) && day==s.day,free?Integer.MAX_VALUE:progress.light(),id,progress.ownedShards());}
     private static void pay(ServerPlayer p,Session s,String id,RuinGuidePayload guide){
-        String reason=refusal(p,s,id,s.day);if(!reason.isEmpty()){refresh(p,s,reason);return;}
+        String receipt = guide == null ? "" : locationReceipt(guide);
+        boolean free = guide != null && p.getData(SpiritData.PROGRESS).rewards().containsKey(receipt);
+        String reason=refusal(p,s,id,s.day,free);if(!reason.isEmpty()){refresh(p,s,reason);return;}
         var progress=p.getData(SpiritData.PROGRESS);var shard=Shard.byId(id);
-        p.setData(SpiritData.PROGRESS,progress.withLight(progress.light()-MerchantRules.price(id)).withOwned(progress.ownedShards()|(shard==null?0:shard.bit)));
-        if(guide!=null)PacketDistributor.sendToPlayer(p,guide);refresh(p,s,"purchased");
+        var updated = progress.withLight(progress.light()-(free?0:MerchantRules.price(id))).withOwned(progress.ownedShards()|(shard==null?0:shard.bit));
+        if (guide != null) {
+            var receipts = new HashMap<>(updated.rewards()); receipts.put(receipt, 1);
+            updated = updated.withRewards(receipts);
+        }
+        p.setData(SpiritData.PROGRESS,updated);
+        if(guide!=null)PacketDistributor.sendToPlayer(p,guide);refresh(p,s,free?"already_located":"purchased");
+    }
+    /** Receipt identifies the still-valid target returned by FeatureSites, not just the merchant/product. */
+    public static String locationReceipt(RuinGuidePayload guide) {
+        return "guide/"+guide.dimension()+"/"+guide.kind()+"/"+guide.entry().asLong();
     }
     private static void refresh(ServerPlayer p,Session previous,String message){
         if(SESSIONS.get(p.getUUID())!=previous)return;

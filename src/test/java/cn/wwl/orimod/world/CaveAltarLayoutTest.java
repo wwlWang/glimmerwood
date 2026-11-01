@@ -69,7 +69,7 @@ class CaveAltarLayoutTest {
         assertEquals(new BlockPos(23,19,39),RuinKind.CAVE.layout().size());
         assertEquals(new BlockPos(47,32,71),RuinKind.CAVE.layout(1).size());
         assertNotEquals(RuinKind.CAVE.template(0),RuinKind.CAVE.template(1));
-        assertEquals(1,RuinKind.CAVE.currentVersion());assertEquals(1,RuinKind.FOREST.currentVersion());
+        assertEquals(1,RuinKind.CAVE.currentVersion());assertEquals(2,RuinKind.FOREST.currentVersion());
         assertThrows(IllegalArgumentException.class,()->RuinKind.CAVE.layout(2));
     }
     @ParameterizedTest @EnumSource(Rotation.class)

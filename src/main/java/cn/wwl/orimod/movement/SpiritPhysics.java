@@ -42,6 +42,7 @@ public final class SpiritPhysics {
     }
     /** The travel hook passes vanilla's actual gravity AFTER its slow-falling adjustment. */
     public static void beforeTravel(Player player, double gravity) {
+        SlimeBounce.observeFall(player);
         var v = player.getData(SpiritData.MOVEMENT).vertical;
         if (!v.pending) return;
         v.pending = false;

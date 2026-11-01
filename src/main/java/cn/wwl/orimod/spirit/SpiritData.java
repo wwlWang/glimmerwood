@@ -49,6 +49,8 @@ public final class SpiritData {
                     .sync(ByteBufCodecs.fromCodec(cn.wwl.orimod.combat.CombatView.CODEC)).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.world.GinsoEscapeRecovery>> GINSO_ESCAPE_RECOVERY = TYPES.register("ginso_escape_recovery", () ->
             AttachmentType.builder(() -> cn.wwl.orimod.world.GinsoEscapeRecovery.EMPTY).serialize(cn.wwl.orimod.world.GinsoEscapeRecovery.CODEC).build());
+    public static final Supplier<AttachmentType<cn.wwl.orimod.world.GloomEscapeProgress>> GLOOM_ESCAPE = TYPES.register("gloom_escape", () ->
+            AttachmentType.builder(() -> cn.wwl.orimod.world.GloomEscapeProgress.EMPTY).serialize(cn.wwl.orimod.world.GloomEscapeProgress.CODEC).build());
     public static final Supplier<AttachmentType<cn.wwl.orimod.world.ChallengeRecovery>> CHALLENGE_RECOVERY = TYPES.register("challenge_recovery", () ->
             AttachmentType.builder(() -> cn.wwl.orimod.world.ChallengeRecovery.EMPTY).serialize(cn.wwl.orimod.world.ChallengeRecovery.CODEC).build());
     public static final Supplier<AttachmentType<Boolean>> CHALLENGE_ACTIVE = TYPES.register("challenge_active", () ->

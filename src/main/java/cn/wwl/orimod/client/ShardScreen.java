@@ -157,7 +157,7 @@ public final class ShardScreen extends Screen {
             case LIFE_HARVEST -> Items.APPLE; case ENERGY_HARVEST -> Items.GLOWSTONE_DUST; case ULTRA_BASH -> Items.FIRE_CHARGE;
             case THORN -> Items.ROSE_BUSH; case STICKY -> Items.HONEY_BOTTLE; case MAGNET -> Items.COMPASS;
             case DEEP_BREATH -> Items.NAUTILUS_SHELL; case LUMEN_SIGHT -> Items.GLOW_INK_SAC; case PROSPECTOR -> Items.RAW_GOLD;
-            case EMBER_SKIN -> Items.MAGMA_CREAM; case FORAGER -> Items.WHEAT;
+            case EMBER_SKIN -> Items.MAGMA_CREAM; case FORAGER -> Items.WHEAT; case SPLINTER -> Items.ARROW;
         });
     }
 }

@@ -4,7 +4,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * R67 Spirit Arc variant (after WotW's upgraded Spirit Arc): a fully charged shot released while sneaking fans out
+ * Splinter: a fully charged shot with the shard equipped fans out
  * three spirit arrows ({@link #SPREAD} degrees apart) for {@link #COST} energy instead of one.
  */
 public final class ArcVolley {
@@ -14,8 +14,8 @@ public final class ArcVolley {
 
     private ArcVolley() {}
 
-    public static boolean applies(int charge, boolean sneaking, float energy) {
-        return charge >= SpiritCombat.BOW_FULL_CHARGE && sneaking && energy >= COST;
+    public static boolean applies(int charge, boolean splinterEquipped, float energy) {
+        return charge >= SpiritCombat.BOW_FULL_CHARGE && splinterEquipped && energy >= COST;
     }
 
     /** @return the centre direction plus one turned left and one right about the vertical axis. */

@@ -29,7 +29,7 @@ public final class SpiritBowItem extends BowItem {
             if (!level.isClientSide) player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
                     !cn.wwl.orimod.spirit.SpiritData.isSpirit(player) ? "combat.orimod.form_required"
                     : !cn.wwl.orimod.progression.Ability.BOW.unlocked(player) ? "combat.orimod.bow_locked"
-                    : cn.wwl.orimod.progression.SpiritProgression.energy(player) < SpiritCombat.BOW_COST ? "combat.orimod.no_energy"
+                    : cn.wwl.orimod.progression.SpiritProgression.energyForUse(player) < SpiritCombat.BOW_COST ? "combat.orimod.no_energy"
                     : "combat.orimod.busy"), true);
             return InteractionResultHolder.fail(stack);
         }

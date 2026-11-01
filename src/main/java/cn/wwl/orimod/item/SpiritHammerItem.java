@@ -83,9 +83,10 @@ public final class SpiritHammerItem extends Item {
         var level = (ServerLevel) player.level();
         Vec3 at = impactPoint(player.position(), player.getYRot());
         boolean airborne = !player.onGround();
+        var primary = CombatTargets.aimed(player, REACH + radius);
         int hits = 0;
         for (var target : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius, 1.5, radius).expandTowards(0, 1, 0),
-                e -> e != player && CombatTargets.canHit(player, e))) {
+                e -> e == primary ? CombatTargets.canHitDirect(player, e) : CombatTargets.canHit(player, e))) {
             boolean wasAirborne = !target.onGround();
             if (!target.hurt(player.damageSources().playerAttack(player), DAMAGE * strength)) continue;
             hits++;

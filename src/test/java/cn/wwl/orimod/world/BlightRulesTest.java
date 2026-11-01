@@ -10,7 +10,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 class BlightRulesTest {
     @ParameterizedTest @EnumSource(Source.class) void damageMatrix(Source source){
-        var expected=Map.of(Source.CHARGE_FLAME,12,Source.SMASH,10,Source.LIGHT_BURST,8,Source.SPEAR,6,Source.FLASH,4);
+        var expected=Map.of(Source.CHARGE_FLAME,12,Source.SMASH,10,Source.LIGHT_BURST,8,Source.SPEAR,6,Source.FLASH,4,Source.ARROW,4,Source.BLADE,3);
         assertEquals(expected.getOrDefault(source,0),BlightRules.damage(source));
     }
     @ParameterizedTest @EnumSource(Source.class) void thornsRequireAnExplicitPlayerAttack(Source source){

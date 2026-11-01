@@ -13,9 +13,9 @@ public enum Shard {
     LIFE_HARVEST(64, null), ENERGY_HARVEST(128, null), ULTRA_BASH(256, Ability.BASH),
     THORN(512, null), STICKY(1024, Ability.CLIMB),
     MAGNET(2048, null), DEEP_BREATH(4096, null), LUMEN_SIGHT(8192, null),
-    PROSPECTOR(16384, null), EMBER_SKIN(32768, null), FORAGER(65536, null);
+    PROSPECTOR(16384, null), EMBER_SKIN(32768, null), FORAGER(65536, null), SPLINTER(131072, Ability.BOW);
 
-    public static final int MASK = 131071;
+    public static final int MASK = java.util.Arrays.stream(values()).mapToInt(s -> s.bit).reduce(0, (a, b) -> a | b);
 
     public final int bit;
     public final Ability prerequisite;

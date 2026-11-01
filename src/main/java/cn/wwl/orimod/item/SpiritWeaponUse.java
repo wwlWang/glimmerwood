@@ -16,7 +16,7 @@ public final class SpiritWeaponUse {
     }
     public static boolean blocked(float cost, float energy, boolean cooldown) { return cost > 0 && (energy < cost || cooldown); }
     public static boolean blocked(Player player, ItemStack stack) {
-        return blocked(cost(stack), SpiritProgression.energy(player), player.getCooldowns().isOnCooldown(stack.getItem()));
+        return blocked(cost(stack), SpiritProgression.energyForUse(player), player.getCooldowns().isOnCooldown(stack.getItem()));
     }
 
     /** One refusal cue per held press, independent of vanilla's repeated use attempts. */
