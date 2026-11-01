@@ -12,32 +12,9 @@ class SpiritArmChainTest {
         if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread())
             com.mojang.blaze3d.systems.RenderSystem.initRenderThread();
     }
-    static MeshGeometry ring() {
-        return MeshGeometry.of(new float[]{-.025f,-.65f,-.025f,.025f,-.65f,.025f},
-                new float[]{0,0,1,0,0,1},new float[]{0,0,1,1},new int[]{0,1,0},com.wf.gemrender.gltf.skin.VertexSkinning.rigid(2,0),SpriteUv.IDENTITY,0);
-    }
-    @Test void raisedGripDoesNotStretchForearmIntoADiagonalRod() {
-        var pose=new PoseStack();pose.translate(.20,-.06,-.55);pose.scale(1.25f,1.25f,1.25f);
-        var arm=new SpiritForearm(pose.last(),ring(),false);
-        var previous=new Vector3f();float length=0;
-        for(int i=0;i<=100;i++) {
-            var point=new Vector3f();arm.vertex(0,-.09f-.56f*SpiritForearm.ELBOW_T*i/100,0,point,new Vector3f(0,0,1));
-            if(i>0)length+=point.distance(previous);previous.set(point);
-        }
-        assertTrue(length<=.445f,"Forearm length="+length+"; must be a fixed bone, not stretched to screen corner");
-    }
-    @Test void proximalForearmEndsBelowVisibleScreenForBothArms() {
-        for(boolean left:new boolean[]{false,true}) {
-            var pose=new PoseStack();pose.translate(left?-.2:.2,-.06,-.55);
-            var arm=new SpiritForearm(pose.last(),ring(),left);var end=new Vector3f();
-            arm.vertex(0,-.65f,0,end,new Vector3f(0,0,1));
-            float screenY=end.y/(-end.z*(float)Math.tan(Math.toRadians(35)));
-            assertTrue(screenY < -1.08f,"Elbow visible at NDC y="+screenY+"; shoulder/proximal arm must stay outside view");
-        }
-    }
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings={"right_open","left_open","right_grip","left_grip"})
-    void actualPawVerticesRemainRigidUnderVanillaUseStretch(String name) throws Exception {
+    void actualPawUsesTheWholeVanillaMatrixWithoutAnyVertexReposing(String name) throws Exception {
         byte[] bytes;
         try(var in=getClass().getResourceAsStream("/assets/orimod/models/entity/paw_"+name+".glb")) {
             bytes=java.util.Objects.requireNonNull(in).readAllBytes();
@@ -59,17 +36,24 @@ class SpiritArmChainTest {
                 com.wf.gemrender.gltf.skin.VertexSkinning.rigid(n,0),SpriteUv.IDENTITY,0);
         var pose=new PoseStack();pose.translate(.56,-.32,-.72);pose.scale(1,1,1.2f);
         pose.mulPose(new org.joml.Matrix4f().rotateXYZ(.7f,-1.1f,.3f));
-        var forearm=new SpiritForearm(pose.last(),mesh,name.startsWith("left"));
-        Vector3f first=null,firstSource=null;int checked=0;
+        var itemMatrix=new org.joml.Matrix4f(pose.last().pose());
+        var contact=new Vector3f(.2f,.1f,0);var rotation=new org.joml.Quaternionf().rotationXYZ(.2f,.3f,.4f);
+        SpiritPawGeometry.place(pose,contact,rotation);
+        var expected=new org.joml.Matrix4f(itemMatrix).translate(contact).rotate(rotation).scale(SpiritPawGeometry.SCALE);
+        int checked=0;
         for(int i=0;i<n;i++) {
             var source=new Vector3f(positions[i*3],positions[i*3+1],positions[i*3+2]);
-            if(source.y<-.09001f)continue;
-            var point=new Vector3f();forearm.vertex(source.x,source.y,source.z,point,new Vector3f(0,0,1));
-            if(first==null) { first=point;firstSource=source; }
-            assertEquals(source.distance(firstSource)*SpiritArmRig.PAW_SCALE,point.distance(first),1e-5,
-                    "paw vertex "+i+" must not be stretched by item use or forearm IK");
+            if(source.y<SpiritPawGeometry.WRIST)continue;
+            var point=pose.last().pose().transformPosition(new Vector3f(source));
+            assertEquals(0,point.distance(expected.transformPosition(new Vector3f(source))),1e-6,
+                    "paw vertex "+i+" must follow the exact item matrix, including its full swing/use displacement");
             checked++;
         }
-        assertTrue(checked>100,"check the actual palm/finger mesh, not just the forearm rings");
+        assertTrue(checked>100,"check actual palm/finger vertices");
+        // The rendered triangle filter excludes every generated sleeve vertex, independently of pose.
+        var testMesh=MeshGeometry.of(new float[]{0,-.09f,0, .01f,0,0, -.01f,0,0, 0,-.65f,0},
+                new float[12],new float[8],new int[]{0,1,2,0,3,1},com.wf.gemrender.gltf.skin.VertexSkinning.rigid(4,0),SpriteUv.IDENTITY,0);
+        assertTrue(SpiritPawGeometry.pawTriangle(testMesh,0));
+        assertFalse(SpiritPawGeometry.pawTriangle(testMesh,3),"The removed arm cannot reappear as a stretched sleeve");
     }
 }

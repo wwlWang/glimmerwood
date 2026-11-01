@@ -912,6 +912,7 @@ public final class DevelopmentBridge {
                     "onGround", mc.player.onGround(), "animation", cn.wwl.orimod.client.render.SpiritPlayerVisual.diagnostics(mc.player),
                     "arms",cn.wwl.orimod.client.render.SpiritHands.diagnostics(),
                     "firstPerson",cn.wwl.orimod.client.render.SpiritFirstPerson.diagnostics(),
+                    "heldItem",cn.wwl.orimod.client.render.SpiritHeldItems.diagnostics(mc.player),
                     "combat",mc.player.getData(cn.wwl.orimod.spirit.SpiritData.COMBAT_VIEW),
                     "gameTime",mc.level.getGameTime()+mc.getTimer().getGameTimeDeltaPartialTick(false)));
         }

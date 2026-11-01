@@ -30,9 +30,12 @@ public final class SpiritHeldItems {
         poses.mulPose(Axis.XP.rotationDegrees(SpiritItemGrip.attachmentPitch(SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left))));
         poses.mulPose(Axis.YP.rotationDegrees(180));
         model.applyTransform(display, poses, left);
+        var axis = new Vector3f(); SpiritItemGrip.local(player.getMainHandItem(), new Vector3f(), axis);
+        poses.last().pose().transformDirection(axis).normalize();
         var arrow = poses.last().pose().transformDirection(new Vector3f(-1, 1, 0)).normalize();
         return java.util.Map.of("rotation", new float[]{rotation.x, rotation.y, rotation.z, rotation.w},
-                "arrowDirection", new float[]{arrow.x, arrow.y, arrow.z});
+                "arrowDirection", new float[]{arrow.x, arrow.y, arrow.z},
+                "itemDirection", new float[]{axis.x, axis.y, axis.z});
     }
 
     static void render(Player player, SpiritPlayerVisual.Frame frame, PoseStack base,
@@ -53,13 +56,17 @@ public final class SpiritHeldItems {
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
         float lowered = frame.world() ? SpiritPlayerVisual.lowered(player, left) : SpiritItemGrip.lowered(item) ? 1 : 0;
-        boolean blocking = player.isUsingItem() && item.getItem() instanceof net.minecraft.world.item.ShieldItem
-                && player.getUsedItemHand() == (left == (player.getMainArm() == HumanoidArm.LEFT)
-                        ? net.minecraft.world.InteractionHand.MAIN_HAND : net.minecraft.world.InteractionHand.OFF_HAND);
-        renderAtPalm(player, item, left, poses, .72f,
+        boolean shield = item.getItem() instanceof net.minecraft.world.item.ShieldItem;
+        renderAtPalm(player, item, left, poses, itemScale(item),
                 frame.world() ? SpiritPlayerVisual.cradleWeight(player, left) : lowered, lowered, buffers, light,
-                blocking ? socket.getUnnormalizedRotation(new Quaternionf()) : null);
+                shield ? socket.getUnnormalizedRotation(new Quaternionf()) : null);
         poses.popPose();
+    }
+
+    /** Match vanilla item-to-body proportions (Ori 1.2 blocks, player 1.8); shields need the same scale. */
+    static float itemScale(ItemStack item) {
+        // Ori's ears contribute to total height, but a shield should cover the torso, not the ears and legs.
+        return item.getItem() instanceof net.minecraft.world.item.ShieldItem ? .5f : 2f / 3f;
     }
 
     static void renderAtPalm(Player player, ItemStack item, boolean left, PoseStack poses, float scale, float cradleWeight, float lowered,
@@ -89,7 +96,7 @@ public final class SpiritHeldItems {
         poses.mulPose(frame.transform());
         poses.translate(socket.m30(), socket.m31(), socket.m32());
         poses.mulPose(socket.getUnnormalizedRotation(new Quaternionf()));
-        var model = itemTransform(player, item, left, poses, .72f, SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left), null);
+        var model = itemTransform(player, item, left, poses, itemScale(item), SpiritPlayerVisual.cradleWeight(player, left), SpiritPlayerVisual.lowered(player, left), null);
         model.applyTransform(left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poses, left);
         var tip = poses.last().pose().transformPosition(new Vector3f(.40625f, .40625f, 0));
         return player.getPosition(partialTick).add(tip.x, tip.y, tip.z);

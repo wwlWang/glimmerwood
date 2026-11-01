@@ -20,6 +20,23 @@ class SpiritBladeFramingTest {
             assertTrue(new Matrix4f(input).mul(calibration.last().pose()).equals(animated.last().pose(),1e-6f));
         }
     }
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void actualEmptyPawCannotReachPastTheNativeArmEndpoint(boolean left) throws Exception {
+        byte[] bytes;
+        try(var in=getClass().getResourceAsStream("/assets/orimod/models/entity/paw_"+(left?"left":"right")+"_open.glb")) {
+            bytes=java.util.Objects.requireNonNull(in).readAllBytes();
+        }
+        int length=java.nio.ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt(12);
+        var gltf=com.google.gson.JsonParser.parseString(new String(bytes,20,length,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        int position=gltf.getAsJsonArray("meshes").get(0).getAsJsonObject().getAsJsonArray("primitives").get(0).getAsJsonObject().getAsJsonObject("attributes").get("POSITION").getAsInt();
+        var accessor=gltf.getAsJsonArray("accessors").get(position).getAsJsonObject();
+        var pose=new PoseStack();SpiritHands.emptyPose(pose,left);
+        for(String key:new String[]{"min","max"}) {
+            var b=accessor.getAsJsonArray(key);var point=new org.joml.Vector3f(b.get(0).getAsFloat(),b.get(1).getAsFloat(),b.get(2).getAsFloat());
+            pose.last().pose().transformPosition(point);
+            assertTrue(point.y>=-.001f && point.y<=.75f,"Actual arm exceeds native 12-pixel length: "+point);
+        }
+    }
     @ParameterizedTest @ValueSource(ints={1,2,3})
     void remoteArcKeepsItsTail(int stage) {
         assertEquals(6f/7,BladeSlash.opacity(stage,SpiritCombat.recoveryStart(stage)+1,false),1e-6);

@@ -63,29 +63,20 @@ final class SpiritPoses {
 
     /** Held tool cradled at the chest; {@code side} 0 = "_l" bones (player's right hand), 1 = "_r". */
     static void cradle(SpiritPoseLayer l, int side, float bob, float w) {
-        if (w <= 0) return;
-        if (side == 0) {
-            l.add(UPPER_ARM_L, -.55f, 0, 1.25f, w); l.add(FOREARM_L, 0, 1.85f, -.2f + bob, w); l.add(HAND_L, 0, .25f, -.2f, w);
-        } else {
-            l.addMirrored(UPPER_ARM_R, -.55f, 0, 1.25f, w); l.addMirrored(FOREARM_R, 0, 1.85f, -.2f + bob, w); l.addMirrored(HAND_R, 0, .25f, -.2f, w);
-        }
+        lowered(l, side, bob, w);
     }
 
-    /** Arm drop from the T-pose and elbow bend for the one-handed carry: the arm stands a little off the body so the
-     *  weapon clears Ori's bent legs (at 1.42 / .15 it hugged the thigh and the blade crossed the knee). */
-    static final float LOWERED_DROP = 1.22f, LOWERED_ELBOW = .4f;
-    /** The wrist gives back the extra elbow bend, so the weapon still points forward and down. */
-    static final float LOWERED_WRIST = -(LOWERED_ELBOW - .15f) - .2f;
+    static final float LOWERED_DROP = 1.18f, LOWERED_ELBOW = .25f, LOWERED_WRIST = .6f, LOWERED_YAW = -.45f, GRIP_ROLL = -.4f;
 
-    /** One-handed weapons rest beside the thigh, with a soft elbow and a small forward reach. */
+    /** Relaxed arm below the chest. Identical attack endpoints avoid a socket jump on recovery. */
     static void lowered(SpiritPoseLayer l, int side, float bob, float w) {
         if (w <= 0) return;
         if (side == 0) {
-            l.add(UPPER_ARM_L, -.2f + bob * .3f, 0, LOWERED_DROP, w);
-            l.add(FOREARM_L, 0, LOWERED_ELBOW, 0, w); l.add(HAND_L, 0, LOWERED_WRIST, 0, w);
+            l.add(UPPER_ARM_L, -.32f + bob * .3f, LOWERED_YAW, LOWERED_DROP, w);
+            l.add(FOREARM_L, 0, LOWERED_ELBOW, 0, w); l.add(HAND_L, GRIP_ROLL, LOWERED_WRIST, 0, w);
         } else {
-            l.addMirrored(UPPER_ARM_R, -.2f + bob * .3f, 0, LOWERED_DROP, w);
-            l.addMirrored(FOREARM_R, 0, LOWERED_ELBOW, 0, w); l.addMirrored(HAND_R, 0, LOWERED_WRIST, 0, w);
+            l.addMirrored(UPPER_ARM_R, -.32f + bob * .3f, LOWERED_YAW, LOWERED_DROP, w);
+            l.addMirrored(FOREARM_R, 0, LOWERED_ELBOW, 0, w); l.addMirrored(HAND_R, GRIP_ROLL, LOWERED_WRIST, 0, w);
         }
     }
 

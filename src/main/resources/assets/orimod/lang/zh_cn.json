@@ -178,6 +178,8 @@
   "orimod.configuration.quality.tooltip": "流畅、均衡（默认）或精致：装饰性精灵粒子的数量；使用 Spirit Glow 光影时同时切换其性能档（快速/高品质/极佳）。你在 Iris 中改过的光影选项会保留。",
   "orimod.configuration.advancedParticles": "高级粒子",
   "orimod.configuration.advancedParticles.tooltip": "关闭后只保留标示命中、落地、箭矢和挑战路线的粒子；能力仍可使用。",
+  "orimod.configuration.bodyAura": "精灵光晕",
+  "orimod.configuration.bodyAura.tooltip": "身体、爪子和地面光晕的强度（百分比）。独立于 Spirit Glow 光影；0 为关闭。",
   "orimod.configuration.spiritGlow": "Spirit Glow 光影",
   "orimod.configuration.spiritGlow.tooltip": "随模组附带的光影包，改编自 TheCMK 的 Mellow。需要 Iris；未安装 Iris 时此项无效。关闭后恢复之前使用的光影包。在 Iris 中选择其他光影包会自动关闭此项。",
   "orimod.spirit_glow.kept.title": "已保留你选择的光影包",

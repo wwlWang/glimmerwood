@@ -9,6 +9,8 @@ public final class OriClientConfig {
     public static final ModConfigSpec.EnumValue<VisualQuality> QUALITY;
     public static final ModConfigSpec.BooleanValue ADVANCED_PARTICLES;
     public static final ModConfigSpec.BooleanValue SPIRIT_GLOW;
+    public static final ModConfigSpec.IntValue BODY_AURA;
+    public static final int DEFAULT_BODY_AURA = 25;
     /** R97: first-encounter guidance from Glimmer (automatically exposed by ConfigurationScreen). */
     public static final ModConfigSpec.BooleanValue COMPANION_HINTS;
     public static final ModConfigSpec.BooleanValue VANILLA_HUD;
@@ -35,6 +37,8 @@ public final class OriClientConfig {
         ADVANCED_PARTICLES = builder.comment("Decorative spirit particles. When off, only the few particles that mark hits, landings,",
                         "arrows and challenge routes are kept, so gameplay feedback stays readable. Abilities are never disabled.")
                 .define("advancedParticles", true);
+        BODY_AURA = builder.comment("Body, paw and ground halo intensity in percent. Independent of the Iris shader pack; 0 disables these halos.")
+                .defineInRange("bodyAura", DEFAULT_BODY_AURA, 0, 100);
         SPIRIT_GLOW = builder.comment("Use the bundled Spirit Glow shader pack (needs Iris). Off restores the shader pack used before.",
                         "On first start it is only selected when no other shader pack is chosen in Iris.",
                         "Choosing another pack in Iris turns this off.")
@@ -63,6 +67,8 @@ public final class OriClientConfig {
         if (!SPEC.isLoaded()) return Visuals.DEFAULTS;
         return new Visuals(QUALITY.get(), ADVANCED_PARTICLES.get(), SCREEN_SHAKE.get(), SCREEN_FLASH.get());
     }
+
+    public static float bodyAura() { return (SPEC.isLoaded() ? BODY_AURA.get() : DEFAULT_BODY_AURA) / 100f; }
 
     public static boolean companionHints() { return !SPEC.isLoaded() || COMPANION_HINTS.get(); }
 

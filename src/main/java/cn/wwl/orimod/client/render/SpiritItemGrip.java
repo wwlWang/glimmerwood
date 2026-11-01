@@ -13,10 +13,10 @@ import org.joml.Vector3f;
 final class SpiritItemGrip {
     private SpiritItemGrip() { }
 
-    /** Match the eased procedural carry: raised tools face up/forward, one-handed weapons face down/forward.
-     * Weight zero retains the authored aiming/attack/socket calibration. */
+    /** The item stays rigidly in the paw across idle, attack and recovery. Changing animation layers must
+     * never change this contact rotation: the old weight-dependent calibration flipped the hammer on recovery. */
     static float attachmentPitch(float holdWeight, float lowered) {
-        return -90 + (90 - 70 * Math.clamp(lowered, 0, 1)) * Math.clamp(holdWeight, 0, 1);
+        return -90;
     }
 
     /** Shield's blocking display already pitches a vanilla arm; Ori's clip has posed that arm itself.

@@ -23,8 +23,14 @@ public final class SpiritHands {
     private SpiritHands() { }
 
     public static boolean held(LivingEntity entity, ItemStack item, ItemDisplayContext context) {
-        return !item.isEmpty() && entity instanceof Player player && SpiritData.isSpirit(player) && !player.isInvisible()
+        return weapon(item) && entity instanceof Player player && SpiritData.isSpirit(player) && !player.isInvisible()
                 && (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+    }
+
+    static boolean weapon(ItemStack item) {
+        return item.is(cn.wwl.orimod.item.OriItems.SPIRIT_BLADE)
+                || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_HAMMER)
+                || item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR);
     }
 
     /** Keep ItemInHandRenderer's matrix unchanged. Only the replacement paw is attached below. */
@@ -51,8 +57,9 @@ public final class SpiritHands {
     }
 
     static void emptyPose(PoseStack pose, boolean left) {
-        pose.translate(left ? .3125f : -.3125f, .75f, 0);
-        pose.scale(2, 2, 2);
+        // Native arm spans Y=0..12/16. The baked sleeve/paw spans -.65..+.106.
+        pose.translate(left ? .3125f : -.3125f, .6445f, 0);
+        pose.scale(.99f, .99f, .99f);
     }
 
     public static void heldItem(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack stack, MultiBufferSource buffers, int light) {
@@ -68,12 +75,8 @@ public final class SpiritHands {
         SpiritItemGrip.local(item, point, new Vector3f());
         itemPose.last().pose().transformPosition(point);
         var palm = palm(model, itemPose, left, SpiritItemGrip.lowered(item));
-        if (item.is(cn.wwl.orimod.item.OriItems.SPIRIT_SPEAR) && player.isUsingItem() && player.getUseItem() == item)
-            palm = spearOverhand(palm, itemPose.last().pose());
         stack.pushPose();
-        stack.translate(point.x, point.y, point.z);
-        stack.mulPose(palm);
-        // SpiritForearm keeps the paw rigid even when vanilla stretches a drawn bow/trident.
+        SpiritPawGeometry.place(stack, point, palm);
         draw(left, true, stack, buffers, light);
         stack.popPose();
     }
@@ -98,12 +101,6 @@ public final class SpiritHands {
         // changes the thumb/palm orientation when first- and third-person scales differ.
         return SpiritItemGrip.palmFromItem(itemInView.getUnnormalizedRotation(new Quaternionf()),
                 itemInPalm.getUnnormalizedRotation(new Quaternionf()));
-    }
-
-    /** Throw with an overhand grip: turn the paw around the shaft, leaving the item matrix untouched. */
-    static Quaternionf spearOverhand(Quaternionf palm, org.joml.Matrix4f display) {
-        var shaft=display.transformDirection(new Vector3f(1,1,0)).normalize();
-        return new Quaternionf().rotationAxis((float)Math.PI,shaft).mul(palm);
     }
 
     private static boolean draw(boolean left, boolean grip, PoseStack pose, MultiBufferSource buffers, int light) {
@@ -134,20 +131,17 @@ public final class SpiritHands {
             var vertices = buffers.getBuffer(pass == 0 ? SpiritHandRenderType.triangles(part.material().texture())
                     : SpiritHandRenderType.emission(part.material().texture()));
             var geometry = mesh.geometry();
-            var forearm = grip ? new SpiritForearm(pose.last(), geometry, left) : null;
             var point = new Vector3f();
             var normal = new Vector3f();
             for (int triangle = 0; triangle < geometry.indexCount(); triangle += 3) {
+                if (grip && !SpiritPawGeometry.pawTriangle(geometry, triangle)) continue;
                 // Iris preserves smooth vertex normals for triangles. Its quad
                 // path replaces them with a single face normal during world rendering.
                 for (int corner = 0; corner < 3; corner++) {
                     int i = geometry.index(triangle + corner);
                     normal.set(geometry.normal(i,0), geometry.normal(i,1), geometry.normal(i,2));
-                    if (forearm != null) forearm.vertex(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2), point, normal);
-                    else {
-                        pose.last().pose().transformPosition(point.set(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2)));
-                        pose.last().normal().transform(normal).normalize();
-                    }
+                    pose.last().pose().transformPosition(point.set(geometry.position(i,0), geometry.position(i,1), geometry.position(i,2)));
+                    pose.last().normal().transform(normal).normalize();
                     if (pass == 0 && geometry.position(i,1) > -.1f) { min.min(point); max.max(point); }
                     vertices.addVertex(point.x, point.y, point.z)
                             .setColor(255, 255, 255, alpha)
@@ -162,7 +156,7 @@ public final class SpiritHands {
             var centre = new Vector3f(min).add(max).mul(.5f);
             float radius = Math.max(.08f, Math.max(max.x - min.x, max.y - min.y) * .8f);
             SpiritEnergy.quad(buffers.getBuffer(SpiritEnergy.glow()), new PoseStack().last(), centre,
-                    new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, .35f);
+                    new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, .35f * cn.wwl.orimod.config.OriClientConfig.bodyAura());
         }
         return true;
     }

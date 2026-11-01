@@ -207,12 +207,13 @@ public final class SpiritAura {
             boolean self = player == mc.player && mc.options.getCameraType().isFirstPerson();
             var at = player.getPosition(partial);
             float b = breath(t + player.getId() * .37f), h = player.getBbHeight();
+            float body = b * cn.wwl.orimod.config.OriClientConfig.bodyAura();
             float flash = SpiritFxClient.flashAmount(player, partial);
             if (!self) {
                 var chest = new Vector3f((float) (at.x - cam.x), (float) (at.y + h * .5 - cam.y), (float) (at.z - cam.z));
-                bloom(out, pose, player, at, cam, chest, rotation, h, b, level.getSkyDarken() / 11f, flash);
+                bloom(out, pose, player, at, cam, chest, rotation, h, body, level.getSkyDarken() / 11f, flash);
             }
-            if (!self || flash > 0) groundLight(out, pose, player, at, cam, b * (self ? flash : 1),
+            if (!self || flash > 0) groundLight(out, pose, player, at, cam, body * (self ? flash : 1),
                     Mth.lerp(flash, GROUND_RADIUS, cn.wwl.orimod.fx.FlashLight.GROUND_RADIUS), flash == 0);
             var orb = CompanionMotion.position(player, partial);
             var orbBlock = net.minecraft.core.BlockPos.containing(orb);

@@ -107,12 +107,16 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             }
         } else if (stack.is(OriItems.SPIRIT_HAMMER)) {
             // Shaft, then a broad crossbar head of denser light with a halo that swells while charging.
-            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .44f * w, ACROSS, OUTER, .18f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .26f * w, ACROSS, MID, .32f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .10f * w, ACROSS, CORE, .95f);
-            SpiritEnergy.beam(streakS.get(), pose, p(.48f, 1.0f), p(1.0f, .48f), .52f * w, new Vector3f(1, 1, 0), OUTER, .30f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .26f * w, new Vector3f(1, 1, 0), CORE, .92f);
-            SpiritEnergy.orb(glowS.get(), pose, p(.74f, .74f), .30f + .12f * charge, MID, .42f * a);
+            // At arm's length the additive cross-planes and centre orb saturated into a ball.
+            // Keep the same T geometry and native animation, but expose its crossbar in first person.
+            boolean first = context.firstPerson();
+            float halo = first ? .3f : 1;
+            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .44f * w, ACROSS, OUTER, .18f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .26f * w, ACROSS, MID, .32f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .10f * w, ACROSS, CORE, first ? .7f : .95f);
+            SpiritEnergy.beam(streakS.get(), pose, p(.48f, 1.0f), p(1.0f, .48f), .52f * w, new Vector3f(1, 1, 0), OUTER, .30f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .26f * w, new Vector3f(1, 1, 0), CORE, first ? .65f : .92f);
+            if (!first) SpiritEnergy.orb(glowS.get(), pose, p(.74f, .74f), .30f + .12f * charge, MID, .42f * a);
             SpiritEnergy.orb(glowS.get(), pose, p(.12f, .12f), .08f, CORE, .7f);
             motes(glowS.get(), pose, t, .12f, .74f, 3, .05f + .03f * charge, a);
         } else if (stack.is(OriItems.SPIRIT_SPEAR)) {
