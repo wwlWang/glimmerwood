@@ -29,7 +29,7 @@ def main():
     channel = 'alpha' if 'alpha' in version else 'beta' if 'beta' in version else 'release'
     data = {
         'project_id': os.environ.get('MODRINTH_PROJECT_ID', ''),
-        'name': f'{prop("mod_name")} {version}',
+        'name': f'Glimmerwood {version}',  # public name; mod_name stays OriMod in game
         'version_number': version,
         'changelog': changelog(version),
         'version_type': channel,

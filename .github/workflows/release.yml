@@ -40,7 +40,7 @@ jobs:
         run: |
           awk -v v="## $VERSION" 'index($0, v) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
           prerelease=$([[ "$VERSION" =~ alpha|beta ]] && echo --prerelease || true)
-          gh release create "v$VERSION" dist/* --target "$GITHUB_SHA" --title "OriMod $VERSION" --notes-file notes.md $prerelease
+          gh release create "v$VERSION" dist/* --target "$GITHUB_SHA" --title "Glimmerwood $VERSION" --notes-file notes.md $prerelease
       - name: Modrinth
         if: inputs.modrinth
         env:
