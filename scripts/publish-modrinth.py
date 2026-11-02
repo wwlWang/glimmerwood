@@ -3,7 +3,8 @@
 Usage: python3 scripts/publish-modrinth.py <jar> [--dry-run]
 Env: MODRINTH_TOKEN (PAT with "Create versions"), MODRINTH_PROJECT_ID.
 Version number, changelog and channel come from gradle.properties and CHANGELOG.md; GemRender and
-Flywheel are nested in the jar, so only Iris and Sodium are listed (optional).
+Flywheel are nested in the jar, so only Iris and Sodium are listed (optional). Uses API v3, the only one that
+takes the per-version environment; multiplayer is not supported yet, hence singleplayer_only.
 """
 import json, os, re, sys, uuid, urllib.request
 from pathlib import Path
@@ -34,6 +35,7 @@ def main():
         'version_type': channel,
         'game_versions': [prop('minecraft_version')],
         'loaders': ['neoforge'],
+        'environment': 'singleplayer_only',
         'featured': True,
         'dependencies': [{'project_id': IRIS, 'dependency_type': 'optional'},
                          {'project_id': SODIUM, 'dependency_type': 'optional'}],
@@ -51,7 +53,7 @@ def main():
         f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{jar.name}"\r\n'
         'Content-Type: application/java-archive\r\n\r\n'.encode(),
         jar.read_bytes(), f'\r\n--{boundary}--\r\n'.encode()])
-    request = urllib.request.Request('https://api.modrinth.com/v2/version', data=body, method='POST', headers={
+    request = urllib.request.Request('https://api.modrinth.com/v3/version', data=body, method='POST', headers={
         'Authorization': os.environ['MODRINTH_TOKEN'],
         'Content-Type': f'multipart/form-data; boundary={boundary}',
         'User-Agent': 'wwlWang/glimmerwood release script (github.com/wwlWang/glimmerwood)'})
