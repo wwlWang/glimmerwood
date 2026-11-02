@@ -58,4 +58,4 @@
 - [drafts/](drafts/)：未合入的方案草稿；`r109-checkpoint/` 是暂停中的 R109 灵战祭坛实现快照，未注册进游戏。
 - [benchmarks/](benchmarks/)：世界生成性能模型与数据。
 - [feel/](feel/)：`scripts/feel_curves.py` 输出的手感曲线与指标。
-- [images/](images/)：README 使用的游戏截图。
+- [images/](images/)：README 使用的游戏截图（开发客户端 + Spirit Glow 实拍）。

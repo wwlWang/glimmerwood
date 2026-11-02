@@ -8,6 +8,8 @@
 
 *An unofficial, non-commercial Ori-inspired NeoForge 1.21.1 mod: spirit form, movement abilities, light weapons, ruins and bosses in vanilla survival. Not affiliated with or endorsed by Microsoft, Xbox Game Studios or Moon Studios.*
 
+![精灵形态](docs/images/spirit-form.jpg)
+
 ## 内容
 
 - **精灵形态**：使用精灵核心觉醒后可随时变身，拥有独立的角色模型、动画和第一人称手部。
@@ -18,7 +20,16 @@
 - **敌人与首领**：腐光喷吐者、腐光甲虫、腐光鸦、腐光翼母、腐光之心等。
 - **自带光影 Spirit Glow**（需要 Iris，改编自 Mellow）。
 
-本模组面向**单人生存**；多人联机和专用服务器玩法尚未支持，见 [ADR-001](docs/ADR-001-SINGLE-PLAYER.md)。当前是早期版本，详细进展见 [WORK_STATUS](docs/WORK_STATUS.md)。
+| | |
+| --- | --- |
+| ![森林泉遗迹](docs/images/forest-spring.jpg) | ![大灵树](docs/images/great-spirit-tree.jpg) |
+| 森林泉遗迹 | 大灵树 |
+| ![首领腐光翼母](docs/images/matriarch.jpg) | ![黄昏下的精灵光晕](docs/images/spirit-glow-dusk.jpg) |
+| 首领：腐光翼母 | 黄昏 |
+
+截图使用自带的 Spirit Glow 光影（Iris 1.8.12），实际画面取决于光影和显卡。
+
+本模组面向**单人生存**；多人联机和专用服务器玩法尚未支持，见 [ADR-001](docs/ADR-001-SINGLE-PLAYER.md)。当前是 **0.0.1-alpha** 早期版本，存档格式和内容都可能变化；更新记录见 [CHANGELOG](CHANGELOG.md)，开发进展见 [WORK_STATUS](docs/WORK_STATUS.md)。
 
 ## 安装
 
