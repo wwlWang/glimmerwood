@@ -14,7 +14,7 @@ runs:
     - name: Pull LFS files
       shell: bash
       run: git lfs pull -I "src/**,libs/**,shaderpacks/**,art/**" -X "*.blend" && rm .lfs-needed
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: 21
