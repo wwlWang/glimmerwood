@@ -4,7 +4,7 @@
 
 ## 旧档冻结
 
-任何生产代码修改前，直接从 HEAD `42a50ec8dd7832b28fd766957a3238718b391836` 提取原 `GinsoShape` / `GinsoInterior` 编译生成基准。`src/test/resources/cn/wwl/orimod/world/ginso-v2-42a50ec/` 保存两个种子完整外形体素、v1 课程体素以及 64 种子 SHA-256；顺序和原源码哈希在 `baseline.json`。证据为 `evidence/r115-c-rescale-v001/freeze-head.py`、`freeze-head-02.log`。首轮 javac 缺少 MC 类路径，未生成基准；补上现有测试依赖后成功，原始失败保留。
+任何生产代码修改前，直接从 HEAD `d5eba65d941778d4b09c0d93793d61f3af7a435e` 提取原 `GinsoShape` / `GinsoInterior` 编译生成基准。`src/test/resources/cn/wwl/orimod/world/ginso-v2-42a50ec/` 保存两个种子完整外形体素、v1 课程体素以及 64 种子 SHA-256；顺序和原源码哈希在 `baseline.json`。证据为 `evidence/r115-c-rescale-v001/freeze-head.py`、`freeze-head-02.log`。首轮 javac 缺少 MC 类路径，未生成基准；补上现有测试依赖后成功，原始失败保留。
 
 原算法冻结为 `LegacyGinsoShape`，新算法独立在 `TallGinsoShape`。piece 读取、再次保存真实 ShapeVersion，缓存键包含种子和版本，写入高度和地形坡度按版本分流。旧 piece 的原包围盒、课程、地形处理、材质选择保持；缺少课程标签的老树不凭空加课程。JUnit 从 v2 标签加载 piece，逐格对照固定文件；另跑 64 个固定哈希。真实 GameTest 检查 v2/v1 重新保存与分块写出的方块状态。既有四方向课程 GameTest 显式使用已验收 v2/v1，路线和断言不改。
 
@@ -36,7 +36,7 @@ Claude批准先适配根区、仍不足80%才补偿间距。选择：半径11的
 
 原 GinsoStructure 没有已生成足迹拒绝。新增 `GinsoGenerationGuard`，地形预检通过后、建立起点前检查半径35完整包络。磁盘 Anvil 区域头每次查询独占缓存，只有 READ 操作，旧/部分文件保守拒绝；内存读取 ChunkMap volatile 发布的 cloned visible map，以及 Holder 的原子 future，使用 getNow 不等待、不加载。仅 EMPTY/STRUCTURE_STARTS 的新生成占位允许通过；STRUCTURE_REFERENCES 已完成则拒绝，避免已计算的引用遗漏新起点。完整区块加载/保存事件用按区域128字节的原子位图覆盖卸载到落盘之间的窗口；随世界卸载释放。日志统一报告 GENERATED、来源、阻挡区块、检查数和毫秒。
 
-升级验证使用 `git archive 42a50ec` 提取到独立 `.external/ginso-head-42a50ec/`（不创建或修改任何 Git 元数据），只添加测试专用 GinsoUpgradeAudit；正式代码和结构数据保持旧版。旧版在独立115117存档中生成完整旧树并探索一块64×80地带；新版原地加载后向旧边界外继续生成，比较旧树全体积状态哈希，并通过原版 locate 找新树、逐格校验所有计划写入格及其分块覆盖。旧版快照到新版原地加载通过：旧树全体积SHA-256在升级前、升级后、越界探索后均为`ba504ab68500ffb00280c349cbea6b8e82e0dbed4b3592f0be616ae586136642`。旧边界(2088,70,3544)被区域头中的区块(128,219)拒绝，新网格没有在那里生成起点。由该边界和另外两个查询点实际locate的三棵新树为(-760,65,4504)、(5048,71,4312)、(1096,71,-1304)，逐格核对44021/44793/42176格，实体结构缺失均0；跨块覆盖在`ginso-upgrade.json`逐块列出。旧网格起点仍按原NBT读取，不要求新版locate返回它。该次只读guard完整25块检查最高1.003ms，旧边界冷读取2.728ms；worldgen写入最高17.573ms，纯形状冷构建62.512ms另计。
+升级验证使用 `git archive d5eba65` 提取到独立 `.external/ginso-head-42a50ec/`（不创建或修改任何 Git 元数据），只添加测试专用 GinsoUpgradeAudit；正式代码和结构数据保持旧版。旧版在独立115117存档中生成完整旧树并探索一块64×80地带；新版原地加载后向旧边界外继续生成，比较旧树全体积状态哈希，并通过原版 locate 找新树、逐格校验所有计划写入格及其分块覆盖。旧版快照到新版原地加载通过：旧树全体积SHA-256在升级前、升级后、越界探索后均为`ba504ab68500ffb00280c349cbea6b8e82e0dbed4b3592f0be616ae586136642`。旧边界(2088,70,3544)被区域头中的区块(128,219)拒绝，新网格没有在那里生成起点。由该边界和另外两个查询点实际locate的三棵新树为(-760,65,4504)、(5048,71,4312)、(1096,71,-1304)，逐格核对44021/44793/42176格，实体结构缺失均0；跨块覆盖在`ginso-upgrade.json`逐块列出。旧网格起点仍按原NBT读取，不要求新版locate返回它。该次只读guard完整25块检查最高1.003ms，旧边界冷读取2.728ms；worldgen写入最高17.573ms，纯形状冷构建62.512ms另计。
 
 新版完整性核对考虑实际生成阶段：SURFACE_STRUCTURES之后的原版植被/表层阶段会在预留空气里增加草、蕨、藤、蘑菇或单层雪。工具逐格报告这些无碰撞、无流体的表层装饰；所有实体模板方块仍必须一致，空气里出现实体障碍或水依然失败。首轮错误地要求空气始终为空的诊断保存在vegetation-* / vegetation2-*，不归因于区块截断。
 

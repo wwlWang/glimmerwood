@@ -1,6 +1,6 @@
-# Pass 5 广度试玩（2026-10-30，HEAD `cf989da`）
+# Pass 5 广度试玩（2026-10-30，HEAD `2d872f3`）
 
-自 `9c8770f` 起没有新代码提交，只有 Pass 4 文档（`c063511..cf989da`）。代码与 Pass 4 相同。
+自 `ff88650` 起没有新代码提交，只有 Pass 4 文档（`8daed13..cf989da`）。代码与 Pass 4 相同。
 
 目标：广度优先（人设 / 群系 / 环境状态 / 怪物战斗 / 游戏规则与设置 / 存档生命周期 / UI / 性能 / 物品经济），每块 5–10 分钟，发现就记，不深挖。Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。截图 `/workspace/oriMod/shots/playtest-p5-*`，脚本 `/workspace/oriMod/pt5/`。**不改代码**。
 
@@ -132,8 +132,8 @@
 - **活塞 + 粘液**：粘性活塞向上推粘液块，精灵被弹起 6.4 格（idle，无回滚）**[通过]**；横向活塞推站人的粘液块，精灵和人形都不跟着走、站在活塞头上（两种形态一致，原版行为）**[通过]**。
 - 商人/制图师「刚好 0 灵光 / 刚好够价」购买 **[未测：时间，优先给了 F/H]**。
 
-## P5-K 新提交 `bff08b8`（R117 D 腐化生态）到达后的快速复查
-测试中途作者推了 `bff08b8`（腐化核心蔓延、动物腐化、腐化氛围、去掉左侧旧能量条）。以上 F/H/J 都是在 `cf989da` 代码上测的；下面是重启客户端换到 `bff08b8` 后的补测。
+## P5-K 新提交 `bbc0143`（R117 D 腐化生态）到达后的快速复查
+测试中途作者推了 `bbc0143`（腐化核心蔓延、动物腐化、腐化氛围、去掉左侧旧能量条）。以上 F/H/J 都是在 `2d872f3` 代码上测的；下面是重启客户端换到 `bbc0143` 后的补测。
 - 能量条卡红（A1）：新代码上照样复现——活 15 秒后拒绝一次 → `/kill` → 重生回满能量 5 秒后整条仍红 `playtest-p5-g-a1-newcode-respawn5s.png` **[仍存在]**（`energyFlashUntil` 那段没改）。
 - 腐化生态冒烟（`p5new`，自然生成的腐化地面，核心 `(726,70,668)`，`/locate structure orimod:blighted_grounds` + `/ori blight nearest`）：站在里面 30 秒，**自然回血停止**（HP 16 不动）、**能量 100→83**（约 0.5/秒）、附近召唤的 3 头牛里离核心最近的那头 `infected=true`、紫色雾气/天空生效（`atmosphere.blight.intensity 0.35`，`radius 14.4`）**[通过]** `playtest-p5-g-blight-natural-30s.png`。蔓延速度、动物恢复、打碎核心后按原状还原 **[未测：时间]**。
 - **[信息] 命令放的腐化之核不会蔓延**：`/setblock … orimod:gloom_core` 放在草地上 30 秒，地表、动物、回血都没变化——方块实体只有带世界生成 `terrain` 时才注册生态（`GloomCoreBlockEntity.registerLoaded`），属于设计，但创造模式/命令测试时容易以为坏了。

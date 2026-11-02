@@ -1,6 +1,6 @@
 # 溪谷遗迹 · LayoutVersion 1 · 设计检查点
 
-状态：**IMPLEMENTED / 首版工程与实拍检查中**。基准 `0aaf077a39c771203114d40a617d6191d0842379`。设计已获准；原始坐标草案另存 design-plan.txt / design-manifest.json。当前 plan.txt / manifest.json 由生成器复现，实测汇总见 evidence/playtest-c-creek-v001/。
+状态：**IMPLEMENTED / 首版工程与实拍检查中**。基准 `b59d8a45ff8ff7e1354af8942b2a2f896a897417`。设计已获准；原始坐标草案另存 design-plan.txt / design-manifest.json。当前 plan.txt / manifest.json 由生成器复现，实测汇总见 evidence/playtest-c-creek-v001/。
 
 ## 1. 旧版盘点与冻结
 

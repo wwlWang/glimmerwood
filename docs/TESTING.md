@@ -492,7 +492,7 @@ C经用户澄清指角色本身。暗室有效修前为`r108-body-before-v002`�
 
 最终补拍脚本状态passed，共16张；wide-260/280实际服务端年龄261/281tick（13.05/14.05秒），能看到光柱由初现到完整亮芯/外晕。第一人称四时刻在最终v003也重拍。XTest真实鼠标中断：开始采样remaining297时引导active=true，发送(24,12)位移后remaining292时active=false/cancelled=true；继续30tick到remaining262，两次yaw/pitch均为3.6000004/24.755848，未继续引导，之后真实Esc正常结算。`results.json.mouse_interrupt`含完整前后状态。v002的首次XTest事件曾被原版ignoreFirstMove吞掉（`guide-capture.log`保留失败原文）；独立mouse-probe-v001证实后续原生事件实际改变yaw。最终脚本先在仪式外预热并断言实际转头，不改生产鼠标语义或放宽中断断言。拍摄完成后清除forceload、leave_world、quit；源码与最终全量的SHA256清单一致。
 
-基础 R108 已在 fbb3c90 由 Claude 完成18项真实输入验收（`r108-accept-v001..v003`）。仪式中伤害被取消，`/kill`也不能触发死亡；自动测试的死亡取消是直接分派事件验证的防御路径，不声称普通实机可达。
+基础 R108 已在 1c46a70 由 Claude 完成18项真实输入验收（`r108-accept-v001..v003`）。仪式中伤害被取消，`/kill`也不能触发死亡；自动测试的死亡取消是直接分派事件验证的防御路径，不声称普通实机可达。
 
 ## R108 意志之光与复苏
 
@@ -560,7 +560,7 @@ JDK21执行 `./gradlew build runGameTestServer compileDevtoolsJava --console=pla
 - `Expected Flash cadence or damage wrong to be 32, but was 40`：嵌入连接夹具只发保活没执行Flash玩家tick，按原FlashGameTests补真实tick入口。后续 `Flash refused` 来自每tick回调和第42tick关闭连接回调同tick无序执行；改为明确排1–40tick输入与tick，第42tick断言并关闭，生产租约/释放规则均未修改。
 - `Expected Third defender missing to be 3, but was 2`：测试目标仍在距外摆核心160格以外，防守怪会按原版规则消失，提前腾槽；夹具将目标放回核心旁并让测试守卫持久化来单独验证冷却/占槽。生产守卫不强制持久化，自然消失照常腾槽。
 
-首轮客户端（`evidence/r106-accept-v001`、`evidence/r106-debug-v001/v002`）已通过生成、核心刀免疫/蓄力伤害/持续灵闪摧毁和守卫≤3；灵闪原失败为验收脚本反复松键引发冷却。复验 `evidence/r106-accept-v002` 已通过9/10项：荆棘20→17.2、核心/守卫、渐进净化（土中途剩54，最终清零）、枯木/水恢复、60灵光与外观；24格庇护漏出24–28环带，已改32待专项复验。核心已配置noLootTable且移除路径不产物品；只读检查关闭后的orimod_dev_r106b存档，验收区未见gloom_core物品，截图形状与喷吐者旋转紫晶模型相符，但未在拍照当刻记录实体ID，因此不把目测当作确证。R105此前8项实机检查已由Claude通过（8d954c2），不再列为待验收。
+首轮客户端（`evidence/r106-accept-v001`、`evidence/r106-debug-v001/v002`）已通过生成、核心刀免疫/蓄力伤害/持续灵闪摧毁和守卫≤3；灵闪原失败为验收脚本反复松键引发冷却。复验 `evidence/r106-accept-v002` 已通过9/10项：荆棘20→17.2、核心/守卫、渐进净化（土中途剩54，最终清零）、枯木/水恢复、60灵光与外观；24格庇护漏出24–28环带，已改32待专项复验。核心已配置noLootTable且移除路径不产物品；只读检查关闭后的orimod_dev_r106b存档，验收区未见gloom_core物品，截图形状与喷吐者旋转紫晶模型相符，但未在拍照当刻记录实体ID，因此不把目测当作确证。R105此前8项实机检查已由Claude通过（78ef7bb），不再列为待验收。
 
 ## R105 腐光甲虫
 
@@ -705,7 +705,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 
 ## R15：客户端设置与特效预算
 
-2026-10-18 云端 Debian 13 / OpenJDK 21.0.12，新检出 `1c58dee` 后先跑基线：262 项 JUnit、146 项 GameTest 通过，`compileDevtoolsJava` 通过。R15 后 `scripts/check.sh --devtools` 结果为 312 / 154 全部通过；发行 JAR 不含开发或 GameTest 条目，SHA-256 `60df1c069d300f653ad81526b53263e21eec5c21df68487ca6218916f1a7dcd4`（云端构建，与 Windows 构建哈希不可直接比较）。Windows 未复跑。
+2026-10-18 云端 Debian 13 / OpenJDK 21.0.12，新检出 `fb501ad` 后先跑基线：262 项 JUnit、146 项 GameTest 通过，`compileDevtoolsJava` 通过。R15 后 `scripts/check.sh --devtools` 结果为 312 / 154 全部通过；发行 JAR 不含开发或 GameTest 条目，SHA-256 `60df1c069d300f653ad81526b53263e21eec5c21df68487ca6218916f1a7dcd4`（云端构建，与 Windows 构建哈希不可直接比较）。Windows 未复跑。
 
 - 配置：`orimod-client.toml` 新增 `configVersion`（缺失视为 v1，加载时升级到 v2 并记日志）、`visuals.quality`（FLUENT / BALANCED / DETAILED，默认均衡）、`visuals.advancedParticles`（默认开）、`feedback.screenShake`（0–100，默认 30，较轻）、`feedback.screenFlash`（0–100，默认 40）。JUnit 直接对真实 `ModConfigSpec` 执行 NeoForge 加载时的修正：v1 文件保留 `keyDefaultsApplied` / `spiritCamera` 并补默认值；越界强度、未知画质和视角名回到默认，其他值不变；新版本写入的更高 `configVersion` 不降级。运动模糊、强景深和动态灯光在模组中不存在，因此没有对应开关，也没有默认开启的效果。
 - 粒子：原先五处服务端 `sendParticles`（刀命中、下砸落地、灵光箭尾迹、挑战检查点、路线标记）改为 `SpiritFx.emit`，向 32 格内玩家发送一个固定编号的 `orimod:spirit_fx` 载荷。客户端 `FxBudget` 把每类效果分为关键粒子（强制生成，原版“最少”粒子也保留）与装饰粒子（按画质 0.5 / 1.0 / 1.5 缩放，上限 48，仍走原版粒子等级）。均衡档总数与 R1–R13 实机证据使用的数量一致；关闭高级粒子只保留关键粒子。GameTest 用真实连接玩家检查每类效果只发一个载荷、坐标和来源正确、超出范围不发送，并确认刀命中不再发送原版粒子包；临时改回 `sendParticles` 时该用例失败，恢复后通过。
@@ -786,7 +786,7 @@ R9 的 24 项 JUnit 覆盖旋转单元格、连续坐标逆变换、通道包围
 
 431 项 JUnit（新增一次性移动标签落地结束的规则测试）、183 项 GameTest 通过。云端客户端 `scripts/verify-movement-endurance.py move12-r27-v006`：100 次混合动作与取消全部通过（种子 20261019；跳 14、冲刺 13、滑翔 18、抓钩 25 次其中到达 6、Bash 6 次另取消 9、蹬墙 5、下砸 4）；修复前 `move12-r27-v005` 13 次标签残留失败保留。v001–v004 为场地搭建与低帧输入过期的夹具问题。`scripts/verify-fx-endurance.py perf02-r27-v001`：10 轮效果往返，活跃效果/循环音每轮回 0，粒子回 0，GC 后堆 622–625 MB，预热后斜率 −0.10 MB/轮。两脚本需开发客户端（`runDevtoolsClient`）与任一开发世界；移动脚本会在 (1000,200,1000) 建场地，效果脚本复用该场地。
 
-发行 JAR（R27，`scripts/build-release.sh`）：两次 `clean jar`（不用 Gradle 构建缓存、各自重新编译）SHA-256 一致 `4e0651a269a897c252a06e97d685bf6c1b0f574550dd39882d66058eea977b16`；提交 `b0f397d` 与只改构建脚本的 `976041e` 构建出相同字节。JAR 含 `orimod_shaderpack/spirit_glow.zip`（含 LICENSE、LICENSE-APACHE、README）与 `THIRD_PARTY.md`，不含开发工具类。云端产物在 `/workspace/oriMod/release/`（不入库）。
+发行 JAR（R27，`scripts/build-release.sh`）：两次 `clean jar`（不用 Gradle 构建缓存、各自重新编译）SHA-256 一致 `4e0651a269a897c252a06e97d685bf6c1b0f574550dd39882d66058eea977b16`；提交 `8923e59` 与只改构建脚本的 `051cc65` 构建出相同字节。JAR 含 `orimod_shaderpack/spirit_glow.zip`（含 LICENSE、LICENSE-APACHE、README）与 `THIRD_PARTY.md`，不含开发工具类。云端产物在 `/workspace/oriMod/release/`（不入库）。
 
 ## R28：原版存档副本与干净实例
 

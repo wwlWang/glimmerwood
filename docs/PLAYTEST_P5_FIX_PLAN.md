@@ -1,6 +1,6 @@
 # P5 试玩 / 审计问题修复计划
 
-来源：另一路试玩代理的报告（`docs/PLAYTEST_R117.md` Pass 4、`docs/PLAYTEST_P5.md`、`docs/AUDIT_P5_CODE.md`），用户要求“先核实，确有其事的找合理方案修掉”。基线：`bff08b8`。
+来源：另一路试玩代理的报告（`docs/PLAYTEST_R117.md` Pass 4、`docs/PLAYTEST_P5.md`、`docs/AUDIT_P5_CODE.md`），用户要求“先核实，确有其事的找合理方案修掉”。基线：`bbc0143`。
 
 ## 工作约定
 
@@ -17,7 +17,7 @@
 
 ### E1 关键方块会被水、岩浆、活塞、TNT 毁掉，或被生存玩家拆掉
 
-**核实（bff08b8）：[确认]。** 已核对全部 45 个注册方块的硬度、爆炸抗性、活塞反应及实际流体行为，详见 [E1 全表与木材共享说明](../evidence/p5-fix/E/E1_BLOCKS.md)。默认状态实机矩阵：水/岩浆分别替换 15/45，活塞实际推动 23/45；独立 TNT 样本中 ginso_wood、great_spirit_wood、great_spirit_root 均被炸成空气。原报告“19 种”“这些都 noLootTable”不是本基线的准确总表，不能照搬。生存可挖由 `OriBlocks.java:43–46,63–64` 的硬度 2、默认挖掘逻辑与各自掉落表确认。
+**核实（bbc0143）：[确认]。** 已核对全部 45 个注册方块的硬度、爆炸抗性、活塞反应及实际流体行为，详见 [E1 全表与木材共享说明](../evidence/p5-fix/E/E1_BLOCKS.md)。默认状态实机矩阵：水/岩浆分别替换 15/45，活塞实际推动 23/45；独立 TNT 样本中 ginso_wood、great_spirit_wood、great_spirit_root 均被炸成空气。原报告“19 种”“这些都 noLootTable”不是本基线的准确总表，不能照搬。生存可挖由 `OriBlocks.java:43–46,63–64` 的硬度 2、默认挖掘逻辑与各自掉落表确认。
 
 **审定实施：** 按方块种类保护，不做来源标记或旧存档位置迁移。进度功能块统一拒绝水/岩浆（LiquidBlockContainer + bucket replacement）、PushReaction.BLOCK、抗爆 3600000，保持原碰撞。没有生存获取途径的台座、祭坛/神龛、心等设不可挖；有掉落或配方的 Bash 锚点、抓钩花、上升气流、光平台、金索接落地板/藤蔓保持可挖可回收。抓钩花/上升气流有自身掉落，核实表先前“可合成”描述纠正为“可掉落”。三类地标木 ginso_wood、great_spirit_wood、great_spirit_root 仅防爆、防活塞，仍可挖。共享 spirit_leaves、spirit_vine 及自然装饰不动。保留灵灯爆发、钥石开门、技能破墙/下砸、核心净化。冻结资源不改。
 
@@ -25,49 +25,49 @@
 
 ### E2 萤的灵焰等自动攻击会打中立生物（僵尸猪灵）
 
-**核实（bff08b8）：[确认]。** `SpiritFlame.java:43`、`LightBurst.java:56`、`AirMovement.java:131` 均直接按 Enemy 选伤害目标，和平的僵尸猪灵也满足；`CombatTargets.java:14–22` 才检查 NeutralMob 是否对该玩家生气/有攻击目标。实机：不攻击、关闭生物 AI 的僵尸猪灵 AngerTime=0，开启伴随灵焰后生命 20→8；关闭灵焰时初始为 20（[操作记录](../evidence/p5-fix/E/e2-live.json)）。额外发现 `Flash.java:123–135` 按 UNDEAD 标签伤害，也需走同一敌对规则。`SpiritTargets.java:87` / `BashedImpact.java:29` 是 Bash 选择/撞墙跟踪，并非直接伤害；`ShardEffects.java:80–86` 的强力 Bash 伤害已经调用 canHit，不能把无伤害抓取等同自动攻击。
+**核实（bbc0143）：[确认]。** `SpiritFlame.java:43`、`LightBurst.java:56`、`AirMovement.java:131` 均直接按 Enemy 选伤害目标，和平的僵尸猪灵也满足；`CombatTargets.java:14–22` 才检查 NeutralMob 是否对该玩家生气/有攻击目标。实机：不攻击、关闭生物 AI 的僵尸猪灵 AngerTime=0，开启伴随灵焰后生命 20→8；关闭灵焰时初始为 20（[操作记录](../evidence/p5-fix/E/e2-live.json)）。额外发现 `Flash.java:123–135` 按 UNDEAD 标签伤害，也需走同一敌对规则。`SpiritTargets.java:87` / `BashedImpact.java:29` 是 Bash 选择/撞墙跟踪，并非直接伤害；`ShardEffects.java:80–86` 的强力 Bash 伤害已经调用 canHit，不能把无伤害抓取等同自动攻击。
 
 **审定实施：** 所有真正造成伤害的入口（SpiritFlame、LightBurst、AirMovement 下砸、Flash 对亡灵）统一走 CombatTargets.canHit。无 owner 的 LightBurst 只打存活、非旁观的 Enemy 且不是 NeutralMob。Bash 抓取和撞墙跟踪不改。验收覆盖平静中立生物不受伤/不被激怒、敌对目标仍受伤。
 
 ### E3 能量不足的闪红在死亡或换维度后一直卡着
 
-**核实（bff08b8）：[确认]。** `SpiritCombatClient.java:22–36,79` 的静态 energyFlashUntil 使用玩家 tickCount，只在 player=null 时清零；到期后也不清除旧值。实机拒绝后再死亡，客户端 playerTicks 从 10819 重置到 48，能量已补满 100/100，HUD 仍红（[截图](../evidence/p5-fix/E/p5e-e3-full-energy-after-respawn.png)、[记录](../evidence/p5-fix/E/e3-live.json)）。换维度同根因由代码确认，本轮未另跑维度往返。修复应同时处理玩家替换/世界替换及 awaitingAttackUntil，不能只处理退出菜单。
+**核实（bbc0143）：[确认]。** `SpiritCombatClient.java:22–36,79` 的静态 energyFlashUntil 使用玩家 tickCount，只在 player=null 时清零；到期后也不清除旧值。实机拒绝后再死亡，客户端 playerTicks 从 10819 重置到 48，能量已补满 100/100，HUD 仍红（[截图](../evidence/p5-fix/E/p5e-e3-full-energy-after-respawn.png)、[记录](../evidence/p5-fix/E/e3-live.json)）。换维度同根因由代码确认，本轮未另跑维度往返。修复应同时处理玩家替换/世界替换及 awaitingAttackUntil，不能只处理退出菜单。
 
 **审定实施：** 闪红和 awaitingAttackUntil 使用客户端单调 long tick；login、disconnect 及玩家/世界身份替换统一复位，不能依赖观察到 player=null。JUnit 测时钟和身份边界，实机复核重生。
 
 ### E4 连续换世界时冷却卡住（静态字段里存的是游戏时间）
 
-**核实（bff08b8）：[确认，代码]。** `SpiritControls.java:246,267–277` 的 waterDashReadyAt、`SpiritMantle.java:21,35–60` 的 readyAt 都是静态世界 gameTime 截止值，退出/换世界没有重置。旧世界 now=100000 时留下 100020，新世界 now=100 会拒绝到追平旧时间。另发现 `SpiritControls.java:168,212–216` 的 wallJumpAt 同样残留，负时间差持续触发 0.25 空中操控倍率（本来只应持续 7 tick）；现有 owner/world 切换分支第 50–54 行未重置它。本轮未重复报告里的跨存档实机测速；已逐项审阅客户端计时字段，分类见 [README](../evidence/p5-fix/E/README.md)。
+**核实（bbc0143）：[确认，代码]。** `SpiritControls.java:246,267–277` 的 waterDashReadyAt、`SpiritMantle.java:21,35–60` 的 readyAt 都是静态世界 gameTime 截止值，退出/换世界没有重置。旧世界 now=100000 时留下 100020，新世界 now=100 会拒绝到追平旧时间。另发现 `SpiritControls.java:168,212–216` 的 wallJumpAt 同样残留，负时间差持续触发 0.25 空中操控倍率（本来只应持续 7 tick）；现有 owner/world 切换分支第 50–54 行未重置它。本轮未重复报告里的跨存档实机测速；已逐项审阅客户端计时字段，分类见 [README](../evidence/p5-fix/E/README.md)。
 
 **审定实施：** 统一生命周期清理 waterDashReadyAt、wallJumpAt、SpiritMantle 全部活动态与期限、运动预测缓存。保留非世界时间的渲染/面板职责，不扩大到未发现问题的模块。
 
 ### E5 存档退出再进，冷却全部清零（灵泉可以白嫖补满）
 
-**核实（bff08b8）：[确认]。** `SpiritData.java:26–28,35–36` 中 ENERGY_STATE / SKILL_READY 无 serializer，NeoForge AttachmentInternals.copyAttachments 会跳过无 serializer 的附件，死亡与非死亡 Clone 均无法复制。实机同一口井：gameTime 61536 补到 100；61545 再用被冷却挡住（能量 0.8，只有被动回能）；退出重进，61586 再用立刻 100，距离首次仅 50 tick，远小于 1200（[记录](../evidence/p5-fix/E/e5-live.json)）。soulLinkReadyAt、spearReadyAt、burstReadyAt 等同属 EnergyState。**修复建议：** 单独持久化实际冷却期限并 copyOnDeath；SKILL_READY 是 `SpiritSkills.java:26–28` 每 tick 派生的 UI 镜像，应从已保存冷却重建，不单独保存另一份真相。蓄力/治疗进行态保持临时；已保存的祭坛/钥石/树心每日限制不混入此次附件迁移。
+**核实（bbc0143）：[确认]。** `SpiritData.java:26–28,35–36` 中 ENERGY_STATE / SKILL_READY 无 serializer，NeoForge AttachmentInternals.copyAttachments 会跳过无 serializer 的附件，死亡与非死亡 Clone 均无法复制。实机同一口井：gameTime 61536 补到 100；61545 再用被冷却挡住（能量 0.8，只有被动回能）；退出重进，61586 再用立刻 100，距离首次仅 50 tick，远小于 1200（[记录](../evidence/p5-fix/E/e5-live.json)）。soulLinkReadyAt、spearReadyAt、burstReadyAt 等同属 EnergyState。**修复建议：** 单独持久化实际冷却期限并 copyOnDeath；SKILL_READY 是 `SpiritSkills.java:26–28` 每 tick 派生的 UI 镜像，应从已保存冷却重建，不单独保存另一份真相。蓄力/治疗进行态保持临时；已保存的祭坛/钥石/树心每日限制不混入此次附件迁移。
 
 **审定实施：** 独立 SpiritCooldowns attachment 持久化功能冷却，统一主世界 game time，copyOnDeath，缺字段默认就绪。EnergyState 只保留临时动作、治疗和租约。SKILL_READY 由真实期限推导，并换算到当前维度显示时钟，不存两份。验收 NBT 读写、死亡/非死亡 Clone、跨维度时钟与实机重进。
 
 ### E6 金索树逃亡期间可以用灵泉传送离开
 
-**核实（bff08b8）：[确认，实机]。** `SpiritWell.java:73–81` 检查 SpiritChallenge 与 Restoration，却漏掉 GinsoEscape.active。自然 Course 3 / Escape 2 金索树的存档副本内手放并发现两口井（心旁 5049,76,4314；远处 5161,76,4312），分别在 PREPARE、RUNNING 通过真实灵泉界面点目标；RUNNING 的 elapsed=60 时能打开界面，elapsed=75 判 OUTSIDE，回到 5048.5,76,4314.5 并冷却（[记录](../evidence/p5-fix/E/e6-running-live.json)、[截图](../evidence/p5-fix/E/p5e-e6-running-well.png)）。这是手放井复现，不声称已找到同位置的天然井。建议在公共 canTravel 前置拒绝并提示，覆盖打开界面与提交传送两条路径。
+**核实（bbc0143）：[确认，实机]。** `SpiritWell.java:73–81` 检查 SpiritChallenge 与 Restoration，却漏掉 GinsoEscape.active。自然 Course 3 / Escape 2 金索树的存档副本内手放并发现两口井（心旁 5049,76,4314；远处 5161,76,4312），分别在 PREPARE、RUNNING 通过真实灵泉界面点目标；RUNNING 的 elapsed=60 时能打开界面，elapsed=75 判 OUTSIDE，回到 5048.5,76,4314.5 并冷却（[记录](../evidence/p5-fix/E/e6-running-live.json)、[截图](../evidence/p5-fix/E/p5e-e6-running-well.png)）。这是手放井复现，不声称已找到同位置的天然井。建议在公共 canTravel 前置拒绝并提示，覆盖打开界面与提交传送两条路径。
 
 **审定实施：** 在灵泉打开界面和最终传送请求的共用校验中拒绝 GinsoEscape PREPARE/RUNNING，并显示中英文 actionbar。拒绝不能移动玩家或使逃亡进入 OUTSIDE。
 
 ### E7 水之心拒绝开始时，手里的遗迹指南也被触发
 
-**核实（bff08b8）：[未复现]。** 同一金索树，重置技能后只解锁 Dash+Bash，主手指南，真实 key.use 单点 1 次，再单点 5 次、连续按住 20 tick；均显示缺少攀爬/牵引/滑翔，未启动指南搜索（locator cooldowns/tickets/searches 全为 0，客户端日志无搜索消息）。[重复点击截图](../evidence/p5-fix/E/p5e-e7-repeat-denial.png)、[记录](../evidence/p5-fix/E/e7-repeat.json)。`GinsoWaterHeartBlock.java:18–20` 无论 start 成败都 sidedSuccess；原版 MultiPlayerGameMode.performUseItemOn 在结果 consumesAction 后直接返回，不继续物品 use。按约定不改代码；若原报告用了独立 use_item 调用、射线移开后第二次按键或潜行，需要原始输入序列另核，不把这些推测写成既定原因。
+**核实（bbc0143）：[未复现]。** 同一金索树，重置技能后只解锁 Dash+Bash，主手指南，真实 key.use 单点 1 次，再单点 5 次、连续按住 20 tick；均显示缺少攀爬/牵引/滑翔，未启动指南搜索（locator cooldowns/tickets/searches 全为 0，客户端日志无搜索消息）。[重复点击截图](../evidence/p5-fix/E/p5e-e7-repeat-denial.png)、[记录](../evidence/p5-fix/E/e7-repeat.json)。`GinsoWaterHeartBlock.java:18–20` 无论 start 成败都 sidedSuccess；原版 MultiPlayerGameMode.performUseItemOn 在结果 consumesAction 后直接返回，不继续物品 use。按约定不改代码；若原报告用了独立 use_item 调用、射线移开后第二次按键或潜行，需要原始输入序列另核，不把这些推测写成既定原因。
 
 **审定实施：** 未复现，不改代码。
 
 ### E8 和平难度召唤腐光之心，仍提示“苏醒了”
 
-**核实（bff08b8）：[确认]。** `GloomAltarBlock.java:36–61` 未检查难度，创建实体后无条件激活祭坛并发 altar_woke。实机和平难度点击独立祭坛：无存活 GloomHeart，BE 短暂 ACTIVE，后由 `SanctuaryBlockEntity.java:46–51` 回到 DORMANT，但 activated=true 残留（[初始](../evidence/p5-fix/E/e8-live.json)、[稳定后](../evidence/p5-fix/E/e8-settled.json)）。修复必须在创建/激活前拒绝，避免仅改文字。
+**核实（bbc0143）：[确认]。** `GloomAltarBlock.java:36–61` 未检查难度，创建实体后无条件激活祭坛并发 altar_woke。实机和平难度点击独立祭坛：无存活 GloomHeart，BE 短暂 ACTIVE，后由 `SanctuaryBlockEntity.java:46–51` 回到 DORMANT，但 activated=true 残留（[初始](../evidence/p5-fix/E/e8-live.json)、[稳定后](../evidence/p5-fix/E/e8-settled.json)）。修复必须在创建/激活前拒绝，避免仅改文字。
 
 **审定实施：** 和平难度在创建 Boss / 激活祭坛前拒绝，显示中英文 actionbar；activated 不置位。
 
 ### E9 遗迹指南能用铜和纸合成，绕过 50 灵光的售价
 
-**核实（bff08b8）：[部分]。** 铜+纸配方属实，但不存在“50 灵光一份指南物品”的商人商品：`MerchantRules.java:17` 实为遗迹定位 40、灵树 60、腐化地 50；`MerchantTrading.java:34–53` 发定位 payload、不发指南物品。灵光同时有实物和数值，`SpiritProgression.java:151–156,264–268` 将已觉醒玩家库存灵光按 1:1 自动入账。`git log --follow` 显示配方自 c8b254e 引入，彼时 WORLD_CHECKPOINT 明写“初次赠送，丢失铜纸重制，G 面板有同入口”，当前第 272–281 行仍赠送、第 70 行仍有免费面板搜索。指南 Mode.ANY（遗迹+哨站）与商人 Mode.RUINS 有交集，不是 50 灵光腐化地定位的替代品。
+**核实（bbc0143）：[部分]。** 铜+纸配方属实，但不存在“50 灵光一份指南物品”的商人商品：`MerchantRules.java:17` 实为遗迹定位 40、灵树 60、腐化地 50；`MerchantTrading.java:34–53` 发定位 payload、不发指南物品。灵光同时有实物和数值，`SpiritProgression.java:151–156,264–268` 将已觉醒玩家库存灵光按 1:1 自动入账。`git log --follow` 显示配方自 2b70c9f 引入，彼时 WORLD_CHECKPOINT 明写“初次赠送，丢失铜纸重制，G 面板有同入口”，当前第 272–281 行仍赠送、第 70 行仍有免费面板搜索。指南 Mode.ANY（遗迹+哨站）与商人 Mode.RUINS 有交集，不是 50 灵光腐化地定位的替代品。
 
 **我不同意：直接删配方就能修复这里的经济重叠。** 免费赠送和免费面板搜索仍在，删配方只破坏丢失后补回路径。建议把本项改为“免费基础导航与制图师付费定位的差异化”，先保留指南配方；最小方案可撤下与免费导航重复的付费遗迹定位，只保留树/腐化地服务，或另审更有价值的付费精确定位。取舍已审定，见下方实施规则。
 
@@ -78,7 +78,7 @@
 ## 批次 F — 世界生成与构建
 
 ### F1 `locate` / 遗迹指南指到空地（生灵之树、腐化地）
-[确认] `8ae6585` 正常噪声世界实测：5555 / 116555 / 5005，生灵之树分别 10/14、7/16、9/14 实际生成，腐化地 11/11、13/14、11/15。实际推进到 FULL 并核对心/核心 journal 与存活方块，失败包含起伏、净空、湿地、遗迹占位；证据 `evidence/p5-fix/F/baseline/`。
+[确认] `e48a7af` 正常噪声世界实测：5555 / 116555 / 5005，生灵之树分别 10/14、7/16、9/14 实际生成，腐化地 11/11、13/14、11/15。实际推进到 FULL 并核对心/核心 journal 与存活方块，失败包含起伏、净空、湿地、遗迹占位；证据 `evidence/p5-fix/F/baseline/`。
 根因（审计 D1）：结构阶段只粗略检查地形，到 feature 阶段放不下时就不生成，但结构起点已经登记了。
 方案：让**结构阶段的判定成为最终判定**。
 - 在 `findGenerationPoint` 里，用 `chunkGenerator.getBaseColumn` / `getBaseHeight`（只看噪声地形，不看装饰）做完整的列预检，覆盖 feature 阶段所有可能失败的条件：起伏、净空、根能否着地、水面等。
@@ -94,7 +94,7 @@
 ### F3 新克隆的仓库直接编译失败（Iris 包被 git 忽略）
 [确认] 编译依赖原为被忽略的本地 Iris jar。公开 Maven 的 `maven.modrinth:iris:1.8.12+1.21.1-neoforge` 与本地文件 SHA-1 一致；改为 compileOnly，运行时仍为可选依赖。
 方案：Iris 改为从公开 maven（比如 Modrinth maven）以 `compileOnly` 方式引入，或者写成可选依赖并由反射隔离，不再依赖本地被忽略的 jar。验收：在临时目录里 `git clone` 一份新仓库，`./gradlew build` 能通过（第一次需要联网下载依赖；如果沙箱没有网络就告诉我，由我来跑）。
-- 实施验收：最终工作树独立干净导出（无本地 Iris jar、无构建缓存）编译与 JUnit **1870/1870** 通过；提交 f90b766 后审查方从 GitHub 实际 `git clone` + `git lfs pull`，`compileJava compileGametestJava` 通过，克隆中无 Iris jar。
+- 实施验收：最终工作树独立干净导出（无本地 Iris jar、无构建缓存）编译与 JUnit **1870/1870** 通过；提交 e391324 后审查方从 GitHub 实际 `git clone` + `git lfs pull`，`compileJava compileGametestJava` 通过，克隆中无 Iris jar。
 
 ---
 
@@ -183,11 +183,11 @@
 - 不加强制弹窗和教程关卡。
 
 ### H9 旁观模式下显示旧的左侧能量条
-批次 D（`bff08b8`）已修复，只需复核。
+批次 D（`bbc0143`）已修复，只需复核。
 
 ---
 
-## 批次 I — 第二轮试玩核实与修复（基线 7bfd6dd）
+## 批次 I — 第二轮试玩核实与修复（基线 fdccba3）
 
 实施与验证记录：`evidence/p5-fix/I/README.md`。I1–I4 核实后直接实施；I5 不改；I6 以调查为先。
 

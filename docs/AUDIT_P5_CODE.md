@@ -1,6 +1,6 @@
 # AUDIT P5：代码层 / 服务端排查（只查不改）
 
-日期：2026-10-30（Asia/Shanghai）。基线 `cf989da`（main）。方式：读代码 + 在独立 worktree（`/workspace/oriMod/p5-wt`，detached）里跑构建、GameTest、专用服务器。未改 `src/`，未提交任何临时测试。
+日期：2026-10-30（Asia/Shanghai）。基线 `2d872f3`（main）。方式：读代码 + 在独立 worktree（`/workspace/oriMod/p5-wt`，detached）里跑构建、GameTest、专用服务器。未改 `src/`，未提交任何临时测试。
 
 标注：**[确认]** = 运行/测试复现；**[代码]** = 读代码得出，逻辑明确但未在游戏里复现；**[怀疑]** = 可能有问题，需进一步验证。
 

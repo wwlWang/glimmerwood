@@ -1,6 +1,6 @@
 # R116 试玩记录（playtest pass, 2026-10-26）
 
-基线 `f3cc83c` (R116)，headless Xvfb :99，llvmpipe 软渲染（低 FPS 属预期）。世界 `orimod_dev_pt116`。
+基线 `a8b5578` (R116)，headless Xvfb :99，llvmpipe 软渲染（低 FPS 属预期）。世界 `orimod_dev_pt116`。
 截图：`/workspace/oriMod/shots/playtest-r116-*`。每个区域测完即追加，标注 **[复现]** / **[怀疑]**。
 
 ## 环境
@@ -39,7 +39,7 @@
 - 第三人称侧视（`tpside-sheet.png`）：武器可见在下垂的手上；日间过曝光晕下细节弱 **[cosmetic，怀疑]**
 
 ## 区域 4：结构（`/ori locate` + 光谱观察，世界 seed 同 `orimod_dev_pt116`）
-- 注意：运行的客户端是 `f3cc83c`；中途 origin 又推了 `0aaf077`（forest_spring 重建），**此处 forest_spring 看到的是旧版 LayoutVersion 0**，新版未验证。
+- 注意：运行的客户端是 `a8b5578`；中途 origin 又推了 `b59d8a4`（forest_spring 重建），**此处 forest_spring 看到的是旧版 LayoutVersion 0**，新版未验证。
 - cave_altar（LayoutVersion 1，origin [46,30,198]，rot CLOCKWISE_180）：入口→阶梯→前厅→神龛室→地图室→抓钩廊→钥石门→祭坛，10 个固定机位截图 `cave-sheet1/2.png`，无缺块/悬空/穿模，苔藤与光源布置正常 **[通过]**；`descending-ribs`（下降阶梯）亮度很低，几乎全黑（`cave-descending-ribs.png`）**[cosmetic，主观]**。未做真实输入通关（由 GameTest 覆盖）。
 - creek_ruins（layoutVersion 0）：水渠、石墙、开花大树生成正常 **[通过]**
 - forest_spring（旧版 v0）：生成正常 **[通过]**
@@ -54,7 +54,7 @@
 - crash-reports 目录无今日新文件。
 
 ## 区域 7：全量测试
-- `cleanTest build runGameTestServer compileDevtoolsJava` 在 `436cef0`（= R116 `f3cc83c` + `0aaf077` forest_spring 重建 + 本文档提交）上：**BUILD SUCCESSFUL，1682 JUnit / 1090 GameTest，0 失败 / 0 跳过**（日志 `/workspace/oriMod/pt116/full-final.log`，1m54s 完成）。
+- `cleanTest build runGameTestServer compileDevtoolsJava` 在 `e088434`（= R116 `a8b5578` + `b59d8a4` forest_spring 重建 + 本文档提交）上：**BUILD SUCCESSFUL，1682 JUnit / 1090 GameTest，0 失败 / 0 跳过**（日志 `/workspace/oriMod/pt116/full-final.log`，1m54s 完成）。
 
 ## 补充：羽毛 / 滑翔
 - 胸甲槽装鞘翅（精灵形态下的“羽毛”）：二段跳后按住跳跃进入 glide，下沉约 0.125/tick 匀速并保持前进，`feather.wearing/permitted` 正确；松键后回落 **[通过]**
@@ -62,11 +62,11 @@
 ## 本轮未覆盖
 - 挑战垫落地检测、钥石门真实通关、灵树/金索内部真实输入攀登（由既有 GameTest/脚本覆盖，本轮未在客户端实测）
 - 原版人形闪帧（形态切换时）未捕获；Iris 真 bloom 之外的光影包未测
-- forest_spring 新版（`0aaf077`）视觉未看；仅看了旧版
+- forest_spring 新版（`b59d8a4`）视觉未看；仅看了旧版
 
 ---
 
-# Pass 2: items & levels（第二轮，2026-10-26，基线 `b787787`，世界 `orimod_dev_pt116p2` seed 116116）
+# Pass 2: items & levels（第二轮，2026-10-26，基线 `0a16ce7`，世界 `orimod_dev_pt116p2` seed 116116）
 
 Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每个区域测完追加。**[复现]** / **[怀疑]**。
 
@@ -123,9 +123,9 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 
 ---
 
-# Pass 3: exploratory/chaos（第三轮，2026-10-29，基线 `cd1670b`，世界 `orimod_dev_pt116p3` seed 116333）
+# Pass 3: exploratory/chaos（第三轮，2026-10-29，基线 `bf74c3a`，世界 `orimod_dev_pt116p3` seed 116333）
 
-自上轮（`d19bc5f`）起 origin 新增 4 个提交：`6f05c02` creek_ruins 重建（v1 溪谷）、`4c11df2` 钥石绑定/祭坛门控/生命格/练习靶蛋修复、`ab655da` 逃生宽限期 + 固定钥石台、`cd1670b` 重生后跳跃卡住修复。本轮用 `./gradlew --no-daemon runDevtoolsClient`（Xvfb :99，llvmpipe）。证据：`/workspace/oriMod/shots/playtest-r116-p3-*`，运动记录 `run-devtools/devtools/pt116p3-*.json`。
+自上轮（`36f6fb9`）起 origin 新增 4 个提交：`eca53fc` creek_ruins 重建（v1 溪谷）、`3185441` 钥石绑定/祭坛门控/生命格/练习靶蛋修复、`a80ecb3` 逃生宽限期 + 固定钥石台、`bf74c3a` 重生后跳跃卡住修复。本轮用 `./gradlew --no-daemon runDevtoolsClient`（Xvfb :99，llvmpipe）。证据：`/workspace/oriMod/shots/playtest-r116-p3-*`，运动记录 `run-devtools/devtools/pt116p3-*.json`。
 **不改代码**，只记录。**[复现]** / **[怀疑]** / **[已修复]** 标注。
 
 ## P3-0 旧问题复验
@@ -160,7 +160,7 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - 精灵沙（`spirit_sand` 6×6×7 块）：直接走进去就穿过并被推出（出口 +0.85 速度）；冲刺穿过；从 30 格高落上去；tp 到沙块中心 → 约 30 tick 内被推出到 +z 面；人形形态落在沙块顶 **[通过]**。
 - 腐光水：2 点魔法伤害 / ~10 tick + 缓慢 I（精灵形态不减速，见 P3-1）；`setblock` 移除池边后会向外扩散 1 格即停（短距离扩散，设计）**[通过]**；在池内停下不动会持续掉血致死（40 HP 约 20 s），池里没有出水提示 **[信息]**。
 
-## P3-4 腐光之心逃生（cave_altar，真人式输入，HEAD `d774b92`，含宽限期 `ab655da`）
+## P3-4 腐光之心逃生（cave_altar，真人式输入，HEAD `41f02ec`，含宽限期 `a80ecb3`）
 方法：生存、Normal、20 HP（基础，无生命格）、`/kill` 心脏（祭坛 `(-228,44,-249)`，逃生原点 `(-227.5,45,-248.5)`），随后立刻用**真实按键**（W+疾跑+跳，鼠标 yaw 由脚本每 ~30 ms 校正；冲刺键 `key.orimod.dash` 每 30 tick 一次）沿 75 点步行路线跑（祭坛→出口 `(-288,66,-248.5)`，直线 ≈58 格，路线 74 步、上升 22 格，含 1:1 长楼梯）。服务端 `gloomEscape.elapsed/radius` 取自 `spirit_state`，证据 `pt116/escape_*.json`。
 | 尝试 | 用时（tick / 秒） | 前沿宽限后最小领先距离 | HP |
 |---|---|---|---|
@@ -178,7 +178,7 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - **[复现，minor] Peaceful 难度下召唤 Gloom Heart：** 提示「腐光之心苏醒了！」，祭坛转 `ACTIVE`，但心脏作为怪物立刻被 Peaceful 清理（无实体），玩家得到误导的提示；改回 Normal 后再点才正常召唤。建议 Peaceful 时提示「需要非和平难度」或禁止消耗祭坛状态。
 - **[信息]** 死亡后（无 keepInventory）首次胜利发的生命格/能量格在背包里，随死亡掉落——符合原版规则；但 boss/逃生奖励是「首次限定」，丢了就不再发（`CLEARED` 已记）。**[怀疑 minor]** 建议首次奖励改成不会丢的形式或二次补发。
 
-## P3-5 意志之光（Will Wisps）/ 复苏仪式（Restoration）端到端（世界 p3，HEAD `0f0512d`）
+## P3-5 意志之光（Will Wisps）/ 复苏仪式（Restoration）端到端（世界 p3，HEAD `b057d79`）
 - **为什么上一轮「净化后复苏仍 false」：设计，不是 bug。** 复苏需要 3 枚意志之光（`WillWisp` 位 7）：`HEART`（击杀腐光之心逃生时在场）、`WING`（击杀腐光母翼 `storm_altar`）、`EARTH`（**累计 3 处不同腐化地面**净化后才出）；且仅在**大灵树心**（`great_tree_heart`，不是小灵树 `spirit_tree_heart`）使用，且需觉醒+精灵形态。上轮只净化了 1 处、没有另外两枚，状态就是 `restored:false`。
 - 真实走完整条链 **[通过]**：已有 HEART+WING（mask 3）→ 三处腐化地面（`locate` → `ori blight nearest` → 灵击之锤 4–5 下，600 tick 净化后各 +60 灵光、`purify/…` 奖励键 ×3）→ 第 3 处净化后 `EARTH` 意志之光在核处生成（`pending=[earth]`，位置 `(-321.5,69.35,627.5)`，截图 `earth-wisp`），走过去 3 格即拾取 `mask 3→7`、`wisps.purifications=3`。
 - 大灵树（origin `(136,70,344)`，heart `(138,95,345)`）：入口 `(136,70,320)` 前有 1 格高 `great_spirit_root`（需跳上，纯 W 的 `walk_route` 会 `blocked`；用「走+疾跑+卡住跳」脚本，约 20 s 走完 22 格上升到心室 `(135.5,93.9,343.8)`）。对准 heart 真实 `use`：`restoration.active=true`，300 tick（15 s）倒计时，镜头光环/光柱/树冠开花（截图 `restore-sheet`），结束 `completed:true / restored:true`、`bloomChunks 171 / writes 256`、+500 灵光（532→1032）、成就 toast；再次使用 → 拒绝（`complete`），不会重复发奖 **[通过]**。
@@ -199,7 +199,7 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - **裂地 `cracked_ruin_floor`（7×3）**：光爆/锤 → 不破（设计：地板只认 Stomp）；从 12 格高「潜行+C」下砸 → 21 块全塌、玩家掉到 y=196 **[通过]**。
 - **技能打真实腐化之核（`(-333,70,-729)`，40 HP）**：蓄力灵焰 −12、光爆 −8、灵矛 −6、刃 0、灵弓箭 0、下砸 0（只清荆棘）、锤 −10 **[通过，与 `BlightRules.damage` 一致]**。锤在 0.8/1.5 格内都能打到。（中途一次锤距离 2.5 格没掉血，未复现，疑为切栏后输入未到，记 [怀疑/未复现]。）
 
-## P3-7a creek_ruins v1 手玩（HEAD `b8de170`，客户端重启后同世界 p3）
+## P3-7a creek_ruins v1 手玩（HEAD `092763e`，客户端重启后同世界 p3）
 站点：`orimod:creek_ruins` origin `(-110,106,128)` CW90，bounds x -184..-102 / y 82..149 / z 120..180，layoutVersion 1。模板坐标经旋转换算：神龛 `(-132,116,139)`、安全点 `(-134.5,116,140.5)`、Bash 垫 `(-145,121,140)`、滑翔终点 `(-164,125,146)`、能量格台 `(-165,125,148)`、上升气流 `x -155..-152, z 144..146, y116`、暗门 `(-154,115,135)`。
 - 外观（远景/鸟瞰 `p3-creek-overview-a/b`）：庭院、水渠、两棵开花树、拱门、坡边过渡自然，**未见悬空/插进地形的遗迹块** **[通过]**。夜间神龛与水渠可辨认，不算全黑 `p3-creek-night-sheet` **[通过]**。
 - 真实输入步行：入口 `(-109.5,116,150.5)` → 神龛 `walk_route` 36 点 189 tick 无卡 **[通过]**；神龛 → Bash 高台：要多次「卡住就跳」（台阶 1 格），**不用 Bash 也能走上 Bash 垫所在的 y121 高台** **[信息/设计]**——Bash 垫只是落点判定，可以绕开 Bash。
@@ -212,7 +212,7 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - **[复现，major（装 Iris 时）] 默认键位冲突：Bash = R 与 Iris「重新加载光影包」= R 同键。** 本运行时 `options.txt` 里 `key_iris.keybind.reload:key.keyboard.r` 与 `key_key.orimod.bash:key.keyboard.r` 同时存在，按 Bash 时聊天栏出现「已重新加载光影包！」`p3-creek-after-bash`（开着光影时每次 Bash 都会整包重载、卡顿）。`SpiritKeyDefaults` 只在 `keyDefaultsApplied=false` 时迁移一次 Iris 键；该标志已为 true（之前跑过），之后 options 被重置/后装 Iris 就不会再迁移，也无冲突提示。
 - 日志：仅 1 条 `Can't keep up`（加载世界时），无模组异常。
 
-## P3-7b forest_spring v1 手玩（重建 `0aaf077`）
+## P3-7b forest_spring v1 手玩（重建 `b59d8a4`）
 站点：origin `(-2730,61,-256)` CW90，bounds x -2792..-2722 / y 45..92 / z -264..-210，layoutVersion 1。换算：神龛 `(-2747,67,-249)`、安全点 `(-2745.5,67,-245.5)`、垫 0 蹬墙 `(-2754.5,69,-246.5)`、垫 1 二段跳 `(-2757.5,71,-247.5)`、垫 2 冲刺 `(-2761.5,69,-248.5)`、能量格台 `(-2770,67,-222)`、风暴祭坛 `(-2776,67,-237)`、钥石台 `(-2759,71,-249)` / `(-2759,69,-237)`、暗室裂墙 `x -2769..-2767, z -246, y67–69`。
 - 外观（`p3-fs-overview-a/b`）：泉池、庭院、拱门、树冠、坡边过渡正常，未见悬空/插地块 **[通过]**。
 - 真实输入步行：入口 `(-2729.5,67,-236.5)` → 安全点 `walk_route` 26 点，无需跳，无卡 **[通过]**。
@@ -268,7 +268,7 @@ Xvfb :99 + llvmpipe；截图 `/workspace/oriMod/shots/playtest-r116-p2-*`。每�
 - **[未测，工具限制]** devtools 一次只驱动一个客户端（`run-devtools` 单实例、单连接文件），box 上没有第二个客户端的 run 目录与输入通道；没做局域网双客户端同步。
 
 ## P3-12 全量测试（客户端已正常 leave_world/quit 后串行跑）
-- `cleanGameTestWorld` → `cleanTest build runGameTestServer compileDevtoolsJava --no-parallel`，HEAD `e2aeeed`（源码同 `cd1670b`，之后只有文档提交）：**BUILD SUCCESSFUL（4m54s），JUnit 1754 / 0 失败 / 0 错误 / 0 跳过；GameTest「All 1226 required tests passed」**，`All dimensions are saved`，exit 0，无 flaky。日志 `/workspace/oriMod/pt116/p3-full.log`。
+- `cleanGameTestWorld` → `cleanTest build runGameTestServer compileDevtoolsJava --no-parallel`，HEAD `98cbdc5`（源码同 `bf74c3a`，之后只有文档提交）：**BUILD SUCCESSFUL（4m54s），JUnit 1754 / 0 失败 / 0 错误 / 0 跳过；GameTest「All 1226 required tests passed」**，`All dimensions are saved`，exit 0，无 flaky。日志 `/workspace/oriMod/pt116/p3-full.log`。
 
 ## P3 第 7–12 段小结（严重度从高到低）
 1. **major（装 Iris 时）** Bash 默认键 R 与 Iris「重新加载光影包」R 冲突；一次性迁移已标记完成后不会再处理（P3-7a）。

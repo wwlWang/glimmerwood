@@ -1,15 +1,15 @@
-# Pass 6 回归 + 定向 + 乱测（2026-10-31，HEAD `7bfd6dd`）
+# Pass 6 回归 + 定向 + 乱测（2026-10-31，HEAD `fdccba3`）
 
-自 Pass 5 起的新代码提交：`8ae6585`（P5 E：世界完整性、中立安全战斗、冷却持久化）、`f90b766`（P5 F：特征点权威规划、大灵树启动期选址、公开 Iris 依赖）、`e210ef1`（P5 G：精灵物理跟随原版效果、史莱姆、冰、激流）、`7bfd6dd`（P5 H：无冲突按键、统一术语、Ori 进度）。
+自 Pass 5 起的新代码提交：`e48a7af`（P5 E：世界完整性、中立安全战斗、冷却持久化）、`e391324`（P5 F：特征点权威规划、大灵树启动期选址、公开 Iris 依赖）、`f236c90`（P5 G：精灵物理跟随原版效果、史莱姆、冰、激流）、`fdccba3`（P5 H：无冲突按键、统一术语、Ori 进度）。
 
 Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚本 `/workspace/oriMod/pt6/`，截图 `/workspace/oriMod/shots/playtest-p6-*`。**不改代码**，只记录。
 
 标记：**[已修复] / [仍存在] / [有变化] / [新·复现] / [新·怀疑] / [通过] / [未测：原因]**；严重度 crash / blocker / major / minor / cosmetic。
 
 ## P6-0 新克隆编译 + 全量测试
-- **新克隆编译（F3 / AUDIT B1）[已修复]**：`git clone file:///workspace/oriMod/repo /tmp/p6clone`（7bfd6dd，LFS 正常拉到真 jar），克隆里没有任何本地 Iris jar；`./gradlew --no-daemon build -x test` → `compileJava` 成功、出 `orimod-0.1.0-SNAPSHOT.jar`，`compileGametestJava` 也成功。Iris 现在走 `compileOnly 'maven.modrinth:iris:1.8.12+1.21.1-neoforge'`。（说明：本机 Gradle 缓存里已有 Modrinth 依赖，不是“完全离线首次下载”的验证。）
+- **新克隆编译（F3 / AUDIT B1）[已修复]**：`git clone file:///workspace/oriMod/repo /tmp/p6clone`（fdccba3，LFS 正常拉到真 jar），克隆里没有任何本地 Iris jar；`./gradlew --no-daemon build -x test` → `compileJava` 成功、出 `orimod-0.1.0-SNAPSHOT.jar`，`compileGametestJava` 也成功。Iris 现在走 `compileOnly 'maven.modrinth:iris:1.8.12+1.21.1-neoforge'`。（说明：本机 Gradle 缓存里已有 Modrinth 依赖，不是“完全离线首次下载”的验证。）
 - 盒子上默认 PATH 没有 `java`（`JAVA_HOME` 未设），要手动指向 `~/.gradle/jdks/eclipse_adoptium-21-amd64-linux.2`，环境问题，非模组问题 **[信息]**。
-- 全量 `scripts/check.sh`：为了不和试玩客户端抢同一个 Gradle 项目目录，在同一提交的干净克隆 `/tmp/p6clone` 里跑（与主仓库 7bfd6dd 完全相同），结果见 P6-0b。
+- 全量 `scripts/check.sh`：为了不和试玩客户端抢同一个 Gradle 项目目录，在同一提交的干净克隆 `/tmp/p6clone` 里跑（与主仓库 fdccba3 完全相同），结果见 P6-0b。
 
 ### P6-0b 全量 `scripts/check.sh`（干净克隆，9 分 29 秒）
 - JUnit **1881 / 0 失败 / 0 跳过**；GameTest **1580，1 个失败** → `check.sh` 以 `BUILD FAILED` 退出。
@@ -89,7 +89,7 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
 - **提示文字写死按键（按R / 按G / 按住 X）[已修复]**：`ui_text` 在老绑定下返回「对准灵灯按 **R**」「按住 **X** 聚集灵焰」；重置按键后同一进程立刻变成「按 **B**」「按住 **H**」，跟着当前绑定和技能槽走。lang 里已无写死的「按X」。
   - **[新·复现，cosmetic]** `hint.orimod.shard_slot` 显示为「萤：按 G**打开**面板」，键名后少了空格（另两条有空格）。
 - **术语混用（灵光/光点、灵能/能量、腐光/腐化）[已修复，但替换留下一处错字]**：zh_cn 608 条 / en_us 608 条一一对应；「光点」0 处；「灵能」只剩按键分类名「Ori 精灵能力」里的字面（不是术语）；腐光（Gloom 敌人/祭坛/腐光水）与腐化（Blight 地带/核/土）按词表分开用。
-  - **[新·复现，minor] `message.orimod.blight_exposure` 变成「腐化：自然恢复受阻，精能量量正在流失。」**：7bfd6dd 之前是「精灵能量正在流失」，批量把「灵能」替换成「能量」时把“精**灵能**量”也替换了。站进腐化地带就会看到这条。
+  - **[新·复现，minor] `message.orimod.blight_exposure` 变成「腐化：自然恢复受阻，精能量量正在流失。」**：fdccba3 之前是「精灵能量正在流失」，批量把「灵能」替换成「能量」时把“精**灵能**量”也替换了。站进腐化地带就会看到这条。
 - **意志之光页显示原始维度 id（P5）[已修复]**：`DimensionNames` 返回 主世界 / 下界 / 末地，未知模组维度回退成 `Crystal Caverns Upper`。
 
 ### P6-1e-2 / P6-2c 精灵物理 vs 原版（`pt6/phys.py`、`phys2.py`、`phys3.py`、`phys4.py`、`rip6.py`，平台 y=200）
@@ -209,9 +209,9 @@ Headless Xvfb :99 + llvmpipe，`./gradlew --no-daemon runDevtoolsClient`。脚�
   - 测完把碎片槽 0 换成了「采集」（原来是空的），这是测试存档的改动，不影响别的存档。
 
 ### P6-1e-6 只核对了代码、没进遗迹重测的老问题
-这些点所在的代码 / 遗迹模板在 P3 之后没有任何提交改过（`git log b8c9f42..7bfd6dd`），按代码判断：
-- **森林之泉密室没有顶（P3）[仍存在·代码未改]**：`forest_spring` 模板最后一次改是 R116 的 `5f5898b`。
-- **溪谷第一个锚点被灵根挡住（P3）[仍存在·代码未改]**：`creek_ruins` 模板最后一次改是 `6f05c02`（R116）。
+这些点所在的代码 / 遗迹模板在 P3 之后没有任何提交改过（`git log b118d31..7bfd6dd`），按代码判断：
+- **森林之泉密室没有顶（P3）[仍存在·代码未改]**：`forest_spring` 模板最后一次改是 R116 的 `409574d`。
+- **溪谷第一个锚点被灵根挡住（P3）[仍存在·代码未改]**：`creek_ruins` 模板最后一次改是 `eca53fc`（R116）。
 - **开挑战不检查技能 / 森林之泉要求只写了冲刺（P3）[有变化，需要再看]**：`SpiritChallenge.requirement` 现在会检查 `RuinKind.abilities`：森林之泉只要求冲刺（1），溪谷要求猛击+滑翔（6），洞穴祭坛要求牵引+下砸（24）并要带灵刃。这段代码自 R116 起没改，所以 P3 里「溪谷没学滑翔也能开始」要么当时是别的原因，要么判断有偏差；蹬墙跳、二段跳在这个模组里不是要解锁的技能，所以森林之泉“只写冲刺”可能就是对的。**[未在游戏里重测]**
 - **制图师连买几份指南会全部扣钱（P3）[有变化，部分仍存在]**：付费的“遗迹定位”已经下架（E9），现在只卖灵树 60、腐化地 50；`MerchantTrading.buy` 每次购买都直接扣钱并下发新的指引，没有“你已经有一份未用完的同类指引”检查，所以连买灵树 / 腐化地定位仍然每次都扣钱、只有最后一次的指引生效 **[按代码，未实测]**。
 - **首通奖励随死亡丢失（P3）[仍存在·设计]**：奖励仍是背包物品，R117 已记为设计。

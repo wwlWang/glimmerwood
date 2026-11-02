@@ -325,22 +325,22 @@ git diff -- src/main/resources
 ~/.local/opt/orimod-art-venv/bin/python -B scripts/test_check_ruins.py -v
 ```
 
-生成器不再有隐式仓库输出路径；独立预览可用 `python -B scripts/art/build_ruins.py --output-root /tmp/orimod-ruins-preview`，在指定目录下创建 `src/main/resources` 树。NBT 固定压缩级别 9、`mtime=0`、OS 字节 `0x0a`，保留初始提交 `c8b254e` 的 gzip 头；OS 字节是历史封装元数据，不代表当前操作系统。Python/zlib 的压缩输出若发生变化，默认内容校验仍可通过，逐字节复现需再检查 `--write` 的资源 diff。
+生成器不再有隐式仓库输出路径；独立预览可用 `python -B scripts/art/build_ruins.py --output-root /tmp/orimod-ruins-preview`，在指定目录下创建 `src/main/resources` 树。NBT 固定压缩级别 9、`mtime=0`、OS 字节 `0x0a`，保留初始提交 `2b70c9f` 的 gzip 头；OS 字节是历史封装元数据，不代表当前操作系统。Python/zlib 的压缩输出若发生变化，默认内容校验仍可通过，逐字节复现需再检查 `--write` 的资源 diff。
 
 布局中的后续机关由 `RuinKind` 读取、`RuinPiece.placeCells` 在模板放置后添加，因此生成器把它们写入布局契约，不烘焙进基础 NBT。坐标与模板共用地表遗迹的 4 格基础偏移；风口按矩形生成，宝库门由侧墙范围生成，灵砂奖励位于隧道末端外两格的洞室。2026-10-20 根据只读 `git log` / `git show` 补回以下来源，神龛模型按遗迹主题选择原创 top/side 并共用 bottom：
 
 | 来源提交 | 原资源变更 |
 | --- | --- |
-| R44 `57bcc97` | 三座遗迹的生命/能量核心基座 `cells` |
-| R46 `29e0d1b` | 森林与溪流滑翔间隙的 `updrafts` |
-| R50 `ffd4841` | 洞穴竞技场的 `boss_altar` |
-| R57 `eef6b65` | 洞穴 `keystones`、`vault` 和宝库内能量核心 |
-| R59 `c7a6351` | 溪流滑翔路线下的 `gloom_water` 范围 |
-| R62 `0fc04c1` | 三座遗迹入口旁的 `map_stone` |
-| R64 `e845034` | 洞穴 `spirit_sand` 隧道范围 |
-| R66 `882ed8d` | 灵砂隧道末端洞室的生命核心 |
-| R70 `2dc5bb4` | 森林后部的 `storm_altar` |
-| R76 `516bb93` | 三种神龛的原创纹理引用，替换原版重生锚/深板岩纹理 |
+| R44 `955b4c3` | 三座遗迹的生命/能量核心基座 `cells` |
+| R46 `53d03a4` | 森林与溪流滑翔间隙的 `updrafts` |
+| R50 `e9cc662` | 洞穴竞技场的 `boss_altar` |
+| R57 `88952e9` | 洞穴 `keystones`、`vault` 和宝库内能量核心 |
+| R59 `a4a76cb` | 溪流滑翔路线下的 `gloom_water` 范围 |
+| R62 `1256ab6` | 三座遗迹入口旁的 `map_stone` |
+| R64 `8ee6ed9` | 洞穴 `spirit_sand` 隧道范围 |
+| R66 `fe7afb5` | 灵砂隧道末端洞室的生命核心 |
+| R70 `5526c32` | 森林后部的 `storm_altar` |
+| R76 `6da7b46` | 三种神龛的原创纹理引用，替换原版重生锚/深板岩纹理 |
 
 实际路线使用 `verify-ruin-routes.py`，边界使用 `verify-ruin-boundaries.py`，自然生成使用 `verify-natural-ruins.py <构建标识> <orimod_dev_世界名> <种子>`。这些游戏内验证脚本会修改专用测试世界；不能用于用户生存存档。上述纯 Python 校验与回归测试不启动 Minecraft 或 Gradle。
 
@@ -420,7 +420,7 @@ R108 视觉打磨：盛开叶片保留原来的 cutout 孔隙，保留高饱和�
 
 固定机位补拍：打开已有 `orimod_dev_r108`（树心 4000,120,3998）后运行 `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" python3 -B scripts/capture-r108-polish.py <唯一证据名>`。脚本使用真实右键，原始锚点 (4000.5,120,3996.5)，`review_camera follow=false`，三个偏移 (-4,2.5,-5)/(-10,6,-18)/(-12,4,-24)，目标高度分别 1.3/8/10；固定夜晚、FOV70、关闭 shader，另拍不动鼠标时第1/5/9/13秒的第一人称，并通过XTest真实鼠标位移走GLFW/MouseHandler验证缓动中断。结果记录实际时刻、相机设置、玩家位置和粒子计数；清除 forceload、恢复界面和相机。它会 reset 该测试世界的复苏数据，只在验收存档使用。旧参照为 `evidence/r108-capture-v001`，不需要替换工作区资源；旧图未保存完整相机目标高度/帧时刻，因此只能比较指定偏移和同棵树，不能声称逐像素同帧。
 
-新增确定性光柱贴图源脚本 `scripts/art/build_restoration_texture.py`，用 `--check` 校验 `textures/misc/restoration_column.png`。本次 polish 没有新增 `art/source` JSON；前述两份 R108 FX JSON 已在 fbb3c90 中，22 个 FX 导出不变。
+新增确定性光柱贴图源脚本 `scripts/art/build_restoration_texture.py`，用 `--check` 校验 `textures/misc/restoration_column.png`。本次 polish 没有新增 `art/source` JSON；前述两份 R108 FX JSON 已在 1c46a70 中，22 个 FX 导出不变。
 
 实拍色彩回归见 `evidence/r108-polish-after-v003/canopy-metrics.json`：Sodium下盛开模型关闭方向压暗/AO，树冠ROI饱和度+12.2%、HSV亮度+49.2%，没有增加光照引擎写入或neoforge_data顶点光照字段。
 

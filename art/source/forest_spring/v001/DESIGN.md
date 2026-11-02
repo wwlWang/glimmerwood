@@ -1,6 +1,6 @@
 # Forest Spring · LayoutVersion 1 · first art checkpoint
 
-Generator: scripts/art/build_forest_spring.py. 39 × 32 × 55. LayoutVersion 0 resources are never regenerated; their pre-edit hashes are in src/test/resources/ruins/forest_spring_legacy.json (f3cc83c).
+Generator: scripts/art/build_forest_spring.py. 39 × 32 × 55. LayoutVersion 0 resources are never regenerated; their pre-edit hashes are in src/test/resources/ruins/forest_spring_legacy.json (a8b5578).
 
 An open spring cloister rather than an enclosed hall. The front root arch frames the central pool; a worn pale path forks to the shrine and map courts. The storm courtyard has its own broad view and a tall root halo, behind the pool. Asymmetric attached canopy shoulders and broken stone uprights retain sky and sight lines.
 

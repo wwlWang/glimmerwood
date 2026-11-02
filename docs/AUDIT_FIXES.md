@@ -14,7 +14,7 @@
 
 `evidence` 和 `.external` 已移至 `D:/ProjectData/oriMod/evidence`、`D:/ProjectData/oriMod/external`，原位置保留目录联接以兼容既有脚本与证据链接。两者继续被 Git 忽略。当前主工程构建、开发源码编译和资产校验通过；构建中的 `test NO-SOURCE` 明确不计为玩法测试。
 
-私有仓库已收到三次主题提交：资产 `59c8543`、角色运行时 `15c7868`、依赖与说明 `c0665d2`。标签 `ori-baseline-2026-10-18` 指向该恢复基线；LFS 上传约 34 MB（十进制）。从 GitHub 新检出到独立目录后，Windows `clean build --no-build-cache` 和资产校验通过。该检出内容复制到 Linux 独立目录，使用 Linux JDK 21 与独立缓存执行 `build --no-build-cache` 也通过；首次仓库连接超时通过现有本地代理解决。R0 的恢复与跨平台构建边界完成。
+私有仓库已收到三次主题提交：资产 `f5d761c`、角色运行时 `7d59322`、依赖与说明 `d3025d6`。标签 `ori-baseline-2026-10-18` 指向该恢复基线；LFS 上传约 34 MB（十进制）。从 GitHub 新检出到独立目录后，Windows `clean build --no-build-cache` 和资产校验通过。该检出内容复制到 Linux 独立目录，使用 Linux JDK 21 与独立缓存执行 `build --no-build-cache` 也通过；首次仓库连接超时通过现有本地代理解决。R0 的恢复与跨平台构建边界完成。
 
 ## R1：回归骨架
 
