@@ -27,10 +27,10 @@
 3. 把以下**两个 jar** 放进 `mods/`：
    - OriMod；
    - [GemRender](https://github.com/Warfactory-Official/GemRender) 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装）。它没有公开下载页，可用本仓库的 `libs/runtime/gemrender-0.1.17.jar`；许可与源码见 [THIRD_PARTY](THIRD_PARTY.md#gemrender)。GemRender 自带 mixin 和原生库，不能打进 OriMod，必须单独放置。
-4. 推荐同时安装 Sodium 0.6.13 与 Iris 1.8.12。装有 Iris 且没有选择其他光影时，首次启动会自动装入并启用 Spirit Glow；已选其他光影则保留，可在 OriMod 设置中切换。
+4. 推荐同时安装 Sodium 0.6.13 与 Iris 1.8.12。自带的 Spirit Glow 光影**默认关闭**：首次启动只提示一次，在“模组 → OriMod → 配置 → 画面”打开后才会复制到 Iris 的 `shaderpacks/` 并启用；关闭时恢复之前使用的光影。
 5. 可直接打开已有存档；遗迹只在新探索的区块生成。
 
-客户端设置在“模组 → OriMod → 配置”：特效画质、高级粒子、镜头震动与屏幕闪光强度，保存在 `config/orimod-client.toml`。
+客户端设置在“模组 → OriMod → 配置”：特效画质、高级粒子、Spirit Glow 光影、镜头震动与屏幕闪光强度，保存在 `config/orimod-client.toml`。
 
 ### 创造模式与调试命令
 
@@ -98,7 +98,7 @@ Windows 使用 `gradlew.bat build --console=plain`；若遇到 Java loopback soc
 - `art/source/`：角色、手部、怪物与建筑的 Blender 工程、导出物、生成参数与清单；大文件使用 LFS。
 - `models/`：主角模型的下载原件和来源记录；未采用的候选不随仓库分发。
 - `libs/`、`dependencies/`：构建所需的锁定依赖包与校验记录（许可见 [THIRD_PARTY](THIRD_PARTY.md)）。
-- `docs/`：设计决定、计划、当前状态、审查修复和验收记录。
+- `docs/`：设计决定、计划、当前状态、审查修复和验收记录，索引见 [docs/README](docs/README.md)。
 - `scripts/`：构建、资源生成、实机验证与发行脚本。
 
 运行存档、原始录像、证据、历史资产候选、外部工具与 Minecraft 反编译源码不进入仓库。阶段标签只标记可恢复位置，不等于质量验收通过。

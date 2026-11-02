@@ -8,7 +8,9 @@ import cn.wwl.orimod.config.SpiritGlowSync;
 
 /**
  * Settings toggle for the bundled Spirit Glow shader pack. Without Iris the toggle has no effect and
- * no Iris class is loaded; all Iris calls live in {@link SpiritGlowIris}.
+ * no Iris class is loaded; all Iris calls live in {@link SpiritGlowIris}. The toggle is off by default:
+ * the pack is copied into Iris's folder only once it is turned on (or to update a copy already there),
+ * and a first start only shows a hint.
  */
 public final class SpiritGlow {
     /** Bundled pack inside the mod jar, built from shaderpacks/spirit-glow by the zipSpiritGlow task. */
@@ -34,7 +36,8 @@ public final class SpiritGlow {
     public static void tick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         if (!IRIS || !OriClientConfig.SPEC.isLoaded() || ++ticks % CHECK_INTERVAL != 0) return;
         try {
-            if (!installed && !installFailed) {
+            boolean configured = OriClientConfig.SPIRIT_GLOW.get();
+            if (!installed && !installFailed && (configured || SpiritGlowIris.exists(SpiritGlowSync.PACK))) {
                 installed = SpiritGlowIris.install();
                 installFailed = !installed;
             }
@@ -43,7 +46,6 @@ public final class SpiritGlow {
             if (saved == null) saved = SpiritGlowState.load(file);
             var state = saved;
             boolean setupDone = state.setupDone();
-            boolean configured = OriClientConfig.SPIRIT_GLOW.get();
             var action = SpiritGlowSync.decide(setupDone, configured, synced, iris);
             if (action == SpiritGlowSync.Action.ENABLE && !installed) action = SpiritGlowSync.Action.NONE;
             boolean active = SpiritGlowSync.PACK.equals(iris.pack()) && iris.enabled();
@@ -74,7 +76,8 @@ public final class SpiritGlow {
                 lastAction = action.name().toLowerCase(java.util.Locale.ROOT);
                 OriMod.LOGGER.info("Spirit Glow: {} (Iris pack {}, shaders {})", lastAction, iris.pack(), iris.enabled());
             }
-            if (!setupDone && action == SpiritGlowSync.Action.SAVE_OFF) hintKeptPack();
+            if (!setupDone && action == SpiritGlowSync.Action.SAVE_OFF) hint("kept");
+            else if (!setupDone && !configured) hint("available");
             if (!setupDone) state = state.withSetupDone();
             if (!state.equals(saved)) { state.save(file); saved = state; }
             if (action == SpiritGlowSync.Action.SAVE_ON || action == SpiritGlowSync.Action.SAVE_OFF) OriClientConfig.SPEC.save();
@@ -103,13 +106,13 @@ public final class SpiritGlow {
         return plan.changed();
     }
 
-    /** Plan 10.1: a pack the player already chose is kept; say once that Spirit Glow can be switched on. */
-    private static void hintKeptPack() {
+    /** Plan 10.1: said once on the first start: a pack the player chose is kept, or Spirit Glow is available but off. */
+    private static void hint(String key) {
         var mc = net.minecraft.client.Minecraft.getInstance();
         net.minecraft.client.gui.components.toasts.SystemToast.add(mc.getToasts(),
                 net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow.kept.title"),
-                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow.kept.body"));
+                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow." + key + ".title"),
+                net.minecraft.network.chat.Component.translatable("orimod.spirit_glow." + key + ".body"));
         hinted = true;
     }
 

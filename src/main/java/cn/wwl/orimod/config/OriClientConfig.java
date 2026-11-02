@@ -39,10 +39,10 @@ public final class OriClientConfig {
                 .define("advancedParticles", true);
         BODY_AURA = builder.comment("Body, paw and ground halo intensity in percent. Independent of the Iris shader pack; 0 disables these halos.")
                 .defineInRange("bodyAura", DEFAULT_BODY_AURA, 0, 100);
-        SPIRIT_GLOW = builder.comment("Use the bundled Spirit Glow shader pack (needs Iris). Off restores the shader pack used before.",
-                        "On first start it is only selected when no other shader pack is chosen in Iris.",
+        SPIRIT_GLOW = builder.comment("Use the bundled Spirit Glow shader pack (needs Iris). Off by default; turning it on copies the pack",
+                        "into Iris's shaderpacks folder and selects it. Off restores the shader pack used before.",
                         "Choosing another pack in Iris turns this off.")
-                .define("spiritGlow", true);
+                .define("spiritGlow", false);
         builder.pop();
         VANILLA_HUD = builder.comment("Keep vanilla hearts, armor and XP while in spirit form instead of the life/energy cell HUD.")
                 .define("vanillaHud", false);

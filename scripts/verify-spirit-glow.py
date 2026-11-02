@@ -1,7 +1,7 @@
 """R20 real-client check: bundled Spirit Glow shader pack and its settings toggle.
 
 Run in a development client inside a dedicated orimod_dev_ world, with Iris installed. Covers: the
-first-run choice keeps a shader pack already chosen in Iris; turning the toggle on selects Spirit
+first run leaves the toggle off, installs nothing and only shows a hint, keeping any pack chosen in Iris; turning the toggle on selects Spirit
 Glow and Iris builds its pipeline without a stored error; turning it off restores the previous pack;
 switching shaders in Iris is saved to the toggle instead of being reverted. Screenshots are only
 evidence that the pipeline renders under this GPU; they are not a visual acceptance.
@@ -31,9 +31,9 @@ try:
     c.command('time set 1000'); c.command('weather clear')
     first = glow()
     c.records['steps']['first_run'] = {'shaders': c.request()['shaders'], 'spiritGlow': first}
-    assert first['iris'] and first['installed'] and first['setupDone'], first
+    assert first['iris'] and first['setupDone'] and first['toggle'] is False and first['keptPackHint'], first
     if previous:
-        assert c.request()['shaders']['pack'] == previous and first['toggle'] is False, 'user pack must be kept'
+        assert c.request()['shaders']['pack'] == previous, 'user pack must be kept'
     c.action('spirit_glow', enabled=True)
     wait('enabled', lambda s, d: s['enabled'] and s['pack'] == PACK and d['lastAction'] == 'enable')
     c.ticks(100)

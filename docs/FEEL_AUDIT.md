@@ -5,7 +5,7 @@
 数字来自两处：
 
 - 读代码：`movement/SpiritMovement`、`MovementRules`、`AirMovement`，`client/SpiritControls`、`SpiritJumpPrediction`，`network/MovementResultPayload`，`client/render/SpiritAnimation`、`SpiritPlayerVisual`。
-- `scripts/feel_curves.py` 的模拟：按 1.21.1 原版玩家物理计算（地面摩擦 0.6×0.91=0.546，空中 0.91，重力 0.08 后乘 0.98 阻力），新规则的常量直接从 `FeelTuning.java` 解析。输出 `feel-curves.png` 和 `feel-metrics.json`，放在云端 `/workspace/oriMod/shots/`。
+- `scripts/feel_curves.py` 的模拟：按 1.21.1 原版玩家物理计算（地面摩擦 0.6×0.91=0.546，空中 0.91，重力 0.08 后乘 0.98 阻力），新规则的常量直接从 `FeelTuning.java` 解析。输出 `feel-curves.png` 和 `feel-metrics.json`；当前一份保存在 [docs/feel/](feel/)。
 
 单位：1 tick = 50 ms（20 TPS）；速度写作 格/tick（b/t）或 m/s。
 

@@ -25,8 +25,8 @@ class ClientConfigTest {
         assertEquals(ClientConfigMigration.LEGACY, (int)config.<Integer>get("configVersion"));
         assertEquals("BALANCED", String.valueOf(config.<Object>get("visuals.quality")));
         assertEquals(true, config.get("visuals.advancedParticles"));
-        // R20: Spirit Glow defaults on; the first-run choice that keeps a user pack lives in SpiritGlowState
-        assertEquals(true, config.get("visuals.spiritGlow"));
+        // Public release: Spirit Glow is opt-in; the first-run hint and kept-pack state live in SpiritGlowState
+        assertEquals(false, config.get("visuals.spiritGlow"));
         assertEquals(OriClientConfig.DEFAULT_SHAKE, (int)config.<Integer>get("feedback.screenShake"));
         assertEquals(OriClientConfig.DEFAULT_FLASH, (int)config.<Integer>get("feedback.screenFlash"));
     }

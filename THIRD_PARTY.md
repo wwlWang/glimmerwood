@@ -58,7 +58,7 @@ OriMod 运行时需要 GemRender，但不把它打进自己的 jar，而是作�
 
 ## 随模组附带的光影包 Spirit Glow（MIT）
 
-`shaderpacks/spirit-glow/` 是 TheCMK 的 [Mellow](https://codeberg.org/TheCMK/mellow-shader)（[Modrinth](https://modrinth.com/shader/mellow)）改编版，基于上游提交 `3ad9445`（与 v3.4.1a 发行包一致）。构建时由 `zipSpiritGlow` 打成 `orimod_shaderpack/spirit_glow.zip` 放入模组 JAR，首次运行时复制到 Iris 的 `shaderpacks/Spirit Glow.zip`。
+`shaderpacks/spirit-glow/` 是 TheCMK 的 [Mellow](https://codeberg.org/TheCMK/mellow-shader)（[Modrinth](https://modrinth.com/shader/mellow)）改编版，基于上游提交 `3ad9445`（与 v3.4.1a 发行包一致）。构建时由 `zipSpiritGlow` 打成 `orimod_shaderpack/spirit_glow.zip` 放入模组 JAR。它默认关闭，玩家在模组设置中打开后才复制到 Iris 的 `shaderpacks/Spirit Glow.zip`。
 
 - 许可：MIT，光影包整体（含我们的修改）继续按 MIT 提供。包内 `LICENSE` 在原文之上加了改编声明，原 MIT 文本（Copyright (c) 2026 TheCMK）未改；`LICENSE-APACHE` 原样保留。
 - 按作者要求：注明出处并附链接（包内 `README.md`、光影设置页 INFO 行）；不使用 Mellow 名称作为包名，不带 Mellow 的截图、标志和 `mellow.png` 调色表。Spirit Glow 不是 Mellow 官方版本，也未获作者背书。
