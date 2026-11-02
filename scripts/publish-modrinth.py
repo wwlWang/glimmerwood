@@ -54,7 +54,7 @@ def main():
     request = urllib.request.Request('https://api.modrinth.com/v2/version', data=body, method='POST', headers={
         'Authorization': os.environ['MODRINTH_TOKEN'],
         'Content-Type': f'multipart/form-data; boundary={boundary}',
-        'User-Agent': 'wwlWang/oriMod release script (github.com/wwlWang/oriMod)'})
+        'User-Agent': 'wwlWang/glimmerwood release script (github.com/wwlWang/glimmerwood)'})
     with urllib.request.urlopen(request, timeout=120) as response:
         result = json.load(response)
     print(f'Modrinth version {result["version_number"]} uploaded: {result["id"]}')

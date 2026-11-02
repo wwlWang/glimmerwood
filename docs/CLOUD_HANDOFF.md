@@ -1,6 +1,6 @@
 # 云端开发交接
 
-交接日期：2026-10-18。仓库为 `wwlWang/oriMod`；2026-11-01 起改为公开、GPL-3.0-only，见 [DECISIONS](DECISIONS.md)。用户已要求把当前工作提交备份，交给另一个 Agent 继续开发；本机开发客户端保持停止。
+交接日期：2026-10-18。仓库为 `wwlWang/glimmerwood`（原 `wwlWang/oriMod`，GitHub 自动重定向）；2026-11-01 起改为公开、GPL-3.0-only，见 [DECISIONS](DECISIONS.md)。用户已要求把当前工作提交备份，交给另一个 Agent 继续开发；本机开发客户端保持停止。
 
 ## 从这里接手
 

@@ -1,10 +1,10 @@
-# OriMod
+# Glimmerwood
 
 > **非官方同人作品。** 本项目与 Microsoft、Xbox Game Studios、Moon Studios 无关，也未获其授权或认可。Ori 角色、名称及相关原作内容归各自权利人所有。
 >
 > NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
 
-受《Ori》系列启发的 Minecraft 1.21.1 / NeoForge 模组：变身精灵形态，用冲刺、猛击、滑翔等移动能力和灵光武器在原版生存世界里探索遗迹、净化腐化地带、挑战首领。
+受《Ori》系列启发的 Minecraft 1.21.1 / NeoForge 模组（游戏内名称与模组 ID 暂为 OriMod / `orimod`）：变身精灵形态，用冲刺、猛击、滑翔等移动能力和灵光武器在原版生存世界里探索遗迹、净化腐化地带、挑战首领。
 
 *An unofficial, non-commercial Ori-inspired NeoForge 1.21.1 mod: spirit form, movement abilities, light weapons, ruins and bosses in vanilla survival. Not affiliated with or endorsed by Microsoft, Xbox Game Studios or Moon Studios.*
 
@@ -67,8 +67,8 @@
 
 ```sh
 git lfs install
-git clone https://github.com/wwlWang/oriMod.git
-cd oriMod
+git clone https://github.com/wwlWang/glimmerwood.git
+cd glimmerwood
 git lfs pull
 ./gradlew build --console=plain
 ```
@@ -124,4 +124,4 @@ Windows 使用 `gradlew.bat build --console=plain`；若遇到 Java loopback soc
 - GemRender（GPL-3）、Flywheel（MIT）、NeoForge MDK 模板（MIT）等依赖的来源与许可见 [THIRD_PARTY](THIRD_PARTY.md)。
 - 本项目不包含 Moon Studios 的原始贴图、模型、音乐或音效；声音使用原版 Minecraft 音效事件，其余资源为自制或程序生成。
 
-问题和建议请提交 [Issue](https://github.com/wwlWang/oriMod/issues)。
+问题和建议请提交 [Issue](https://github.com/wwlWang/glimmerwood/issues)。

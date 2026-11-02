@@ -11,6 +11,7 @@
 | 2026-10-18 | 震动默认 30%、闪光默认 40% | R15 起保持 |
 | 2026-10-18 | R14 本机交互矩阵编号保留，不在云端继续 | 未改动 |
 | 2026-11-01 | 改为公开源码，许可 GPL-3.0-only，不商业化；取代 10-18 的“仅供自己玩，私有仓库” | 加 `LICENSE`、非官方免责声明；保留 Ori 名称与模型；历史记录中的“私人使用”表述按当时事实保留；提交作者邮箱统一改为 `wwlwwl@proton.me` |
+| 2026-11-01 | 对外名称改为 Glimmerwood：GitHub 仓库改名 `wwlWang/glimmerwood` | 游戏内显示名、mod_id `orimod`、Java 包名暂不改，避免旧存档失效 |
 | 2026-11-01 | GemRender 改为 JarJar 内嵌进 OriMod jar，取代 R84 的“并排安装” | 许可同为 GPL；`runPackagedClient` 只放发行 jar 实测：GemRender、Flywheel、KTX 由两层 JarJar 加载，模型正常渲染，加装 Iris + Sodium 同样正常 |
 | 2026-11-01 | 版本号改为 `0.0.1-alpha`；Spirit Glow 改为默认关闭 | 新安装只在首次启动提示一次，打开开关后才复制并启用光影包；已有配置保留原值 |
 
