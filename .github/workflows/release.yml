@@ -1,0 +1,49 @@
+name: Release
+
+# Manual: bump mod_version and add its CHANGELOG.md section first, then run this on main.
+on:
+  workflow_dispatch:
+    inputs:
+      modrinth:
+        description: Also upload the jar to Modrinth
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Version
+        id: version
+        run: |
+          version=$(sed -n 's/^mod_version=//p' gradle.properties)
+          grep -q "^## $version" CHANGELOG.md || { echo "CHANGELOG.md has no section for $version"; exit 1; }
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then echo "v$version already released"; exit 1; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - run: ./gradlew test --console=plain
+      # Two clean builds must be byte-identical; writes the jar, LICENSE, THIRD_PARTY.md and SHA256SUMS.
+      - run: scripts/build-release.sh dist
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v v="## $VERSION" 'index($0, v) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          prerelease=$([[ "$VERSION" =~ alpha|beta ]] && echo --prerelease || true)
+          gh release create "v$VERSION" dist/* --target "$GITHUB_SHA" --title "OriMod $VERSION" --notes-file notes.md $prerelease
+      - name: Modrinth
+        if: inputs.modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
+        run: python3 scripts/publish-modrinth.py dist/orimod-*.jar

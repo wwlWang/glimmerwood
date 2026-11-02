@@ -35,9 +35,7 @@
 
 1. 安装 Minecraft 1.21.1 和 NeoForge 21.1.248 或更高的 21.1.x：<https://neoforged.net/>，选择 “Install client”。
 2. 用 NeoForge 配置启动一次游戏，生成 `mods/` 目录。
-3. 把以下**两个 jar** 放进 `mods/`：
-   - OriMod；
-   - [GemRender](https://github.com/Warfactory-Official/GemRender) 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装）。它没有公开下载页，可用本仓库的 `libs/runtime/gemrender-0.1.17.jar`；许可与源码见 [THIRD_PARTY](THIRD_PARTY.md#gemrender)。GemRender 自带 mixin 和原生库，不能打进 OriMod，必须单独放置。
+3. 把 OriMod 的 jar 放进 `mods/`。渲染库 [GemRender](https://github.com/Warfactory-Official/GemRender) 0.1.17 及其 Flywheel 1.0.6 已经内嵌（JarJar），不需要另装；许可与源码见 [THIRD_PARTY](THIRD_PARTY.md#gemrender)。
 4. 推荐同时安装 Sodium 0.6.13 与 Iris 1.8.12。自带的 Spirit Glow 光影**默认关闭**：首次启动只提示一次，在“模组 → OriMod → 配置 → 画面”打开后才会复制到 Iris 的 `shaderpacks/` 并启用；关闭时恢复之前使用的光影。
 5. 可直接打开已有存档；遗迹只在新探索的区块生成。
 
@@ -77,9 +75,11 @@ git lfs pull
 
 Windows 使用 `gradlew.bat build --console=plain`；若遇到 Java loopback socket 错误，可运行 `./scripts/gradle.ps1 build --console=plain`。首次构建需要下载 Gradle、Minecraft 和 NeoForge 工具链。
 
-锁定的 GemRender 和 Flywheel 编译接口保存在 `libs/`（LFS），构建前按 `dependencies/prepared.json` 校验，缺失或损坏时明确失败。其余开发依赖按 `dependencies/lock.json` 从上游下载，不随仓库分发。
+锁定的 GemRender 和 Flywheel 保存在 `libs/`（LFS），构建前按 `dependencies/prepared.json` 校验，缺失或损坏时明确失败；GemRender 在打包时嵌入 OriMod jar。其余开发依赖按 `dependencies/lock.json` 从上游下载，不随仓库分发。
 
-产物为 `build/libs/orimod-<版本>.jar`；可重现的发行 JAR 用 `scripts/build-release.sh` 生成（两次构建哈希一致，附 SHA256SUMS）。
+产物为 `build/libs/orimod-<版本>.jar`；可重现的发行 JAR 用 `scripts/build-release.sh` 生成（两次构建哈希一致，附 SHA256SUMS）。`./gradlew runPackagedClient -PquickPlayWorld=<存档名>` 只从 `run-packaged/mods/` 加载打好的 jar，按玩家安装方式检查。
+
+推送到 `main` 后 GitHub Actions 自动构建并运行 JUnit；发版在 Actions 里手动运行 **Release**：先改 `mod_version` 并在 [CHANGELOG](CHANGELOG.md) 加对应小节，工作流会重新测试、做可重现构建、创建 GitHub Release，并可选上传 Modrinth（需要仓库 secret `MODRINTH_TOKEN` 与变量 `MODRINTH_PROJECT_ID`）。
 
 ## 开发与检查
 

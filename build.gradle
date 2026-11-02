@@ -21,6 +21,8 @@ sourceSets {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
+    // Empty on purpose: runPackagedClient loads only the built jar from run-packaged/mods, like a player install.
+    packagedClient {}
 }
 configurations {
     clientLaunchImplementation.extendsFrom implementation
@@ -38,6 +40,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
+    // The locked GemRender build (no public Maven); only used to nest it into the release jar.
+    exclusiveContent {
+        forRepository { flatDir { dirs 'libs/runtime' } }
+        filter { includeGroup 'com.wf' }
+    }
 }
 
 // Candidate rendering dependencies stay in the development tools until combined runtime acceptance passes.
@@ -45,6 +52,8 @@ dependencies {
     compileOnly files('libs/runtime/gemrender-0.1.17.jar')
     clientLaunchRuntimeOnly files('libs/runtime/gemrender-0.1.17.jar')
     compileOnly fileTree(dir: 'libs/compile', include: '*.jar')
+    // GemRender (GPL-3, carries Flywheel and LWJGL-KTX) ships nested in the OriMod jar so players install one file.
+    jarJar('com.wf:gemrender') { version { strictly '[0.1.17]'; prefer '0.1.17' } }
     // Optional: only SpiritGlowIris touches Iris, and it is loaded only when Iris is installed.
     compileOnly 'maven.modrinth:iris:1.8.12+1.21.1-neoforge'
     devtoolsImplementation fileTree(dir: 'libs/runtime', include: '*.jar')
@@ -94,6 +103,7 @@ neoForge {
     addModdingDependenciesTo sourceSets.devtools
     addModdingDependenciesTo sourceSets.gametest
     addModdingDependenciesTo sourceSets.clientLaunch
+    addModdingDependenciesTo sourceSets.packagedClient
 
     mods {
         "${mod_id}" {
@@ -136,6 +146,15 @@ neoForge {
             systemProperty 'orimod.debugPose', System.getenv('ORIMOD_DEBUG_POSE') ?: 'false'
             jvmArgument '-Xmx4G'
             programArguments.addAll '--width', '1920', '--height', '1080'
+        }
+        // Player-style check of the release jar: run-packaged/mods holds the built jar; nothing is loaded from source.
+        packagedClient {
+            client()
+            sourceSet = sourceSets.packagedClient
+            loadedMods = []
+            gameDirectory = project.file('run-packaged')
+            def world = providers.gradleProperty('quickPlayWorld').getOrNull()
+            if (world) programArguments.addAll '--quickPlaySingleplayer', world
         }
         server {
             server()

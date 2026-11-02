@@ -1,0 +1,21 @@
+name: Set up OriMod build
+description: LFS files the build and tests read (Blender sources are skipped and cached), JDK 21 and Gradle.
+runs:
+  using: composite
+  steps:
+    - name: List needed LFS objects
+      shell: bash
+      run: git lfs ls-files -l -I "src/**,libs/**,shaderpacks/**,art/**" -X "*.blend" | cut -d' ' -f1 | sort > .lfs-needed
+    - uses: actions/cache@v4
+      with:
+        path: .git/lfs/objects
+        key: lfs-${{ hashFiles('.lfs-needed') }}
+        restore-keys: lfs-
+    - name: Pull LFS files
+      shell: bash
+      run: git lfs pull -I "src/**,libs/**,shaderpacks/**,art/**" -X "*.blend" && rm .lfs-needed
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 21
+    - uses: gradle/actions/setup-gradle@v4

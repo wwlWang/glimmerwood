@@ -29,7 +29,7 @@ OriMod 对该模型进行了焊接、减面、骨架精简、权重整理、材�
 - 对应源码：上游提交 [`839c927f7086ee21bb67bd9a68edcb595d043d49`](https://github.com/Warfactory-Official/GemRender/tree/839c927f7086ee21bb67bd9a68edcb595d043d49)。该 jar 由此提交本地构建，仓库中没有记录对其源码的修改。构建记录见 `dependencies/lock.json` 的 `sourceBuilds`。
 - jar 内置 Flywheel 1.0.6（MIT）和 LWJGL KTX 3.3.3（[BSD-3-Clause](https://www.lwjgl.org/license)）。
 
-OriMod 运行时需要 GemRender，但不把它打进自己的 jar，而是作为独立模组并排安装。
+OriMod 发行 jar 通过 NeoForge JarJar 原样内嵌这个 jar（`META-INF/jarjar/gemrender-0.1.17.jar`，哈希同上），玩家不需要另装；如果另外装了 GemRender 或 Flywheel，NeoForge 会只加载一份。
 
 ### Flywheel
 

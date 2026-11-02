@@ -11,3 +11,6 @@
 - 敌人与首领：腐光喷吐者、腐光甲虫、腐光鸦、腐光翼母、腐光之心。
 - 自带 Spirit Glow 光影（需要 Iris），默认关闭，可在模组设置中开启。
 - 仅支持单人；多人联机尚未支持。
+- 只需安装一个 jar：渲染库 GemRender（含 Flywheel）已内嵌。
+
+*English:* first public, very early build; saves and content may change. Spirit form with its own model and animations; dash, bash, glide, grapple, stomp, climb, launch and water dash; Spirit Blade, Bow, Hammer and Spear; three ruin types, the Great Spirit Tree, the Ginso Tree, blighted lands and gloom tides; five enemies and bosses. Optional bundled Spirit Glow shader (needs Iris, off by default). Single-player only. One jar: GemRender and Flywheel are nested.
