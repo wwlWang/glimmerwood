@@ -1,46 +1,38 @@
 # OriMod
 
-Minecraft 1.21.1 / NeoForge 的单人开发项目，包含 Ori 形态、移动能力、刀弓、成长面板与三类遗迹挑战。当前首版尚未完成：正式角色已有可编辑源文件和部分实机验证，特效声音、完整无命令流程、安装与总验收仍待完成。
+> **非官方同人作品。** 本项目与 Microsoft、Xbox Game Studios、Moon Studios 无关，也未获其授权或认可。Ori 角色、名称及相关原作内容归各自权利人所有。
+>
+> NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
 
-公开源码，按 [GPL-3.0-only](LICENSE) 发布，不用于商业用途。本项目是非官方的同人作品，与 Microsoft、Xbox Game Studios、Moon Studios 无关，也未获其授权或认可。Ori 角色、名称及相关原作内容归各自权利人所有。
+受《Ori》系列启发的 Minecraft 1.21.1 / NeoForge 模组：变身精灵形态，用冲刺、猛击、滑翔等移动能力和灵光武器在原版生存世界里探索遗迹、净化腐化地带、挑战首领。
 
-模型署名与依赖许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。当前进展见 [WORK_STATUS](docs/WORK_STATUS.md)，79 项验收结果见 [ACCEPTANCE_STATUS](docs/ACCEPTANCE_STATUS.md)，审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)。
+*An unofficial, non-commercial Ori-inspired NeoForge 1.21.1 mod: spirit form, movement abilities, light weapons, ruins and bosses in vanilla survival. Not affiliated with or endorsed by Microsoft, Xbox Game Studios or Moon Studios.*
 
-云端 Agent 接手请先读 [CLOUD_HANDOFF](docs/CLOUD_HANDOFF.md)，其中包含构建步骤、建议任务和 R14 未完成的测试边界。
+## 内容
 
-按用户要求，所有开发直接在 `main` 提交并推送，不新建功能分支；协作时先同步主分支并保留其他 Agent 的改动，禁止强推覆盖。
+- **精灵形态**：使用精灵核心觉醒后可随时变身，拥有独立的角色模型、动画和第一人称手部。
+- **移动能力**：冲刺、猛击、滑翔、牵引、下砸、攀爬、灵跃、水中冲刺等，逐步解锁。
+- **战斗**：灵光刃、灵光弓、灵锤、灵矛，以及光爆、蓄力灵焰等能量技能。
+- **成长**：灵光、生命格与能量格、技能面板。
+- **世界**：森林泉、溪谷遗迹、洞穴祭台三类遗迹挑战，大灵树、金索树、腐化地带与腐光潮，林栖商人和地图石指引。
+- **敌人与首领**：腐光喷吐者、腐光甲虫、腐光鸦、腐光翼母、腐光之心等。
+- **自带光影 Spirit Glow**（需要 Iris，改编自 Mellow）。
 
-## 从干净检出构建
+本模组面向**单人生存**；多人联机和专用服务器玩法尚未支持，见 [ADR-001](docs/ADR-001-SINGLE-PLAYER.md)。当前是早期版本，详细进展见 [WORK_STATUS](docs/WORK_STATUS.md)。
 
-需要 Git、Git LFS、JDK 21。不要使用 GitHub 的源码 ZIP；它可能只有大文件指针。
+## 安装
 
-```sh
-git lfs install
-git clone https://github.com/wwlWang/oriMod.git
-cd oriMod
-git lfs pull
-./gradlew build --console=plain
-```
+1. 安装 Minecraft 1.21.1 和 NeoForge 21.1.248 或更高的 21.1.x：<https://neoforged.net/>，选择 “Install client”。
+2. 用 NeoForge 配置启动一次游戏，生成 `mods/` 目录。
+3. 把以下**两个 jar** 放进 `mods/`：
+   - OriMod；
+   - [GemRender](https://github.com/Warfactory-Official/GemRender) 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装）。它没有公开下载页，可用本仓库的 `libs/runtime/gemrender-0.1.17.jar`；许可与源码见 [THIRD_PARTY](THIRD_PARTY.md#gemrender)。GemRender 自带 mixin 和原生库，不能打进 OriMod，必须单独放置。
+4. 推荐同时安装 Sodium 0.6.13 与 Iris 1.8.12。装有 Iris 且没有选择其他光影时，首次启动会自动装入并启用 Spirit Glow；已选其他光影则保留，可在 OriMod 设置中切换。
+5. 可直接打开已有存档；遗迹只在新探索的区块生成。
 
-Windows 使用 `gradlew.bat build --console=plain`。本机若遇到 Java loopback socket 错误，可运行 `./scripts/gradle.ps1 build --console=plain`；此包装只为当前进程设置临时目录。首次构建仍需要下载 Gradle、Minecraft 和 NeoForge 工具链依赖。
+客户端设置在“模组 → OriMod → 配置”：特效画质、高级粒子、镜头震动与屏幕闪光强度，保存在 `config/orimod-client.toml`。
 
-锁定的 GemRender 和 Flywheel 编译接口保存在 `libs/`，由 LFS 管理。构建前校验 `dependencies/prepared.json`，缺失或损坏时明确失败。其余开发画面依赖按 `dependencies/lock.json` 从上游下载，不上传到本仓库。
-
-产物为 `build/libs/orimod-0.1.0-SNAPSHOT.jar`；可重现的发行 JAR 用 `scripts/build-release.sh` 生成（两次构建哈希一致，附 SHA256SUMS）。
-
-### 安装到游戏实例
-
-不需要 `runClient`，官方启动器即可：
-
-1. 安装 Minecraft 1.21.1，并安装 NeoForge 21.1.248 或任意更高的 21.1.x（模组声明的范围为 `[21.1.248,21.2)`；Minecraft 仍限定为 1.21.1）。NeoForge 安装器：<https://neoforged.net/>，选择 21.1.x 中较新的版本，“Install client”。
-2. 在官方启动器中选择 NeoForge 配置并启动一次，生成游戏目录下的 `mods/`。
-3. 放入 `mods/`：**两个 jar**——OriMod JAR 与 GemRender 0.1.17（`gemrender-0.1.17.jar`，内置 Flywheel 1.0.6，不需要另装 Flywheel）。**不能**把 GemRender 打进 OriMod（它自带 mixin 和原生库，JarJar 不安全）；必须并排放在 `mods/`。GemRender 没有公开下载页：用本仓库 `libs/runtime/gemrender-0.1.17.jar`（Git LFS），或发行目录里那份（上游 [Warfactory-Official/GemRender](https://github.com/Warfactory-Official/GemRender) 提交 `839c927`，见 `dependencies/lock.json`）。缺少时 NeoForge 启动界面会列出缺少的模组。
-4. 推荐：Sodium 0.6.13 与 Iris 1.8.12。装有 Iris 且未选择其他光影时，首次启动自动装入并启用自带的 Spirit Glow 光影；已选其他光影则保留，可在 OriMod 设置中切换。
-5. 可直接打开已有原版存档；遗迹在新探索的区块生成。
-
-R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；Windows 官方启动器与真实 GPU 仍待本机确认。
-
-### 创造模式与调试命令（R83）
+### 创造模式与调试命令
 
 - 创造模式物品栏有“OriMod 精灵”标签页，包含本模组全部物品：武器、灵核、生命格、能量格、钥石、地图碎片、遗迹方块（祭台、灵泉、钥石门、地图石、灵沙、腐光水、上升气流等），以及敌人和首领的刷怪蛋。
 - `/orimod`（简写 `/ori`）需要权限等级 2：服务器管理员；单人世界需在创建时打开“允许作弊”，或者“对局域网开放 → 允许作弊”。每条命令都可以在末尾加 `<玩家>` 指定作用对象。
@@ -60,6 +52,24 @@ R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；W
 | `/ori status` | 显示觉醒、形态、能力、灵光、能量、灵格 |
 | `/ori reset` | 清空 OriMod 进度（能力、灵光、灵格，回到未觉醒） |
 
+## 从源码构建
+
+需要 Git、Git LFS、JDK 21。不要使用 GitHub 的源码 ZIP，它可能只含大文件指针。
+
+```sh
+git lfs install
+git clone https://github.com/wwlWang/oriMod.git
+cd oriMod
+git lfs pull
+./gradlew build --console=plain
+```
+
+Windows 使用 `gradlew.bat build --console=plain`；若遇到 Java loopback socket 错误，可运行 `./scripts/gradle.ps1 build --console=plain`。首次构建需要下载 Gradle、Minecraft 和 NeoForge 工具链。
+
+锁定的 GemRender 和 Flywheel 编译接口保存在 `libs/`（LFS），构建前按 `dependencies/prepared.json` 校验，缺失或损坏时明确失败。其余开发依赖按 `dependencies/lock.json` 从上游下载，不随仓库分发。
+
+产物为 `build/libs/orimod-<版本>.jar`；可重现的发行 JAR 用 `scripts/build-release.sh` 生成（两次构建哈希一致，附 SHA256SUMS）。
+
 ## 开发与检查
 
 | 项目 | 固定版本 |
@@ -76,7 +86,7 @@ R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；W
 
 运行开发客户端前先用 Python 3 执行 `python scripts/sync-dependencies.py`，下载并核验可选依赖。该脚本适用于 Windows、Linux 和 macOS；原 PowerShell 脚本保留供本机重建渲染库使用。
 
-`./gradlew test runGameTestServer` 运行规则与存档单元测试，以及独立的无界面服务端回归；Linux / macOS 可直接用 `scripts/check.sh` 一次完成 LFS 校验、构建、GameTest 和计数汇总。当前 312 项 JUnit、154 项 GameTest 在云端 Linux 通过（R13 的 262 / 146 在 Windows 和 Linux 通过），覆盖范围与报告路径见 [TESTING](docs/TESTING.md)。真实客户端 Python 脚本继续用于输入同步和视觉验收；无界面测试不能替代这些检查。
+`./gradlew test runGameTestServer` 运行规则与存档单元测试，以及独立的无界面服务端回归；Linux / macOS 可直接用 `scripts/check.sh` 一次完成 LFS 校验、构建、GameTest 和计数汇总。测试覆盖范围、最近一次全量结果与报告路径见 [TESTING](docs/TESTING.md)。真实客户端 Python 脚本继续用于输入同步和视觉验收；无界面测试不能替代这些检查。
 
 客户端设置在“模组 → OriMod → 配置”：特效画质（流畅/均衡/精致）、高级粒子、镜头震动与屏幕闪光强度，保存在 `config/orimod-client.toml`，旧文件自动升级并保留原选择。
 
@@ -85,9 +95,22 @@ R28 已在云端干净实例（portablemc，llvmpipe）按以上步骤验证；W
 ## 文件与恢复
 
 - `src/`：模组与独立开发源码集。
-- `art/source/`：当前身体与手部 v010、技术样例 v008 的 Blender 工程、导出物与清单；大文件使用 LFS。
-- `models/`：当前角色的下载原件和来源记录；未采用的原件留在本地。
-- `libs/`、`dependencies/`：可恢复的依赖包与校验记录。
-- `docs/`：计划、当前状态、审查修复和验收记录。
+- `art/source/`：角色、手部、怪物与建筑的 Blender 工程、导出物、生成参数与清单；大文件使用 LFS。
+- `models/`：主角模型的下载原件和来源记录；未采用的候选不随仓库分发。
+- `libs/`、`dependencies/`：构建所需的锁定依赖包与校验记录（许可见 [THIRD_PARTY](THIRD_PARTY.md)）。
+- `docs/`：设计决定、计划、当前状态、审查修复和验收记录。
+- `scripts/`：构建、资源生成、实机验证与发行脚本。
 
-运行存档、原始录像、证据、历史资产候选、外部工具与反编译源码不上传 GitHub。本地完整备份保存到仓库外，并附逐文件 SHA-256 清单。阶段提交和标签标记可恢复位置；标签本身不等于质量验收通过。
+运行存档、原始录像、证据、历史资产候选、外部工具与 Minecraft 反编译源码不进入仓库。阶段标签只标记可恢复位置，不等于质量验收通过。
+
+开发约定：所有改动直接提交到 `main` 并推送，不新建功能分支；协作时先同步主分支、保留其他人的改动，禁止强推覆盖。云端 Agent 接手请先读 [CLOUD_HANDOFF](docs/CLOUD_HANDOFF.md)；审查修复见 [AUDIT_FIXES](docs/AUDIT_FIXES.md)，验收结果见 [ACCEPTANCE_STATUS](docs/ACCEPTANCE_STATUS.md)。
+
+## 许可与致谢
+
+- 项目自身的代码与自制资源：[GPL-3.0-only](LICENSE)。
+- 主角模型改编自 [Ori Rigged](https://sketchfab.com/3d-models/ori-rigged-d217801abaab4687b3aba56d5865e402)（作者 Random modeler / Seea_Rooster，[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)），改编后的模型、贴图与动画继续按 CC BY 4.0 提供。
+- Spirit Glow 光影改编自 TheCMK 的 [Mellow](https://codeberg.org/TheCMK/mellow-shader)（MIT），不是 Mellow 官方版本，也未获作者背书。
+- GemRender（GPL-3）、Flywheel（MIT）、NeoForge MDK 模板（MIT）等依赖的来源与许可见 [THIRD_PARTY](THIRD_PARTY.md)。
+- 本项目不包含 Moon Studios 的原始贴图、模型、音乐或音效；声音使用原版 Minecraft 音效事件，其余资源为自制或程序生成。
+
+问题和建议请提交 [Issue](https://github.com/wwlWang/oriMod/issues)。

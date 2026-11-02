@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "purpose": "Private reproducible development dependencies; sources and licenses in lock.json and THIRD_PARTY.md",
+  "purpose": "Reproducible development dependencies; sources and licenses in lock.json and THIRD_PARTY.md",
   "artifacts": [
     {
       "path": "libs/compile/flywheel-neoforge-1.21.1-1.0.6.jar",
