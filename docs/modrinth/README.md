@@ -9,7 +9,7 @@
 | URL（slug） | `glimmerwood`（项目 ID `SyO5C83J`） |
 | 简介（Summary） | An unofficial Ori-inspired adventure mod: spirit form, flowing movement, light weapons, ruins and bosses. |
 | 图标 | [icon.png](icon.png)（512×512） |
-| 长描述 | [description.md](description.md)，整段粘贴 |
+| 长描述 | [description.md](description.md)，整段粘贴（中文在上、英文在下，顶部锚点跳转） |
 | 环境 | Singleplayer only（`singleplayer_only`，按版本设置，由发布脚本写入；支持多人后改为 `client_and_server`） |
 | 主分类 | Adventure, Game Mechanics, Worldgen |
 | 附加分类 | Mobs, Equipment, Magic |
