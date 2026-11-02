@@ -25,7 +25,7 @@ Thumbs.db
 __pycache__/
 *.pyc
 
-# Authoring sources and locked dependencies use Git LFS in the private repository.
+# Authoring sources and locked dependencies use Git LFS.
 # Keep the current source chain only; old candidates remain in the verified local backup.
 models/**/*.blend
 models/**/*.blend[0-9]
