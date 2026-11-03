@@ -34,3 +34,25 @@
 - `.gitattributes` 把所有 `*.png` 放进 LFS（包括模组贴图和 `docs/modrinth/icon.png`）。README 已经提醒不要用 GitHub 源码 ZIP，可以接受；但 GitHub 网页上无法直接预览这些贴图。
 - `scripts/check.sh` 用 `command -v java` 判断 JDK：只设置 JAVA_HOME、PATH 里没有 java 时会直接报 “JDK 21 required”，而 `./gradlew` 在同样环境下能正常构建（小问题）。
 - Modrinth 描述用 `<h2 id="zh">` 做锚点跳转。Modrinth 的 Markdown 清洗器可能去掉 `id` 属性，顶部的“中文 · English”跳转可能失效。**[怀疑]**，页面未公开，无法验证。
+
+## P7-3 P6 遗留回归（第一批）
+
+客户端：`ae7dd71` 的 runDevtoolsClient，Xvfb + llvmpipe（12–60 FPS）。新世界 `orimod_dev_p7_main`（seed 7007）。**devtools 建的新世界默认是和平难度**：敌对生物刚召唤就被清掉，第一次测中立生物时因此出了假结果，改成 `/difficulty hard` 重测。
+
+- **能量 0 时手持武器右键被吞 [已修]**：灵光刃 / 弓 / 锤 / 矛 × 能量 0 / 200，共 8 组，逐一右键 20 种方块：箱子、工作台、熔炉、铁砧、附魔台、木桶、织布机、锻造台、砂轮、林栖灵泉、制图台、切石机、酿造台都能打开界面；门、拉杆、栅栏门、按钮、活板门、中继器都能切换（`pt7/a2.py`–`a4.py`）。村民、流浪商人、林栖商人在 0 能量时都能打开交易界面；马在 0 能量时可以骑乘（`a5.py`、`a6.py`）。
+- **伙伴灵焰 / 中立生物 [已修]**（`b.py`、`b2.py`，困难，不开无敌）：
+  - 戴金头盔时，2 只猪灵 + 猪灵蛮兵 200 tick 内不掉血。
+  - 不戴金时，猪灵 16→4/6，蛮兵 50→42（被灵焰打，正常）。
+  - 白天蜘蛛和洞穴蜘蛛不掉血；夜晚蜘蛛 16→4、洞穴蜘蛛 12→2。
+  - 狼、蜜蜂、羊驼、北极熊不掉血。
+- **伙伴灵焰仍会主动打坚守者 [未修]**：开着 `/ori god` 时坚守者不会把玩家当目标，200 tick 内仍从 498 掉到 456。不开无敌时，召唤出的坚守者约 80 tick 后连同实体一起消失，灵焰开关结果都一样，这一项没测清楚。
+- **[新] 猪灵蛮兵也被归为“有条件中立”**：标签 `conditionally_neutral` 包含 `piglin_brute`。原版的蛮兵不管戴不戴金都会主动攻击，现在灵焰要等它先锁定玩家才会还手，比原版保守（小问题）。
+- **[新] 林栖商人杀不掉，`/kill` 却报告成功**：`GladesMerchant.hurt()` 永远返回 false，连 `/kill` 用的通用击杀伤害也拦住了。`/kill @e[type=orimod:glades_merchant]` 提示“杀死了 8 个实体”，8 个商人仍然站着；`kill @e[type=!player]` 同样清不掉。只有传送到虚空才能去掉。商人卡进墙里、岩浆里，或者被刷怪蛋 / 召唤命令刷多了，玩家没办法清理。
+- **金索逃亡中骑乘 [已修]**：逃亡开始后，用 `/ride` 骑矿车、马、猪都会被拒（“Dev无法骑乘…”），之后正常判 `SUBMERGED` 失败（`c.py`，世界 pt117）。船没有单独测：我的 summon 写错了实体名，但拦截走的是通用的 EntityMountEvent。
+- **腐光之心逃亡中存档退出 [已修]**（`d.py`，世界 pt116p3）：杀死心脏后逃亡 active（elapsed 141）→ 退出重进 → active，elapsed 173（离线时间不计），半径继续扩大 → 跑出 12 格并露天 → 胜利，灵光 1047→1147，rewards 记下 `escape/gloom_heart/...` 首通。
+- **`/setblock` 放的腐化之核仍不扩散 [未修]**（K 的提交说明声称“能注册并扩散”）：
+  - 平原天然草方块上 `/setblock orimod:gloom_core`，`/ori` 状态显示 region 已注册（`total 1, state active`）。
+  - `tick sprint` 18000 tick 后，41×19×41 范围内 `blighted_soil` 和 `gloom_thorns` 都是 0，`lastWrites 0`，`elapsed 0`。
+  - 在草方块平台、冰面上放置也一样。
+  - 截图 `playtest-p7-plains-setblock-core2.png`。
+- **[新] 用 `/setblock` 把已注册的核换成别的方块，地带会自己“净化完成”**：状态变成 `purifying` → 600 tick 后 `completed`，不需要打核。玩家挖不动核（硬度 -1，防爆 3600000），所以只有命令能触发；地图作者删核时要知道会走一遍完成流程。
