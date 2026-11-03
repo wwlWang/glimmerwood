@@ -114,3 +114,28 @@
 - **[新] 英文下「Spirit Light 502」更长，把副手格整块盖住**（同一张截图）。
 - **[新] 面板文本换行把句号单独甩到下一行**：640×480 窗口下，「每种武器仅赠送一次；背包满时掉在脚下」之后「。」单独占一行（`playtest-p7-orphan-punct.png`、`playtest-p7-gui-640x480-s2-panel.png`）。中文换行没有做避头点处理。
 - 640×480 窗口下 GUI 缩放 1–6：面板没有被截断，HUD 技能图标移到快捷栏右上方，没有越界（`playtest-p7-sheet-gui.png`）。
+
+## P7-7 混沌第二批 / 声音 / 日志 / 冷启动
+
+- **[新] 和平难度下 `/ori spawn` 报「已生成」，但生物马上消失**：命令反馈成功，实际什么都没留下。应该在和平难度下提示或拒绝。
+- **[新][小] 打 Boss 时切到和平，Boss 不声不响消失**：Boss 血条能正确清掉，但没有任何提示，挑战状态看起来像“被打断”（`playtest-p7-sheet-boss.png`）。
+- **[新][无障碍] 没有自定义音效**：代码复用了约 63 个原版 SoundEvent，比如 `PHANTOM_*`、`WARDEN_ROAR/EMERGE/HEARTBEAT`、`ENDER_DRAGON_FLAP`、`LLAMA_SPIT`、`WITHER_SPAWN`、`MACE_SMASH`。开了字幕后显示的是原版生物名，比如“幻翼振翅”“监守者咆哮”，玩家会以为附近有幻翼或监守者。
+- **[新][小] lang 细节**：
+  - `screen.orimod.stats` 英文里是硬编码的 4 个空格（`Energy %s / %s    Shards %s / %s`）。
+  - zh_cn 里有 `tick`、`repick`、`great tree` 这类英文或调试词残留。
+  - en 和 zh 的 `%s` 数量逐条一致，没有发现占位符错位。
+- 日志：
+  - 打包 jar 冷启动（`run-packaged`，mods 里只有 release jar，没有 options 和 config）连续两次都没有出现 `orimod-client.toml is not correct`。所以开发环境里每次启动的 Correcting 只出在旧 run 目录，降级为开发环境问题。
+  - GemRender 的可选 mixin（sodium、colorwheel、irisflw）在没装对应模组时会打 10 多条 `Error loading class` WARN，无害，但看起来吓人。
+  - 战斗测试中出现 10 次 `Dev moved wrongly`。
+  - Flywheel 回退到 indirect，共 24 次（环境原因）。
+- **冷启动 [通过]**：
+  - 从 ModLauncher 到标题页约 8 s（llvmpipe）。
+  - 生成了 `orimod-client.toml`（configVersion=2，spiritGlow=false），没有 ERROR。
+  - Mod 列表是 Flywheel 1.0.6 / GemRender 0.1.17 / OriMod 0.0.1-alpha，JarJar 解析正常（`playtest-p7-packaged-title.png`）。
+  - Mod 列表里的名字仍是 **OriMod**，不是 Glimmerwood（见三套名字那一条）。
+- 通过：
+  - 冲刺、滑翔、锤击中途 `/kill`，复活后状态干净。
+  - 冲刺中传送到下界没有异常。
+  - 下界和末地死亡后复活正常。
+  - 投矛后重进存档没有复制。
