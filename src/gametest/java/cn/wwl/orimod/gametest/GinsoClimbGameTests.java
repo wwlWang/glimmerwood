@@ -33,8 +33,10 @@ public final class GinsoClimbGameTests {
                         boolean accepted = GinsoEscape.start(p, piece);
                         h.assertTrue(accepted == mode.equals("ready"), "Wrong start eligibility");
                         h.assertTrue((GinsoEscape.session(p) != null) == accepted, "Refusal allocated a session");
-                        h.assertTrue(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending() == accepted, "Refusal armed recovery");
-                        if (accepted) h.assertValueEqual(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).safe(), piece.point(GinsoClimbCourse.SAFE), "Recovery is not beside bottom heart");
+                        var recovery = p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+                        h.assertTrue(recovery.resumable() == accepted, "Refusal armed resume snapshot");
+                        h.assertFalse(recovery.pending(), "Start path armed fail recovery");
+                        if (accepted) h.assertValueEqual(recovery.safe(), piece.point(GinsoClimbCourse.SAFE), "Recovery is not beside bottom heart");
                         h.succeed();
                     } finally {
                         GinsoEscape.disconnect(p); p.setData(SpiritData.GINSO_ESCAPE_RECOVERY, GinsoEscapeRecovery.EMPTY);
@@ -87,10 +89,14 @@ public final class GinsoClimbGameTests {
                                 h.assertValueEqual(run.outcome,GinsoEscape.Outcome.SUCCESS,"Crown landing did not finish");
                             }
                             case "logout"->{
+                                var mid=p.position();
                                 GinsoEscape.disconnect(p);h.assertTrue(GinsoEscape.session(p)==null,"Logout kept session");
-                                h.assertTrue(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Logout lost recovery");
-                                p.setPos(p.position().add(20,10,0));GinsoEscape.login(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
-                                h.assertTrue(p.position().distanceTo(Vec3.atBottomCenterOf(safe))<.01,"Login did not return to bottom heart");
+                                h.assertTrue(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).resumable(),"Logout lost resume snapshot");
+                                GinsoEscape.login(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+                                h.assertTrue(GinsoEscape.active(p),"Login did not resume escape");
+                                h.assertTrue(p.position().distanceTo(mid)<.01,"Resume teleported away from mid-route");
+                                // Clear so shared terminal assertions still see a finished escape.
+                                GinsoEscape.disconnect(p);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);
                             }
                             case "dimension"->{
                                 var nether=p.server.getLevel(net.minecraft.world.level.Level.NETHER);var at=new Vec3(0,100,0);
