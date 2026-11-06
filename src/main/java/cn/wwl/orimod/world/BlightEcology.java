@@ -131,7 +131,9 @@ public final class BlightEcology {
             }
             if(!w.data.initializeEcology(center,w.floors.values(),OriServerConfig.legacyCoresSpread()))return;w.frontier();
         }
-        var journal=r.ecology;if(journal.readOnly())return;
+        var journal=r.ecology;if(journal==null||journal.readOnly())return;
+        // setblock/default footprint initializes ecology before Work exists; seed the edge once.
+        if(w.edge.isEmpty()&&w.traversed.isEmpty())w.frontier();
         journal.loadedTick();w.data.setDirty();
         for(int i=0;i<4&&b.remainingIndices()>=5;i++){
             b.index();var expired=journal.expireProtection();if(expired==null)break;w.recheck(expired,b);

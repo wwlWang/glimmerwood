@@ -153,6 +153,23 @@ public final class P5KGameTests {
                 }finally{p.stopRiding();boat.discard();GinsoEscape.disconnect(p);p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);l.setBlock(heart,original,2);}
             }
         });
+        out.add(new TestFunction("p5_k_ecology","p5_k.command_remove_core_cancels_without_purify","orimod_p5:platform_room",200,0,true,h->{
+            var l=h.getLevel();var core=h.absolutePos(new BlockPos(8,3,8));
+            var oldData=BlightData.get(l);l.getDataStorage().set("orimod_blight",new BlightData());BlightEcology.clear();
+            var before=new java.util.HashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
+            for(var q:BlockPos.betweenClosed(core.offset(-2,-1,-2),core.offset(2,2,2))){var p=q.immutable();before.put(p,l.getBlockState(p));l.setBlock(p,(p.getY()<core.getY()?Blocks.DIRT:p.getY()==core.getY()-1?Blocks.GRASS_BLOCK:Blocks.AIR).defaultBlockState(),2);}
+            try {
+                l.setBlock(core,OriBlocks.GLOOM_CORE.get().defaultBlockState(),2);
+                ((cn.wwl.orimod.block.GloomCoreBlockEntity)l.getBlockEntity(core)).registerDefaultFootprint();
+                var data=BlightData.get(l);h.assertTrue(data.ecology(core)!=null,"Command core missing ecology");
+                l.setBlock(core,Blocks.AIR.defaultBlockState(),3); // setblock-style replace via command removal path
+                h.assertTrue(data.ecology(core)==null,"Region kept after command remove");
+                h.assertFalse(data.completed(core),"Command remove granted purify-complete");
+                var status=data.status(net.minecraft.world.phys.Vec3.atCenterOf(core));
+                h.assertFalse("purifying".equals(status.get("state")),"Command remove entered purifying");
+                h.succeed();
+            } finally {before.forEach((p,state)->l.setBlock(p,state,2));l.getDataStorage().set("orimod_blight",oldData);BlightEcology.clear();}
+        }));
         out.add(new TestFunction("p5_k_ecology","p5_k.command_core_grows_and_protects_building","orimod_p5:platform_room",360,0,true,h->{
             var l=h.getLevel();var center=h.absolutePos(new BlockPos(8,0,8));center=new BlockPos((center.getX()&~15)+8,248,(center.getZ()&~15)+8);final var core=center;
             var oldData=BlightData.get(l);l.getDataStorage().set("orimod_blight",new BlightData());BlightEcology.clear();

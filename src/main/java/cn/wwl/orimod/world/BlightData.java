@@ -157,10 +157,10 @@ public final class BlightData extends SavedData {
         for(var c:r.ecology.changes())blockOwners.remove(c.pos().asLong(),r.center.asLong());
     }}
     public void removeCore(BlockPos center){var r=regions.get(center.asLong());if(r!=null && !r.purifying){unindex(r);removeCoreIndex(r);regions.remove(center.asLong());setDirty();}}
+    /** Core gone without gameplay destroy. Cancel the region; do not start purify or grant rewards.
+     * Intended destroy calls {@link #begin} from {@code GloomCoreBlockEntity.hit} before removeBlock. */
     public void removed(ServerLevel level,BlockPos center){
-        var r=regions.get(center.asLong());
-        if(r!=null&&r.ecology!=null&&!r.purifying){begin(level,center);r.participants.clear();setDirty();}
-        else removeCore(center);
+        removeCore(center);
     }
     public boolean begin(ServerLevel level,BlockPos center){
         var r=regions.get(center.asLong());if(r==null || r.purifying || completed.contains(center.asLong()))return false;

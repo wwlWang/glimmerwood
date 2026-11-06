@@ -135,3 +135,7 @@
 | R85 | 提高上升与顶点重力、加快下落，而不是改跳跃初速 | 初速仍用原版 jump，只改 FeelTuning 纵向缩放，测试和曲线脚本都能直接读常量 |
 | R86 | 回退粒子也只用 spirit_mote，定义里减少 spark | 用户觉得像原版火花；冷色 + 软光点才像 Ori |
 | R87 | 步态遮罩固定为 belowUpper，武器不用 contactUse 原版姿势 | 否则跑步会盖住挥砍，锤矛会露出原版人形手臂 |
+
+| P7 | `/setblock` 或其它非玩法拆除腐化之核时取消区域，不进入净化、不发奖；只有 `GloomCoreBlockEntity.hit` 打到 0 血时 `begin` 净化 | 避免地图作者/命令替换核刷净化完成与庇护；玩法摧毁路径已先 `begin` 再 `removeBlock` |
+| P7 | 林栖商人仍免疫生存伤害，但 `/kill`（`BYPASSES_INVULNERABILITY`）与创造模式攻击可移除 | 卡进墙/刷多时运维可清；和平测试里普通攻击仍无效 |
+| P7 | 坚守者加入 `conditionally_neutral`；猪灵蛮兵移出（始终可被萤锁定） | 与原版蛮兵无金豁免一致；闲置坚守者不再被自动攻击 |
