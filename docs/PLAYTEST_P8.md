@@ -154,3 +154,56 @@ A1 扩散、A2 命令拆核不净化、A2b 玩法净化、B `/kill`、C 闲置�
 
 日志：`/workspace/oriMod/pt9/gametest_r117.log`（不入库）。
 
+
+---
+
+## P8-cont-1 制图师重复购买（实机）
+
+世界：`orimod_dev_p8_r1`。制图师 = `glades_merchant` job=1（路路），空手 `key.use` 打开（持弓会吞掉交互）。
+
+### 库存
+- 报价只有 **`tree`(60)**、**`blight`(50)**。**没有** `ruin` / 遗迹指引商品（与旧笔记「遗迹指引无回执」对照：商品已不存在）。
+- 截图 `playtest-p8cont-cart-open.png` / `cart5-20100-open.png`。
+
+### 腐化定位（有有效 FeatureSites）
+在 `(20100,100,20100)` `place feature orimod:blighted_grounds` 成功后：
+
+| 次 | 按钮 | 灵光 | message | 回执 |
+| --- | --- | --- | --- | --- |
+| 1 | 购买 · 50 灵光 | 3300→3250（−50） | `purchased` | 新增 `guide/minecraft:overworld/blighted_grounds/...`；指引激活 |
+| 2 | **免费恢复指引**（price=0） | 3250→3250（0） | `already_located` | 无新回执 |
+
+**结论：同目标第二次购买不扣费。** 旧「双扣」在 blight 路径上 **未复现**（代码回执生效）。截图 `cart5-20100-b1/b2`。
+
+### 生灵之树定位
+- 多次 `place feature orimod:spirit_tree` / 远离结构站位购买：均为 `not_found`，灵光不变。
+- `featureSites.trees` 计数有值，但 `nearest` 在已加载且树心缺失、或站点不在 2048 内时找不到目标。
+- **树的成功双买路径本轮未打通**；与 blight 共用 `locationReceipt`，逻辑上应对称，实机仍待有有效树心时确认。
+
+### UX **[新]**
+无有效目标时按钮仍显示「购买 · 60/50」，点击只回 `not_found`、不扣费——易误以为坏掉或可刷。
+
+### 顺带
+- 第一轮空手失败是因为热键栏还握着弓（交互被拉开弓吞掉）。
+
+---
+
+## P8-cont-2 Splinter 实弹
+
+装备 `splinter`（`equippedShards` 含对应 bit）。对着石墙满蓄：
+
+| 条件 | 能量 | 箭数 | pickup NBT |
+| --- | --- | --- | --- |
+| 满蓄 + 能量 40 | 40→20（耗 20） | **3** | 全部 `0b`（DISALLOWED） |
+| 满蓄 + 能量 20 | 20→0 | **3** | `0b` |
+| 满蓄 + 能量 8 | 8→~15（回复/未扣满额） | **0**（未射出有效箭） | — |
+| 短蓄（hold≈5）+ 能量 40 | 40→28 | **1** | `0b` |
+
+走到箭上：背包无 `arrow` 物品。**不可拾取确认。**
+
+### 中途打断
+- **蓄力中 `/kill`**：进 DeathScreen；重生后精灵形态、能量回满（非卡蓄力）。截图 `splinter-mid-death`。
+- **蓄力中存盘退出再进**：约 4.2 s 进世界；形态仍在，能量仍 40（蓄力未 consummate）。截图 `splinter-mid-logout`。
+
+脚本/截图：`/workspace/oriMod/pt9/p8cart*.py`、`playtest-p8cont-spl_*`。
+
