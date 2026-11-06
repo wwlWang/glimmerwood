@@ -178,7 +178,7 @@ A1 扩散、A2 命令拆核不净化、A2b 玩法净化、B `/kill`、C 闲置�
 ### 生灵之树定位
 - 多次 `place feature orimod:spirit_tree` / 远离结构站位购买：均为 `not_found`，灵光不变。
 - `featureSites.trees` 计数有值，但 `nearest` 在已加载且树心缺失、或站点不在 2048 内时找不到目标。
-- **树的成功双买路径本轮未打通**；与 blight 共用 `locationReceipt`，逻辑上应对称，实机仍待有有效树心时确认。
+- **树路径已在 P8-cont-3 打通**（与 blight 相同回执逻辑）。
 
 ### UX **[新]**
 无有效目标时按钮仍显示「购买 · 60/50」，点击只回 `not_found`、不扣费——易误以为坏掉或可刷。
@@ -206,4 +206,97 @@ A1 扩散、A2 命令拆核不净化、A2b 玩法净化、B `/kill`、C 闲置�
 - **蓄力中存盘退出再进**：约 4.2 s 进世界；形态仍在，能量仍 40（蓄力未 consummate）。截图 `splinter-mid-logout`。
 
 脚本/截图：`/workspace/oriMod/pt9/p8cart*.py`、`playtest-p8cont-spl_*`。
+
+
+---
+
+## P8-cont-3 制图师 · 生灵之树双买（补完）
+
+`place feature orimod:spirit_tree 20200 100 20200` 成功后树心 `[20200,100,20198]`，`featureSites.trees` 5→6。
+
+| 次 | 按钮 | 灵光 | message |
+| --- | --- | --- | --- |
+| 1 | 购买 · 60 灵光 | −60 | `purchased` + 回执 `guide/.../spirit_tree/...` |
+| 2 | 免费恢复指引 | 0 | `already_located` |
+
+**树 / 腐化 二次购买均不双扣。** 遗迹指引商品不在路路库存中。
+
+---
+
+## P8-cont-4 逃亡续玩 / 坐船
+
+### 金索（`orimod_dev_pt117`）
+- 开逃：`READY`→`RUNNING`（`pendingRecovery=true`）。
+- **坐船**：`summon boat` 成功；`ride @s mount` → **「Dev无法骑乘橡木船」**，无载具。**拒绝上船确认（仍好）。**
+- **中途存盘退出再进（~2.7–4 s）**：`phase=COOLDOWN`，`pendingRecovery=false`，`receipt=0`。**未续跑，直接进冷却。**  
+  **[新][中等]** 与腐光之心续跑不一致；中途退出等于放弃本局且进冷却。
+
+### 腐光之心（`orimod_dev_pt116p3`）
+- 杀心后 `gloomEscape.active=true`（elapsed 145）。
+- 退出再进（3.9 s）：仍 `active=true`，elapsed 224，半径增大。**续跑仍好。**
+
+截图：`ginso-start/boat2/reopen`，`gloom-before2/after2`。
+
+---
+
+## P8-cont-5 死亡掉落（keepInventory=false）
+
+正确关掉 `ori god`（abilities.invulnerable=`0b`）并 `effect clear` 后：
+
+- 持刃/弓/矛/锤，蓄矛中 `/kill` → DeathScreen。
+- 重生后背包 **空**；死亡点附近 **4 个** `minecraft:item`。
+- 精灵形态仍在，`energy=100`，`mode=idle`，无卡死。
+
+**结论：精灵武器按原版掉落；中途投矛不卡状态。**（P8-3 未完成项已补。）
+
+---
+
+## P8-cont-6 极限模式
+
+`create_world` 名必须匹配 `orimod_dev_[A-Za-z0-9_-]{1,48}`（否则 `Invalid test-world name`）。
+
+世界 `orimod_dev_p8_hc3`，hardcore=true，启动 ~8 s。
+
+- 死亡 UI：**旁观世界 / 标题屏幕**（无「重生」）— 极限正确。
+- 点旁观 → `playerGameType=3`（旁观），abilities `mayfly/flying/invulnerable`。
+- **[轻]** 旁观时 `spirit_form` 仍为 true、`awakened` true（形态标志未清）。
+
+截图 `hc-death` / `hc-after`。
+
+---
+
+## P8-cont-7 超平坦 / 放大化
+
+devtools `create_world` **写死** `WorldPresets.createNormalWorldDimensions`；改类型需 GUI。创建界面顶栏点到「世界」页后可循环 **世界类型**。
+
+| 类型 | 启动 | 出生 | 结构 locate | 精灵 |
+| --- | --- | --- | --- | --- |
+| 超平坦 | ~1.1 s | y≈−60 | 附近无 great_tree / forest_spring / ginso / spirit_tree | setup 成功 |
+| 放大化 | ~1.1 s 进世界 | y≈114 | **locate 命令超时**（devtools observation timeout） | `spirit_state` 一度 KeyError（负载） |
+
+无冻死/崩溃。放大化下远距 locate 在本环境不可靠。截图 `flat-spawn` / `amp-spawn` / `create-ui`。
+
+---
+
+## P8-cont-8 汇总补丁（相对 P8-4）
+
+### 新发现
+1. **[新][中等]** 金索逃亡中途存盘 → **COOLDOWN 而非续跑**（腐光之心仍续跑）。
+2. **[新][轻]** 制图师在无有效 FeatureSites 目标时仍显示标价按钮，点击 `not_found`。
+3. **[新][轻]** 极限旁观后精灵形态标志仍为 true。
+4. **[新][工具]** 放大化世界 `/locate` 易超时；`create_world` 名称白名单 + 无世界类型参数。
+
+### 仍开着（未变）
+- GameTest `structure_reference_waits_for_unloaded_start` 期望 DEFER、实为 ALLOW（P8-cont-0）。
+- 第一人称刃过曝、无自定义音效、三套名字/无图标、Flywheel 钉死、CI 无 GameTest、Modrinth 草稿、会话链接历史等（P7 跳过项）。
+
+### 确认仍好 / 本轮补完
+- 制图师 tree/blight **二次不扣费**；无遗迹商品。
+- Splinter 满蓄 20 能量 → 3 箭，短蓄 1 箭，pickup=0，中途死/退出不坏档。
+- 金索拒船；腐光之心续跑。
+- keepInventory=false 精灵武器掉落干净。
+- 极限死→旁观 UI。
+- 超平坦/放大化可进、精灵可开。
+
+文档 HEAD 随本提交；代码基线仍 **`5310e3a`**。脚本 `/workspace/oriMod/pt9/`，截图 `playtest-p8cont-*`（不入库）。
 
