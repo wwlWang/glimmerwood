@@ -83,6 +83,9 @@ public final class P5IGameTests {
                         // Real vanilla brain activities acquire the victim after the hit's anger flow.
                         mob.setNoAi(false);
                         for(int i=0;i<10 && piglin.getTarget()!=attacker;i++)l.tickNonPassenger(mob);
+                    } else if(mob instanceof net.minecraft.world.entity.monster.warden.Warden) {
+                        // Wardens do not use HurtByTargetGoal; set the active target directly.
+                        mob.setTarget(attacker);
                     } else {
                         var retaliation=new HurtByTargetGoal((PathfinderMob)mob);
                         h.assertTrue(retaliation.canUse(),"Vanilla revenge goal did not activate");retaliation.start();

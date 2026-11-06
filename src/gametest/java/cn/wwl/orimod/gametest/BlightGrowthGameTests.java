@@ -65,7 +65,7 @@ public final class BlightGrowthGameTests {
             }
         });
         add(tests,"two_dimensions_share_one_write_budget",BlightGrowthGameTests::twoDimensions);
-        add(tests,"missing_structure_start_has_40_tick_backoff",BlightGrowthGameTests::backoff);
+        add(tests,"unloadable_structure_ref_does_not_freeze_growth",BlightGrowthGameTests::backoff);
         add(tests,"leaves_and_scan_cursor_resume_after_save",BlightGrowthGameTests::leaves);
         tests.add(new TestFunction("r117_blight_unload","r117_blight_growth.real_unload_no_catchup","orimod_r117:room",600,0,true,BlightGrowthGameTests::unload));
         return tests;
@@ -99,16 +99,12 @@ public final class BlightGrowthGameTests {
             loadArea(level,center,40);for(int x=-4;x<=4;x++)for(int z=-4;z<=4;z++)f.set(center.offset(x,-1,z),Blocks.GRASS_BLOCK.defaultBlockState());
             f.set(center.below(),OriBlocks.BLIGHTED_SOIL.get().defaultBlockState());f.set(center,OriBlocks.GLOOM_CORE.get().defaultBlockState());
             ((GloomCoreBlockEntity)level.getBlockEntity(center)).generatedTerrain(new long[]{center.below().asLong()});
-            chunk.setAllReferences(new HashMap<>());chunk.addReferenceForStructure(structure,far.toLong());int attempts=0;
-            for(int tick=1;tick<=59;tick++){
-                BlightEcology.step(level.getServer(),false);int n=(int)BlightEcology.metrics().get("candidates");attempts+=n;
-                if(tick>20)h.assertValueEqual(n,0,"Deferred candidate reentered before its retry time");
-            }
-            h.assertValueEqual(attempts,4,"Expected one attempt for each of four neighbors");h.assertValueEqual(d.ecology(center).grownColumns(),0,"Unknown structure allowed growth");
-            h.assertTrue(level.getChunkSource().getChunkNow(far.x,far.z)==null,"Deferred query loaded origin");chunk.setAllReferences(new HashMap<>());
+            chunk.setAllReferences(new HashMap<>());chunk.addReferenceForStructure(structure,far.toLong());
+            // Unloaded structure origins are skipped (not deferred forever), so setblock cores can grow in survival.
             for(int tick=0;tick<80;tick++)BlightEcology.step(level.getServer(),false);
-            h.assertTrue(d.ecology(center).grownColumns()>0,"Retry did not resume after start became irrelevant");
-            System.out.println("R117_BLIGHT_BACKOFF four attempts at tick 20; zero candidate attempts at ticks 21..59; resumes after references clear");
+            h.assertTrue(d.ecology(center).grownColumns()>0,"Unloadable structure ref froze growth");
+            h.assertTrue(level.getChunkSource().getChunkNow(far.x,far.z)==null,"Ecology must not force-load structure origins");
+            System.out.println("R117_BLIGHT_BACKOFF unloadable structure refs skipped; growth proceeded without loading origin");
         }finally{chunk.setAllReferences(refs);level.getDataStorage().set("orimod_blight",old);BlightEcology.clear();}
     }
     private static void leaves(GameTestHelper h){

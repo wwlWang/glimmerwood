@@ -96,8 +96,10 @@ public final class BlightProtection {
                 for(long packed:entry.getValue()){
                     if(!budget.index())return Result.DEFER;
                     var origin=level.getChunkSource().getChunkNow(ChunkPos.getX(packed),ChunkPos.getZ(packed));
-                    if(origin==null){budget.missingChunk();return Result.DEFER;}
-                    var start=origin.getStartForStructure(entry.getKey());if(start==null){budget.missingChunk();return Result.DEFER;}
+                    // Unloaded structure origins must not freeze ecology forever (setblock cores in survival).
+                    // Only loaded starts can protect; missing starts are skipped, not deferred.
+                    if(origin==null){budget.missingChunk();continue;}
+                    var start=origin.getStartForStructure(entry.getKey());if(start==null){budget.missingChunk();continue;}
                     if(seen.add(start)){var result=protects(level,start,at,budget);if(result!=Result.ALLOW)return result;}
                 }
             }

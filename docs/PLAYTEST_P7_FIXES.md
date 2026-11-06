@@ -6,7 +6,7 @@
 
 | 项 | 做法 | 证据 |
 | --- | --- | --- |
-| A1 setblock 核不扩散 | `BlightEcology.grow`：ecology 已由 `registerDefaultFootprint` 初始化时，若 Work 边沿为空则补一次 `frontier()` | GameTest `p5_k.command_core_grows_and_protects_building`；待实机复查 |
+| A1 setblock 核不扩散 | 1) `BlightEcology.grow` 对已初始化 ecology 补 `frontier()`；2) `BlightProtection.structures` 跳过未加载的结构起点引用（不再整列 DEFER） | GameTest `p5_k.command_core_grows_and_protects_building` PASS；实机新档复查 |
 | A2 命令拆除刷净化 | `BlightData.removed` 只 `removeCore`，不 `begin`；玩法摧毁仍由 `GloomCoreBlockEntity.hit` 先 `begin` | GameTest `p5_k.command_remove_core_cancels_without_purify`；见 `DECISIONS.md` P7 行 |
 | B 林栖商人杀不掉 | `hurt`：`BYPASSES_INVULNERABILITY`（含 `/kill`）与创造模式攻击走 `super.hurt` | `MerchantGameTests.merchant_invulnerable_unpushable_peaceful_persistent` |
 | C 萤打闲置坚守者 / 蛮兵 | `conditionally_neutral` 加 `warden`、去掉 `piglin_brute` | `P5IGameTests` conditional_warden_* + `piglin_brute_remains_hostile` |
