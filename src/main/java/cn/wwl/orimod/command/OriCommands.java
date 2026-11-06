@@ -28,6 +28,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.ItemStack;
@@ -301,6 +302,11 @@ public final class OriCommands {
         var type = SPAWNS.get(id);
         if (type == null) throw UNKNOWN.create(id);
         var p = c.getSource().getPlayerOrException();
+        // Hostiles despawn instantly on Peaceful; refuse with a clear message instead of a false success.
+        if (!id.equals("target") && p.serverLevel().getDifficulty() == Difficulty.PEACEFUL) {
+            c.getSource().sendFailure(Component.translatable("commands.orimod.spawn.peaceful"));
+            return 0;
+        }
         var look = p.getLookAngle().multiply(1, 0, 1).normalize().scale(id.equals("matriarch") || id.equals("heart") ? 8 : 4);
         var pos = net.minecraft.core.BlockPos.containing(p.position().add(look).add(0, id.equals("hawk") || id.equals("matriarch") ? 4 : 0, 0));
         var entity = type.get().spawn(p.serverLevel(), pos, MobSpawnType.COMMAND);

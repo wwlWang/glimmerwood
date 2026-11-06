@@ -28,12 +28,17 @@ import java.util.function.Consumer;
 public final class P5IGameTests {
     @GameTestGenerator public static Collection<TestFunction> cases() {
         var tests=new ArrayList<TestFunction>();
-        for(var type:List.of(EntityType.PIGLIN,EntityType.PIGLIN_BRUTE,EntityType.SPIDER,EntityType.CAVE_SPIDER))
+        for(var type:List.of(EntityType.PIGLIN,EntityType.SPIDER,EntityType.CAVE_SPIDER,EntityType.WARDEN))
             for(String state:List.of("peaceful","target_owner","hurt_by_owner","target_other","hurt_by_other","anger_owner","anger_other"))
                 add(tests,"conditional_"+BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath()+"_"+state,h->conditional(h,type,state));
         add(tests,"zombie_remains_hostile",h->{
             var p=Fixtures.player(h);var zombie=EntityType.ZOMBIE.create(h.getLevel());
             h.assertTrue(CombatTargets.canHit(p,zombie)&&CombatTargets.canHitWithoutOwner(zombie),"Unconditional enemy lost");zombie.discard();
+        });
+        add(tests,"piglin_brute_remains_hostile",h->{
+            var p=Fixtures.player(h);p.setItemSlot(EquipmentSlot.CHEST,new ItemStack(Items.GOLDEN_CHESTPLATE));
+            var brute=EntityType.PIGLIN_BRUTE.create(h.getLevel());
+            h.assertTrue(CombatTargets.canHit(p,brute)&&CombatTargets.canHitWithoutOwner(brute),"Brute treated as gold-conditional");brute.discard();
         });
         for(var item:List.of(OriItems.SPIRIT_SPEAR.get(),OriItems.SPIRIT_BOW.get(),OriItems.SPIRIT_HAMMER.get(),OriItems.SPIRIT_BLADE.get()))
             for(boolean empty:List.of(false,true))add(tests,"interact_"+BuiltInRegistries.ITEM.getKey(item).getPath()+"_"+(empty?"empty":"ready"),h->interactions(h,item,empty));

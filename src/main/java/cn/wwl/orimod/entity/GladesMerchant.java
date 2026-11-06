@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -36,7 +37,12 @@ public final class GladesMerchant extends PathfinderMob {
         return stocks.computeIfAbsent(player.getUUID(),id->MerchantRules.stock(getUUID().getMostSignificantBits()^getUUID().getLeastSignificantBits()^id.getMostSignificantBits()^id.getLeastSignificantBits()^day*0x9E3779B97F4A7C15L,player.getData(cn.wwl.orimod.spirit.SpiritData.PROGRESS).ownedShards()));
     }
     @Override public void tick(){super.tick();if(!level().isClientSide && anchor!=null){setDeltaMovement(Vec3.ZERO);setPos(Vec3.atBottomCenterOf(anchor));setYBodyRot(facing);}}
-    @Override public boolean hurt(DamageSource source,float amount){return false;}
+    @Override public boolean hurt(DamageSource source,float amount){
+        // Survival combat stays blocked; /kill and creative punches still remove the merchant.
+        if(source.is(DamageTypeTags.BYPASSES_INVULNERABILITY))return super.hurt(source,amount);
+        if(source.getEntity() instanceof Player attacker && attacker.getAbilities().instabuild)return super.hurt(source,amount);
+        return false;
+    }
     @Override public boolean isPushable(){return false;}
     @Override public void push(Entity e){}
     @Override public void push(double x,double y,double z){}
