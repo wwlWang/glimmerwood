@@ -6,7 +6,7 @@
 
 受《Ori》系列启发的 Minecraft 1.21.1 / NeoForge 模组（游戏内名称与模组 ID 暂为 OriMod / `orimod`）：变身精灵形态，用冲刺、猛击、滑翔等移动能力和灵光武器在原版生存世界里探索遗迹、净化腐化地带、挑战首领。
 
-*An unofficial, non-commercial Ori-inspired NeoForge 1.21.1 mod: spirit form, movement abilities, light weapons, ruins and bosses in vanilla survival. Not affiliated with or endorsed by Microsoft, Xbox Game Studios or Moon Studios.*
+*An unofficial Ori-inspired NeoForge 1.21.1 mod (released by the author without commercial intent): spirit form, movement abilities, light weapons, ruins and bosses in vanilla survival. Not affiliated with or endorsed by Microsoft, Xbox Game Studios or Moon Studios.*
 
 ![精灵形态](docs/images/spirit-form.jpg)
 

@@ -55,7 +55,8 @@ public final class SpiritHud {
         if(!enabled()||mc.options.hideGui)return;
         int left=g.guiWidth()/2-91,right=g.guiWidth()/2+91;
         var light=Component.translatable("hud.orimod.light",p.getData(SpiritData.PROGRESS).light());
-        g.drawString(mc.font,light,Math.max(4,left-8-mc.font.width(light)),g.guiHeight()-18,0xFFF0AE,true);
+        // Above the hotbar/offhand row so the offhand icon stays readable in zh and en.
+        g.drawString(mc.font,light,Math.max(4,left-8-mc.font.width(light)),g.guiHeight()-40,0xFFF0AE,true);
         boolean narrow=g.guiWidth()<400;
         SkillWheelScreen.hud(g,narrow?g.guiWidth()-82:right+12,
                 narrow?g.guiHeight()-Math.max(mc.gui.leftHeight,mc.gui.rightHeight)-29:g.guiHeight()-27);

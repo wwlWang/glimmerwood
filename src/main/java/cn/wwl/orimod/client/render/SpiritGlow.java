@@ -59,7 +59,8 @@ public final class SpiritGlow {
             switch (action) {
                 case ENABLE -> {
                     var previous = SpiritGlowSync.remember(iris);
-                    if (previous != null) state = state.withPrevious(previous);
+                    // Always refresh previousPack so disable restores the pack from this enable, not a stale one.
+                    state = state.withPrevious(previous != null ? previous : new SpiritGlowSync.IrisState("", false));
                     SpiritGlowIris.apply(SpiritGlowSync.PACK, true);
                 }
                 case DISABLE -> {

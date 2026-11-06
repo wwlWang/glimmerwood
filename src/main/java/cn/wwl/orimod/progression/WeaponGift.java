@@ -32,6 +32,10 @@ public enum WeaponGift {
     }
     public boolean eligible(ServerPlayer player) { return SpiritData.isAwakened(player) && (ability == null || ability.unlocked(player)); }
     public boolean claimed(int claims) { return (claims & bit) != 0; }
+    public boolean holding(net.minecraft.world.entity.player.Player player) {
+        var it = item.get();
+        return player.getInventory().hasAnyMatching(s -> s.is(it)) || player.getOffhandItem().is(it);
+    }
 
     public boolean grant(ServerPlayer player) {
         var progress = player.getData(SpiritData.PROGRESS);

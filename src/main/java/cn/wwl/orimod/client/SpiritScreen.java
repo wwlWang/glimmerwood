@@ -114,7 +114,7 @@ public final class SpiritScreen extends Screen {
             prerequisite = a.prerequisite; price = a.cost;
             if (a.unlocked(player)) {
                 var gift = cn.wwl.orimod.progression.WeaponGift.forAbility(a);
-                if (gift != null) { claimState(gift.bit); return; }
+                if (gift != null) { claimState(gift); return; }
                 actionButton.setMessage(tr("screen.orimod.unlocked")); actionButton.active = false; return;
             }
         } else if (d.kind.equals("shard")) {
@@ -144,7 +144,7 @@ public final class SpiritScreen extends Screen {
             if (p.capacityLevel() >= 3) {
                 actionButton.setMessage(tr("progress.orimod.max_capacity")); actionButton.active = false; return;
             }
-        } else if (d.kind.equals("claim")) { claimState(1); return; }
+        } else if (d.kind.equals("claim")) { claimState(cn.wwl.orimod.progression.WeaponGift.BLADE); return; }
         actionButton.setMessage(Component.translatable("screen.orimod.purchase", price));
         if (prerequisite != null && !prerequisite.unlocked(player)) {
             actionButton.active = false; requirement = Component.translatable("progress.orimod.requires", prerequisite.title());
@@ -153,11 +153,13 @@ public final class SpiritScreen extends Screen {
         }
     }
 
-    private void claimState(int bit) {
-        boolean claimed = (minecraft.player.getData(SpiritData.PROGRESS).claimedWeapons() & bit) != 0;
-        actionButton.active = SpiritData.isAwakened(minecraft.player) && !claimed;
-        actionButton.setMessage(tr(claimed ? "screen.orimod.claimed" : "screen.orimod.claim"));
-        requirement = tr(claimed ? "screen.orimod.recraft" : "screen.orimod.first_gift");
+    private void claimState(cn.wwl.orimod.progression.WeaponGift gift) {
+        var player = minecraft.player;
+        boolean claimed = gift.claimed(player.getData(SpiritData.PROGRESS).claimedWeapons());
+        boolean owned = claimed || gift.holding(player);
+        actionButton.active = SpiritData.isAwakened(player) && !claimed;
+        actionButton.setMessage(tr(owned ? "screen.orimod.claimed" : "screen.orimod.claim"));
+        requirement = tr(owned ? "screen.orimod.recraft" : "screen.orimod.first_gift");
     }
 
     private void perform() {
