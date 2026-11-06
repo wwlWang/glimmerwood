@@ -200,10 +200,13 @@ public final class GinsoEscape {
         }
         var piece=r.piece();
         var heart=piece.point(piece.escapeHeart());
-        if(!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)){
-            // Heart gone or unloaded: fall back to safe recovery rather than soft-locking progress.
+        var level=p.serverLevel();
+        // Login can fire before the player's chunk ticket lands; force-load like recover() before treating the heart as gone.
+        level.getChunk(heart);
+        if(!level.getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)){
+            // Heart truly missing: fall back to safe recovery rather than soft-locking progress.
             p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.recover(
-                    p.serverLevel().dimension().location().toString(),piece.point(piece.escapeSafe()),clock(p)+GinsoEscapeRules.RETRY_TICKS));
+                    level.dimension().location().toString(),piece.point(piece.escapeSafe()),clock(p)+GinsoEscapeRules.RETRY_TICKS));
             recover(p);return false;
         }
         var s=new Session(p,piece);s.elapsed=r.elapsed();
@@ -223,6 +226,8 @@ public final class GinsoEscape {
         if(!(e.getEntity() instanceof ServerPlayer p))return;
         SESSIONS.remove(p.getUUID());
         if(resume(p))return;
+        // Still resumable means resume deferred (e.g. transient load); player tick retries. Do not clear.
+        if(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).resumable())return;
         if(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending())recover(p);
         GinsoEscapePayload.clear(p);
     }
