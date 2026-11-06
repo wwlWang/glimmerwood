@@ -82,8 +82,8 @@ public final class SpiritHands {
         SpiritItemGrip.local(item, point, new Vector3f());
         itemPose.last().pose().transformPosition(point);
         var palm = palm(model, itemPose, left, SpiritItemGrip.lowered(item));
+        // Pose is already left-nudged by beginHeld; do not nudge again or the paw drifts off the hilt.
         stack.pushPose();
-        firstPersonLeftNudge(stack, item, context, left);
         SpiritPawGeometry.place(stack, point, palm);
         draw(left, true, stack, buffers, light);
         stack.popPose();

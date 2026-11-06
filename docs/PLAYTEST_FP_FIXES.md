@@ -16,7 +16,7 @@ Code: `32096bc` + follow-ups. Author `wwlwwl <wwlwwl@proton.me>`. No `/orimod re
 ### `SpiritHands`
 - Emission pass runs only when Spirit Glow is active; otherwise paws use ambient packed light.
 - Palm halo quieted.
-- Left FP spirit weapons get a small inward nudge; the same nudge is applied to the grip paw so it stays on the handle.
+- Left FP spirit weapons get a small inward nudge in `beginHeld` (shared pose with the grip paw; do not nudge again in `heldItem`).
 
 ### `SpiritEnergy`
 - Optional translucent FP render types remain available (`glow/streak/ribbon(boolean)`) but FP weapons stay on additive single-layer after translucent proved too faint.
