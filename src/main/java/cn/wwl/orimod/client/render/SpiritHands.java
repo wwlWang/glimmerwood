@@ -34,11 +34,16 @@ public final class SpiritHands {
     }
 
     /** Keep ItemInHandRenderer's matrix unchanged. Only the replacement paw is attached below. */
+    /** Left FP keeps vanilla's outward tip plane; a small inward nudge keeps the mid-blade on screen. */
+    static void firstPersonLeftNudge(PoseStack pose, ItemStack item, ItemDisplayContext context, boolean left) {
+        if (left && context != null && context.firstPerson() && item != null && !item.isEmpty() && weapon(item))
+            pose.translate(.22f, .06f, -.06f);
+    }
+
     public static void beginHeld(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack pose, boolean left) {
         pose.pushPose();
         SpiritFirstPerson.slam(entity, item, context, pose);
-        // Left FP keeps vanilla's outward tip plane; a small inward nudge keeps the mid-blade on screen.
-        if (left && context != null && context.firstPerson() && item != null && !item.isEmpty() && weapon(item)) pose.translate(.22f, .06f, -.06f);
+        firstPersonLeftNudge(pose, item, context, left);
     }
 
     public static final SpiritHandDiagnostics DIAGNOSTICS = new SpiritHandDiagnostics();
@@ -78,6 +83,7 @@ public final class SpiritHands {
         itemPose.last().pose().transformPosition(point);
         var palm = palm(model, itemPose, left, SpiritItemGrip.lowered(item));
         stack.pushPose();
+        firstPersonLeftNudge(stack, item, context, left);
         SpiritPawGeometry.place(stack, point, palm);
         draw(left, true, stack, buffers, light);
         stack.popPose();

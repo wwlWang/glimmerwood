@@ -155,7 +155,7 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
                 // One cyan core + a soft rim: additive layers stack into white when the camera is this close.
                 SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.40f, .40f), .07f * w, ACROSS, MID, .55f);
                 SpiritEnergy.beam(streakS.get(), pose, p(.34f, .50f), p(.50f, .34f), .07f * w, new Vector3f(1, 1, 0), CORE, .55f);
-                SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .22f * w, ACROSS, OUTER, .10f * a);
+                SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .16f * w, ACROSS, OUTER, .06f * a);
                 SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .09f * w, ACROSS, MID, .85f);
             } else {
                 SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.43f, .43f), .08f * w, ACROSS, MID, .8f);
