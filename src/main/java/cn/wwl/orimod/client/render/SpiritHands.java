@@ -37,6 +37,8 @@ public final class SpiritHands {
     public static void beginHeld(LivingEntity entity, ItemStack item, ItemDisplayContext context, PoseStack pose, boolean left) {
         pose.pushPose();
         SpiritFirstPerson.slam(entity, item, context, pose);
+        // Left FP keeps vanilla's outward tip plane; a small inward nudge keeps the mid-blade on screen.
+        if (left && context != null && context.firstPerson() && item != null && !item.isEmpty() && weapon(item)) pose.translate(.22f, .06f, -.06f);
     }
 
     public static final SpiritHandDiagnostics DIAGNOSTICS = new SpiritHandDiagnostics();
@@ -119,14 +121,18 @@ public final class SpiritHands {
         // GemRender's standalone direct shader is not part of Iris's hand pass.
         var min = new Vector3f(Float.POSITIVE_INFINITY);
         var max = new Vector3f(Float.NEGATIVE_INFINITY);
-        int alpha = SpiritSelfLight.handAlpha(SpiritGlow.active());
+        boolean glow = SpiritGlow.active();
+        int alpha = SpiritSelfLight.handAlpha(glow);
+        // FP paws already sit in a bright fill; full-bright packed light turns them into white mittens.
+        int lit = glow ? SpiritSelfLight.packed(light) : light;
         if (DIAGNOSTICS.enabled()) {
             var inView = new org.joml.Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix()).mul(pose.last().pose());
             var palm = inView.getTranslation(new Vector3f());
             measurements.set(left ? 1 : 0, java.util.Map.of("source", "vanilla", "grip", grip,
                     "palm", java.util.List.of(palm.x, palm.y, palm.z)));
         }
-        for (int pass = 0; pass < 2; pass++) for (var part : model.model().meshes()) {
+        int passes = glow ? 2 : 1;
+        for (int pass = 0; pass < passes; pass++) for (var part : model.model().meshes()) {
             if (!(part.mesh() instanceof GltfMesh mesh)) continue;
             var vertices = buffers.getBuffer(pass == 0 ? SpiritHandRenderType.triangles(part.material().texture())
                     : SpiritHandRenderType.emission(part.material().texture()));
@@ -146,7 +152,7 @@ public final class SpiritHands {
                     vertices.addVertex(point.x, point.y, point.z)
                             .setColor(255, 255, 255, alpha)
                             .setUv(geometry.texCoord(i,0), geometry.texCoord(i,1) + (pass == 0 ? 0 : SpiritSelfLight.EMISSION_UV_OFFSET))
-                            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(SpiritSelfLight.packed(light))
+                            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(lit)
                             .setNormal(normal.x, normal.y, normal.z);
                 }
             }
@@ -156,8 +162,8 @@ public final class SpiritHands {
             var centre = new Vector3f(min).add(max).mul(.5f);
             float radius = Math.max(.08f, Math.max(max.x - min.x, max.y - min.y) * .8f);
             // FP palms sit in the same near-camera band as the weapons; a full body-aura orb washes the grip white.
-            float palm = .16f * cn.wwl.orimod.config.OriClientConfig.bodyAura();
-            SpiritEnergy.quad(buffers.getBuffer(SpiritEnergy.glow()), new PoseStack().last(), centre,
+            float palm = (glow ? .12f : .04f) * cn.wwl.orimod.config.OriClientConfig.bodyAura();
+            if (palm > .01f) SpiritEnergy.quad(buffers.getBuffer(SpiritEnergy.glow()), new PoseStack().last(), centre,
                     new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, palm);
         }
         return true;

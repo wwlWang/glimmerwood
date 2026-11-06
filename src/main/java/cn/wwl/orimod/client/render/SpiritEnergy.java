@@ -32,6 +32,16 @@ public final class SpiritEnergy extends RenderStateShard {
                             .setCullState(NO_CULL)
                             .setWriteMaskState(COLOR_WRITE)
                             .createCompositeState(false)));
+    /** First-person weapons: src-alpha blend instead of additive, so overlapping beams do not blow out. */
+    private static final Function<ResourceLocation, RenderType> FP_TYPES = Util.memoize(texture ->
+            RenderType.create("orimod_spirit_energy_fp", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 4096, false, true,
+                    RenderType.CompositeState.builder()
+                            .setShaderState(RENDERTYPE_EYES_SHADER)
+                            .setTextureState(new TextureStateShard(texture, true, false))
+                            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                            .setCullState(NO_CULL)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .createCompositeState(true)));
 
     private SpiritEnergy() { super("orimod_spirit_energy", () -> { }, () -> { }); }
 
@@ -40,6 +50,9 @@ public final class SpiritEnergy extends RenderStateShard {
     public static RenderType restorationColumn() { return TYPES.apply(RESTORATION_COLUMN); }
     /** Soft falloff across u, constant along v: a ribbon whose edges fade (blade slashes reuse the column texture). */
     public static RenderType ribbon() { return TYPES.apply(RESTORATION_COLUMN); }
+    public static RenderType glow(boolean firstPerson) { return firstPerson ? FP_TYPES.apply(SOFT_GLOW) : glow(); }
+    public static RenderType streak(boolean firstPerson) { return firstPerson ? FP_TYPES.apply(STREAK) : streak(); }
+    public static RenderType ribbon(boolean firstPerson) { return firstPerson ? FP_TYPES.apply(RESTORATION_COLUMN) : ribbon(); }
 
     /** One ribbon segment: {@code inner0..outer0} to {@code inner1..outer1}; u runs inner→outer, alpha per end. */
     public static void strip(VertexConsumer out, PoseStack.Pose pose, Vector3f inner0, Vector3f outer0, Vector3f inner1, Vector3f outer1,
