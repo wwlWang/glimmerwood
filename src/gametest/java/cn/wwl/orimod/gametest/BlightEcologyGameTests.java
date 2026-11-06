@@ -83,12 +83,13 @@ public final class BlightEcologyGameTests {
                 h.assertValueEqual(heartResult(h,at),BlightProtection.Result.PROTECTED,"Dynamic new heart not indexed");
             }finally{BlightProtection.clear(level);}
         });
-        add(tests,"structure_reference_waits_for_unloaded_start",h->{
+        add(tests,"structure_reference_skips_unloaded_start",h->{
             var at=sky(h);var level=h.getLevel();var chunk=level.getChunkAt(at);var refs=new HashMap<>(chunk.getAllReferences());
             var structure=level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(RuinKind.FOREST.location());var far=new ChunkPos(999_999,999_999);
             try{
                 chunk.setAllReferences(new HashMap<>());chunk.addReferenceForStructure(structure,far.toLong());
-                h.assertValueEqual(BlightProtection.structures(level,at,new BlightEcologyRules.Budget()),BlightProtection.Result.DEFER,"Unknown start treated as empty");
+                // P7: unloaded structure origins must not freeze blight growth (ALLOW, not DEFER).
+                h.assertValueEqual(BlightProtection.structures(level,at,new BlightEcologyRules.Budget()),BlightProtection.Result.ALLOW,"Unknown start deferred whole column");
                 h.assertTrue(level.getChunkSource().getChunkNow(far.x,far.z)==null,"Loaded remote structure origin");
             }finally{chunk.setAllReferences(refs);}
         });

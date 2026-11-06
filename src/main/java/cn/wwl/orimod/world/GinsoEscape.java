@@ -65,6 +65,7 @@ public final class GinsoEscape {
     public static boolean start(ServerPlayer p,GinsoPiece piece){
         var old=session(p);if(old!=null&&(old.active()||old.cooldown>0))return reject(p,old.active()?"running":"cooldown");
         var recovery=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+        if(recovery.resumable())return reject(p,"running");
         if(recovery.pending()||recovery.retryAt()>clock(p))return reject(p,"cooldown");
         var heart=piece.point(piece.escapeHeart());
         if(piece.escapeVersion()==0||!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)
@@ -84,7 +85,7 @@ public final class GinsoEscape {
         dismount(p);
         SESSIONS.put(p.getUUID(),s);
         cn.wwl.orimod.progression.StoryProgress.award(p,cn.wwl.orimod.progression.StoryProgress.Step.GINSO);
-        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),piece.point(piece.escapeSafe()),true,0));
+        saveProgress(p,s);
         GinsoEscapePayload.send(p,s,true);
         EscapeSupport.title(p,"title.orimod.ginso.prepare","subtitle.orimod.ginso.prepare",5,40,15);
         return true;
@@ -101,10 +102,21 @@ public final class GinsoEscape {
     }
     private static boolean reject(ServerPlayer p,String reason){p.displayClientMessage(Component.translatable("message.orimod.ginso.escape."+reason),true);return false;}
     private static long clock(ServerPlayer p){return p.server.overworld().getGameTime();}
+    private static void saveProgress(ServerPlayer p,Session s){
+        var snap=GinsoEscapeRecovery.progress(s.piece,s.elapsed);
+        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(
+                s.level.dimension().location().toString(),snap.safe(),false,0,
+                snap.origin(),snap.seed(),snap.entrance(),snap.approach(),
+                snap.shapeVersion(),snap.courseVersion(),snap.escapeVersion(),snap.elapsed()));
+    }
     public static void tick(PlayerTickEvent.Post e){if(e.getEntity() instanceof ServerPlayer p)tick(p);}
     public static void tick(ServerPlayer p){
         var s=session(p);
-        if(s==null){if(p.isAlive()&&p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending())recover(p);return;}
+        if(s==null){
+            if(p.isAlive()&&p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).resumable())resume(p);
+            else if(p.isAlive()&&p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending())recover(p);
+            return;
+        }
         if(!s.active()){
             if(s.phase==Phase.SUCCESS||s.phase==Phase.FAILED){s.phase=Phase.COOLDOWN;GinsoEscapePayload.send(p,s,false);}
             if(s.cooldown>0)s.cooldown--;
@@ -119,6 +131,7 @@ public final class GinsoEscape {
         dismount(p);
         s.eligible &= !p.isCreative()&&!p.isSpectator();
         s.elapsed++;if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS)s.phase=Phase.RUNNING;
+        saveProgress(p,s);
         var at=s.local(p.position());
         if(s.phase==Phase.RUNNING&&s.layout.exit().contains(at.x,at.y,at.z)&&p.onGround()){end(p,s,Outcome.SUCCESS,false);return;}
         if(!inPlayableRoute(s.layout.route(),at.x,at.y,at.z)){end(p,s,Outcome.OUTSIDE,true);return;}
@@ -147,7 +160,8 @@ public final class GinsoEscape {
         if(outcome==Outcome.SUCCESS){cn.wwl.orimod.progression.StoryProgress.award(p,cn.wwl.orimod.progression.StoryProgress.Step.GINSO_ESCAPE);reward(p,s);EscapeSupport.title(p,"title.orimod.ginso.success","subtitle.orimod.ginso.success",5,50,20);}
         else if(outcome!=Outcome.DEAD&&p.isAlive())p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.failed",Component.translatable("message.orimod.ginso.reason."+outcome.name().toLowerCase(Locale.ROOT))),false);
         if(outcome==Outcome.DEAD)p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);
-        else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(s.level.dimension().location().toString(),s.piece.point(s.piece.escapeSafe()),returnSafe,clock(p)+s.cooldown));
+        else if(returnSafe)p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.recover(s.level.dimension().location().toString(),s.piece.point(s.piece.escapeSafe()),clock(p)+s.cooldown));
+        else p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.cooldown(s.level.dimension().location().toString(),s.piece.point(s.piece.escapeSafe()),clock(p)+s.cooldown));
         GinsoEscapePayload.send(p,s,false);
         if(returnSafe&&p.isAlive())recover(p);
     }
@@ -176,16 +190,48 @@ public final class GinsoEscape {
         if(destination==null){var fallback=level.getSharedSpawnPos();level.getChunk(fallback);destination=Vec3.atBottomCenterOf(fallback.above());}
         p.stopRiding();p.stopUsingItem();SpiritCombat.cancel(p,"ginso_recovery");SpiritMovement.teleported(p);drag(p,false);
         p.teleportTo(level,destination.x,destination.y,destination.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.hurtMarked=true;p.fallDistance=0;
-        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,new GinsoEscapeRecovery(level.dimension().location().toString(),safe,false,clock(p)+GinsoEscapeRules.RETRY_TICKS));
+        p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.cooldown(level.dimension().location().toString(),safe,clock(p)+GinsoEscapeRules.RETRY_TICKS));
+    }
+    /** Rebuild an interrupted active escape. Offline time does not advance the flood clock. */
+    public static boolean resume(ServerPlayer p){
+        var r=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);if(!r.resumable()||!p.isAlive()||session(p)!=null)return false;
+        if(!r.dimension().isEmpty()&&!r.dimension().equals(p.level().dimension().location().toString())){
+            p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.EMPTY);return false;
+        }
+        var piece=r.piece();
+        var heart=piece.point(piece.escapeHeart());
+        if(!p.serverLevel().hasChunkAt(heart)||!p.serverLevel().getBlockState(heart).is(OriBlocks.GINSO_WATER_HEART)){
+            // Heart gone or unloaded: fall back to safe recovery rather than soft-locking progress.
+            p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.recover(
+                    p.serverLevel().dimension().location().toString(),piece.point(piece.escapeSafe()),clock(p)+GinsoEscapeRules.RETRY_TICKS));
+            recover(p);return false;
+        }
+        var s=new Session(p,piece);s.elapsed=r.elapsed();
+        if(s.elapsed>=GinsoEscapeRules.PREPARE_TICKS)s.phase=Phase.RUNNING;
+        SESSIONS.put(p.getUUID(),s);
+        saveProgress(p,s);
+        GinsoEscapePayload.send(p,s,true);
+        p.displayClientMessage(Component.translatable("message.orimod.ginso.escape.resumed"),true);
+        return true;
     }
     public static void unload(net.neoforged.neoforge.event.level.ChunkEvent.Unload e){
         // Mark only: never reload a chunk from its unload callback. Recovery runs on the next player tick.
         if(e.getLevel() instanceof ServerLevel level)for(var s:SESSIONS.values())
             if(s.active()&&s.level==level&&new net.minecraft.world.level.ChunkPos(s.piece.point(s.piece.escapeHeart())).equals(e.getChunk().getPos()))s.invalidated=true;
     }
-    public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p){SESSIONS.remove(p.getUUID());recover(p);GinsoEscapePayload.clear(p);}}
+    public static void login(PlayerEvent.PlayerLoggedInEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p))return;
+        SESSIONS.remove(p.getUUID());
+        if(resume(p))return;
+        if(p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending())recover(p);
+        GinsoEscapePayload.clear(p);
+    }
     public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p)disconnect(p);}
-    public static void disconnect(ServerPlayer p){var s=SESSIONS.remove(p.getUUID());drag(p,false);if(s!=null&&s.active())s.outcome=Outcome.DISCONNECTED;/* pending attachment survives player save */}
+    public static void disconnect(ServerPlayer p){
+        var s=SESSIONS.remove(p.getUUID());drag(p,false);
+        if(s!=null&&s.active()){s.outcome=Outcome.DISCONNECTED;saveProgress(p,s);}
+        /* resumable attachment survives player save; login rebuilds the session */
+    }
     public static void dimension(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p){
         var s=session(p);
         // Cancelling clears drag and persists the retry deadline, but must never arm a return teleport.
@@ -196,7 +242,9 @@ public final class GinsoEscape {
     public static void clear(){SESSIONS.clear();}
     public static Map<String,Object> diagnostics(ServerPlayer p){
         var s=session(p);var out=new LinkedHashMap<String,Object>();var r=p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
-        out.put("phase",s==null?(r.retryAt()>clock(p)?"COOLDOWN":"READY"):s.phase.name());out.put("pendingRecovery",r.pending());out.put("receipt",p.getData(SpiritData.PROGRESS).rewards().getOrDefault(RECEIPT,0));
+        out.put("phase",s==null?(r.resumable()?"RESUME":r.retryAt()>clock(p)?"COOLDOWN":"READY"):s.phase.name());
+        out.put("pendingRecovery",r.pending());out.put("resumable",r.resumable());out.put("savedElapsed",r.elapsed());
+        out.put("receipt",p.getData(SpiritData.PROGRESS).rewards().getOrDefault(RECEIPT,0));
         if(s!=null){out.put("session",s.id.toString());out.put("elapsedTicks",s.elapsed);out.put("waterY",s.water());out.put("submergedTicks",s.submerged);out.put("maximumSubmergedTicks",s.maximumSubmerged);out.put("outcome",s.outcome.name());out.put("cooldownTicks",s.cooldown);out.put("referenceSeconds",s.plan.referenceSeconds());out.put("limitTicks",s.plan.limitTicks());out.put("rewardLight",s.rewardedLight);out.put("rewardCell",s.rewardedCell);out.put("initialHealth",s.startingHealth);out.put("health",p.getHealth());out.put("safe",List.of(s.piece.point(s.piece.escapeSafe()).getX(),s.piece.point(s.piece.escapeSafe()).getY(),s.piece.point(s.piece.escapeSafe()).getZ()));}
         return out;
     }

@@ -616,7 +616,8 @@
   "message.orimod.ginso.escape.no_vehicle": "You cannot ride vehicles during the Ginso escape.",
   "message.orimod.blight.ineffective": "Ineffective: this attack cannot damage the Blight Core.",
   "merchant.orimod.already_located": "You already purchased this location. Directions restored at no charge.",
-  "message.orimod.escape.resumed": "Gloom Heart escape resumed; time offline does not count.",
+    "message.orimod.ginso.escape.resumed": "Ginso escape resumed; time offline does not advance the flood.",
+"message.orimod.escape.resumed": "Gloom Heart escape resumed; time offline does not count.",
   "merchant.orimod.restore_guide": "Restore directions",
   "commands.orimod.spawn.peaceful": "Hostile mobs despawn instantly on Peaceful. Change the difficulty to Easy or higher first."
 }

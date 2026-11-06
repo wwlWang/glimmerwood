@@ -129,12 +129,18 @@ public final class GinsoEscapeGameTests {
             s.p.setPos(foot.add(0,bottom-2-at.y,0));s.p.setOnGround(false);s.tick(1);
             h.assertValueEqual(GinsoEscape.session(s.p).outcome,GinsoEscape.Outcome.OUTSIDE,"Fell below route without failing");s.assertSafe();
         });
-        for(String path:List.of("logout","shutdown"))add(tests,"recovery_"+path,(h,s)->{
-            s.start();s.tick(40);var original=s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+        for(String path:List.of("logout","shutdown"))add(tests,"resume_"+path,(h,s)->{
+            s.start();s.tick(40);var before=s.p.position();var original=s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY);
+            h.assertTrue(original.resumable(),"Active escape did not persist resume snapshot");h.assertValueEqual(original.elapsed(),40,"Elapsed not saved");
             var serialized=GinsoEscapeRecovery.CODEC.encodeStart(NbtOps.INSTANCE,original).getOrThrow();
             if(path.equals("shutdown"))GinsoEscape.stop(s.p.server);else GinsoEscape.disconnect(s.p);
-            s.p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.CODEC.parse(NbtOps.INSTANCE,serialized).getOrThrow());s.p.setPos(s.p.position().add(20,-5,0));
-            GinsoEscape.login(new PlayerEvent.PlayerLoggedInEvent(s.p));s.assertSafe();h.assertFalse(GinsoEscape.active(s.p),"Recovery resumed timer");h.assertFalse(s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Recovery not consumed");h.assertValueEqual(s.p.getData(SpiritData.SOUL_LINK),s.link,"Recovery overwrote link");
+            h.assertFalse(GinsoEscape.active(s.p),"Session survived disconnect");
+            // Simulate player save surviving process restart: re-apply the attachment and keep the mid-route position.
+            s.p.setData(SpiritData.GINSO_ESCAPE_RECOVERY,GinsoEscapeRecovery.CODEC.parse(NbtOps.INSTANCE,serialized).getOrThrow());s.p.setPos(before);
+            GinsoEscape.login(new PlayerEvent.PlayerLoggedInEvent(s.p));
+            h.assertTrue(GinsoEscape.active(s.p),"Login did not resume escape");h.assertValueEqual(GinsoEscape.session(s.p).elapsed,40,"Resume reset the flood clock");
+            h.assertValueEqual(s.p.position(),before,"Resume teleported away from mid-route");h.assertFalse(s.p.getData(SpiritData.GINSO_ESCAPE_RECOVERY).pending(),"Resume armed fail recovery");
+            h.assertValueEqual(s.p.getData(SpiritData.SOUL_LINK),s.link,"Resume overwrote link");
         });
         add(tests,"two_independent_clocks_bystander_untouched",(h,s)->{
             try(var other=Fixtures.connectedPlayer(h);var by=Fixtures.connectedPlayer(h)){

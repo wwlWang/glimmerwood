@@ -17,7 +17,20 @@ class GinsoFloodSurfaceTest {
     @Test void continuousPositionsRotateAroundBlockCentresLikeThePiece(){
         var origin=new BlockPos(5048,71,4312);for(int turn=0;turn<4;turn++)for(var p:List.of(new BlockPos(0,94,1),new BlockPos(-9,101,12),new BlockPos(16,106,-4))){var w=origin.offset(GinsoInterior.rotate(p,turn));var local=GinsoEscape.localPosition(origin,turn,Vec3.atBottomCenterOf(w));assertEquals(new Vec3(p.getX()+.5,p.getY(),p.getZ()+.5),local);}
     }
-    @Test void independentRecoveryCodecDoesNotContainASoulLinkOrResumeTimer(){
-        var r=new GinsoEscapeRecovery("minecraft:overworld",new BlockPos(100,165,5),true,12345);var data=GinsoEscapeRecovery.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,r).getOrThrow();assertEquals(r,GinsoEscapeRecovery.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,data).getOrThrow());assertFalse(data.toString().contains("elapsed"));assertFalse(data.toString().contains("soul"));
+    @Test void recoveryCodecRoundTripsFailAndResumeSnapshotsWithoutSoulLink(){
+        var fail=GinsoEscapeRecovery.recover("minecraft:overworld",new BlockPos(100,165,5),12345);
+        var failData=GinsoEscapeRecovery.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,fail).getOrThrow();
+        assertEquals(fail,GinsoEscapeRecovery.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,failData).getOrThrow());
+        assertFalse(fail.resumable());assertFalse(failData.toString().contains("soul"));
+        var piece=new GinsoPiece(new BlockPos(5048,71,4312),115117,0,0,3,2,1);
+        var resume=GinsoEscapeRecovery.progress(piece,40);
+        resume=new GinsoEscapeRecovery("minecraft:overworld",resume.safe(),false,0,resume.origin(),resume.seed(),resume.entrance(),resume.approach(),resume.shapeVersion(),resume.courseVersion(),resume.escapeVersion(),resume.elapsed());
+        var resumeData=GinsoEscapeRecovery.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,resume).getOrThrow();
+        assertEquals(resume,GinsoEscapeRecovery.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,resumeData).getOrThrow());
+        assertTrue(resume.resumable());assertEquals(40,resume.elapsed());assertFalse(resumeData.toString().contains("soul"));
+        // Old four-field saves still decode as non-resumable recovery.
+        var legacy=com.google.gson.JsonParser.parseString("{\"dimension\":\"minecraft:overworld\",\"safe\":[100,165,5],\"pending\":true,\"retry_at\":9}");
+        var parsed=GinsoEscapeRecovery.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,legacy).getOrThrow();
+        assertTrue(parsed.pending());assertFalse(parsed.resumable());assertEquals(0,parsed.elapsed());
     }
 }

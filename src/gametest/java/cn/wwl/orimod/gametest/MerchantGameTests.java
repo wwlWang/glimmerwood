@@ -58,7 +58,12 @@ public final class MerchantGameTests {
             String id=kind==FeatureSites.Kind.TREE?"tree":"blight";var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,id));s.balance(500-MerchantRules.price(id));
             var guide=s.packets(RuinGuidePayload.class).getLast();h.assertValueEqual(guide.entry(),second,"Guide selected invalid/claimed target");h.assertValueEqual(guide.dimension(),h.getLevel().dimension().location().toString(),"Guide dimension");
         });
-        add(tests,"no_feature_target_no_charge_and_clear_feedback",(h,s)->{var q=s.open(1);MerchantTrading.buy(s.p,s.packet(q,"tree"));s.balance(500);h.assertTrue(s.packets(RuinGuidePayload.class).isEmpty(),"Invented guide");h.assertValueEqual(s.quote().message(),"not_found","Missing not-found message");});
+        add(tests,"no_feature_target_hides_locate_offers",(h,s)->{
+            var q=s.open(1);h.assertTrue(q.offers().stream().noneMatch(o->o.id().equals("tree")||o.id().equals("blight")),"Priced locate offered without a site");
+            // Forged buy of a hidden product still refuses without charging.
+            MerchantTrading.buy(s.p,new MerchantBuyPayload(q.entityId(),q.merchant(),q.day(),q.token(),"tree"));s.balance(500);
+            h.assertTrue(s.packets(RuinGuidePayload.class).isEmpty(),"Invented guide");h.assertValueEqual(s.quote().message(),"not_found","Missing not-found message");
+        });
         add(tests,"unloaded_index_guides_without_loading",(h,s)->{
             var far=new BlockPos(12_000_000,80,12_000_000);s.p.setPos(Vec3.atBottomCenterOf(far));s.m.bind(1,far,far,0);var target=far.east(200);s.data.add(FeatureSites.Kind.TREE,target);
             var source=h.getLevel().getChunkSource();h.assertTrue(source.getChunkNow(target.getX()>>4,target.getZ()>>4)==null,"Fixture chunk loaded");int count=source.getLoadedChunksCount();
@@ -81,6 +86,9 @@ public final class MerchantGameTests {
             h.assertTrue(CompanionLines.flush(s.p),"Outpost line not sent");h.assertTrue(s.p.getData(SpiritData.PROGRESS).rewards().containsKey("line/first_outpost"),"Line record missing");h.assertFalse(CompanionLines.offer(s.p,CompanionLines.Line.FIRST_OUTPOST),"Line repeated");
         });
         add(tests,"cartographer_only_sells_tree_and_blight",(h,s)->{
+            var tree=s.p.blockPosition().east(8);var blight=tree.east(2);
+            s.set(tree,OriBlocks.SPIRIT_TREE_HEART.get().defaultBlockState());s.set(blight,OriBlocks.GLOOM_CORE.get().defaultBlockState());
+            s.data.add(FeatureSites.Kind.TREE,tree);s.data.add(FeatureSites.Kind.BLIGHT,blight);
             var q=s.open(1);h.assertValueEqual(q.offers().stream().map(MerchantOfferPayload.Offer::id).toList(),List.of("tree","blight"),"Redundant paid ruin service");
         });
         add(tests,"removed_ruin_offer_rejected_on_construction",(h,s)->{

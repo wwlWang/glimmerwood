@@ -23,6 +23,18 @@ public final class SpiritForm {
                 return reject(player, "message.orimod.not_enough_space");
             }
         }
+        apply(player, becomingSpirit);
+        player.displayClientMessage(Component.translatable(becomingSpirit ? "message.orimod.spirit_form" : "message.orimod.human_form"), true);
+        return true;
+    }
+
+    /** Drop spirit silhouette when the player becomes a spectator (hardcore death) without clearing awakening. */
+    public static void idleIfSpectator(ServerPlayer player) {
+        if (!player.isSpectator() || !SpiritData.isSpirit(player)) return;
+        apply(player, false);
+    }
+
+    private static void apply(ServerPlayer player, boolean becomingSpirit) {
         cn.wwl.orimod.combat.SpiritCombat.cancel(player, "form");
         cn.wwl.orimod.progression.Regenerate.release(player);
         cn.wwl.orimod.movement.VanillaMotion.clear(player);
@@ -32,12 +44,11 @@ public final class SpiritForm {
         cn.wwl.orimod.movement.FeatherGlide.formChanged(player);
         player.refreshDimensions();
         cn.wwl.orimod.fx.SpiritFxLifecycle.formChanged(player);
-        player.displayClientMessage(Component.translatable(becomingSpirit ? "message.orimod.spirit_form" : "message.orimod.human_form"), true);
-        return true;
     }
 
     public static void tick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
+        if (player instanceof ServerPlayer server) idleIfSpectator(server);
         EntityDimensions desired = player.getDimensions(player.getPose());
         // Attachments synchronize independently of vanilla pose packets; reconcile on both sides.
         if (Math.abs(player.getBbHeight() - desired.height()) > 0.001f

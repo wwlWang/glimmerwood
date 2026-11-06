@@ -616,7 +616,8 @@
   "message.orimod.ginso.escape.no_vehicle": "金索逃亡期间不能乘坐载具。",
   "message.orimod.blight.ineffective": "无效：这种攻击无法伤害腐化之核。",
   "merchant.orimod.already_located": "该目标已购买过定位，已免费恢复指引。",
-  "message.orimod.escape.resumed": "已继续腐光之心逃亡；离线时间不计入倒计时。",
+    "message.orimod.ginso.escape.resumed": "已继续金索逃亡；离线时间不计入洪水进度。",
+"message.orimod.escape.resumed": "已继续腐光之心逃亡；离线时间不计入倒计时。",
   "merchant.orimod.restore_guide": "免费恢复指引",
   "commands.orimod.spawn.peaceful": "和平难度下敌对生物会立即消失，无法生成。请先把难度改为简单或以上。"
 }

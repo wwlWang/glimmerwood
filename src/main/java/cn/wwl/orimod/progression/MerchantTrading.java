@@ -20,8 +20,14 @@ public final class MerchantTrading {
     }
     private static void send(ServerPlayer p,Session s,String message){
         var progress=p.getData(SpiritData.PROGRESS);
-        var offers=s.stock.stream().map(id->new MerchantOfferPayload.Offer(id,quotedPrice(p,id),Shard.byId(id)==null || (progress.ownedShards()&Shard.byId(id).bit)==0)).toList();
+        // Hide cartographer locate offers when FeatureSites has no reachable target (avoids priced not_found clicks).
+        var offers=s.stock.stream().filter(id->offerable(p,id)).map(id->new MerchantOfferPayload.Offer(id,quotedPrice(p,id),Shard.byId(id)==null || (progress.ownedShards()&Shard.byId(id).bit)==0)).toList();
         PacketDistributor.sendToPlayer(p,new MerchantOfferPayload(s.merchant.getId(),s.merchant.getUUID(),s.day,s.token,s.merchant.job(),progress.light(),offers,message,false));
+    }
+    private static boolean offerable(ServerPlayer p,String id){
+        if(!id.equals("tree")&&!id.equals("blight"))return true;
+        var kind=id.equals("tree")?FeatureSites.Kind.TREE:FeatureSites.Kind.BLIGHT;
+        return FeatureSites.get(p.serverLevel()).nearest(p,kind).isPresent();
     }
     private static int quotedPrice(ServerPlayer p,String id) {
         if (id.equals("tree") || id.equals("blight")) {
@@ -42,6 +48,7 @@ public final class MerchantTrading {
         String reason=refusal(p,s,packet.product(),packet.day(),Shard.byId(packet.product())==null);if(!reason.isEmpty()){refresh(p,s,reason);return;}
         String id=packet.product();
         if(Shard.byId(id)!=null){pay(p,s,id,null);return;}
+        if(!offerable(p,id)){refresh(p,s,"not_found");return;}
         var kind=id.equals("tree")?FeatureSites.Kind.TREE:FeatureSites.Kind.BLIGHT;
         var found=FeatureSites.get(p.serverLevel()).nearest(p,kind);
         if(found.isEmpty())refresh(p,s,"not_found");else pay(p,s,id,new RuinGuidePayload(p.level().dimension().location().toString(),found.get(),id.equals("tree")?"spirit_tree":"blighted_grounds"));
