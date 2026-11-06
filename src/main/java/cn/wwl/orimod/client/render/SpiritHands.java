@@ -155,8 +155,10 @@ public final class SpiritHands {
         if (Float.isFinite(min.x)) {
             var centre = new Vector3f(min).add(max).mul(.5f);
             float radius = Math.max(.08f, Math.max(max.x - min.x, max.y - min.y) * .8f);
+            // FP palms sit in the same near-camera band as the weapons; a full body-aura orb washes the grip white.
+            float palm = .16f * cn.wwl.orimod.config.OriClientConfig.bodyAura();
             SpiritEnergy.quad(buffers.getBuffer(SpiritEnergy.glow()), new PoseStack().last(), centre,
-                    new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, .35f * cn.wwl.orimod.config.OriClientConfig.bodyAura());
+                    new Vector3f(radius,0,0), new Vector3f(0,radius,0), 0xBFE4FF, palm);
         }
         return true;
     }

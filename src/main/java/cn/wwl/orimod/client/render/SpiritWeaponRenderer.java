@@ -44,6 +44,8 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
 
     private static Vector3f p(float x, float y) { return new Vector3f(x, y, .5f); }
     private static final Vector3f ACROSS = new Vector3f(-1, 1, 0);
+    /** FP sits on the near plane: a full-length tip foreshortens off the side of the screen. */
+    static float firstPersonTip(boolean first, float worldTip) { return first ? .72f + .10f * worldTip : worldTip; }
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext context, PoseStack poses, MultiBufferSource buffers, int light, int overlay) {
@@ -57,8 +59,14 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
         java.util.function.Supplier<com.mojang.blaze3d.vertex.VertexConsumer> ribbonS = () -> buffers.getBuffer(SpiritEnergy.ribbon());
         java.util.function.Supplier<com.mojang.blaze3d.vertex.VertexConsumer> glowS = () -> buffers.getBuffer(SpiritEnergy.glow());
         float swing = swing(stack);
+        boolean first = context.firstPerson();
+        // FP sits centimetres from the camera: full world halos blow out into a white slab. Keep the spirit-light
+        // read with a thin core and a soft rim, and leave third-person / GUI at the denser world look.
+        float halo = first ? .28f : 1f;
+        float core = first ? .72f : 1f;
+        float swingGlow = first ? .25f : .7f;
         // R94: the light flares through a swing / throw, so the weapon reads as energy being spent, not a prop.
-        float a = pulse * (1 + .5f * charge + .7f * swing);
+        float a = pulse * (1 + .5f * charge + swingGlow * swing);
         // Icons are tiny: thicker light so the shape reads in the hotbar and inventory.
         float w = context == ItemDisplayContext.GUI ? 1.8f : 1f;
         if (stack.is(OriItems.SPIRIT_BOW)) {
@@ -72,9 +80,9 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
                 var next = SpiritWeaponShape.bowLimb(to);
                 var side0 = SpiritWeaponShape.bowSide(from);
                 var side1 = SpiritWeaponShape.bowSide(to);
-                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .34f * w, OUTER, .18f * a);
-                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .18f * w, MID, .30f * a + stage * .15f);
-                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .065f * w, CORE, .88f + stage * .12f);
+                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .34f * w, OUTER, .18f * a * halo);
+                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .18f * w, MID, (.30f * a + stage * .15f) * (first ? .55f : 1f));
+                curvedBeam(ribbonS.get(), pose, previous, next, side0, side1, .065f * w, CORE, (.88f + stage * .12f) * core);
                 previous = next;
             }
             var string = SpiritWeaponShape.bowString(pull,fp);
@@ -109,34 +117,37 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             // Shaft, then a broad crossbar head of denser light with a halo that swells while charging.
             // At arm's length the additive cross-planes and centre orb saturated into a ball.
             // Keep the same T geometry and native animation, but expose its crossbar in first person.
-            boolean first = context.firstPerson();
-            float halo = first ? .3f : 1;
             SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .44f * w, ACROSS, OUTER, .18f * a * halo);
             SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .26f * w, ACROSS, MID, .32f * a * halo);
-            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .10f * w, ACROSS, CORE, first ? .7f : .95f);
+            SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .10f * w, ACROSS, CORE, .95f * core);
             SpiritEnergy.beam(streakS.get(), pose, p(.48f, 1.0f), p(1.0f, .48f), .52f * w, new Vector3f(1, 1, 0), OUTER, .30f * a * halo);
-            SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .26f * w, new Vector3f(1, 1, 0), CORE, first ? .65f : .92f);
+            SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .26f * w, new Vector3f(1, 1, 0), CORE, .92f * core);
             if (!first) SpiritEnergy.orb(glowS.get(), pose, p(.74f, .74f), .30f + .12f * charge, MID, .42f * a);
-            SpiritEnergy.orb(glowS.get(), pose, p(.12f, .12f), .08f, CORE, .7f);
-            motes(glowS.get(), pose, t, .12f, .74f, 3, .05f + .03f * charge, a);
+            SpiritEnergy.orb(glowS.get(), pose, p(.12f, .12f), .08f, CORE, .7f * core);
+            motes(glowS.get(), pose, t, .12f, .74f, 3, .05f + .03f * charge, a * halo);
         } else if (stack.is(OriItems.SPIRIT_SPEAR)) {
-            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .38f * w, ACROSS, OUTER, .16f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .20f * w, ACROSS, MID, .30f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(.82f, .82f), .07f * w, ACROSS, CORE, .95f);
-            SpiritEnergy.beam(streakS.get(), pose, p(.70f, .70f), p(1.0f, 1.0f), .17f * w, ACROSS, CORE, .95f);
-            SpiritEnergy.beam(streakS.get(), pose, p(.66f, .80f), p(.80f, .66f), .10f * w, new Vector3f(1, 1, 0), MID, .8f);
-            SpiritEnergy.orb(glowS.get(), pose, p(.90f, .90f), .16f, MID, .5f * a);
-            motes(glowS.get(), pose, t, .05f, .95f, 4, .04f, a);
+            float tip = firstPersonTip(first, .82f);
+            float point = firstPersonTip(first, 1.0f);
+            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .38f * w, ACROSS, OUTER, .16f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .20f * w, ACROSS, MID, .30f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .07f * w, ACROSS, CORE, .95f * core);
+            SpiritEnergy.beam(streakS.get(), pose, p(tip - .12f, tip - .12f), p(point, point), .17f * w, ACROSS, CORE, .95f * core);
+            float head = tip - .02f;
+            SpiritEnergy.beam(streakS.get(), pose, p(head - .04f, head + .10f), p(head + .10f, head - .04f), .10f * w, new Vector3f(1, 1, 0), MID, .8f * (first ? .55f : 1f));
+            SpiritEnergy.orb(glowS.get(), pose, p(point - .10f, point - .10f), first ? .10f : .16f, MID, .5f * a * halo);
+            motes(glowS.get(), pose, t, .05f, Math.min(.95f, point), 4, .04f, a * halo);
         } else {
             // Spirit Edge: grip, a small guard and a long blade of light.
-            SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.43f, .43f), .08f * w, ACROSS, MID, .8f);
-            SpiritEnergy.beam(streakS.get(), pose, p(.35f, .53f), p(.53f, .35f), .09f * w, new Vector3f(1, 1, 0), CORE, .85f);
-            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(.98f, .98f), .52f * w, ACROSS, OUTER, .18f * a);
-            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(.98f, .98f), (.40f + .22f * swing) * w, ACROSS, MID, .28f * a);
-            if (swing > .01f) SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(1.04f, 1.04f), .7f * w, ACROSS, OUTER, .16f * swing);
-            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(.98f, .98f), .17f * w, ACROSS, CORE, .92f);
-            SpiritEnergy.orb(glowS.get(), pose, p(.18f, .18f), .07f, CORE, .7f);
-            motes(glowS.get(), pose, t, .45f, .95f, 3, .04f, a);
+            float tip = firstPersonTip(first, .98f);
+            SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.43f, .43f), .08f * w, ACROSS, MID, .8f * core);
+            SpiritEnergy.beam(streakS.get(), pose, p(.35f, .53f), p(.53f, .35f), .09f * w, new Vector3f(1, 1, 0), CORE, .85f * core);
+            // FP: thin outer rim so the silhouette stays readable instead of washing into a white slab.
+            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(tip, tip), (first ? .28f : .52f) * w, ACROSS, OUTER, .18f * a * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(tip, tip), ((first ? .22f : .40f) + (first ? .08f : .22f) * swing) * w, ACROSS, MID, .28f * a * (first ? .55f : 1f));
+            if (swing > .01f) SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(tip + .06f, tip + .06f), (first ? .35f : .7f) * w, ACROSS, OUTER, .16f * swing * halo);
+            SpiritEnergy.beam(streakS.get(), pose, p(.42f, .42f), p(tip, tip), (first ? .12f : .17f) * w, ACROSS, CORE, .92f * core);
+            SpiritEnergy.orb(glowS.get(), pose, p(.18f, .18f), .07f, CORE, .7f * core);
+            motes(glowS.get(), pose, t, .45f, Math.min(.95f, tip), 3, .04f, a * halo);
         }
     }
 

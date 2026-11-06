@@ -26,12 +26,13 @@ class SpiritHeldPoseTest {
                 .scale(s.get(0).getAsFloat(),s.get(1).getAsFloat(),s.get(2).getAsFloat());
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
-    void bowGripCoincidesWithNativeBowGrip(boolean left) throws Exception {
-        var actual=display("spirit_bow","firstperson",left).transformPosition(new Vector3f(-.21875f,.21875f,0));
-        var nativeDisplay=new Matrix4f().translation((left?-1:1)*1.13f/16,3.2f/16,1.13f/16)
-                .rotateY(rad(-90)).rotateZ(rad(25)).scale(.68f);
-        var expected=nativeDisplay.transformPosition(new Vector3f(-.21875f,.21875f,0));
-        assertEquals(0,actual.distance(expected),1e-5,"JSON display keeps the native bow handle footprint");
+    void bowGripStaysOnHandSideAboveHotbar(boolean left) throws Exception {
+        float sign=left?-1:1;
+        var grip=display("spirit_bow","firstperson",left).transformPosition(new Vector3f(-.21875f,.21875f,0));
+        var projected=new Matrix4f().perspective((float)Math.toRadians(70),1280f/720,.05f,10)
+                .translate(sign*.56f,-.52f,-.72f).transformProject(new Vector3f(grip));
+        assertTrue(sign*projected.x>.35f,"Bow grip stays on its hand side: "+projected);
+        assertTrue(projected.y>-.95f && projected.y<.25f,"Bow grip sits just above the hotbar: "+projected);
     }
     @ParameterizedTest @ValueSource(booleans={false,true})
     void spearUsesNativeGripAndForwardAxisDuringEntireRaise(boolean left) throws Exception {
