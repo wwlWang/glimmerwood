@@ -140,3 +140,17 @@ A1 扩散、A2 命令拆核不净化、A2b 玩法净化、B `/kill`、C 闲置�
 - 极限、超平坦、放大化、长时间卡顿
 - 制图师重复扣钱实机、Splinter 满蓄三连实弹、金索/腐光逃亡本轮复测
 
+---
+
+## P8-cont-0 GameTest 复核（过滤 `orimod_r117`）
+
+日期续：2026-11-06（Asia/Shanghai）。代码基线仍 `5310e3a`；本段只确认门禁，**不改代码**。
+
+- 命令：`./gradlew --no-daemon runGameTestServer -PgameTestNamespaces=orimod_r117`（worktree `wt-p8-check`）
+- 结果：**BUILD FAILED**；`120 GAME TESTS COMPLETE`；**1 required failed**
+- 失败：`r117_blight_ledger.structure_reference_waits_for_unloaded_start`
+- 断言原文：`Expected Unknown start treated as empty to be DEFER, but was ALLOW`
+- 与全量 P8-2 / P7 A1 修复冲突结论一致：**仍红灯**。
+
+日志：`/workspace/oriMod/pt9/gametest_r117.log`（不入库）。
+
