@@ -91,6 +91,15 @@ public final class SpiritFirstPersonMotion {
         return BLADE_CUT[stage].mix(Pose.REST, smooth((elapsed - sweepEnd) / (end - sweepEnd)));
     }
 
+    /**
+     * The click is local but the stage comes from the server a tick or two later. Start cocking toward stage 1 at once
+     * (instead of vanilla's swing, which then snapped into the combo); a refused click settles back.
+     */
+    static final float PENDING_TICKS = 2;
+    static Pose bladePending(float sinceClick, Pose from) {
+        return from.mix(BLADE_COCK[1], smooth(sinceClick / PENDING_TICKS));
+    }
+
     // ---- spirit hammer: wind-up while held, heavy strike on release ---------------------------------------------------
     static final Pose HAMMER_WOUND = new Pose(-6, 14, 32, -.03f, .09f, .05f);
     static final Pose HAMMER_IMPACT = new Pose(4, -6, -58, .01f, -.11f, -.10f);

@@ -60,8 +60,10 @@ public final class SpiritFirstPersonHand {
         // Sprint bob sways the arm sideways; a screen-space tuck (pure translation, before any arm rotation) keeps tips in.
         var tuck = SpiritFirstPersonMotion.sprintTuck(net.minecraft.util.Mth.lerp(partial, player.oBob, player.bob));
         pose.translate(side * tuck.dx(), tuck.dy(), tuck.dz());
+        int pendingSince = !bladeCombo && hand == InteractionHand.MAIN_HAND && stack.is(OriItems.SPIRIT_BLADE)
+                ? cn.wwl.orimod.client.SpiritCombatClient.comboPendingSince() : -1;
         // Mining / plain swings with the blade or bow keep vanilla's full swing; only the eased use is ours there.
-        if (!bladeCombo && !using && swing > 0 && (stack.is(OriItems.SPIRIT_BLADE) || stack.is(OriItems.SPIRIT_BOW))) {
+        if (!bladeCombo && pendingSince < 0 && !using && swing > 0 && (stack.is(OriItems.SPIRIT_BLADE) || stack.is(OriItems.SPIRIT_BOW))) {
             ch.timeline.end();
             pose.mulPose(SpiritFirstPersonMotion.vanillaSwing(side, equip, swing));
             ch.pose.reset();
@@ -75,6 +77,9 @@ public final class SpiritFirstPersonHand {
             long key = combat.startedAt() * 4 + combat.stage();
             float elapsed = ch.timeline.elapsed(key, now, player.level().getGameTime() - combat.startedAt() + partial);
             local = SpiritFirstPersonMotion.blade(combat.stage(), elapsed, memory.begin("blade", key, now));
+        } else if (pendingSince >= 0) {
+            ch.timeline.end();
+            local = SpiritFirstPersonMotion.bladePending(Math.max(0, now - pendingSince), memory.begin("pending", pendingSince, now));
         } else {
             ch.timeline.end();
             if (stack.is(OriItems.SPIRIT_HAMMER) && using) {

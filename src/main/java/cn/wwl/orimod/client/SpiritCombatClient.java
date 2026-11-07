@@ -19,6 +19,9 @@ public final class SpiritCombatClient {
     private static boolean blockUse, sentCancel;
     private static int lastAction;
     private static long awaitingAttackUntil;
+    /** The pending click was made from idle, so it opens a combo (stage 1) once the server confirms it. */
+    private static boolean comboClick;
+    private static int comboClickTick;
     private static final cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch REFUSAL = new cn.wwl.orimod.item.SpiritWeaponUse.FeedbackLatch();
     private static long energyFlashUntil;
     public static boolean energyFlashing() {
@@ -45,6 +48,12 @@ public final class SpiritCombatClient {
                 if (mc.hitResult != null && mc.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK)
                     mc.player.resetAttackStrengthTicker();
                 awaitingAttackUntil = SpiritClientSession.now() + 12;
+                // Every blade click (block-targeted too: vanilla mining is cancelled above) asks the server for a stage.
+                // Armour stands keep the native attack (SpiritCombat cancels the stage), so they keep vanilla's swing.
+                comboClick = mc.player.getData(SpiritData.COMBAT_VIEW).mode().equals("idle")
+                        && !(mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult hit
+                        && hit.getEntity() instanceof net.minecraft.world.entity.decoration.ArmorStand);
+                comboClickTick = mc.player.tickCount;
                 PacketDistributor.sendToServer(new CombatInputPayload(false));
             }
         }
@@ -79,6 +88,11 @@ public final class SpiritCombatClient {
         blockUse = mc.options.keyUse.isDown();
         if (mc.player.isUsingItem() && (mc.player.getUseItem().is(OriItems.SPIRIT_BOW)
                 || mc.player.getUseItem().is(OriItems.SPIRIT_SPEAR))) mc.player.stopUsingItem();
+    }
+
+    /** First-person blade: a combo opener was clicked and the server's stage has not arrived yet (tickCount of the click). */
+    public static int comboPendingSince() {
+        return comboClick && awaitingAttack() ? comboClickTick : -1;
     }
 
     public static boolean awaitingAttack() {

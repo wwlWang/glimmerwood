@@ -82,6 +82,42 @@ class SpiritFirstPersonChoreographyTest {
         }
     }
 
+    @Test void comboClickCocksAtOnceAndFlowsIntoStageOneWithoutJumps() {
+        // Click is local; the server stage arrives after latency. Simulate 0, 1.3 and 3 ticks of delay.
+        for (float latency : new float[]{0, 1.3f, 3}) {
+            var memory = new SpiritFirstPersonMotion.Memory();
+            Pose previous = Pose.REST; float now = 0;
+            for (; now < latency; now += STEP) previous = check(previous, memory.show(SpiritFirstPersonMotion.bladePending(now, memory.begin("pending", 0, now))));
+            float start = now;
+            for (; now < start + SpiritCombat.duration(1) + 1; now += STEP)
+                previous = check(previous, memory.show(SpiritFirstPersonMotion.blade(1, now - start, memory.begin("blade", 1, start))));
+            assertClose(Pose.REST, previous, "latency " + latency + " ends at rest");
+        }
+        assertClose(Pose.REST, SpiritFirstPersonMotion.bladePending(0, Pose.REST), "no pop on the click frame");
+        assertClose(SpiritFirstPersonMotion.BLADE_COCK[1], SpiritFirstPersonMotion.bladePending(SpiritFirstPersonMotion.PENDING_TICKS, Pose.REST), "fully cocked");
+    }
+
+    @Test void refusedComboClickSettlesBack() {
+        var memory = new SpiritFirstPersonMotion.Memory();
+        Pose previous = Pose.REST; float now = 0;
+        for (; now < 12; now += STEP) previous = check(previous, memory.show(SpiritFirstPersonMotion.bladePending(now, memory.begin("pending", 0, now))));
+        for (; now < 12 + SpiritFirstPersonMotion.SETTLE_TICKS + 1; now += STEP) previous = check(previous, memory.show(memory.settle(now)));
+        assertClose(Pose.REST, previous, "settled");
+    }
+
+    /** Visual pass, Spirit Glow on, 1274x720 viewport: the visible beam runs (1146,570)->(1206,420) and continues under
+     * the tutorial toast. Its extension and this fixture both put the idle tip ~30 px inside the right edge. */
+    @Test void idleRightTipMatchesTheVisualPassAndIsNotClippedAt16By9() {
+        var tip = ndc(bladeHand(false, Pose.REST), p(TIP, TIP));
+        float px = 3 + (tip.x + 1) / 2 * 1274, py = 40 + (1 - tip.y) / 2 * 720;
+        float extended = 1206 + (1206 - 1146) / (570f - 420) * (420 - py);
+        assertEquals(extended, px, 12, "fixture vs screenshot line");
+        assertTrue(px < 1277 - 15, "tip inside the frame: " + px);
+        var grip = ndc(bladeHand(false, Pose.REST), p(.40f, .40f));
+        float gx = 3 + (grip.x + 1) / 2 * 1274, gy = 40 + (1 - grip.y) / 2 * 720;
+        assertEquals(1206 + 60 / 150f * (420 - gy), gx, 25, "blade base lies on the same screenshot line");
+    }
+
     // ---- hammer ------------------------------------------------------------------------------------------------------
     @Test void hammerWindsUpHoldsAndStrikesWithoutJumps() {
         var memory = new SpiritFirstPersonMotion.Memory();

@@ -53,7 +53,7 @@ stacked on top of vanilla's swing). Non-spirit holders, the spirit core and any 
 | Weapon | Action | Motion |
 | --- | --- | --- |
 | Blade (main hand, combo) | stage 1 / 2 / 3 | Driven by the combat timeline (`SpiritAttackPose.Timeline`, same anchor as 3rd person). Wind-up cocks, the cut runs exactly over BladeSlash's 3-tick crescent sweep and lands at `recoveryStart`, recovery eases to rest by `duration`. Stage 1 high→low toward the weapon side, stage 2 rises back across, stage 3 lifts and chops down. Chained stages start from the shown recovery pose (no snap). |
-| Blade (mining, off-hand, armour stand) | swing | Vanilla default swing reproduced exactly (`vanillaSwing`). |
+| Blade (off-hand, armour stand, combat unavailable) | swing | Vanilla default swing reproduced exactly (`vanillaSwing`). Main-hand blade clicks never mine (SpiritCombatClient cancels vanilla attack), so held-against-block clicks are combo clicks. |
 | Hammer | hold | Eases into a cocked pose over the 12-tick wind-up, slow 1.5° breath when full. |
 | Hammer | release | Holds the cocked pose ≤4 ticks for the server's swing, then a quadratic slam into an impact hold and lift back; plunge (air smash) still layers on. Release before full wind-up just settles. |
 | Spear | attack swing | Forward thrust and return instead of the sword chop. |
@@ -92,3 +92,33 @@ Not done in this pass (no desktop). Minimum checklist, shaders off and Spirit Gl
 4. Bow: start draw, full draw, release; left-click.
 5. Sprint forward ~3 s holding blade and spear (tip should stay inside the edges).
 6. Third person + hotbar/inventory icons: brightness unchanged with shaders on.
+
+---
+
+# Visual pass r1 follow-up (orimod_dev_fp_motion_r1)
+
+Observed in game (computerUse): right blade, hammer ground/air, spear thrust/raise/throw, bow draw/release, shaders off
+and Spirit Glow on. Full combo not triggered reliably (only stage 1 recovery seen); left hand and sustained sprint untested.
+
+## Findings
+- **Combo opener snap (fixed).** A blade click swings locally at once (`setSwingHand(true)`), but the stage arrives
+  from the server a tick or more later. In that gap the hook took the vanilla-swing path, then snapped to stage 1
+  starting from rest. Now `SpiritCombatClient.comboPendingSince()` marks a click made from idle (not on an armour
+  stand); the blade cocks toward stage 1 at once (`bladePending`, 2 ticks) and stage 1 continues from that pose. A
+  refused click settles back after the 12-tick await window.
+- **Idle tip is not clipped at 16:9.** In the Spirit Glow screenshot (1274x720 viewport) the visible beam runs
+  (1146,570)->(1206,420) and continues under the tutorial toast; extended, it ends ~30 px inside the right edge, which
+  the projection fixture reproduces within a few px (new regression test). The "beam toward the edge" is the toast
+  covering the last third of the blade.
+- **Aspect caveat (not changed).** The hand pass uses a fixed 70° vertical FOV, so horizontal framing depends on window
+  aspect: the idle right tip at NDC x≈0.95 (16:9) becomes ≈1.06 at 16:10 and ≈1.27 at 4:3, i.e. clipped on narrower
+  windows. Not observed (test window is 16:9); left as a design decision because it changes the approved idle framing.
+- **Brightness.** Weapon beams use `rendertype_eyes`, which Iris routes to `gbuffers_spidereyes` (unlit
+  `texture * glcolor`, written without `to_linear` into the pack's linear colour buffer), then the pack's bloom (0.7) and
+  highlight shoulder. Measured peak beam pixels: Spirit Glow ≈ (190–197, 208–215, 216–221) vs shaders off
+  ≈ (206–216 grey) in the earlier shot, so with the ×0.72 trim the core is no brighter than unshaded; the white core is
+  the authored look. The paw is a separate path not covered by the trim: hand material tag 254 → `gbuffers_hand` with
+  self-light (block 15, neutralised) + GemRender emission band, by design matching Ori's world body; measured
+  ≈ (207–229) vs ≈ 102–191 shaders off (different scenes). No shared `SpiritEnergy` change is warranted: it would also
+  dim third person, the body aura and the companion. If the paw should be dimmer in FP, that is a per-paw decision for
+  `SpiritHands.draw` (self-light floor), not a glow change; it needs an A/B in one scene first.
