@@ -41,6 +41,10 @@ final class SpiritFirstPersonFrame {
         return left && !bow ? new Matrix4f().translation(.22f, .06f, -.06f) : new Matrix4f();
     }
 
+    /** Same hand pass at another window aspect (the hand FOV stays 70 degrees vertical). */
+    static Vector3f ndcAt(Matrix4f handSpace, Vector3f itemPoint, float aspect) {
+        return new Matrix4f().perspective((float) Math.toRadians(70), aspect, .05f, 10).mul(handSpace).transformProject(new Vector3f(itemPoint));
+    }
     static Vector3f ndc(Matrix4f handSpace, Vector3f itemPoint) {
         return new Matrix4f(PROJECTION).mul(handSpace).transformProject(new Vector3f(itemPoint));
     }

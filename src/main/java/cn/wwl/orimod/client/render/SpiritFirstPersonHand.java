@@ -25,9 +25,12 @@ public final class SpiritFirstPersonHand {
         boolean using;
         float lastUsed, lastPull, lastRaise, releasedAt = -100;
         final SpiritAttackPose.Timeline timeline = new SpiritAttackPose.Timeline();
+        final SpiritFirstPersonMotion.SwingGate swingGate = new SpiritFirstPersonMotion.SwingGate();
+        // Last frame, for devtools diagnostics only.
+        int stage; float elapsed = -1, pending = -1, inset;
         void reset(ItemStack stack) {
             item = stack; pose.reset(); using = false; releasedAt = -100; lastRaise = 0; lastUsed = 0; lastPull = 0;
-            timeline.end();
+            timeline.end(); swingGate.held = false;
         }
     }
     private static final Channel RIGHT = new Channel(), LEFT = new Channel();
@@ -59,11 +62,17 @@ public final class SpiritFirstPersonHand {
         boolean bladeCombo = hand == InteractionHand.MAIN_HAND && stack.is(OriItems.SPIRIT_BLADE) && combat.mode().equals("blade");
         // Sprint bob sways the arm sideways; a screen-space tuck (pure translation, before any arm rotation) keeps tips in.
         var tuck = SpiritFirstPersonMotion.sprintTuck(net.minecraft.util.Mth.lerp(partial, player.oBob, player.bob));
-        pose.translate(side * tuck.dx(), tuck.dy(), tuck.dz());
+        var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+        ch.inset = SpiritFirstPersonMotion.aspectInset(framingRef(stack, side),
+                window.getHeight() > 0 ? (float) window.getWidth() / window.getHeight() : SpiritFirstPersonMotion.FRAMED_ASPECT);
+        pose.translate(side * tuck.dx() + ch.inset, tuck.dy(), tuck.dz());
         int pendingSince = !bladeCombo && hand == InteractionHand.MAIN_HAND && stack.is(OriItems.SPIRIT_BLADE)
                 ? cn.wwl.orimod.client.SpiritCombatClient.comboPendingSince() : -1;
         // Mining / plain swings with the blade or bow keep vanilla's full swing; only the eased use is ours there.
-        if (!bladeCombo && pendingSince < 0 && !using && swing > 0 && (stack.is(OriItems.SPIRIT_BLADE) || stack.is(OriItems.SPIRIT_BOW))) {
+        ch.stage = bladeCombo ? combat.stage() : 0; ch.elapsed = -1; ch.pending = pendingSince >= 0 ? Math.max(0, now - pendingSince) : -1;
+        boolean vanillaSwing = (stack.is(OriItems.SPIRIT_BLADE) || stack.is(OriItems.SPIRIT_BOW))
+                && ch.swingGate.vanilla(bladeCombo, pendingSince >= 0, using, swing);
+        if (vanillaSwing) {
             ch.timeline.end();
             pose.mulPose(SpiritFirstPersonMotion.vanillaSwing(side, equip, swing));
             ch.pose.reset();
@@ -76,7 +85,8 @@ public final class SpiritFirstPersonHand {
         if (bladeCombo) {
             long key = combat.startedAt() * 4 + combat.stage();
             float elapsed = ch.timeline.elapsed(key, now, player.level().getGameTime() - combat.startedAt() + partial);
-            local = SpiritFirstPersonMotion.blade(combat.stage(), elapsed, memory.begin("blade", key, now));
+            ch.elapsed = elapsed;
+            local = memory.arrive(SpiritFirstPersonMotion.blade(combat.stage(), elapsed, memory.begin("blade", key, now)), now, elapsed);
         } else if (pendingSince >= 0) {
             ch.timeline.end();
             local = SpiritFirstPersonMotion.bladePending(Math.max(0, now - pendingSince), memory.begin("pending", pendingSince, now));
@@ -122,7 +132,36 @@ public final class SpiritFirstPersonHand {
         return true;
     }
 
+    /**
+     * Rest-pose view-space x of each weapon's framing point (blade / spear tip, hammer head) per hand, from the item
+     * JSON display transforms and the left-hand nudge; pinned by {@code SpiritFirstPersonChoreographyTest}. The bow keeps
+     * vanilla framing (its use transform is vanilla's).
+     */
+    static final float BLADE_REF_R = .631f, BLADE_REF_L = -.411f, SPEAR_REF_R = .873f, SPEAR_REF_L = -.653f,
+            HAMMER_REF_R = .857f, HAMMER_REF_L = -.637f;
+    static float framingRef(ItemStack stack, float side) {
+        boolean right = side > 0;
+        if (stack.is(OriItems.SPIRIT_BLADE)) return right ? BLADE_REF_R : BLADE_REF_L;
+        if (stack.is(OriItems.SPIRIT_SPEAR)) return right ? SPEAR_REF_R : SPEAR_REF_L;
+        if (stack.is(OriItems.SPIRIT_HAMMER)) return right ? HAMMER_REF_R : HAMMER_REF_L;
+        return 0;
+    }
+
+    /** Per-arm state of the last rendered frame, exposed through the devtools bridge (record_pose "firstPerson"). */
     public static java.util.Map<String, Object> diagnostics() {
-        return java.util.Map.of("right", RIGHT.pose.action, "left", LEFT.pose.action);
+        return java.util.Map.of("right", channel(RIGHT), "left", channel(LEFT));
+    }
+    private static java.util.Map<String, Object> channel(Channel ch) {
+        Pose s = ch.pose.shown;
+        var out = new java.util.LinkedHashMap<String, Object>();
+        out.put("item", ch.item.isEmpty() ? "" : net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(ch.item.getItem()).toString());
+        out.put("action", ch.pose.action);
+        out.put("stage", ch.stage);
+        out.put("elapsed", ch.elapsed);
+        out.put("pending", ch.pending);
+        out.put("arrivalLag", ch.pose.lag);
+        out.put("inset", ch.inset);
+        out.put("pose", java.util.List.of(s.yaw(), s.roll(), s.pitch(), s.dx(), s.dy(), s.dz()));
+        return out;
     }
 }

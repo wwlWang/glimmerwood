@@ -122,3 +122,45 @@ and Spirit Glow on. Full combo not triggered reliably (only stage 1 recovery see
   ≈ (207–229) vs ≈ 102–191 shaders off (different scenes). No shared `SpiritEnergy` change is warranted: it would also
   dim third person, the body aura and the companion. If the paw should be dimmer in FP, that is a per-paw decision for
   `SpiritHands.draw` (self-light floor), not a glow change; it needs an A/B in one scene first.
+
+---
+
+# Wiring audit r2 (blade stages, handedness, sprint, aspect)
+
+Source-level audit of the real NeoForge 21.1.248 call order: `renderHandsWithItems` (view sway) → `renderArmWithItem`
+push → `applyForgeHandTransform` (`SpiritFirstPersonHand.apply`: aspect inset + sprint tuck translation, arm, choreography)
+→ `renderItem` (`SpiritHeldHandMixin`: left-arm nudge for non-bow weapons) → item display transform (left hand negates
+Y/Z rotation, X translation) → BEWLR. Projection fixtures (`SpiritFirstPersonFrame`) follow that order.
+
+## Fixed
+- **Late stage arrival popped (all three stages).** The hand's timeline starts at the server's elapsed time on the first
+  frame it sees a stage (a fraction of a tick normally, ticks under latency), and `blade()` past the wind-up uses the
+  fixed cocked pose, so a chained stage 2/3 or a delayed opener jumped from the pose on screen. `Memory.arrive`
+  cross-fades from the shown pose over 1.5 ticks only when the first frame is late (> .05 tick); on-time stages are
+  unchanged. Tests: all stages chained at lag 0/.3/1.3/2.5/4 with no frame jump, blend endpoints, and a guard that the
+  raw timeline would jump.
+- **Vanilla swing popping in after a combo.** Every blade click calls `player.swing`; a click late in stage 3 is shown
+  by the combo pose, but its six-tick swing outlived the combo and the hook switched to vanilla's swing mid-way.
+  `SwingGate` keeps such a swing on the settle path until it finishes; plain mining swings stay vanilla.
+- **Narrow windows clipped the right weapon.** Hand FOV is fixed 70° vertical, so 16:10 / 4:3 push the right blade tip
+  to NDC 1.05 / 1.26 (spear 0.84 / 1.01, hammer head 0.96 / 1.15). `aspectInset` shifts the weapon sideways in view
+  space (before the arm transform) so the blade/spear tip and hammer head keep their 16:9 screen position; zero at 16:9
+  and wider, so the approved framing is unchanged. Bow keeps vanilla framing (its use transform is vanilla's). Reference
+  x per hand is pinned against the item JSON by a test.
+
+## Checked, no change
+- Channels are keyed by physical arm; main/off hand derives from `player.getMainArm()`, so left main hand gets the combo
+  and pending cock, an offhand blade never does (combo and pending are main-hand only; attack swings only the main hand).
+  Left-arm nudge is keyed by arm, so it applies to a left offhand and to a left main hand alike.
+- Sprint bob: `bobView` is camera-level; the tuck is a pure translation inward (side-mirrored) and down, before the arm.
+
+## Devtools aid
+- `record_pose` samples now include `firstPerson.hands.{right,left}`: item, action, stage, elapsed, pending, arrivalLag,
+  inset and the shown pose. `scripts/verify-fp-combo.py <id>` drives a deterministic attack cadence (ticks 0 / 4 / 12 →
+  stages 1-2-3) through `input_script` for right/left main hand, offhand blade, sprinting, and 16:10 / 4:3 windows, and
+  reports stages seen, offhand actions, insets and the largest per-frame pose change. Not run in this round.
+
+## Verified vs unverified
+- Verified: JUnit projection / timing fixtures, full `scripts/check.sh` (see commit message).
+- Unverified in game: left main hand, offhand blade, sprint, 16:10 / 4:3, full three-stage chain on screen. Shader
+  brightness screenshots on the llvmpipe renderer are not reliable and were not used.

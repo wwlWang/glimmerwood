@@ -45,10 +45,20 @@ public final class SpiritFirstPersonMotion {
         Pose shown = Pose.REST, from = Pose.REST;
         String action = "rest";
         long key;
-        float startedAt;
+        float startedAt, lag = -1;
         Pose begin(String next, long nextKey, float now) {
-            if (!next.equals(action) || nextKey != key) { from = shown; action = next; key = nextKey; startedAt = now; }
+            if (!next.equals(action) || nextKey != key) { from = shown; action = next; key = nextKey; startedAt = now; lag = -1; }
             return from;
+        }
+        /**
+         * A combat stage is usually first seen a fraction of a tick (or, under latency, ticks) after it started, so its
+         * timeline already points past the start. {@code lagNow} is that elapsed time on the first frame of the action;
+         * when it is non-zero, cross-fade from the pose on screen over {@link #ARRIVE_TICKS} instead of jumping ahead.
+         */
+        Pose arrive(Pose target, float now, float lagNow) {
+            if (lag < 0) lag = Math.max(0, lagNow);
+            if (lag <= ARRIVE_EPSILON) return target;
+            return from.mix(target, smooth((now - startedAt) / ARRIVE_TICKS));
         }
         /** Ease back to rest from whatever was last shown; returns REST once settled. */
         Pose settle(float now) {
@@ -58,7 +68,35 @@ public final class SpiritFirstPersonMotion {
             return SpiritFirstPersonMotion.settle(now - startedAt, from);
         }
         Pose show(Pose pose) { shown = pose; return pose; }
-        void reset() { shown = from = Pose.REST; action = "rest"; key = 0; }
+        void reset() { shown = from = Pose.REST; action = "rest"; key = 0; lag = -1; }
+    }
+    static final float ARRIVE_TICKS = 1.5f, ARRIVE_EPSILON = .05f;
+
+    /**
+     * Whether a blade / bow swing should play vanilla's full swing. Every blade click calls {@code player.swing}; a click
+     * that lands during a combo is shown by the combo pose, and its swing keeps running for up to six ticks after the
+     * combo ends. Holding the gate until that swing finishes stops vanilla's swing from popping in mid-way.
+     */
+    static final class SwingGate {
+        boolean held;
+        boolean vanilla(boolean combo, boolean pending, boolean using, float swing) {
+            if (swing <= 0) { held = false; return false; }
+            if (combo || pending || using) { held = true; return false; }
+            return !held;
+        }
+    }
+
+    // ---- aspect framing -------------------------------------------------------------------------------------------
+    /** The hand pass uses a fixed 70 degree vertical FOV, so narrower windows push held items sideways off screen. */
+    static final float FRAMED_ASPECT = 16f / 9f;
+    /**
+     * View-space sideways shift (blocks, applied before the arm transform) that keeps a weapon's reference point at its
+     * 16:9 screen position in narrower windows (16:10, 4:3, ...). {@code refX} is that point's view-space x at rest
+     * (signed: positive right). Zero at 16:9 and wider, so the approved widescreen framing is untouched.
+     */
+    static float aspectInset(float refX, float aspect) {
+        if (!(aspect > 0) || aspect >= FRAMED_ASPECT) return 0;
+        return refX * (aspect / FRAMED_ASPECT - 1);
     }
 
     // ---- spirit blade: three-stage combo, synced to the combat timeline and the slash crescent ------------------------

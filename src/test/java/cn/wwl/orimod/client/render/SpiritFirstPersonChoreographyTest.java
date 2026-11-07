@@ -97,6 +97,106 @@ class SpiritFirstPersonChoreographyTest {
         assertClose(SpiritFirstPersonMotion.BLADE_COCK[1], SpiritFirstPersonMotion.bladePending(SpiritFirstPersonMotion.PENDING_TICKS, Pose.REST), "fully cocked");
     }
 
+    /** The hand's Timeline starts at the server's elapsed time, so a stage is first drawn {@code lag} ticks in. */
+    private static Pose runStage(SpiritFirstPersonMotion.Memory memory, Pose previous, int stage, long key, float start, float lag, float until) {
+        for (float now = start; now < until; now += STEP) {
+            float elapsed = lag + now - start;
+            previous = check(previous, memory.show(memory.arrive(SpiritFirstPersonMotion.blade(stage, elapsed, memory.begin("blade", key, start)), now, elapsed)));
+        }
+        return previous;
+    }
+
+    @ParameterizedTest @ValueSource(floats = {0, .3f, 1.3f, 2.5f, 4})
+    void lateStageArrivalCrossFadesInsteadOfJumping(float lag) {
+        // Opener after the pending cock, then both chained stages, each first seen `lag` ticks after it started.
+        var memory = new SpiritFirstPersonMotion.Memory();
+        Pose previous = Pose.REST; float now = 0;
+        for (; now < 1; now += STEP) previous = check(previous, memory.show(SpiritFirstPersonMotion.bladePending(now, memory.begin("pending", 0, now))));
+        float s1 = now, s2 = s1 + SpiritCombat.CHAIN_TICKS, s3 = s2 + SpiritCombat.CHAIN_TICKS;
+        previous = runStage(memory, previous, 1, 1, s1, lag, s2);
+        previous = runStage(memory, previous, 2, 2, s2, lag, s3);
+        previous = runStage(memory, previous, 3, 3, s3, lag, s3 + SpiritCombat.duration(3) + 1);
+        assertClose(Pose.REST, previous, "lag " + lag + " finisher ends at rest");
+    }
+
+    @ParameterizedTest @ValueSource(ints = {1, 2, 3})
+    void arrivalBlendOnlyActsForTheFirstTicksOfALateStage(int stage) {
+        var from = SpiritFirstPersonMotion.BLADE_CUT[1];
+        var onTime = new SpiritFirstPersonMotion.Memory();
+        onTime.show(from); onTime.begin("blade", stage, 0);
+        assertClose(SpiritFirstPersonMotion.blade(stage, 0, from), onTime.arrive(SpiritFirstPersonMotion.blade(stage, 0, from), 0, 0), "on time: untouched");
+        var late = new SpiritFirstPersonMotion.Memory();
+        late.show(from); late.begin("blade", stage, 0);
+        assertClose(from, late.arrive(SpiritFirstPersonMotion.blade(stage, 2, from), 0, 2), "late: first frame is the shown pose");
+        float after = SpiritFirstPersonMotion.ARRIVE_TICKS;
+        var target = SpiritFirstPersonMotion.blade(stage, 2 + after, from);
+        assertClose(target, late.arrive(target, after, 2 + after), "late: back on the timeline after the blend");
+        // Without the blend, a late chained stage visibly pops (the regression this guards).
+        assertTrue(from.distance(SpiritFirstPersonMotion.blade(stage, 2, from)) > MAX_JUMP, "raw timeline would jump");
+    }
+
+    @Test void swingGateKeepsComboClicksFromReplayingVanillaSwingAfterTheCombo() {
+        var gate = new SpiritFirstPersonMotion.SwingGate();
+        assertTrue(gate.vanilla(false, false, false, .3f), "plain mining swing is vanilla");
+        assertFalse(gate.vanilla(false, false, false, 0), "no swing");
+        assertFalse(gate.vanilla(true, false, false, .2f), "click during combo: combo pose");
+        assertFalse(gate.vanilla(false, false, false, .6f), "combo ended mid-swing: stay on the settle path");
+        assertFalse(gate.vanilla(false, false, false, 0), "swing finished");
+        assertTrue(gate.vanilla(false, false, false, .1f), "next plain swing is vanilla again");
+        assertFalse(gate.vanilla(false, true, false, .1f), "pending opener click");
+    }
+
+    // ---- aspect framing --------------------------------------------------------------------------------------------
+    private static Matrix4f restHand(String item, boolean left, float aspect) {
+        float side = left ? -1 : 1;
+        float ref = refX(item, left);
+        return new Matrix4f().translation(SpiritFirstPersonMotion.aspectInset(ref, aspect), 0, 0)
+                .mul(SpiritFirstPersonMotion.arm(side, 0)).mul(leftNudge(left, false)).mul(display(item, left));
+    }
+    private static float refX(String item, boolean left) {
+        return switch (item) {
+            case "spirit_blade" -> left ? SpiritFirstPersonHand.BLADE_REF_L : SpiritFirstPersonHand.BLADE_REF_R;
+            case "spirit_spear" -> left ? SpiritFirstPersonHand.SPEAR_REF_L : SpiritFirstPersonHand.SPEAR_REF_R;
+            default -> left ? SpiritFirstPersonHand.HAMMER_REF_L : SpiritFirstPersonHand.HAMMER_REF_R;
+        };
+    }
+    private static Vector3f refPoint(String item) {
+        float tip = SpiritWeaponRenderer.firstPersonTip(true, item.equals("spirit_blade") ? .98f : 1f);
+        return item.equals("spirit_hammer") ? p(.52f, .96f) : p(tip, tip);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"spirit_blade", "spirit_spear", "spirit_hammer"})
+    void framingReferenceMatchesTheItemModels(String item) {
+        for (boolean left : new boolean[]{false, true}) {
+            var view = restHand(item, left, 16f / 9).transformPosition(refPoint(item));
+            assertEquals(view.x, refX(item, left), .005f, item + (left ? " left" : " right") + " ref x drifted from the JSON");
+        }
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"spirit_blade", "spirit_spear", "spirit_hammer"})
+    void narrowWindowsKeepThe16By9Framing(String item) {
+        for (boolean left : new boolean[]{false, true}) {
+            var wide = restHand(item, left, 16f / 9);
+            float wideX = ndcAt(wide, refPoint(item), 16f / 9).x;
+            for (float aspect : new float[]{16f / 10, 4f / 3, 5f / 4}) {
+                var hand = restHand(item, left, aspect);
+                var tip = ndcAt(hand, refPoint(item), aspect);
+                assertEquals(wideX, tip.x, .01f, item + " at " + aspect + (left ? " left" : " right"));
+                assertTrue(Math.abs(tip.x) < .97f, "inside the frame: " + tip);
+                if (item.equals("spirit_blade")) {
+                    var grip = ndcAt(hand, p(.18f, .18f), aspect);
+                    assertTrue(Math.abs(grip.x) < 1, "grip stays on screen: " + grip);
+                }
+            }
+        }
+        assertEquals(0, SpiritFirstPersonMotion.aspectInset(.6f, 16f / 9), "16:9 untouched");
+        assertEquals(0, SpiritFirstPersonMotion.aspectInset(.6f, 21f / 9), "ultrawide untouched");
+        assertEquals(0, SpiritFirstPersonMotion.aspectInset(.6f, 0), "no window yet");
+        // Without the inset the right blade tip leaves a 4:3 frame (the clipping this guards).
+        var raw = new Matrix4f(SpiritFirstPersonMotion.arm(1, 0)).mul(display("spirit_blade", false));
+        assertTrue(ndcAt(raw, refPoint("spirit_blade"), 4f / 3).x > 1.1f);
+    }
+
     @Test void refusedComboClickSettlesBack() {
         var memory = new SpiritFirstPersonMotion.Memory();
         Pose previous = Pose.REST; float now = 0;

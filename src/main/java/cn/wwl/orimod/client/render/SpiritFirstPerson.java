@@ -33,6 +33,6 @@ public final class SpiritFirstPerson {
     }
 
     public static java.util.Map<String,Object> diagnostics() {
-        return java.util.Map.of("source", "vanilla", "hammerPlunge", falling);
+        return java.util.Map.of("hammerPlunge", falling, "hands", SpiritFirstPersonHand.diagnostics());
     }
 }
