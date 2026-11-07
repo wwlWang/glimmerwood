@@ -32,6 +32,8 @@ public final class SpiritGlow {
 
     /** Read the live Iris selection: the settings toggle may lag a pack switch by ten ticks. */
     static boolean active() { return IRIS && SpiritGlowIris.state().ours(); }
+    /** Any Iris pack (Spirit Glow, Mellow, ...): their bloom stacks on our additive first-person weapons. */
+    static boolean shadersOn() { return IRIS && SpiritGlowIris.state().enabled(); }
 
     public static void tick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         if (!IRIS || !OriClientConfig.SPEC.isLoaded() || ++ticks % CHECK_INTERVAL != 0) return;

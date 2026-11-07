@@ -9,7 +9,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-/** Vanilla owns equip, swing, bob and item use. Only the spirit hammer's airborne plunge adds a pose. */
+/** Vanilla owns equip and view bob; {@link SpiritFirstPersonHand} owns the weapon swing / draw / charge choreography.
+ * This adds the spirit hammer's airborne plunge on top, at renderItem's head. */
 public final class SpiritFirstPerson {
     private SpiritFirstPerson() { }
     private static LivingEntity owner;

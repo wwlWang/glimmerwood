@@ -38,6 +38,11 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
     public static void register(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
         event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
             @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() { return get(); }
+            // First-person swing / draw / charge choreography; false keeps vanilla (non-spirit holders, other views).
+            @Override public boolean applyForgeHandTransform(PoseStack pose, net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm, ItemStack item, float partial, float equip, float swing) {
+                return SpiritFirstPersonHand.apply(pose, player, arm, item, partial, equip, swing);
+            }
         }, OriItems.SPIRIT_HAMMER.get(), OriItems.SPIRIT_SPEAR.get(), OriItems.SPIRIT_BLADE.get(),
                 OriItems.SPIRIT_BOW.get(), OriItems.SPIRIT_CORE.get());
     }
@@ -62,8 +67,10 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
         boolean first = context.firstPerson();
         // FP sits centimetres from the camera: full world halos blow out into a white slab. Keep the spirit-light
         // read with a thin cyan core and a soft rim; leave third-person / GUI at the denser world look.
-        float halo = first ? .18f : 1f;
-        float core = first ? .78f : 1f;
+        // Under any shader pack its bloom adds a second halo over our additive rim; trim first person only (bounded).
+        float tone = SpiritFirstPersonMotion.fpBloomScale(first, first && SpiritGlow.shadersOn());
+        float halo = first ? .18f * tone : 1f;
+        float core = first ? .78f * tone : 1f;
         float swingGlow = first ? .2f : .7f;
         // R94: the light flares through a swing / throw, so the weapon reads as energy being spent, not a prop.
         float a = pulse * (1 + .5f * charge + swingGlow * swing);
@@ -89,14 +96,15 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             for (float end : new float[]{-1, 1}) {
                 var tip = SpiritWeaponShape.bowLimb(end);
                 var side = new Vector3f(tip).sub(string).cross(0, 0, 1).normalize();
-                SpiritEnergy.beam(ribbonS.get(), pose, string, tip, .035f * w, side, CORE, .60f + stage * .35f);
-                SpiritEnergy.orb(glowS.get(), pose, tip, .09f + stage * .04f, MID, .45f * a);
+                SpiritEnergy.beam(ribbonS.get(), pose, string, tip, .035f * w, side, CORE, (.60f + stage * .35f) * (first ? .8f * tone : 1f));
+                // Near the camera the limb-tip orbs are the largest additive blobs on screen during a full draw.
+                SpiritEnergy.orb(glowS.get(), pose, tip, .09f + stage * .04f, MID, .45f * a * (first ? .55f * tone : 1f));
             }
             if (pull > 0) {
                 var tip = p(SpiritWeaponShape.BOW_X - .25f, SpiritWeaponShape.BOW_Y + .25f);
-                SpiritEnergy.beam(ribbonS.get(), pose, string, tip, .045f * w, new Vector3f(1, 1, 0), CORE, .8f);
+                SpiritEnergy.beam(ribbonS.get(), pose, string, tip, .045f * w, new Vector3f(1, 1, 0), CORE, .8f * (first ? tone : 1f));
             }
-            SpiritEnergy.orb(glowS.get(), pose, p(SpiritWeaponShape.BOW_X, SpiritWeaponShape.BOW_Y), .11f, MID, .5f);
+            SpiritEnergy.orb(glowS.get(), pose, p(SpiritWeaponShape.BOW_X, SpiritWeaponShape.BOW_Y), .11f, MID, .5f * (first ? .6f * tone : 1f));
         } else if (stack.is(OriItems.SPIRIT_CORE)) {
             var centre = p(.5f, .5f);
             SpiritEnergy.orb(glowS.get(), pose, centre, .42f, OUTER, .35f * pulse);
@@ -119,8 +127,8 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             // Keep the same T geometry and native animation, but expose its crossbar in first person.
             if (first) {
                 SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .18f * w, ACROSS, OUTER, .08f * a);
-                SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .08f * w, ACROSS, MID, .85f);
-                SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .16f * w, new Vector3f(1, 1, 0), MID, .8f);
+                SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .08f * w, ACROSS, MID, .85f * tone);
+                SpiritEnergy.beam(streakS.get(), pose, p(.52f, .96f), p(.96f, .52f), .16f * w, new Vector3f(1, 1, 0), MID, .8f * tone);
             } else {
                 SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .44f * w, ACROSS, OUTER, .18f * a);
                 SpiritEnergy.beam(streakS.get(), pose, p(.10f, .10f), p(.74f, .74f), .26f * w, ACROSS, MID, .32f * a);
@@ -136,9 +144,9 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             float point = firstPersonTip(first, 1.0f);
             if (first) {
                 SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .18f * w, ACROSS, OUTER, .08f * a);
-                SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .07f * w, ACROSS, MID, .85f);
-                SpiritEnergy.beam(streakS.get(), pose, p(tip - .10f, tip - .10f), p(point, point), .10f * w, ACROSS, MID, .9f);
-                SpiritEnergy.beam(streakS.get(), pose, p(tip - .04f, tip + .08f), p(tip + .08f, tip - .04f), .07f * w, new Vector3f(1, 1, 0), OUTER, .35f);
+                SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .07f * w, ACROSS, MID, .85f * tone);
+                SpiritEnergy.beam(streakS.get(), pose, p(tip - .10f, tip - .10f), p(point, point), .10f * w, ACROSS, MID, .9f * tone);
+                SpiritEnergy.beam(streakS.get(), pose, p(tip - .04f, tip + .08f), p(tip + .08f, tip - .04f), .07f * w, new Vector3f(1, 1, 0), OUTER, .35f * tone);
             } else {
                 SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .38f * w, ACROSS, OUTER, .16f * a);
                 SpiritEnergy.beam(streakS.get(), pose, p(.02f, .02f), p(tip, tip), .20f * w, ACROSS, MID, .30f * a);
@@ -153,10 +161,10 @@ public final class SpiritWeaponRenderer extends BlockEntityWithoutLevelRenderer 
             float tip = firstPersonTip(first, .98f);
             if (first) {
                 // One cyan core + a soft rim: additive layers stack into white when the camera is this close.
-                SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.40f, .40f), .07f * w, ACROSS, MID, .55f);
-                SpiritEnergy.beam(streakS.get(), pose, p(.34f, .50f), p(.50f, .34f), .07f * w, new Vector3f(1, 1, 0), CORE, .55f);
+                SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.40f, .40f), .07f * w, ACROSS, MID, .55f * tone);
+                SpiritEnergy.beam(streakS.get(), pose, p(.34f, .50f), p(.50f, .34f), .07f * w, new Vector3f(1, 1, 0), CORE, .55f * tone);
                 SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .16f * w, ACROSS, OUTER, .06f * a);
-                SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .09f * w, ACROSS, MID, .85f);
+                SpiritEnergy.beam(streakS.get(), pose, p(.40f, .40f), p(tip, tip), .09f * w, ACROSS, MID, .85f * tone);
             } else {
                 SpiritEnergy.beam(streakS.get(), pose, p(.18f, .18f), p(.43f, .43f), .08f * w, ACROSS, MID, .8f);
                 SpiritEnergy.beam(streakS.get(), pose, p(.35f, .53f), p(.53f, .35f), .09f * w, new Vector3f(1, 1, 0), CORE, .85f);
